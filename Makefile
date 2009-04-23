@@ -15,17 +15,22 @@ export TEXINPUTS:=./local//:../local//:
 C = Seaside
 
 PDFLATEX = pdflatex -file-line-error
-BOOK=SBE2
+
+# TO-DO: add rules for BOOK1 and OMNIBUS
+
+# BOOK1=PBE1
+BOOK2=PBE2
+# OMNIBUS=PBE-Omnibus
 
 # --------------------------------------------------------------------------------
-all : book
+all : BOOK2
 
 # NB: be sure to use texlive and to set the TEXINPUTS variable accordingly
 # See README.txt
 
-book : clean examples2
-	time ${PDFLATEX} ${BOOK}
-	time ${PDFLATEX} ${BOOK} | tee warnings.txt
+BOOK2 : clean examples2
+	time ${PDFLATEX} ${BOOK2}
+	time ${PDFLATEX} ${BOOK2} | tee warnings.txt
 	# Filter out blank lines and bogus warnings
 	perl -pi \
 		-e '$$/ = "";' \
@@ -36,10 +41,10 @@ book : clean examples2
 
 # We need a makefile rule to generated the index as well ...
 index :
-	makeindex ${BOOK}
+	makeindex ${BOOK2}
 
-complete : book index
-	time ${PDFLATEX} ${BOOK}
+complete : BOOK2 index
+	time ${PDFLATEX} ${BOOK2}
 
 examples2 :
 	./examples.rb $C > ../$@.txt
@@ -110,7 +115,7 @@ clean :
 
 bare : clean
 	mv figures/squeak-logo.pdf figures/squeak-logo.pdfSAVE
-	-rm -f ${BOOK}.pdf */*.pdf
+	-rm -f ${BOOK2}.pdf */*.pdf
 	mv figures/squeak-logo.pdfSAVE figures/squeak-logo.pdf
 
 # --------------------------------------------------------------------------------
