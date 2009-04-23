@@ -1,0 +1,309 @@
+% $Author$
+% $Date$
+% $Revision$
+%=================================================================
+\ifx\wholebook\relax\else
+% --------------------------------------------
+% Lulu:
+	\documentclass[a4paper,10pt,twoside]{book}
+	\usepackage[
+		papersize={6in,9in},
+		hmargin={.75in,.75in},
+		vmargin={.75in,1in},
+		ignoreheadfoot
+	]{geometry}
+	\input{../common.tex}
+	\pagestyle{headings}
+	\setboolean{lulu}{true}
+% --------------------------------------------
+% A4:
+%	\documentclass[a4paper,11pt,twoside]{book}
+%	\input{../common.tex}
+%	\usepackage{a4wide}
+% --------------------------------------------
+    \graphicspath{{figures/} {../figures/}}
+	\begin{document}
+	\renewcommand{\nnbb}[2]{} % Disable editorial comments
+	\sloppy
+\fi
+%=================================================================
+\chapter{Frequently Asked Questions}
+\label{app:faq}
+
+\on{These should be *real* (not invented) FAQs.
+Here are a few that I have collected.
+Check the ST lecture notes for more FAQs.
+We should also try to mine more from newbies.}
+
+%=================================================================
+\section{Getting started}
+\begin{faq}
+Where do I get the latest Squeak?
+\end{faq}
+\answer
+\url{ftp.squeak.org/current_development}
+\index{download}
+
+\begin{faq}
+Which \sq image should I use with this book?
+\end{faq}
+\answer
+We recommend that you use the image provided on the Squeak by Example web page.
+Visit \url{http://SqueakByExample.org} and look for ``Download Squeak'' in the sidebar.
+You should also be able to use most other images, but you may find that the hands-on exercises behave differently in surprising ways.
+
+%\begin{faq}
+%Where is the Squeak ``Development Image''?
+%\end{faq}
+%\answer
+%\url{www.squeaksource.com/ImageForDevelopers}
+%This is a specially-prepared image including lots of useful packages pre-installed for developers.
+
+%=================================================================
+\section{Collections}
+
+\begin{faq}
+How do I sort an \clsind{OrderedCollection}?
+\end{faq}
+\answer
+Send it the message \mthind{Collection}{asSortedCollection}.
+
+\begin{code}{@TEST}
+#(7 2 6 1) asSortedCollection --> a SortedCollection(1 2 6 7)
+\end{code}
+
+\begin{faq}
+How do I convert a collection of characters to a \clsind{String}?
+\end{faq}
+\answer
+\begin{code}{@TEST}
+String streamContents: [:str | str nextPutAll: 'hello' asSet] --> 'hleo'
+\end{code}
+
+%=================================================================
+\section{Browsing the system}
+
+% See \faqref{omnibrowser}
+
+\begin{faq}\label{faq:omnibrowser}
+The browser does not look like the one described in the book. What gives?
+\end{faq}
+\answer
+You are probably using an image in which the \ind{OmniBrowser} is installed as the default System browser.  You can change the default by clicking on the little menu icon in the top-left corner of the browser window, between the ``\textsf{X}'' and the browser label, and selecting ``Choose new default browser'' from the menu that appears. Select \ct{#Browser} to get the plain old browser.  (This preference changes the effect of the \menu{World \go open \ldots \go system browser} menu, but not what happens when you drag the \ct{Browser} icon from the \ct{Tools} flap.)
+
+\begin{faq}
+How do I search for a class?
+\end{faq}
+\answer
+\short{b} (browse) on the class name, or \short{f} in the category pane of the class browser.
+\index{keyboard shortcut!browse it}
+\index{keyboard shortcut!find ...}
+
+\begin{faq}
+How do I find/browse all sends to super?
+\end{faq}
+\answer
+The second solution is much faster:
+\begin{code}{}
+SystemNavigation default browseMethodsWithSourceString: 'super'.
+SystemNavigation default browseAllSelect: [:method | method sendsToSuper ].
+\end{code}
+\index{browsing programmatically}
+\clsindex{SystemNavigation}
+
+\begin{faq}
+How do I browse all super \subind{super}{send}{}s within a hierarchy?
+\end{faq}
+\answer
+\begin{code}{}
+browseSuperSends := [:aClass | SystemNavigation default
+	browseMessageList: (aClass withAllSubclasses gather: [ :each |
+		(each methodDict associations
+			select: [ :assoc | assoc value sendsToSuper ])
+				collect: [ :assoc | MethodReference class: each selector: assoc key ] ])
+	name: 'Supersends of ' , aClass name , ' and its subclasses'].
+browseSuperSends value: OrderedCollection.
+\end{code}
+
+\begin{faq}
+How do I find out which new methods are introduced by a class?  (I.e., not including overridden methods.)
+\end{faq}
+\answer
+Here we ask which methods are introduced by \ct{True}:
+\begin{code}{@TEST | newMethods |}
+newMethods := [:aClass| aClass methodDict keys select:
+	[:aMethod | (aClass superclass canUnderstand: aMethod) not ]].
+newMethods value: True --> an IdentitySet(#asBit)
+\end{code}
+
+\begin{faq}
+How do I tell which methods of a class are abstract?
+\end{faq}
+\answer
+\begin{code}{@TEST | abstractMethods |}
+abstractMethods :=
+	[:aClass | aClass methodDict keys select:
+		[:aMethod | (aClass>>aMethod) isAbstract ]].
+abstractMethods value: Collection --> an IdentitySet(#remove:ifAbsent: #add: #do:)
+\end{code}
+
+\begin{faq}
+How do I generate a view of the \ind{AST} of an expression?
+\end{faq}
+\answer
+Load AST from squeaksource.com. Then evaluate:
+\begin{code}{}
+(RBParser parseExpression: '3+4') explore
+\end{code}
+(Alternatively \emph{explore it}.)
+\clsindex{RBParser}
+
+\begin{faq}
+How do I find all the Traits in the system?
+\end{faq}
+\answer
+\begin{code}{}
+Smalltalk allTraits
+\end{code}
+
+\begin{faq}
+How do I find which classes use traits?
+\end{faq}
+\answer
+\begin{code}{}
+Smalltalk allClasses select: [:each | each hasTraitComposition and: [each traitComposition notEmpty ]]
+\end{code}
+% Should be:
+% Smalltalk allClasses select: [:each | each hasTraitComposition ]
+% But this is broken for some reason!
+
+%=================================================================
+\section{Using Monticello and SqueakSource}
+
+\begin{faq}
+How do I load a \ind{Squeaksource} project?
+\index{Monticello}
+\end{faq}
+\answer
+\begin{enumerate}
+  \item Find the project you want in \url{squeaksource.com}
+  \item Copy the registration code snippet
+  \item Select \menu{open \go Monticello browser}
+  \item Select \menu{+Repository \go HTTP}
+  \item Paste and accept the Registration code snippet; enter your password
+  \item Select the new repository and \menu{Open} it
+  \item Select and load the latest version
+\end{enumerate}
+
+\begin{faq}
+How do I create a SqueakSource project?
+\end{faq}
+\answer
+\begin{enumerate}
+  \item Go to \url{squeaksource.com}
+  \item Register yourself as a new member
+  \item Register a project (name = category)
+  \item Copy the Registration code snippet
+  \item \menu{open \go Monticello browser}
+  \item \menu{+Package} to add the category
+  \item Select the package
+  \item \menu{+Repository \go HTTP}
+  \item Paste and accept the Registration code snippet; enter your password
+  \item \menu{Save} to save the first version
+\end{enumerate}
+
+\begin{faq}
+How do I extend \ct{Number} with \ct{Number>>>chf} but have Monticello recognize it as being part of my \ct{Money} project?
+\end{faq}
+\answer
+Put it in a method-category named \ct{*Money}.
+Monticello gathers all methods that are in other categories named like *package and includes them in your package.
+
+%=================================================================
+\section{Tools}
+
+\begin{faq}
+How do I programmatically open the \ind{SUnit} \ind{TestRunner}?
+\end{faq}
+\answer
+Evaluate \ct{TestRunner open}.
+
+\begin{faq}
+Where can I find the \ind{Refactoring Browser}?
+\end{faq}
+\answer
+Load AST then Refactoring Engine from squeaksource.com:
+\url{www.squeaksource.com/AST}
+\url{www.squeaksource.com/RefactoringEngine}
+
+\begin{faq}
+How do I register the browser that I want to be the default?
+\end{faq}
+\answer
+Click the menu icon in the top left of the Browser window.
+
+%=================================================================
+\section{Regular expressions and parsing}
+
+\begin{faq}
+How can I work with regular expressions?
+\index{regular expression package}
+\end{faq}
+\answer
+\ifluluelse
+	{Load Vassili Bykov's RegEx package from: \\
+	\url{www.squeaksource.com/Regex.html}}
+	{Load Vassili Bykov's RegEx package from:
+	\url{www.squeaksource.com/Regex.html}}
+\index{Bykov, Vassili}
+
+\begin{faq}
+Where is the documentation for the RegEx package?
+\end{faq}
+\answer
+Look at the \menu{DOCUMENTATION} protocol of \ct{RxParser class} in the \menu{VB-Regex} category.
+
+\begin{faq}
+Are there tools for writing parsers?
+\end{faq}
+\answer
+Use \ind{SmaCC}\,---\,the Smalltalk Compiler Compiler.
+You should install at least SmaCC-lr.13.
+Load it from \url{www.squeaksource.com/SmaccDevelopment.html}.
+There is a nice tutorial online:
+\url{www.refactory.com/Software/SmaCC/Tutorial.html}
+
+\begin{faq}
+Which packages should I load from SqueakSource SmaccDevelopment to write parsers?
+\end{faq}
+\answer
+Load the latest version of \ind{SmaCCDev}{}\,---\,the runtime is already there.
+(SmaCC-Development is for \sq 3.8)
+
+%=================================================================
+\ifx\wholebook\relax\else\end{document}\fi
+%=================================================================
+
+%\begin{faq}
+%How do I run a headless image with a file argument?
+%\end{faq}
+%\answer
+%Right now you can't do it with the MacOSX VM.
+
+%\begin{faq}
+%How do I find out which methods access the Smalltalk dictionary?
+%\end{faq}
+%\answer
+%???
+
+%\begin{faq}
+%How do I get the tree view of an AST?
+%\end{faq}
+%\answer
+%???
+
+%\begin{faq}
+%How do I browse all references to a given class?
+%\end{faq}
+%\answer
+%???

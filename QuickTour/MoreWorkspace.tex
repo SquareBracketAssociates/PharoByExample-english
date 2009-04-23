@@ -1,0 +1,164 @@
+% $Author$
+% $Date$
+% $Revision$
+%=================================================================
+\ifx\wholebook\relax\else
+% --------------------------------------------
+% Lulu:
+	\documentclass[a4paper,10pt,twoside]{book}
+	\usepackage[
+		papersize={6in,9in},
+		hmargin={.75in,.75in},
+		vmargin={.75in,1in},
+		ignoreheadfoot
+	]{geometry}
+	\input{../common.tex}
+	\pagestyle{headings}
+	\setboolean{lulu}{true}
+% --------------------------------------------
+% A4:
+%	\documentclass[a4paper,11pt,twoside]{book}
+%	\input{../common.tex}
+%	\usepackage{a4wide}
+% --------------------------------------------
+    \graphicspath{{figures/} {../figures/}}
+	\begin{document}
+	\renewcommand{\nnbb}[2]{} % Disable editorial comments
+	\sloppy
+\fi
+%=================================================================
+\newcommand{\clover}{
+\raisebox{-0.6ex}[0pt][0pt]{\includegraphics[width=1.4em]{cloverleafKey}}}
+%=================================================================
+{More on Workspaces}
+
+\on{I feel most of this stuff is inappropriate for the Quick Start chapter.
+Maybe some can be recycled for a later chapter ...}
+
+Click the mouse button twice without moving it; in \Squeak, two successive clicks in the same spot is regarded as a double-click, regardless of how long a time elapses between the clicks. 
+Experiment and find out what double-click does when the cursor is in the middle of a word, at the beginning of a line, at the beginning of the workspace, or after quotes, brackets or parentheses? (The bracket/quote feature will come in handy when you need to match nested brackets and parentheses when you are writing code.) Bring up the yellow button menu and practice using copy, cut and paste.  
+Copy and paste will also work between \Squeak and other applications.
+
+``Command keys'' can be used as shortcuts keys for copy, cut, and paste, as well as for many other editing operations.
+In this book, we will write command-\ct{c} to mean that you type \ct{c} while holding down the command shortcut key. 
+However, the actual key that you press to get a shortcut depends on your operating system. On the Macintosh, hold down the \clover{} key. 
+On a Windows PC, hold down the \ct{Alt} key.  On Linux, \ab{do what?}
+
+%	
+%	\begin{figure}[ht]
+%	\centerline {\includegraphics[width=0.7\textwidth]{WorkspaceWithText}}
+%	\caption{A workspace containing some text.\label{fig:workspacetext}}
+%	%	\end{figure}
+%	\ab{I commented this out because it does not appear to be referenced.  
+%	Also, we have not yet told the reader how to make text BIG
+
+Some command key shortcuts are written with a capital letter. For example, command-\ct{T} inserts the text \ct{ifTrue:}. To type these capitalized shortcuts you can hold down the shift and the command keys while you type \ct{t}.  (On the Macintosh, you can more conveniently hold down ctrl while you type \ct{t}).  The exact behavior of these shortcuts depends on the keyboard preferences that you choose.
+\on{Too much detail}
+
+\tabref{GeneralEditingCommands} shows some of the more commonly used editing shortcuts. Note that packages such as KeyMapping\sd{not sure} can be loaded into your image to change these settings. 
+
+\on{BORING -- move this elsewhere. Focus on ``do it'', ``accept it'' etc.}
+
+\begin{table}[htbp]
+   \centering
+   \topcaption{General Editing Commands
+   \label{tab:GeneralEditingCommands}} 	% requires the topcapt package
+   \begin{tabular}{cp{5in}c} 			% Column formatting, @{} suppresses leading/trailing space
+      \toprule
+      key    & description & notes\\
+      \midrule
+      z      & Undo &  \\
+      x      & Cut    &  \\
+      c      & Copy  &  \\
+      v      & Paste  &  \\
+      a      & Select All  &  \\
+      D      & Duplicate.  Paste the current selection over the prior selection, if they don't overlap & 1 \\
+      e      & Exchange. Exchange the contents of current selection with the contents of the prior selection & 1 \\
+      y      & Swap. If there is no selection, swap the characters on either side of the insertion cursor, and advance the cursor. If the selection has 2 characters, swap them, and advance the cursor &  \\
+      w     & Delete preceding word   &   \\
+      \midrule
+      \multicolumn{3}{p{6in}}{${}^{1}$ These commands are a bit unusual: they concern and affect not only the current selection, but also the immediately prior selection.} \\
+      \bottomrule
+   \end{tabular}
+\end{table}
+
+
+%-----------------------------------------------------------------
+\paragraph{Scrolling.} Using copy and paste, type in more text than will fit in the window. The scroll bar works as you expect; whether scroll bars are on the right or the left, and whether they flop out when they are needed or are permanently on view, can be controlled by preferences. (\menu{World menu \go Preferences \& Services \go 1. Preference Browser}). 
+Notice that there is a tiny menu icon at the top of the scroll bar. Press the red mouse button here to get the yellow button menu that applies to the scrolling text pane. This is a nice shortcut, especially when using a stylus or a one-button mouse.
+
+
+
+%-----------------------------------------------------------------
+\paragraph{Undo, Search.} Experiment with \menu{undo} to undo the last change. Experiment with searching the workspace for a string. Use the shortcut keys in \tabref{Search} as well as the menu items.
+
+\begin{table}[htbp]
+   \centering
+   \topcaption{Search and Replace Actions
+   \label{tab:Search}} 				% requires the topcapt package
+   \begin{tabular}{cp{5in}c} 		% Column formatting, @{} suppresses leading/trailing space
+      \toprule
+      key    & description &\\
+      \midrule
+      f      & Find. Set the search string from a string entered in a dialog. Then, advance the cursor to the next occurrence of the search string.
+&  \\
+  
+
+g & Find again. Advance the cursor to the next occurrence of the search string. & \\
+
+h & Set Search String from the selection. & \\
+
+j & Replace the next occurrence of the search string with the last replacement made. & \\
+
+A & Advance argument. Advance the cursor to the next keyword argument position, or to the end of string if no keyword arguments remain. & \\
+
+J & Replace all occurrences of the search string with the last replacement made. & \\
+
+S & Replace all occurrences of the search string with the present change text. & \\
+
+      \bottomrule
+   \end{tabular}
+\end{table}
+
+%-----------------------------------------------------------------
+\paragraph{Accept, Cancel and Confirmers.}
+Figure out how the accept and cancel commands work; their shortcut keys are in \tabref{Accept}.
+Workspaces keep a stable copy of their contents; \menu{accept} writes what is on the screen into this copy.
+Try making some changes to a workspace. \menu{Cancel} takes the workspace back to the last version saved by \menu{accept}. Do an \menu{accept} and then close the workspace.
+In another workspace, make some changes without accepting them, and then try to close the workspace. A confirmer should appear; try ignoring the question? What happens?
+
+\begin{table}[htbp]
+   \centering
+   \topcaption{Accept and Cancel
+   \label{tab:Accept}} 				% requires the topcapt package
+   \begin{tabular}{cp{5in}c} 		% Column formatting, @{} suppresses leading/trailing space
+      \toprule
+      key    & description &\\
+      \midrule
+l & Cancel (also "revert"). Cancel all edits made since the pane was opened or since the last save. & \\
+s & Accept (also "save"). Save the changes made in the current pane. & \\
+o & Spawn. Open a new window containing the present contents of this pane, and then reset this window to its last saved state (that is, cancel this window). & \\
+
+      \bottomrule
+   \end{tabular}
+\end{table}
+
+\begin{table}[htbp]
+   \centering
+   \topcaption{Common Actions
+   \label{tab:Actions}} 				% requires the topcapt package
+   \begin{tabular}{cp{5in}c} 			% Column formatting, @{} suppresses leading/trailing space
+      \toprule
+      key    & description &\\
+      \midrule
+      d      & Do ``it'' (where ``it'' is expected to be a \Squeak expression) &  \\
+      i      & Inspect ``it'': evaluate ``it'' and open an inspector on the result. (``it'' is a \Squeak expression) Exception: in a method list pane, i opens an inheritance browser.    &  \\
+      p      & Print ``it'': evaluate ``it'' and insert the result immediately after ``it'' (``it'' is a \Squeak expression)  &  \\
+      I      & Explore ``it'': like inspect, but open the object explorer instead of the inspector.  &  \\ 
+      \bottomrule
+   \end{tabular}
+\end{table}
+
+%=================================================================
+\ifx\wholebook\relax\else\end{document}\fi
+%=================================================================

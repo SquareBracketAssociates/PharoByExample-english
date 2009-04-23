@@ -1,0 +1,756 @@
+% $Author$
+% $Date$
+% $Revision$
+%=================================================================
+\ifx\wholebook\relax\else
+% --------------------------------------------
+% Lulu:
+	\documentclass[a4paper,10pt,twoside]{book}
+	\usepackage[
+		papersize={6in,9in},
+		hmargin={.75in,.75in},
+		vmargin={.75in,1in},
+		ignoreheadfoot
+	]{geometry}
+	\input{../common.tex}
+	\pagestyle{headings}
+	\setboolean{lulu}{true}
+% --------------------------------------------
+% A4:
+%	\documentclass[a4paper,11pt,twoside]{book}
+%	\input{../common.tex}
+%	\usepackage{a4wide}
+% --------------------------------------------
+    \graphicspath{{figures/} {../figures/}}
+	\begin{document}
+	\renewcommand{\nnbb}[2]{} % Disable editorial comments
+	\sloppy
+\fi
+%=================================================================
+\chapter{A first application}
+\label{cha:firstApp}
+
+In this chapter, we will develop a simple game: \ind{Quinto}. 
+Along the way we will demonstrate most of the tools that \squeak programmers use to construct and debug their programs, and show how programs are exchanged with other developers. We will see the system browser, the object inspector, the debugger and the \ind{Monticello} \ind{package} browser. 
+Development in Smalltalk is efficient: you will find that you spend far more time actually writing code and far less managing the development process. 
+This is partly because the Smalltalk language is very simple, and partly because the tools that make up the programming environment are very well integrated with the language.
+
+%=================================================================
+\section{The Quinto game}
+
+% DON'T USE WRAPFIGURE CLOSE TOO A PAGE BREAK!!! (ON)
+%\begin{wrapfigure}[13]{r}{0.35\linewidth}%
+%	\vskip -\baselineskip
+%	\centerline{\includegraphics[width=.8\linewidth]{GameBoard}}
+%	\caption{The Quinto game board. The user has just clicked the mouse as shown by the cursor.
+%	\label{fig:gameBoard}}
+%\end{wrapfigure}
+
+\begin{figure}[ht]
+	\vskip -\baselineskip
+	\centerline{\includegraphics[width=.3\linewidth]{GameBoard}}
+	\caption{The Quinto game board. The user has just clicked the mouse as shown by the cursor.
+	\label{fig:gameBoard}}
+\end{figure}
+
+To show you how to use \squeak's programming tools, we will build a simple game called \emph{Quinto}.  The game board is shown in \figref{gameBoard}; it consists of rectangular array of light yellow \emph{cells}.  When you click on one of the cells with the mouse, the four surrounding cells turn blue.  Click again, and they toggle back to light yellow.  The object of the game is to turn blue as many cells as possible.
+
+The Quinto game shown in \figref{gameBoard} is made up of two kinds of objects: the game board itself, and 100 individual cell objects.  The \squeak code to implement the game will contain two classes: one for the game and one for the cells.
+We will now show you how to define these classes using the \squeak programming tools.
+
+%=================================================================
+\section{Creating a new class Category}
+
+We have already seen the \ind{system browser} in \charef{quick}, where we learned how to navigate to classes and methods, and saw how to define new methods.
+Now we will see how to create system categories and classes.
+\seeindex{system category}{category}
+\seeindex{class category}{system category}
+\index{category!creating}
+
+\dothis{Open a system browser and yellow-click in the category pane.
+Select \menu{add item \ldots}.}
+
+\begin{figure}[htb]
+\begin{minipage}[b]{0.48\textwidth}
+\ifluluelse
+	{\centerline {\includegraphics[width=0.9\textwidth]{AddCategory}}}
+	{\centerline {\includegraphics[scale=0.7]{AddCategory}}}
+	\caption{Adding a system category.
+	\label{fig:addCategory}}
+\end{minipage}
+\hfill
+\begin{minipage}[b]{0.48\textwidth}
+\ifluluelse
+	{\centerline {\includegraphics[width=0.9\textwidth]{ClassTemplate}}}
+	{\centerline {\includegraphics[scale=0.7]{ClassTemplate}}}
+	\caption{The class-creation Template.
+	\label{fig:classTemplate}}
+\end{minipage}
+\end{figure}
+
+Type the name of the new category (we will use \scat{SBE-Quinto}) in the dialog box and click \menu{accept} (or just press the return key); the new category is created, and positioned at the end of the category list.
+If you selected an existing category first, then the new category will be positioned immediately ahead of the selected one.
+
+%=================================================================
+\section{Defining the class SBECell}
+
+As yet there are  of course no classes in the new category. However, the main editing pane displays a template to make it easy to create a new class (see \figref{classTemplate}).
+
+This template shows us a \st expression that sends a message to a class called \ct{Object}, asking it to create a subclass called \ct{NameOfSubClass}.  The new class has no variables, and should belong to the category \scat{SBE-Quinto}.
+
+We simply modify the template to create the class that we really want.
+
+\dothis{Modify the class creation template as follows:}
+\begin{itemize}
+  \item Replace \clsind{Object} by \clsind{SimpleSwitchMorph}.
+  \item Replace \ct{NameOfSubClass} by \clsind{SBECell}.
+  \item Add \ct{mouseAction} to the list of instance variables.
+\end{itemize}
+The result should look like \clsref{firstClassDef}.
+
+\begin{classdef}[firstClassDef]{Defining the class \ct| SBECell|}
+SimpleSwitchMorph subclass: #SBECell
+   instanceVariableNames: 'mouseAction'
+   classVariableNames: ''
+   poolDictionaries: ''
+   category: 'SBE-Quinto'
+\end{classdef}
+\index{system browser!defining a class}
+\index{class!creation}
+\index{Morphic}
+
+This new definition consists of a \st expression that sends a message to the existing class \ct{SimpleSwitchMorph}, asking it to create a subclass called \ct{SBECell}.
+(Actually, since \ct{SBECell} does not exist yet, we passed as an argument the \emphind{symbol} \ct{#SBECell} which stands for the name of the class to create.)
+We also tell it that instances of the new class should have a \ct{mouseAction} instance variable, which we will use to define what action the cell should take if the mouse should click over it.
+
+\emph{At this point you still have not created anything.}
+Note that the border of the class template pane has changed to red (\figref{acceptClassDef}).
+This means that there are \emph{unsaved changes}.
+To actually send this message, you must \menu{accept} it.
+
+\begin{figure}[h!t]
+\ifluluelse
+	{\centerline {\includegraphics[width=\textwidth]{AcceptClassDef}}}
+	{\centerline {\includegraphics[scale=0.7]{AcceptClassDef}}}
+\caption{The class-creation Template.
+\label{fig:acceptClassDef}}
+\end{figure}
+
+\dothis{Accept the new class definition.}
+Either yellow-click and select \menu{accept}, or use the shortcut \short{s} (for ``save'').
+The message will be sent to \ct{SimpleSwitchMorph}, which will cause the new class to be compiled.
+\index{yellow button}
+\index{keyboard shortcut!accept}
+
+Once the class definition is accepted, the class will be created and appear in the classes pane of the browser (\figref{SBECell}).
+The editing pane now shows the class definition, and a small pane below it will remind you to write a few words describing the purpose of the class. This is called a \emph{class comment}, and it is quite important to write one that will give other programmers a high-level overview of the purpose of this class.
+Smalltalkers put a very high value on the readability of their code, and detailed comments in methods are unusual: the philosophy is that the code should speak for itself. (If it doesn't, you should refactor it until it does!) A class \subind{class}{comment} need not contain a detailed description of the class, but a few words describing its overall purpose are vital if programmers who come after you are to know whether to spend time looking at this class.
+\index{refactoring}
+
+\dothis{Type a class comment for \ct{SBECell} and accept it; you can always improve it later.}
+
+\begin{figure}[h!t]
+\ifluluelse
+	{\centerline {\includegraphics[width=\textwidth]{SBECell}}}
+	{\centerline {\includegraphics[scale=0.7]{SBECell}}}
+\caption{The newly-created class \ct{SBECell}\label{fig:SBECell}}
+\end{figure}
+
+%=================================================================
+\section{Adding methods to a class}
+
+Now let's add some methods to our class.
+
+\dothis{Select the protocol \prot{-{}-all-{}-} in the protocol pane.}
+You will see a template for method creation in the editing pane.
+Select it, and replace it by the text of \mthref{scbecellinitialize}.
+\protindex{all}
+\index{method!creation}
+\index{system browser!defining a method}
+
+\needlines{10}
+\begin{numMethod}[scbecellinitialize]{Initializing instances of \ct{SBECell}}
+initialize
+   super initialize.
+   self label: ''.
+   self borderWidth: 2.
+   bounds := 0@0 corner: 16@16.
+   offColor := Color paleYellow.
+   onColor := Color paleBlue darker.
+   self useSquareCorners.
+   self turnOff
+\end{numMethod}
+\index{initialization}
+
+\noindent
+Note that the characters \ct{''} on line 3 are two separate single quotes with nothing between them, not a double quote!  \ct{''} denotes the empty string.
+
+\dothis{\menu{Accept} this method definition.}
+
+What does the above code do?  We won't go into all of the details here (that's what the rest of the book is for!), but we will give you a quick preview.  Let's take it line by line.
+
+Notice that the method is called \mthind{SBECell}{initialize}.
+The name is very significant!
+By convention, if a class defines a method named \ct{initialize}, it will be called right after the object is created.
+So, when we evaluate \ct{SBECell new}, the message \ct{initialize} will be sent automatically to this newly created object.
+Initialize methods are used to set up the state of objects, typically to set their instance variables; this is exactly what we are doing here.
+\seeindex{Object!initialization}{initialization}
+\index{initialization}
+
+The first thing that this method does (line 2) is to execute the \ct{initialize} method of its superclass, \ct{SimpleSwitchMorph}.
+The idea here is that any inherited state will be properly initialized by the \ct{initialize} method of the superclass.
+It is always a good idea to initialize inherited state by sending \ct{super initialize} before doing anything else; we don't know exactly what \ct{SimpleSwitchMorph}'s \ct{initialize} method will do, and we don't care, but it's a fair bet that it will set up some instance variables to hold reasonable default values, so we had better call it, or we risk starting in an unclean state.
+
+The rest of the method sets up the state of this object.
+Sending \ct{self label: ''}, for example, sets the label of this object to the empty string.
+\pvindex{self}
+
+The expression \ct{0@0 corner: 16@16} probably needs some explanation. 
+\lct{0@0} represents a \clsind{Point} object with $x$ and $y$ coordinates both set to 0.
+In fact, \ct{0@0} sends the message \ct{@}
+% Yuck... the following should be \mthind{Number}{@} 
+%%% THIS IS BROKEN -- don't do it! (on)
+%\def\atsign{\textsf{@}}%
+%{\makeatletter
+%	\protected@write\@indexfile{}%
+%    {\string\indexentry{\string\atsign|see{Number, \string\atsign}}{\thepage}}%
+%	\protected@write\@indexfile{}%
+%    {\string\indexentry{Number!\string\atsign|hyperpage}{\thepage}}%
+%	\makeatother}
+to the number \ct{0} with argument \ct{0}.
+The effect will be that the number \ct{0} will ask the \ct{Point} class to create a new instance with coordinates (0,0).
+Now we send this newly created point the message \ct{corner: 16@16}, which causes it to create a \clsind{Rectangle} with corners \ct{0@0} and \ct{16@16}.
+This newly created rectangle will be assigned to the \ct{bounds} variable, inherited from the superclass.
+
+Note that the origin of the \sq screen is the \emph{top left}, and the $y$ coordinate increases \emph{downwards}.
+
+The rest of the method should be self-explanatory.
+Part of the art of writing good \st code is to pick good method names so that \st code can be read like a kind of pidgin English.
+You should be able to imagine the object talking to itself and saying ``\ct{Self use square corners!}'', ``\ct{Self turn off!}''.
+
+%=================================================================
+\section{Inspecting an object}
+
+You can test the effect of the code you have written by creating a new \ct{SBECell} object and inspecting it.
+
+\dothis{Open a workspace. Type the expression \ct{SBECell new} and \menu{inspect it}.}
+
+\begin{figure}[htbp]
+   \centering
+   \includegraphics[scale=0.7]{SBECellInspector} 
+   \caption{The inspector used to examine a SBECell object.\label{fig:SBECellInspector}}
+\end{figure}
+
+The left-hand pane of the \ind{inspector} shows a list of instance variables; if you select one (try \mbox{\ct{bounds}),} the value of the \ind{instance variable} is shown in the right pane.  You can also use the inspector to change the value of an instance variable.
+
+\dothis{Change the value of \ct{bounds} to \ct{0@0 corner: 50@50} and \menu{accept} it.}
+
+The bottom pane of the inspector is a mini-workspace.  It's useful because in this workspace the pseudo-variable \self is bound to the object being inspected. 
+
+\dothis{Type the text \ct{self openInWorld} in the bottom pane and \menu{do it}.}
+The cell should appear at the top left-hand corner of the screen, indeed, exactly where its \ct{bounds} say that it should appear.
+Blue-click on the cell to bring up the morphic \subind{Morphic}{halo}.
+Move the cell with the brown (next to top-right) handle and resize it with the yellow (bottom-right) handle.
+Notice how the bounds reported by the inspector also change.
+
+\begin{figure}[htbp]
+\centering
+\ifluluelse
+	{\includegraphics[width=\textwidth]{SBECellResize} }
+	{\includegraphics[scale=0.7]{SBECellResize} }
+\caption{Resizing the cell.\label{fig:cellresize}}
+\end{figure}
+
+\dothis{Delete the cell by clicking on the \ct{x} in the pink handle.}
+
+
+%=================================================================
+\section{Defining the class SBEGame}
+
+Now let's create the other class that we need for the game, which we will call \clsind{SBEGame}.
+
+\dothis{Make the class definition template visible in the browser main window.}
+Do this by clicking twice on the name of the already-selected class category, or by displaying the definition of \ct{SBECell} again (by clicking the \button{instance} button.)
+Edit the code so that it reads as follows, and \menu{accept} it.
+
+\needlines{6}
+\begin{classdef}[sbegame]{Defining the \ct{SBEGame} class}
+BorderedMorph subclass: #SBEGame
+   instanceVariableNames: ''
+   classVariableNames: ''
+   poolDictionaries: ''
+   category: 'SBE-Quinto'
+\end{classdef}
+
+Here we subclass \clsind{BorderedMorph}; \clsind{Morph} is the superclass of all of the graphical shapes in \squeak, and (surprise!) a \ct{BorderedMorph} is a \ct{Morph} with a border.  
+We could also insert the names of the instance variables between the quotes on the second line, but for now, let's just leave that list empty.
+
+Now let's define an \mthind{SBEGame}{initialize} method for \ct{SBEGame}.
+
+\dothis{Type the following into the browser as a method for \ct{SBEGame} and try to \menu{accept} it:}
+
+\begin{numMethod}[sbegameinitialize]{Initializing the game}
+initialize
+   | sampleCell width height n |
+   super initialize.
+   n := self cellsPerSide.
+   sampleCell := SBECell new.
+   width := sampleCell width.
+   height := sampleCell height.
+   self bounds: (5@5 extent: ((width*n) @(height*n)) + (2 * self borderWidth)).
+   cells := Matrix new: n tabulate: [ :i :j | self newCellAt: i at: j ].
+\end{numMethod}
+
+%\sd{it would be nicer if we would not have to create an instance of SBECell for nothing}
+%\on{yes}
+
+\squeak will complain that it doesn't know the meaning of some of the terms.
+\squeak tells you that it doesn't know of a message \ct{cellsPerSide}, and suggests a number of corrections, in case it was a spelling mistake.
+
+
+\begin{figure}[htb]
+\begin{minipage}{0.34\textwidth}
+	\centering
+	\ifluluelse
+		{\includegraphics[width=\textwidth]{UnknownSelector}}
+		{\includegraphics[scale=0.7]{UnknownSelector}}
+	\caption{\squeak detecting an unknown selector.\label{fig:unknownSelector}}
+\end{minipage}
+\hfill
+\begin{minipage}{0.64\textwidth}
+	\centering
+	\ifluluelse
+		{\includegraphics[width=\textwidth]{DeclareInstanceVar}}
+		{\includegraphics[scale=0.7]{DeclareInstanceVar}}
+	\caption{Declaring a new instance variable.\label{fig:declareInstance}}
+\end{minipage}
+\end{figure}
+
+But \ct{cellsPerSide} is not a mistake\,---\,it is just a method that we haven't yet defined\,---\,we will do so in a minute or two.
+
+\dothis{So just select the first item from the menu, which confirms that we really meant \ct{cellsPerSide}.}
+
+Next, \squeak will complain that it doesn't know the meaning of \ct{cells}.  It offers you a number of ways of fixing this.
+
+\dothis{Choose \menu{declare instance} because we want \ct{cells} to be an instance variable.}
+Finally, \squeak will complain about the message \ct{newCellAt:at:} sent on the last line; this is also not a mistake, so confirm that message too.
+\index{on the fly variable definition}
+\index{instance variable definition} 
+
+If you now look at the class definition once again (which you can do by clicking on the \button{instance} button), you will see that the browser has modified it to include the instance variable \ct{cells}.
+
+Let's look at this \ct{initialize} method.
+The line \ct{| sampleCell width height n |}  declares 4 temporary variables. They are called temporary variables because their scope and lifetime are limited to this method.  Temporary variables with explanatory names are helpful in making code more readable.  Smalltalk has no special syntax to distinguish constants and variables, and in fact all four of these ``variables'' are really constants. 
+Lines 4--7 define these constants.
+
+How big should our game board be?  Big enough to hold some integral number of cells, and big enough to draw a border around them.
+How many cells is the right number?  5? 10? 100? We don't know yet, and if we did, we would probably change our minds later.  So we delegate the responsibility for knowing that number to another method, which we will call \ct{cellsPerSide}, and which we will write in a minute or two.
+It's because we are sending the \ct{cellsPerSide} message before we define a method with that name that \squeak asked us to ``confirm, correct, or cancel'' when we accepted the method body for \ct{initialize}.
+Don't be put off by this: it is actually good practice to write in terms of other methods that we haven't yet defined.
+Why?  Well, it wasn't until we started writing the \ct{initialize} method that we realized that we needed it, and at that point, we can give it a meaningful name, and move on, without interrupting our flow.
+ 
+The fourth line uses this method: 
+the Smalltalk \ct{self cellsPerSide} sends the message \ct{cellsPerSide} to \pvind{self}, i.e., to this very object.  
+The response, which will be the number of cells per side of the game board, is assigned to \ct{n}.
+
+The next three lines create a new \ct{SBECell} object, and assign its width and height to the appropriate temporary variables. 
+
+%The eighth line sends the message \ct{bounds:} to \self.
+%\ct{bounds:} is a method that we inherit from our superclass; it is used to define the space on the screen that this Morph will occupy.  
+%The single colon (\ct{:}) at the end of the name says that \ct{bounds:} expects a single parameter, which should be a rectangle object.
+Line 8 sets the \ct{bounds} of the new object.
+Without worrying too much about the details just yet, just believe us that the expression in parentheses creates a square with its origin (\ie its top-left corner) at the point (5,5) and its bottom-right corner far enough away to allow space for the right number of cells.
+
+The last line sets the \ct{SBEGame} object's instance variable \ct{cells} to a newly created \clsind{Matrix} with the right number of rows and columns.   We do this by sending the message \ct{new:tabulate:} to the \ct{Matrix} class (classes are objects too, so we can send them messages).  We know that \mthind{Matrix class}{new:tabulate:} takes two arguments because it has two colons (\ct{:}) in its name.   The arguments go right after the colons.
+If you are used to languages that put all of the arguments together inside parentheses, this may seem weird at first.  Don't panic, it's only syntax!
+It turns out to be a very good syntax because the name of the method can be used to explain the roles of the arguments.  For example, it is pretty clear that \ct{Matrix rows: 5 columns: 2} has 5 rows and 2 columns, and not 2 rows and 5 columns.
+\cmindex{Matrix class}{rows:columns:}
+
+\ct{Matrix new: n tabulate: [ :i :j | self newCellAt: i at: j ]} creates a new \ct{n}{$\times$}\ct{n} matrix and initializes its elements.  The initial value of each element will depend on its coordinates.  The \ct{(i,j)}\textsuperscript{th} element will be initialized to the result of evaluating \ct{self newCellAt: i at: j}.  
+
+That's \ct{initialize}.  When you accept this message body, you might want to take the opportunity to pretty-up the formatting.  You don't have to do this by hand: from the yellow-button menu select \menu{more \ldots \go prettyprint}, and the browser will do it for you\damien{this didn't do anything to me}.  You have to \menu{accept} again after you have \subind{method}{pretty-print}{}ed a method, or of course you can \subind{keyboard shortcut}{cancel} 
+(\short{l}\,---\,that's a lower-case letter \emph{L}) if you don't like the result.
+Alternatively, you can set up the browser to use the pretty-printer automatically whenever it shows you code: use the the right-most button in the button bar to adjust the view.
+\seeindex{pretty-print}{method}
+
+If you find yourself using \menu{more\,\ldots} a lot, it's useful to know that you can hold down the {\sc shift} key when you click to directly bring up the \menu{more \ldots} menu.
+
+%=================================================================
+\section{Organizing methods into protocols}
+
+Before we define any more methods, let's take a quick look at the third pane at the top of the browser.
+In the same way that the first pane of the browser lets us categorize classes so we are not overwhelmed by a very long list of class names in the second pane, so the third pane lets us categorize methods so that we are not overwhelmed by a very long list of method names in the fourth pane.   
+These categories of methods are called ``protocols''.
+\index{protocol}
+
+If there are only a few methods in a class, the extra level of hierarchy provided by protocols is not really necessary.
+This is why the browser also offers us the \prot{-{}-all-{}-} virtual protocol, which, you will not be surprised to learn, contains all of the methods in the class.
+\protindex{all}
+
+\begin{figure}[htbp]
+   \centering
+   \includegraphics[scale=0.7]{Categorize} 
+   \caption{Categorize all uncategorized methods.\label{fig:categorize}}
+\end{figure}
+
+If you have followed along with this example, the third pane may well contain the protocol \protind{as yet unclassified}.
+
+\dothis{Select the \ind{yellow button} menu item \menu{categorize all uncategorized} to fix this, and move the \ct{initialize} methods to a new protocol called \protind{initialization}.}
+How does \squeak{} know that this is the right protocol?  Well, in general \squeak{} can't know, but in this case there is also an \ct{initialize} method in a superclass, and \squeak assumes that our \ct{initialize} method should go in the same category as the one that it overrides.
+\index{method!categorize}
+
+You may find that \squeak has already put your \ct{initialize} method into the \protind{initialization} protocol.
+If so, it's probably because you have loaded a package called \ct{AutomaticMethodCategorizer} into your image.
+
+\paragraph{A typographic convention.} Smalltalkers frequently use the notation ``\verb|>>|'' to identify the class to which a method belongs, so, for example, the \ct{cellsPerSide} method in class \ct{SBEGame} would be referred to as \ct{SBEGame>>cellsPerSide}.
+To indicate that this is \emph{not} \st syntax, we will use the special symbol \ct{>>>} instead, so this method will appear in the text as \ct{SBEGame>>>cellsPerSide}
+\cmindex{Behavior}{>>}
+
+From now on, when we show a method in this book, we will write the name of the method in this form.  Of course, when you actually type the code into the browser, you don't have to type the class name or the \ct{>>>}; instead, you just make sure that the appropriate class is selected in the class pane.  
+
+Now let's define the other two methods that are used by the \ct{SBEGame>>>initialize} method. Both of them can go in the \prot{initialization} protocol.
+
+\begin{method}[sbegamecellsperside]{A constant method.}
+SBEGame>>>cellsPerSide
+   "The number of cells along each side of the game"
+   ^ 10
+\end{method}
+\cmindex{SBEGame}{cellsPerSide}
+\index{constant methods}
+
+This method could hardly be simpler: it answers the constant 10.  One advantage of representing constants as methods is that if the program evolves so that the constant then depends on some other features, the method can be changed to calculate this value.
+
+\needlines{10}
+\begin{method}[newCellAt:at:]{An initialization helper method}
+SBEGame>>>newCellAt: i at: j
+   "Create a cell for position (i,j) and add it to my on-screen
+   representation at the appropriate screen position.  Answer the new cell"
+   | c origin |
+   c := SBECell new.
+   origin := self innerBounds origin.
+   self addMorph: c.
+   c position: ((i - 1) * c width) @ ((j - 1) * c height) + origin.
+   c mouseAction: [self toggleNeighboursOfCellAt: i at: j].
+\end{method}
+\cmindex{SBEGame}{newCellAt:at:}
+%   ^ c      "omit this final line to create a bug"
+
+\dothis{Add the methods \ct{SBEGame>>>cellsPerSide} and \ct{SBEGame>>>newCellAt:at:}.}
+Confirm the spelling of the new selectors \ct{toggleNeighboursOfCellAt:at:} and \ct{mouseAction:}.
+
+\Mthref{newCellAt:at:} answers a new SBECell, specialized to position \ct{(i, j)} in the \clsind{Matrix} of cells.
+The last line defines the new cell's \ct{mouseAction} to be the \emph{block}
+\mbox{\lct{[self toggleNeighboursOfCellAt: i at: j ]}.}
+ In effect, this defines the callback behaviour to perform when the mouse is clicked.
+The corresponding method also needs to be defined.
+
+\begin{method}[toggleNeighboursOfCellAt:at:]{The callback method}
+SBEGame>>>toggleNeighboursOfCellAt: i at: j
+   (i > 1) ifTrue: [ (cells at: i - 1 at: j ) toggleState].
+   (i < self cellsPerSide) ifTrue: [ (cells at: i + 1 at: j) toggleState].
+   (j > 1) ifTrue: [ (cells at: i  at: j - 1) toggleState].
+   (j < self cellsPerSide) ifTrue: [ (cells at: i at: j + 1) toggleState].
+\end{method}
+\cmindex{SBEGame}{toggleNeighboursOfCellAt:at:}
+
+\Mthref{toggleNeighboursOfCellAt:at:} toggles the state of the four cells to the north, south, west and east of cell (\ct{i}, \ct{j}).  The only complication is that the board is finite, so we have to make sure that a neighboring cell exists before we toggle its state.
+
+\dothis{Place this method in a new protocol called \prot{game logic}.\damien{this has to be explained. There were no explications before on how to create a new protocol.}}
+To move the method, you can simply click on its name and drag it to the newly-created protocol (\figref{dragMethod}).
+
+\begin{figure}[htbp]
+   \centering
+   \ifluluelse
+		{\includegraphics[width=\textwidth]{DragMethod} }
+		{\includegraphics[scale=0.7]{DragMethod} }
+   \caption{Drag a method to a protocol.\label{fig:dragMethod}}
+\end{figure}
+
+To complete the Quinto game, we need to define two more methods in class \ct{SBECell} to handle mouse events.
+\begin{method}[mouseAction:]{A typical setter method}
+SBECell>>>mouseAction: aBlock
+   ^ mouseAction := aBlock
+\end{method}
+\cmindex{SBECell}{mouseAction:}
+
+\Mthref{mouseAction:} does nothing more than set the cell's \ct{mouseAction} variable to the argument, and then answers the new value.
+Any method that \emph{changes} the value of an instance variable in this way is called a \emph{setter method}; a method that \emph{answers} the current value of an instance variable is called a \emph{getter method}.
+\seeindex{setter method}{accessor}
+\seeindex{getter method}{accessor}
+
+If you are used to getters and setters in other programming languages, you might expect these methods to be called \ct{setmouseAction} and \ct{getmouseAction}.
+The \st convention is different.
+A getter always has the same name as the variable it gets, and a setter is named similarly, but with a trailing ``\ct{:}'', hence \ct{mouseAction} and \ct{mouseAction:}.
+
+Collectively, setters and getters are called  \emphind{accessor} methods, and by convention they should be placed in the \protind{accessing} protocol.
+In Smalltalk, \emph{all} instance variables are private to the object that owns them, so the only way for another object to read or write those variables in the Smalltalk language is through accessor methods like this one\footnote{In fact, the instance variables can be accessed in subclasses too.}.
+
+\dothis{Go to the class \ct{SBECell}, define \ct{SBECell>>>mouseAction:} and put it in the \prot{accessing} protocol.}
+
+Finally, we need to define a method \ct{mouseUp:}; this will be called automatically by the GUI framework if the mouse button is released while the mouse is over this cell on the screen.
+
+\begin{method}[sbecellmouseup]{An event handler}
+SBECell>>>mouseUp: anEvent
+   mouseAction value
+\end{method}
+\cmindex{SBECell}{mouseUp:}
+
+\dothis{Add the method \ct{SBECell>>>mouseUp:} and then \menu{categorize all uncategorized} methods.}
+\index{method!categorize}
+
+What this method does is to send the message \ct{value} to the object stored in the instance variable \ct{mouseAction}. 
+Recall that in \ct{SBEGame>>>newCellAt: i at: j} we assigned the following code fragment to \ct{mouseAction}:
+
+\ct{[self toggleNeighboursOfCellAt: i at: j ]} 
+
+\noindent
+Sending the \ct{value} message causes this code fragment to be evaluated, and consequently the state of the cells will toggle.
+
+%=================================================================
+\section{Let's try our code}
+
+That's it: the Quinto game is complete!
+
+If you have followed all of the steps, you should be able to play the game, consisting of just 2 classes and 7 methods.
+
+\dothis{In a workspace, type \ct{SBEGame new openInWorld} and \menu{do it}.}
+
+The game will open, and you should be able to click on the cells and see how it works.
+
+Well, so much for theory\ldots{}
+When you click on a cell, a \emphind{notifier} window called the \clsind{PreDebugWindow}window appears with an error message!
+As depicted in \figref{quintoError}, it says \ct{MessageNotUnderstood: SBEGame>>>toggleState}.
+
+\begin{figure}[ht]
+\ifluluelse
+	{\centerline{\includegraphics[width=\textwidth]{Error}}}
+	{\centerline{\includegraphics[scale=0.7]{Error}}}
+\caption{There is a bug in our game when a cell is clicked!
+\label{fig:quintoError}}
+\end{figure}
+
+\noindent
+What happened? To find out, let's use one of Smalltalk's more powerful tools: the \ind{debugger}.
+
+\dothis{Click on the \menu{debug} button in the notifer window.}
+The debugger will appear.
+In the upper part of the debugger window you can see the execution stack, showing all the active methods; selecting any one of them will show, in the middle pane, the Smalltalk code being executed in that method, with the part that triggered the error highlighted.
+
+\dothis{Click on the line labelled
+\ct{SBEGame>>>toggleNeighboursOfCellAt:at:} (near the top).}
+The debugger will show you the \ind{execution context} within this method where the error occurred (\figref{debugToggle}).
+
+\begin{figure}[ht]
+\ifluluelse
+	{\centerline {\includegraphics[width=\textwidth]{Debugger}}}
+	{\centerline {\includegraphics[scale=0.7]{Debugger}}}
+\caption{The debugger, with the method \ct{toggleNeighboursOfCell:at:}  selected.
+\label{fig:debugToggle}}
+\end{figure}
+
+At the bottom of the debugger are two small inspector windows.  On the left, you can inspect the object that is the receiver of the message that caused the selected method to execute, so you can look here to see the values of the instance variables.
+On the right you can inspect an object that represents the currently executing method itself, so you can look here to see the values of the method's parameters and temporary variables.
+
+Using the debugger, you can execute code step by step, inspect objects in parameters and local variables, evaluate code just as you can in a workspace, and, most surprisingly to those used to other debuggers, change the code while it is being debugged! Some Smalltalkers program in the debugger almost all the time, rather than in the browser.  The advantage of this is that you see the method that you are writing as it will be executed, with real parameters in the actual execution context.
+
+In this case we can see in the first line of the top panel that the \ct{toggleState} message has been sent to an instance of \ct{SBEGame}, while it should clearly have been an instance of \lct{SBECell}.
+The problem is most likely with the initialization of the \ct{cells} matrix.
+Browsing the code of \cmind{SBEGame}{initialize} shows that \ct{cells} is filled with the return values of \ct{newCellAt:at:}, but when we look at that method, we see that there is no return statement there!
+By default, a method returns \ct{self}, which in the case of \ct{newCellAt:at:} is indeed an instance of \ct{SBEGame}.
+\index{method!returning self}
+
+\dothis{Close the debugger window.
+Add the expression ``\ct{^ c}'' to the end of the method \ct{SBEGame>>>newCellAt:at:} so that it returns \ct{c}.
+% It should now look as shown in \mthref{newCellAt:at:nobug}.}
+(See \mthref{newCellAt:at:nobug}.)}
+
+% \needlines{6}
+\begin{method}[newCellAt:at:nobug]{Fixing the bug.}
+SBEGame>>>newCellAt: i at: j
+   "Create a cell for position (i,j) and add it to my on-screen
+   representation at the appropriate screen position.  Answer the new cell"
+   | c origin |
+   c := SBECell new.
+   origin := self innerBounds origin.
+   self addMorph: c.
+   c position: ((i - 1) * c width) @ ((j - 1) * c height) + origin.
+   c mouseAction: [self toggleNeighboursOfCellAt: i at: j].
+   ^ c
+\end{method}
+\cmindex{SBEGame}{newCellAt:at:}
+
+\noindent
+Recall from \charef{quick} that the construct to \ind{return} a \subind{method}{value} from a method in Smalltalk is \ct{^}, which you obtain by typing \verb|^|.
+% \index{^@\verb|^|}
+\index{^@{$\uparrow$}|see{return}}
+
+Often, you can fix the code directly in the debugger window and click \menu{Proceed} to continue running the application.
+In our case, because the bug was in the initialization of an object, rather than in the method that failed, the easiest thing to do is to close the debugger window, destroy the running instance of the game (with the \subind{Morphic}{halo}), and create a new one.
+
+%Indeed, even in this case it would be possible to \menu{do} \ct{self initialize} and then \menu{Proceed} the \ct{toggleNeighboursOfCellAt:at:} method.
+%\ab{St\'eph, did you try this?  It seems to me that it ought to work, but when I tried it, it messed up my image.}
+% ON : It messed me up too!  Better not propose this.
+
+\dothis{Do: \ct{SBEGame new openInWorld} again.}
+Now the game should work properly.
+
+%\sd{It would be good to have a word about the debugger buttons into, step.... Or to have a separate chapter, we would use the material I wrote for my turtle book, please check it.}
+%\on{I think that is too much for this chapter. It will come soon enough.}
+
+%=================================================================
+\section{Saving and sharing Smalltalk code}
+\label{sec:Monticello}
+
+Now that you have the Quinto game working, you probably want to save it somewhere so that you can share it with your friends. Of course, you can save your whole \squeak image, and show off your first program by running it, but your friends probably have their own code in their images, and don't want to give that up to use your image.
+What you need is a way of getting source code out of your \squeak image so that other programmers can bring it into theirs.
+
+The simplest way of doing this is by \emph{filing out} the code.  The yellow-button menu in the System Categories pane will give you the option to file out the whole of category \scat{SBE-Quinto}.
+The resulting file is more or less human readable, but is really intended for computers, not humans.
+You can email this file to your friends, and they can file it into their own \squeak images using the file list browser.
+\seeindex{saving code}{categories}
+\seeindex{category!filing out}{file, filing out}
+\seeindex{class!filing out}{file, filing out}
+\seeindex{method!filing out}{file, filing out}
+\index{file!filing out}
+
+\dothis{Yellow-click on the \scat{SBE-Quinto} category and \menu{fileOut} the contents.}
+You should now find a file called ``SBE-Quinto.st'' in the same folder on disk where your image is saved.
+Have a look at this file with a text editor.
+
+\dothis{Open a fresh \squeak image and use the File List tool to \menu{file in} the SBE-Quinto.st fileout.
+Verify that the game now works in the new image.}
+\seeindex{category!filing in}{file, filing in}
+\seeindex{class!filing in}{file, filing in}
+\seeindex{method!filing in}{file, filing in}
+\index{file!filing in}
+
+\begin{figure}[ht]
+\centerline {\includegraphics[width=\textwidth]{FileIn}}
+\caption{Filing in \squeak source code.
+\label{fig:filein}}
+\end{figure}
+
+\subsection{Monticello packages}
+Although fileouts are a convenient way of making a snapshot of the code you have written, they are decidedly ``old school''.
+Just as most open-source projects find it much more convenient to maintain their code in a repository using \ind{CVS}\footnote{\url{www.nongnu.org/cvs}} or \ind{Subversion}\footnote{\url{subversion.tigris.org}},
+so \squeak programmers find it more convenient to manage their code using \ind{Monticello} packages. 
+These packages are represented as files with names ending in \ct{.mcz}; they are actually zip-compressed bundles that contain the complete code of your \ind{package}.
+
+Using the Monticello package browser, you can save packages to repositories on various types of server, including FTP and HTTP servers; you can also just write the packages to a repository in a local file system directory.
+A copy of your package is also always cached on your local hard-disk in the \emph{package-cache} folder. 
+Monticello lets you save multiple versions of your program, merge versions, go back to an old version, and browse the differences between versions. 
+In fact, Monticello is a distributed revision control system; this means it allows developers to save their work on different places, not on a single repository as it is the case with CVS or Subversion.\damien{Mercurial, Git are examples of distributed revision control system; not sure it's worth mentioning them.}
+\seeindex{package browser}{Monticello}
+
+You can also send a \ct{.mcz} file by email. 
+The recipient will have to place it in her \emph{package-cache} folder; she will then be able to use Monticello to browse and load it. 
+%(It is also possible to load it using the file list, but there is a difference between loading a \ct{.mcz} file using a file list and using Monticello \sd{check}.)
+
+\dothis{Open the Monticello browser by selecting \menu{World \go open\,\ldots \go Monticello browser}.}
+In the right-hand pane of the browser (see \figref{monticello1}) is a list of Monticello repositories, which will include all of the repositories from which code has been loaded into the image that you are using.  
+%In addition to SqueakSource servers, Monticello repositories can live in a variety of other places, the simplest being a directory on your local disk.
+
+\begin{figure}[hbt]
+\ifluluelse
+	{\centerline {\includegraphics[width=\textwidth]{MonticelloBrowser}}}
+	{\centerline {\includegraphics[scale=0.7]{MonticelloBrowser}}}
+\caption{The Monticello browser.
+\label{fig:monticello1}}
+\end{figure}
+
+At the top of the list in the Monticello browser is a repository in a local directory called the \emphind{package cache}, which caches copies of the packages that you have loaded or published over the network. This local cache is really handy because it lets you keep your own local history; it also allows you to work in places where you do not have internet access, or where access is slow enough that you do not want to save to a remote repository very frequently.
+
+
+\subsection{Saving and loading code with Monticello.}
+On the left-hand side of the Monticello browser is a list of packages that have a version loaded into the image; packages that have been modified since they were loaded are marked with an asterisk.  (These are sometimes referred to as \subind{package}{dirty} packages.)  If you select a package, the list of repositories is restricted to just those repositories that contain a copy of the selected package.
+\seeindex{*}{package, dirty}
+\seeindex{dirty package}{package, dirty}
+
+What is a package?  For now, you can think of a package as a group of  class and method categories that share the same prefix.  Since we put all of the code for the Quinto game into the class category called \scat{SBE-Quinto}, we can refer to it as the \ct{SBE-Quinto} package.
+
+\dothis{Add the \ct{SBE-Quinto} package to your Monticello browser using the \button{+Package} button and type \ct{SBE-Quinto}.}
+
+\subsection{\ind{SqueakSource}: a \ind{SourceForge} for \squeak.} 
+We think that the best way to save your code and share it is to create an account for your project on a SqueakSource server. 
+SqueakSource is like SourceForge\footnote{\url{www.sourceforge.net}}: it is a web front-end to a HTTP Monticello server that lets you manage your projects.
+%In addition, SqueakSource includes a wiki, remote code browsing, RSS feed, admin right and access right management,   
+% A number of {SqueakSource servers} around the Internet provide Monticello repositories and other facilities for development projects, including as a Wiki for documentation, remote code browsing, an RSS feed for update notification, and automatic publishing on SqueakMap.
+\lr{- Automatic publishing on SqueakMap does not work reliable anymore (the SqueakMap API changed several times), so better remove this part (p. 53)}
+There is a public SqueakSource server at \url{http://www.squeaksource.com}, and a copy of the code related to this book is stored there at \url{http://www.squeaksource.com/SqueakByExample.html}. You can look at this project with a web browser, but it's a lot more productive to do so from inside \squeak, using the Monticello browser, which lets you manage your packages.
+
+\dothis{Open a web browser to \url{www.squeaksource.com}.
+Create an account for yourself and then create (\ie ``register'') a project for the Quinto game.}
+SqueakSource will show you the information that you should use when adding a repository using the Monticello browser. 
+
+Once your project has been created on SqueakSource, you have to tell your \squeak system to use it. 
+
+\dothis{With the \ct{SBE-Quinto} package selected, click the \button{+Repository} button in the Monticello browser.}  You will see a list of the different types of Repository that are available; to add a SqueakSource repository select \menu{HTTP}. You will be presented with a dialog in which you can provide the necessary information about the server.
+You should copy the presented template to identify your SqueakSource project, paste it into Monticello and supply your initials and password:
+
+\needlines{5}
+\begin{code}{}
+MCHttpRepository 
+    location: 'http://www.squeaksource.com/!\emph{YourProject}!'
+    user: '!\emph{yourInitials}!' 
+    password: '!\emph{yourPassword}!'
+\end{code}   
+
+\noindent
+If you provide empty initials and password strings, you can still load the project, but you will not be able to update it:
+
+\needlines{5}
+\begin{code}{}
+MCHttpRepository 
+    location: 'http://www.squeaksource.com/!\emph{YourProject}!'
+    user: '' 
+    password: ''
+\end{code}   
+
+%You can then load the code in your image by selecting the version you want. You can browse the code without loading it, using the \button{Browse} button.
+Once you have accepted this template, your new repository should be listed on the right-hand side of the Monticello browser.
+
+\begin{figure}[hbt]
+\ifluluelse
+	{\centerline {\includegraphics[width=\textwidth]{BrowseRepository}}}
+	{\centerline {\includegraphics[scale=0.7]{BrowseRepository}}}
+\caption{Browsing a Monticello Repository
+\label{fig:monticello3}}
+\end{figure}
+
+\dothis{Click on the \button{Save} button to save a first version of your Quinto game on SqueakSource.}
+
+To load a package into your image, you must first select a particular version.  You can do this in the repository browser, which you can open using the \button{Open} button or the yellow-button menu.  Once you have selected a version, you can load it onto your image.
+
+\dothis{Open the \ct{SBE-Quinto} repository you have just saved.}
+
+Monticello has many more capabilities, which will be discussed in depth in \charef{env}.
+You can also look at the on-line documentation for Monticello at \url{http://www.wiresong.ca/Monticello/}.
+
+%=================================================================
+\section{Chapter summary}
+In this chapter you have seen how to create categories, classes and methods.  You have see how to use the system browser, the inspector, the debugger and the Monticello browser.
+
+\begin{itemize}
+  \item Categories are groups of related classes.
+  \item A new class is created by sending a message to its superclass.
+  \item Protocols are groups of related methods.
+  \item A new method is created or modified by editing its definition in the browser and then \emph{accepting} the changes.
+  \item The inspector offers a simple, general-purpose GUI for inspecting and interacting with arbitrary objects.
+  \item The system browser detects usage of undeclared methods and variables, and offers possible corrections.
+  \item The \ct{initialize} method is automatically executed after an object is created in \squeak. You can put any initialization code there.
+  \item The debugger provides a high-level GUI to inspect and modify the state of a running program.
+  \item You can share source code \emph{filing out} a category.
+  \item A better way to share code is to use Monticello to manage an external repository, for example defined as a SqueakSource project.
+\end{itemize}
+
+%=================================================================
+\ifx\wholebook\relax\else\end{document}\fi
+%=================================================================
+%=================================================================
+%%% Local Variables:
+%%% coding: utf-8
+%%% mode: latex
+%%% TeX-master: t
+%%% TeX-PDF-mode: t
+%%% ispell-local-dictionary: "english"
+%%% End:

@@ -1,0 +1,981 @@
+% $Author$
+% $Date$
+% $Revision$
+%=================================================================
+\ifx\wholebook\relax\else
+% --------------------------------------------
+% Lulu:
+	\documentclass[a4paper,10pt,twoside]{book}
+	\usepackage[
+		papersize={6in,9in},
+		hmargin={.75in,.75in},
+		vmargin={.75in,1in},
+		ignoreheadfoot
+	]{geometry}
+	\input{../common.tex}
+	\pagestyle{headings}
+	\setboolean{lulu}{true}
+% --------------------------------------------
+% A4:
+%	\documentclass[a4paper,11pt,twoside]{book}
+%	\input{../common.tex}
+%	\usepackage{a4wide}
+% --------------------------------------------
+    \graphicspath{{figures/} {../figures/}}
+	\begin{document}
+	\renewcommand{\nnbb}[2]{} % Disable editorial comments
+	\sloppy
+\fi
+%=================================================================
+\chapter{Collections}
+\label{cha:collections}
+
+% \ab{ The material here is based on a section that Andrew wrote for the \st Collections refactoring paper. It's not necessarily all appropriate for the book, but much of it is, I think, useful.}
+%\on{recycled some material from \url{https://www.iam.unibe.ch/scg/svn_repos/Lectures/ST-H07/03StandardClasses.ppt}}
+%\sd{Did a first pass: I should have a look at Xavier Briffault's book and at the material mentionned by andrew + lalonde book?}
+%=============================================================
+\section{Introduction}
+
+The collection classes form a loosely-defined group of general-purpose subclasses of \clsindmain{Collection} and \clsind{Stream}. The group of classes that appears in the ``\ind{Blue Book}''~\cite{Gold83a} contains 17 subclasses of \ct{Collection} and 9 subclasses of \ct{Stream}, for a total of 28 classes, and had already been redesigned several times before the \st-80 system was released. This group of classes is often considered to be a paradigmatic example of object-oriented design.
+
+In \squeak, the abstract class \ct{Collection} has 98 subclasses, and the abstract class \ct{Stream} has 39 subclasses, but many of these (like \mbox{\clsind{Bitmap},} \clsind{FileStream} and \clsind{CompiledMethod}) are special-purpose classes crafted for use in other parts of the system or in applications, and hence not categorized as ``Collections'' by the system organization. For the purposes of this chapter, we use the term ``Collection Hierarchy'' to mean \ct{Collection} and its 37 subclasses that are \emph{also} in the system categories labelled \scat{Collections-*}.
+We use the term ``Stream Hierarchy'' to mean \ct{Stream} and its 10 subclasses that are \emph{also} in the \scatind{Collections-Streams} system categories.
+The full list is shown in \figref{CollClassesList}.
+These 49 classes respond to 794 messages and define a total of 1236 methods!
+
+\begin{figure}
+\begin{center}
+\ifluluelse
+	{\fbox{\includegraphics[height=0.9\textheight]{CollectionHierarchyList}}}
+	{\fbox{\includegraphics[width=3in]{CollectionHierarchyList}}}
+\caption{The collection classes in \squeak. Indentation indicates subclassing.
+\textit{\textsf{Italicized}} classes are abstract.
+{\textbf{Bold}} classes are described in the ``Blue Book".}
+\label{fig:CollClassesList}
+\end{center}
+\end{figure}
+
+In this chapter we focus mainly on the subset of collection classes shown in \figref{CollClassesTree}.
+Streams will be discussed separately in \charef{streams}.
+
+% \sd{should put stream related text in Stream chapter}.
+
+% Note that the stream classes suffer from aging problems since they contain duplicated code and other code smells.
+% ON: We should avoid statements like this!
+
+%:FIGURE -- Key collection classes
+\begin{figure}
+\begin{center}
+\ifluluelse
+	{\includegraphics[width=\textwidth]{CollectionHierarchy}}
+	{\includegraphics[width=0.8\textwidth]{CollectionHierarchy}}
+\caption{Some of the key collection classes in \squeak.}
+\label{fig:CollClassesTree}
+\end{center}
+\end{figure}
+
+%=========================================================
+\section{The varieties of collections}
+\label{sec:varieties}
+
+To make good use of the collection classes, the reader needs at least a superficial knowledge of the wide variety of collections that they implement, and their commonalities and differences.
+
+Programming with collections rather than individual elements is an important way to raise the level of abstraction of a program. 
+The \ind{Lisp} function \ct{map}, which applies an argument function to every element of a list and returns a new list containing the results is an early example of this style, but \st-80 adopted collection-based programming as a central tenet.  Modern functional programming languages such as \ind{ML} and \ind{Haskell} have followed \st's lead.
+
+Why is this a good idea?
+Suppose you have a data structure containing a collection of student records, and wish to perform some action on all of the students that meet some criterion.  Programmers raised to use an imperative language will immediately reach for a loop.  But the \st programmer will write:
+\begin{code}{}
+students select: [ :each | each gpa < threshold ]
+\end{code}
+\noindent
+which evaluates to a new collection containing precisely those elements of \ct{students} for which the bracketed function returns \ct{true}\footnote{The expression in brackets can be thought of as a $\lambda$-expression defining an anonymous function $\lambda x. x~{\sf gpa} < {\sf threshold}$.
+\index{lambda expression}}.
+The \st code has the simplicity and elegance of a domain-specific query language.
+
+The message \ct{select:} is understood by \emph{all} collections in \st.  There is no need to find out if the student data structure is an array or a linked list: the \ct{select:} message is understood by both.  Note that this is quite different from using a loop, where one must know whether \ct{students} is an array or a linked list before the loop can be set up.
+
+In \st, when one speaks of a collection without being more specific about the kind of collection, one means an object that supports well-defined protocols for testing membership and enumerating the elements.  \emph{All} collections understand the \protind{testing} messages \mbox{\mthind{Collection}{includes:},} \mthind{Collection}{isEmpty} and \mbox{\mthind{Collection}{occurrencesOf:}.}  \emph{All} collections understand the \prot{enumeration} messages \mthind{Collection}{do:}, \mthind{Collection}{select:}, \mthind{Collection}{reject:} (which is the opposite of \ct{select:}), \mthind{Collection}{collect:} (which is like lisp's \ct{map}), \mthind{Collection}{detect:ifNone:}, \mthind{Collection}{inject:into:} (which performs a left fold) and many more.
+It is the ubiquity of this protocol, as well as its variety, that makes it so powerful.
+
+\figref{protocols} summarizes the standard protocols supported by most of the classes in the collection hierarchy.
+These methods are defined, redefined, optimized or occasionally even forbidden by subclasses of \ct{Collection}.
+
+%:FIGURE -- Standard collection protocols
+\begin{figure*}
+\begin{center}
+\ifluluelse
+	{\begin{tabular}{|l|p{8cm}|}}
+	{\begin{tabular}{|l|p{12cm}|}}
+\hline
+{\bf Protocol} & {\bf Methods}\\
+\hline
+\protind{accessing}	&	\lct{size}, \lct{capacity}, \lct{at: \emph{anIndex}}, \lct{at: \emph{anIndex} put: \emph{anElement}}	\\
+\hline
+\protind{testing}	&	\lct{isEmpty}, \lct{includes: \emph{anElement}}, \lct{contains: \emph{aBlock}}, \\
+& \lct{occurrencesOf: \emph{anElement}}	\\
+\hline
+\protind{adding}	&	\lct{add: \emph{anElement}}, \lct{addAll: \emph{aCollection}}	\\
+\hline
+\protind{removing}		&	\lct{remove: \emph{anElement}}, \lct{remove: \emph{anElement} ifAbsent: \emph{aBlock}}, \lct{removeAll: \emph{aCollection}}	\\
+\hline
+\protind{enumerating}	&	\lct{do: \emph{aBlock}}, \lct{collect: \emph{aBlock}}, \lct{select: \emph{aBlock}}, \lct{ reject: \emph{aBlock}}, \lct{detect: \emph{aBlock}}, \lct{detect: \emph{aBlock} ifNone: \emph{aNoneBlock}}, \\
+& \lct{inject: \emph{aValue} into: \emph{aBinaryBlock}}	\\
+\hline
+\protind{converting}	&	\lct{asBag}, \lct{asSet}, \lct{asOrderedCollection}, \lct{asSortedCollection}, \\
+& \lct{asArray}, \lct{asSortedCollection: \emph{aBlock}}	\\
+\hline
+\protind{creation}		&	\lct{with: \emph{anElement}}, \lct{with:with:}, \lct{with:with:with:}, \\
+& \lct{with:with:with:with:}, \lct{withAll: \emph{aCollection}}	\\
+\hline
+\end{tabular}
+\caption{Standard Collection protocols\label{fig:protocols}}
+\end{center}
+\end{figure*}
+
+%\begin{figure*}
+%\begin{center}
+%\includegraphics[width=\textwidth]{CollectionsBySeq}
+%\caption{Collections can be categorized according to whether or not they are sequenceable, \ie whether there are clearly defined first and last elements. All of the sequenceable collections except linked lists can also be indexed by an integer key. Of the non-sequenceable collections, dictionaries can be accessed by an arbitrary key, such as a string, while sets and bags cannot.\label{fig:CollsBySeq}}%
+%\end{center}
+%\end{figure*}
+%\on{A useless diagram -- refer to the class hierarchy instead!}
+
+Beyond this basic uniformity, there are many different kinds of collection either supporting different protocols, or providing different behaviour for the same requests.
+Let us briefly survey some of the key differences:
+
+\begin{itemize}
+  \item {\bf Sequenceable:}
+  Instances of all subclasses of \clsind{SequenceableCollection} start from a \mthind{SequenceableCollection}{first} element and proceed in a well-defined order to a \mthind{SequenceableCollection}{last} element.
+  Instances of \clsind{Set}, \clsind{Bag} and \clsind{Dictionary}, on the other hand, are not sequenceable.
+
+  \item {\bf Sortable:}
+  A \clsind{SortedCollection} maintains its elements in sort order.
+
+  \item {\bf Indexable:}
+	Most sequenceable collections are also indexable, that is, elements can be retrieved with \ct{at:}.
+	\clsind{Array} is the familiar indexable data structure with a fixed size;  \ct{anArray at: n} retrieves the $\mbox{\ct{n}}^{th}$ element of \ct{anArray}, and \ct{anArray at: n put: v} changes the $\mbox{\ct{n}}^{th}$ element to \ct{v}.
+	\ct{LinkedList}s and \ct{SkipList}s are sequenceable but not indexable, that is, they understand \ct{first} and \ct{last}, but not \ct{at:}.
+	\clsindex{LinkedList}
+	\clsindex{SkipList}
+
+  \item {\bf Keyed:}
+	Instances of \clsind{Dictionary} and its subclasses are accessed by keys instead of indices.
+
+  \item {\bf Mutable:}
+  	Most collections are mutable, but \ct{Interval}s and \ct{Symbol}s are not.
+	An \clsind{Interval} is an immutable collection representing a range of \ct{Integer}s.  For example, \ct{5 to: 16 by: 2} is an interval that contains the elements 5, 7, 9, 11, 13 and 15.  It is indexable with \mthind{Interval}{at:}, but cannot be changed with \ct{at:put:}.
+	\clsindex{Symbol}
+
+  \item {\bf Growable:}
+  	Instances of \ct{Interval} and \clsind{Array} are always of a fixed size. Other kinds of collections (sorted collections, ordered collections, and linked lists) can grow after creation.
+	
+	The class \clsind{OrderedCollection} is more general than \ct{Array}; the size of an \ct{OrderedCollection} grows on demand, and it has methods for \mthind{OrderedCollection}{addFirst:} and \mthind{OrderedCollection}{addLast:} as well as \mthind{OrderedCollection}{at:} and \mthind{OrderedCollection}{at:put:}.
+  
+  \item {\bf Accepts duplicates:}
+  	A \clsind{Set} will filter out duplicates, but a \clsind{Bag} will not.
+	\clsind{Dictionary}, \ct{Set} and \ct{Bag} use the \ct{=} method provided by the elements; the \ct{Identity} variants of these classes use the \ct{==} method, which tests whether the arguments are the same object, and the \ct{Pluggable} variants use an arbitrary equivalence relation supplied by the creator of the collection.
+	\index{Pluggable collections}
+
+  \item {\bf Heterogeneous:}
+  	Most collections will hold any kind of element.
+	A \clsind{String}, \clsind{CharacterArray} or \clsind{Symbol}, however, only holds \ct{Character}s.
+	An \clsind{Array} will hold any mix of objects, but a \lct{ByteArray} only holds \ct{Byte}s, an \clsind{IntegerArray} only holds \ct{Integer}s and a \clsind{FloatArray} only holds \ct{Float}s.
+	A \clsind{LinkedList} is constrained to hold elements that conform to the \prot{Link \go accessing} protocol.
+
+\end{itemize}
+
+%  How is the order established? Sorted collections use a supplied total ordering function, intervals are implicitly ordered, while arrays and ordered collections are ordered explicitly when elements are inserted.
+
+%=========================================================
+\section{Implementations of collections}
+\label{sec:implementation}
+
+\begin{figure*}
+\begin{center}
+\includegraphics[width=\textwidth]{CollectionsByImpl}
+\caption{Some collection classes categorized by implementation technique.
+    \label{fig:collsByImpl}}
+\end{center}
+\end{figure*}
+
+These categorizations by functionality are not our only concern; we must also consider how the collection classes are implemented. As shown in \figref{collsByImpl}, five main implementation techniques are employed.
+
+\begin{enumerate}
+  \item Arrays store their elements in the (indexable) instance variables of the collection object itself; as a consequence, arrays must be of a fixed size, but can be created with a single memory allocation.
+  \clsindex{Array}
+  \item \clsind{OrderedCollections} and \clsind{SortedCollections} store their elements in an array that is referenced by one of the instance variables of the collection.
+Consequently, the internal array can be replaced with a larger one if the collection grows beyond its storage capacity.
+  \item The various kinds of set and dictionary also reference a subsidiary array for storage, but use the array as a hash table.  Bags use a subsidiary \ct{Dictionary}, with the elements of the bag as keys and the number of occurrences as values.
+  \clsindex{Bag}
+  \item LinkedLists use a standard singly-linked representation.
+  \clsindex{LinkedList}
+  \item Intervals are represented by three integers that record the two endpoints and the step size.
+  \clsindex{Interval}
+\end{enumerate}
+In addition to these classes, there are also ``\subind{Collection}{weak}'' variants of \ct{Array}, \ct{Set} and of the various kinds of dictionary.  These collections hold onto their elements weakly, \ie in a way that does not prevent the elements from being garbage collected.
+The \sq virtual machine is aware of these classes and handles them specially.
+\index{weak collections}
+
+Readers interested in learning more about the \st collections are referred to LaLonde and Pugh's excellent book \cite{LaLo90a}.
+
+%=========================================================
+\section{Examples of key classes}
+We present now the most common or important collection classes using simple code examples. 
+The main protocols of collections are: \mthind{Collection}{at:}, \mthind{Collection}{at:put:} --- to access an element, \mthind{Collection}{add:}, \mthind{Collection}{remove:} --- to add or remove an element, \mthind{Collection}{size}, \mthind{Collection}{isEmpty}, \mthind{Collection}{include:} --- to get some information about the collection, \mthind{Collection}{do:}, \mthind{Collection}{collect:}, \mthind{Collection}{select:} --- to iterate over the collection. 
+Each collection may implement or not such protocols, and when they do, they interpret them to fit with their semantics. We suggest you browse the classes themselves to identify specific and more advanced protocols.
+\seeindex{do:@\ct{do:}}{Collection, \ct{do:}}
+\seeindex{at:@\ct{at:}}{Collection, \ct{at:}}
+\seeindex{at:put:@\ct{at:put:}}{Collection, \ct{at:put:}}
+
+We will focus on the most common collection classes: \clsind{OrderedCollection}, \clsind{Set}, \clsind{SortedCollection}, \clsind{Dictionary}, \clsind{Interval}, and \clsind{Array}.
+
+\paragraph{Common creation protocol.}
+There are several ways to create instances of collections. The most generic ones use the methods \mthind{Collection class}{new:} and \mthind{Collection class}{with:}. \ct{new: anInteger} creates a collection of size \ct{anInteger} whose elements will all be \ct{nil}.  \mthind{Collection class}{with:} \ct{anObject} creates a collection and adds \ct{anObject} to the created collection. Different collections will realize this behaviour differently.
+
+You can create collections with initial elements using the methods \mthind{Collection class}{with:}, \mthind{Collection class}{with:with:} \etc for up to six elements.
+
+\begin{code}{@TEST}
+Array with: 1 --> #(1)
+Array with: 1 with: 2 --> #(1 2)
+Array with: 1 with: 2 with: 3 --> #(1 2 3)
+Array with: 1 with: 2 with: 3 with: 4 --> #(1 2 3 4)
+Array with: 1 with: 2 with: 3 with: 4 with: 5 --> #(1 2 3 4 5)
+Array with: 1 with: 2 with: 3 with: 4 with: 5 with: 6 --> #(1 2 3 4 5 6)
+\end{code}
+
+You can also use \ct{addAll:} to add all elements of one kind of collection to another kind:
+
+\begin{code}{@TEST}
+(1 to: 5) asOrderedCollection addAll: '678'; yourself --> an OrderedCollection(1 2 3 4 5 $6 $7 $8)
+\end{code}
+\noindent
+Take care that \mthind{Collection}{addAll:} also returns its argument, and not the receiver!
+
+You can also create many collections with \mthind{Collection class}{withAll:} or \mthind{Collection class}{newFrom:}
+
+\begin{code}{@TEST}
+Array withAll: #(7 3 1 3)                      --> #(7 3 1 3)
+OrderedCollection withAll: #(7 3 1 3) --> an OrderedCollection(7 3 1 3)
+SortedCollection withAll: #(7 3 1 3)    --> a SortedCollection(1 3 3 7)
+Set withAll: #(7 3 1 3)                         --> a Set(7 1 3)
+Bag withAll: #(7 3 1 3)                        --> a Bag(7 1 3 3)
+Dictionary withAll: #(7 3 1 3)               --> a Dictionary(1->7 2->3 3->1 4->3 )
+\end{code}
+
+\begin{code}{@TEST}
+Array newFrom: #(7 3 1 3)                                          --> #(7 3 1 3)
+OrderedCollection newFrom: #(7 3 1 3)                     --> an OrderedCollection(7 3 1 3)
+SortedCollection newFrom: #(7 3 1 3)                       --> a SortedCollection(1 3 3 7)
+Set newFrom: #(7 3 1 3)                                            --> a Set(7 1 3)
+Bag newFrom: #(7 3 1 3)                                           --> a Bag(7 1 3 3)
+Dictionary newFrom: {1 -> 7. 2 -> 3. 3 -> 1. 4 -> 3} --> a Dictionary(1->7 2->3 3->1 4->3 )
+\end{code}
+\noindent
+Note that these two methods are not identical.
+In particular, \cmind{Dictionary class}{withAll:} interprets its argument as a collection of values, whereas \cmind{Dictionary class}{newFrom:} expects a collection of associations.
+
+%---------------------------------------------------------
+\subsection{Array}
+An \clsindmain{Array} is a fixed-sized collection of elements accessed by integer indices.
+Contrary to the C convention, the first element of a \st array is at position 1 and not 0. 
+The main protocol to access array elements is the method \mthind{Array}{at:} and \mthind{Array}{at:put:}. \ct{at: anInteger} returns the element at index \ct{anInteger}. \ct{at: anInteger put: anObject} puts \ct{anObject} at index \ct{anInteger}. Arrays are fixed-size collections therefore we cannot add or remove elements at the end of an array. The following code creates an array of size 5, puts values in the first 3 locations and returns the first element. 
+
+\begin{code}{@TEST | anArray | }
+anArray := Array new: 5.
+anArray at: 1 put: 4.
+anArray at: 2 put: 3/2.
+anArray at: 3 put: 'ssss'.
+anArray at: 1 --> 4
+\end{code}
+
+There are several ways to create instances of the class \clsind{Array}. We can use \ct{new:}, \ct{with:}, and  the constructs \ct{#( )} and \ct|{ }|.
+
+\paragraph{Creation with \mthind{Array class}{new:}} \ct{new: anInteger} creates an array of size \ct{anInteger}.
+\ct{Array new: 5} creates an array of size 5.
+
+\paragraph{Creation with \mthind{Array class}{with:}} \ct{with:} methods allows one to specify the value of the elements.  
+The following code creates an array of three elements consisting of the number \ct{4}, the fraction \ct{3/2} and the string \ct{'lulu'}.
+
+\begin{code}{@TEST | anArray |}
+Array with: 4 with: 3/2 with: 'lulu' -->  {4 . (3/2) . 'lulu'}
+\end{code}
+
+\paragraph{Literal creation with \ct|\#()|.}
+\ct{#()} creates \ind{literal arrays} with static (or ``\subind{Array}{literal}'') elements that have to be known when the expression is compiled, and not when it is executed. The following code creates an array of size 2 where the first element is the (literal) number \ct{1} and the second the (literal) string \ct{'here'}.
+
+\seeindex{\#@{\textsf{\#( )}}}{Array, literal}
+\seeindex{\{@{\textsf{\{ \}}}}{Array, dynamic}
+
+\begin{code}{@TEST | anArray |}
+#(1 'here') size --> 2
+\end{code}
+
+Now, if you evaluate \ct{#(1+2)}, you do not get an array with a single element \ct{3} but instead you get the array \ct{#(1 #+ 2)} \ie with three elements: \ct{1}, the symbol \ct{#+} and the number \ct{2}.
+
+\begin{code}{@TEST}
+#(1+2) -->  #(1 #+ 2)
+\end{code}
+
+\noindent
+This occurs because the construct \ct{#()} causes the compiler to interpret literally the expressions contained in the array. The expression is scanned and the resulting elements are fed to a new array. Literal arrays contain numbers, \ct{nil}, \ct{true}, \ct{false}, symbols and strings.
+
+\paragraph{Dynamic creation with \ct|\{ \}|.}
+Finally, you can create a dynamic array using the construct \ct|{}|. \ct|{ a . b }| is equivalent to \lct{Array with: a with: b}. This means in particular that the expressions enclosed by \ct|{| and \ct|}| are executed. 
+
+\begin{code}{@TEST | anArray |}
+{ 1 + 2 } --> #(3)
+{(1/2) asFloat} at: 1 --> 0.5
+{10 atRandom . 1/3} at: 2 --> (1/3)
+\end{code}
+
+\paragraph{Element Access.}
+Elements of all sequenceable collections can be accessed with \mthind{Array}{at:} and \mthind{Array}{at:put:}.
+
+\begin{code}{@TEST | anArray |}
+anArray := #(1 2 3 4 5 6) copy.
+anArray at: 3 --> 3
+anArray at: 3 put: 33.
+anArray at: 3 --> 33
+\end{code}
+\cmindex{Array}{copy}
+
+\noindent
+Be careful with code that modifies literal arrays!
+The compiler tries to allocate space just once for literal arrays.
+Unless you copy the array, the second time you evaluate the code your ``literal'' array may not have the value you expect.
+(Without cloning, the second time around, the literal \ct{#(1 2 3 4 5 6)} will actually be \ct{#(1 2 33 4 5 6)}!)
+Dynamic arrays do not have this problem.
+
+%---------------------------------------------------------
+\subsection{OrderedCollection}
+\clsindmain{OrderedCollection} is one of the collections that can grow, and to which elements can be added sequentially. It offers a variety of methods such as \mthind{OrderedCollection}{add:}, \mthind{OrderedCollection}{addFirst:}, \mthind{OrderedCollection}{addLast:}, and \mthind{OrderedCollection}{addAll:}. 
+
+\begin{code}{@TEST | ordCol |}
+ordCol := OrderedCollection new.
+ordCol add: 'Seaside'; add: 'SqueakSource'; addFirst: 'Monticello'.
+ordCol --> an OrderedCollection('Monticello' 'Seaside' 'SqueakSource')
+\end{code}
+
+\paragraph{Removing Elements.} The method \mthind{OrderedCollection}{remove:} \ct{anObject} removes the first occurrence of an object from the collection. If the collection does not include such an object, it raises an error. 
+
+\begin{code}{@TEST | ordCol | ordCol := OrderedCollection with: 'Monticello' with: 'Seaside' with: 'SqueakSource'.}
+ordCol add: 'Monticello'.
+ordCol remove: 'Monticello'.
+ordCol --> an OrderedCollection('Seaside' 'SqueakSource' 'Monticello')
+\end{code}
+
+There is a variant of \ct{remove:} named \mthind{OrderedCollection}{remove:ifAbsent:} that allows one to specify 
+as second argument a block that is executed in case the element to be removed is not in the collection. 
+
+\begin{code}{@TEST | ordCol res | ordCol := OrderedCollection with: 'Seaside' with: 'SqueakSource' with: 'Monticello'.}
+res := ordCol remove: 'zork' ifAbsent: [33].
+res --> 33
+\end{code}
+
+\paragraph{Conversion.}
+It is possible to get an \ct{OrderedCollection} from an \ct{Array} (or any other collection) by sending the message \mthind{Collection}{asOrderedCollection}:
+
+\begin{code}{@TEST}
+#(1 2 3) asOrderedCollection --> an OrderedCollection(1 2 3)
+'hello' asOrderedCollection --> an OrderedCollection($h $e $l $l $o)
+\end{code}
+
+%\paragraph{A word about automatic growth.}
+%Note that while \ct{OrderedCollection} grows automatically when you add new elements it can be better to create an \ct{OrderedCollection} with a good approximation of the numbers of elements it will contain. The following code creates an ordered collection whose size is equal to the number of classes in \squeak and adds all the classes to it.
+
+% \on{I don't like this example. No one should ever write code like this. Furthermore it is not good advice, as you almost never need to do this.}
+
+%\begin{code}{@TEST | classes res | }
+%classes := Smalltalk allClasses.
+%res := OrderedCollection new: classes size.
+%classes do: [:each | res add: each].
+%classes size = res size --> true
+%\end{code}
+
+%\noindent
+%This can be faster than creating the ordered collection with \ct{new} and letting it grow (see \charef{profiling}).
+
+%---------------------------------------------------------
+\subsection{Interval}
+The class \clsindmain{Interval} represents ranges of numbers. For example, the interval of numbers from 1 to 100 is defined as follows:
+\cmindex{Interval class}{from:to:}
+\begin{code}{@TEST}
+Interval from: 1 to: 100 --> (1 to: 100)
+\end{code}
+
+\noindent
+The \mthind{Interval class}{printString} of this interval reveals that the class \ct{Number} provides us with a convenience method called \mthind{Number}{to:} to generate intervals:
+
+\begin{code}{}
+(Interval from: 1 to: 100) = (1 to: 100) --> true
+\end{code}
+
+We can use \cmind{Interval class}{from:to:by:} or \cmind{Number}{to:by:} to specify the step between two numbers as follow:
+
+\begin{code}{@TEST}
+(Interval from: 1 to: 100 by: 0.5) size --> 199
+(1 to: 100 by: 0.5) at: 198 --> 99.5
+(1/2 to: 54/7 by: 1/3) last --> (15/2)
+\end{code}
+
+%---------------------------------------------------------
+\subsection{Dictionary}
+Dictionaries are important collections whose elements are accessed using keys. 
+Among the most commonly used messages of dictionary you will find \mthind{Dictionary}{at:}, \mthind{Dictionary}{at:put:}, \mthind{Dictionary}{at:ifAbsent:}, \mthind{Dictionary}{keys} and \mthind{Dictionary}{values}.
+\seeindex{keys}{Dictionary, keys}
+\seeindex{values}{Dictionary, values}
+
+\begin{code}{@TEST | colors |}
+colors := Dictionary new.
+colors at: #yellow put: Color yellow.
+colors at: #blue put: Color blue.
+colors at: #red put: Color red.
+colors at: #yellow --> Color yellow
+colors keys          --> a Set(#blue #yellow #red)
+colors values       --> {Color blue . Color yellow . Color red}
+\end{code}
+
+Dictionaries compare keys by equality. Two keys are considered to be the same if they return true when compared using \ct{=}. A common and difficult to spot bug is to use as key an object whose \ct{=} method has been redefined but not its \ct{hash} method. Both methods are used in the implementation of dictionary and when comparing objects.
+\index{Dictionary!overriding \ct{=} and \ct{hash}}
+
+The class \clsindmain{Dictionary} clearly illustrates that the collection hierarchy is based on subclassing and not subtyping.  Even though \ct{Dictionary} is a subclass of \clsind{Set}, we would normally not want to use a \ct{Dictionary} where a \ct{Set} is expected. In its implementation, however, a \ct{Dictionary} can clearly be seen as consisting of a set of associations (key value) created using the message \mthind{Object}{->}. We can create a \ct{Dictionary} from a collection of associations, or we may convert a dictionary to an array of associations.
+\seeindex{association}{Object, \ct{->}}
+
+\needlines{5}
+\begin{code}{@TEST | colors |}
+colors := Dictionary newFrom: { #blue->Color blue. #red->Color red. #yellow->Color yellow }.
+colors removeKey: #blue.
+colors associations --> {#yellow->Color yellow . #red->Color red}
+\end{code}
+
+\paragraph{IdentityDictionary.}
+While a dictionary uses the result of the messages \ct{=} and \ct{hash} to determine if two keys are the same, the class \clsindmain{IdentityDictionary} uses the identity (message \mthind{ProtoObject}{==}) of the key instead of its values, \ie it considers two keys to be equal \emph{only} if they are the same object.
+
+Often \ct{Symbol}s are used as keys, in which case it is natural to use an \ct{IdentityDictionary}, since a \clsind{Symbol} is guaranteed to be globally unique.
+If, on the other hand, your keys are \ct{String}s, it is better to use a plain \ct{Dictionary}, or you may get into trouble:
+
+\begin{code}{@TEST | a b trouble |}
+a := 'foobar'.
+b := a copy.
+trouble := IdentityDictionary new.
+trouble at: a put: 'a'; at: b put: 'b'.
+trouble at: a          --> 'a'
+trouble at: b          --> 'b'
+trouble at: 'foobar' --> 'a'
+\end{code}
+
+\noindent
+Since \ct{a} and \ct{b} are different objects, they are treated as different objects.
+Interestingly, the literal \mbox{\ct{'foobar'}} is allocated just once, so is really the same object as \ct{a}.
+You don't want your code to depend on behaviour like this!
+A plain \ct{Dictionary} would give the same value for any key equal to \ct{'foobar'}.
+
+Use only globally unique objects (like \ct{Symbol}s or \ct{SmallInteger}s) as keys for a \ct{IdentityDictionary}, and \ct{String}s (or other objects) as keys for a plain \ct{Dictionary}.
+
+
+Note that the global \glbind{Smalltalk} is an instance of \clsind{SystemDictionary}, a subclass of \ct{IdentityDictionary}, hence all its keys are \ct{Symbol}s (actually, \ct{ByteSymbol}s, which contain only 8-bit characters).
+
+\begin{code}{@TEST}
+Smalltalk keys collect: [ :each | each class ] --> a Set(ByteSymbol)
+\end{code}
+\noindent
+Sending \ct{keys} or \ct{values} to a \ct{Dictionary} results in a \ct{Set}, which we look at next.
+% Since every key has the same class, the set of classes of keys contains only a single element, \ct{ByteSymbol}.
+
+%---------------------------------------------------------
+\subsection{Set}
+The class \clsindmain{Set} is a collection which behaves as a mathematical set, \ie as a collection with no duplicate elements and without any order. In a \ct{Set} elements are added using the message \mthind{Set}{add:} and they cannot be accessed using the message \ct{at:}. Objects put in a set should implement the methods \ct{hash} and \ct{=}.
+
+\begin{code}{@TEST | s | }
+s := Set new.
+s add: 4/2; add: 4; add:2.
+s size --> 2
+\end{code}
+
+You can also create sets using \cmind{Set class}{newFrom:} or the conversion message \cmind{Collection}{asSet}:
+
+\begin{code}{@TEST}
+(Set newFrom: #( 1 2 3 1 4 )) = #(1 2 3 4 3 2 1) asSet --> true
+\end{code}
+
+\mthind{Collection}{asSet} offers us a convenient way to eliminate duplicates from a collection:
+\begin{code}{@TEST}
+{ Color black. Color white. (Color red + Color blue + Color green) } asSet size --> 2
+\end{code}
+\noindent
+Note that red + blue + green = white.
+
+A \clsindmain{Bag} is much like a \ct{Set} except that it does allow duplicates:
+\begin{code}{@TEST}
+{ Color black. Color white. (Color red + Color blue + Color green) } asBag size --> 3
+\end{code}
+
+The set operations \emph{union}, \emph{intersection} and \emph{membership test} are implemented by the \ct{Collection} messages \mthind{Collection}{union:}, \mthind{Collection}{intersection:} and \mthind{Collection}{includes:}.
+The receiver is first converted to a \ct{Set}, so these operations work for all kinds of collections!
+\seeindex{Set!union}{Collection, \ct{union:}}
+\seeindex{Set!intersection}{Collection, \ct{intersection:}}
+\seeindex{Set!membership}{Collection, \ct{includes:}}
+
+\begin{code}{@TEST}
+(1 to: 6) union: (4 to: 10)  --> a Set(1 2 3 4 5 6 7 8 9 10)
+'hello' intersection: 'there' --> 'he'
+#Smalltalk includes: $k     --> true
+\end{code}
+
+As we explain below, elements of a set are accessed using iterators (see \secref{iterators}).
+
+%---------------------------------------------------------
+\subsection{SortedCollection}
+In contrast to an \ct{OrderedCollection}, a \clsindmain{SortedCollection} maintains its elements in sort order. By default, a sorted collection uses the message \mthind{Magnitude}{<=} to establish sort order, so it can sort instances of subclasses of the abstract class \clsind{Magnitude}, which defines the protocol of comparable objects (\mthind{Magnitude}{<}, \mthind{Magnitude}{=}, \mthind{Magnitude}{>}, \mthind{Magnitude}{>=}, \mthind{Magnitude}{between:and:}...).
+(See \charef{basic}.)
+
+You can create a \ct{SortedCollection} by creating a new instance and adding elements to it:
+\begin{code}{@TEST}
+SortedCollection new add: 5; add: 2; add: 50; add: -10; yourself. --> a SortedCollection(-10 2 5 50)
+\end{code}
+
+\noindent
+More usually, though, one will send the conversion message \mthind{Collection}{asSortedCollection} to an existing collection:
+\begin{code}{@TEST}
+#(5 2 50 -10) asSortedCollection --> a SortedCollection(-10 2 5 50)
+\end{code}
+
+This example answers the following FAQ:
+
+\important{FAQ: How do you sort a collection?\\
+{\sc Answer}: Send the message \ct{asSortedCollection} to it.}
+
+\begin{code}{@TEST}
+'hello' asSortedCollection --> a SortedCollection($e $h $l $l $o)
+\end{code}
+
+How do you get a \ct{String} back from this result?
+\ct{asString} unfortunately returns the \ct{printString} representation, which is not what we want:
+\begin{code}{@TEST}
+'hello' asSortedCollection asString --> 'a SortedCollection($e $h $l $l $o)'
+\end{code}
+\noindent
+The correct answer is to either use \ct{String class>>>newFrom:}, \ct{String class>>>withAll:} or \ct{Object>>>as:}:
+\begin{code}{@TEST}
+'hello' asSortedCollection as: String              --> 'ehllo'
+String newFrom: ('hello' asSortedCollection) --> 'ehllo'
+String withAll: ('hello' asSortedCollection)     --> 'ehllo'
+\end{code}
+\seeindex{Collection!sorting}{Collection, \ct{asSortedCollection}}
+
+It is possible to have different kinds of elements in a \ct{SortedCollection} as long as they are all comparable. For example we can mix different kinds of numbers such as integers, floats and fractions:
+\begin{code}{@TEST | col |}
+{ 5. 2/-3. 5.21 } asSortedCollection --> a SortedCollection((-2/3) 5 5.21)
+\end{code}
+
+Imagine that you want to sort objects that do not define the method \ct{<=} or that you would like to have a different sorting criterion. You can do this by supplying a two argument block, called a sortblock, to the sorted collection. For example, the class \ct{Color} is not a Magnitude and it does not implement the method \ct{<=}, but we can specify a block stating that the colors should be sorted according to their luminance (a measure of brightness).
+
+\begin{code}{@TEST | col |}
+col := SortedCollection sortBlock: [:c1 :c2 | c1 luminance <= c2 luminance].
+col addAll: { Color red. Color yellow. Color white. Color black }.
+col --> a SortedCollection(Color black Color red Color yellow Color white)
+\end{code}
+\cmindex{SortedCollection class}{sortBlock:}
+
+%---------------------------------------------------------
+\subsection{String}
+A \st \clsindmain{String} represents a collection of \ct{Character}s.
+It is sequenceable, indexable, mutable and homogeneous, containing only \clsind{Character} instances.
+Like \ct{Array}s, \ct{String}s have a dedicated syntax, and are normally created by directly specifying a \ct{String} literal within single quotes, but the usual collection creation methods will work as well.
+
+\begin{code}{@TEST | s1 s2 |}
+'Hello'                                             --> 'Hello'
+String with: $A                               --> 'A'
+String with: $h with: $i with: $BANG       --> 'hiBANG'
+String newFrom: #($h $e $l $l $o) --> 'hello'
+\end{code}
+
+In actual fact, \ct{String} is abstract.
+When we instantiate a \ct{String} we actually get either an 8-bit \clsind{ByteString} or a 32-bit \clsind{WideString}.
+To keep things simple, we usually ignore the difference and just talk about instances of \ct{String}.
+
+Two instances of \ct{String} can be concatenated with a comma.
+\index{Collection!comma operator}
+\begin{code}{@TEST |s|}
+s := 'no', ' ', 'worries'.
+s -->  'no worries'
+\end{code}
+
+Since a string is a mutable collection we can also change it using the method \mthind{String}{at:put:}.
+
+\begin{code}{@TEST |s| s := 'no', ' ', 'worries'.}
+s at: 4 put: $h; at: 5 put: $u.
+s --> 'no hurries'
+\end{code}
+
+Note that the comma method is defined by \ct{Collection}, so it will work for any kind of collection!
+\begin{code}{@TEST}
+(1 to: 3) , '45' --> #(1 2 3 $4 $5)
+\end{code}
+\seeindex{String!concatenation}{Collection, comma operator}
+\seeindex{String!comma}{Collection, comma operator}
+\index{Collection!comma operator}
+
+We can also modify an existing string using \mthind{String}{replaceAll:with:} or \mthind{String}{replaceFrom:to:with:} as shown below. Note that the number of characters and the interval should have the same size.
+
+\begin{code}{@TEST |s| s := 'no hurries' copy.}
+s replaceAll: $n with: $N.
+s --> 'No hurries'
+s replaceFrom: 4 to: 5 with: 'wo'.
+s --> 'No worries'
+\end{code}
+
+In contrast to the methods described above, the method \mthind{String}{copyReplaceAll:} creates a new string.
+(Curiously, here the arguments are substrings rather than individual characters, and their sizes do not have to match.)
+
+\begin{code}{@TEST |s| s:= 'No worries' copy.}
+s copyReplaceAll: 'rries' with: 'mbats' --> 'No wombats'
+\end{code}
+
+A quick look at the implementation of these methods reveals that they are defined not only for \ct{String}s, but for any kind of \ct{SequenceableCollection}, so the following also works:
+
+\begin{code}{@TEST}
+(1 to: 6) copyReplaceAll: (3 to: 5) with: { 'three'. 'etc.' } --> #(1 2 'three' 'etc.' 6)
+\end{code}
+
+\paragraph{String matching.}
+\index{String!pattern matching}
+It is possible to ask whether a pattern matches a string by sending the \mthind{String}{match:} message.
+The pattern can specify \ct{*} to match an arbitrary series of characters and \# to match a single character. Note that \ct{match:} is sent to the pattern and not the string to be matched.
+\begin{code}{@TEST}
+'Linux *' match: 'Linux mag'                      --> true
+'GNU/Linux #ag' match: 'GNU/Linux tag' --> true
+\end{code}
+
+Another useful method is \ct{findString:}.
+\begin{code}{@TEST}
+'GNU/Linux mag' findString: 'Linux'                                                      --> 5
+'GNU/Linux mag' findString: 'linux' startingAt: 1 caseSensitive: false  --> 5
+\end{code}
+
+More advanced pattern matching facilities offering the capabilities of Perl are also available, but they are not included in the standard image\footnote{We strongly recommend Vassili Bykov's \ind{regular expression package}, available at \url{www.squeaksource.com/Regex.html}.
+\index{Bykov, Vassili}}.
+
+\paragraph{Some tests on strings.} The  following examples illustrate the use of \mbox{\mthind{String}{isEmpty},} \mthind{String}{includes:} and \mthind{String}{anySatisfy:} which are further messages defined not only on Strings but more generally on collections. 
+
+\begin{code}{@TEST}
+'Hello' isEmpty --> false
+'Hello' includes: $a --> false
+'JOE' anySatisfy: [:c | c isLowercase] --> false
+'Joe' anySatisfy: [:c | c isLowercase] --> true
+\end{code}
+
+\paragraph{String templating.}
+There are three messages that are useful to manage string \subind{String}{templating}: \mthind{String}{format:}, \mthind{String}{expandMacros} and \mthind{String}{expandMacrosWith:}.
+
+\begin{code}{@TEST}
+'{1} is {2}' format: {'Squeak' . 'cool'}  --> 'Squeak is cool'
+\end{code}
+
+The messages of the expandMacros family offer variable substitution, using \ct{<n>} for carriage return, \ct{<t>} for tabulation, \ct{<1s>}, \ct{<2s>}, \ct{<3s>} for arguments (\ct{<1p>}, \ct{<2p>}, surrounds the string with single quotes), and \ct{<1?value1:value2>} for conditional.
+
+\begin{code}{@TEST}
+'look-<t>-here' expandMacros                                         --> 'look-	-here'
+'<1s> is <2s>' expandMacrosWith: 'Squeak' with: 'cool'   --> 'Squeak is cool'
+'<2s> is <1s>' expandMacrosWith: 'Squeak' with: 'cool'   --> 'cool is Squeak'
+'<1p> or <1s>' expandMacrosWith: 'Squeak' with: 'cool'  --> '''Squeak'' or Squeak'
+'<1?Quentin:Thibaut> plays' expandMacrosWith: true     --> 'Quentin plays'
+'<1?Quentin:Thibaut> plays' expandMacrosWith: false    --> 'Thibaut plays'
+\end{code}
+
+\paragraph{Some other utility methods.}
+The class \ct{String} offers numerous other utilities including the messages \mthind{String}{asLowercase}, \mthind{String}{asUppercase} and \mthind{String}{capitalized}. 
+
+\begin{code}{@TEST}
+'XYZ' asLowercase --> 'xyz'
+'xyz' asUppercase   --> 'XYZ'
+'hilaire' capitalized   --> 'Hilaire'
+'1.54' asNumber      --> 1.54
+'this sentence is without a doubt far too long' contractTo: 20 --> 'this sent...too long'
+\end{code}
+
+Note that there is generally a difference between asking an object its string representation by sending the message \mthind{Object}{printString} and converting it to a string by sending the message \mthind{Object}{asString}.
+Here is an example of the difference.
+
+\begin{code}{@TEST}
+#ASymbol printString --> '#ASymbol'
+#ASymbol asString    --> 'ASymbol'
+\end{code}
+
+A symbol is similar to a string but is guaranteed to be globally unique.  For this reason symbols are preferred to strings as keys for dictionaries, in particular for instances of \ct{IdentityDictionary}.
+See also \charef{basic} for more about \clsind{String} and \clsind{Symbol}.
+
+%=========================================================
+\section{Collection iterators}
+\label{sec:iterators}
+
+In \st loops and conditionals are simply messages sent to collections or other objects such as integers or blocks (see also \charef{syntax}). In addition to low-level messages such as \ct{to:do:} which evaluates a block with an argument ranging from an initial to a final number, the \st collection hierarchy offers various high-level iterators. Using such iterators will make your code more robust and compact. 
+\index{Collection!iteration}
+
+%---------------------------------------------------------
+\subsection{Iterating (\lct{do:})}
+The method \mthind{Collection}{do:} is the basic collection iterator. It applies its argument (a block taking a single argument) to each element of the receiver.
+The following example prints all the strings contained in the receiver to the transcript.
+
+\begin{code}{}
+#('bob' 'joe' 'toto') do: [:each | Transcript show: each; cr].
+\end{code}
+
+\paragraph{Variants.} There are a lot of variants of \ct{do:}, such as \mbox{\mthind{Collection}{do:without:},} \mbox{\mthind{SequenceableCollection}{doWithIndex:}} and \mthind{OrderedCollection}{reverseDo:}:
+For the indexed collections (\ct{Array}, \ct{OrderedCollection}, \ct{SortedCollection}) the method \mthind{SequenceableCollection}{doWithIndex:} also gives access to the current index. This method is related to \ct{to:do:} which is defined in class \ct{Number}.
+
+\begin{code}{@TEST}
+#('bob' 'joe' 'toto') doWithIndex: [:each :i | (each = 'joe') ifTrue: [ ^ i ] ] --> 2
+\end{code}
+
+For ordered collections, \mthind{OrderedCollection}{reverseDo:} walks the collection in the reverse order. 
+
+The following code shows an interesting message: \mthind{Collection}{do:separatedBy:} which 
+executes the second block only in between two elements.
+\begin{code}{@TEST | res | }
+res := ''.
+#('bob' 'joe' 'toto') do: [:e | res := res, e ] separatedBy: [res := res, '.'].
+res --> 'bob.joe.toto'
+\end{code}
+\noindent
+Note that this code is not especially efficient since it creates intermediate strings and it would be better to use a write stream to buffer the result (see \charef{streams}):
+\begin{code}{@TEST}
+String streamContents: [:stream | #('bob' 'joe' 'toto') asStringOn: stream delimiter: '.' ] --> 'bob.joe.toto'
+\end{code}
+
+% DAMIEN: I would write it:
+%res := String streamContents: [:stream |
+%  #('bob' 'joe' 'toto')
+%       do: [:e | stream nextPutAll: e]
+%       separatedBy: [stream nextPut: $.]].
+%res --> 'bob.joe.toto'
+%Or even simpler:
+%res := String streamContents: [:stream | #('bob' 'joe' 'toto')
+%asStringOn: stream delimiter: '.' ].
+%res --> 'bob.joe.toto'
+
+
+\paragraph{Dictionaries.}
+When the message \mthind{Dictionary}{do:} is sent to a dictionary, the elements taken into account are the values, not the associations. The proper methods to use are \mthind{Dictionary}{keysDo:}, \mthind{Dictionary}{valuesDo:}, and \mthind{Dictionary}{associationsDo:}, which iterate respectively on keys, values or associations.
+
+\begin{code}{}
+colors := Dictionary newFrom: { #yellow -> Color yellow. #blue -> Color blue. #red -> Color red }.
+colors keysDo: [:key | Transcript show: key; cr].                    "displays the keys"
+colors valuesDo: [:value | Transcript show: value;cr].            "displays the values"
+colors associationsDo: [:value | Transcript show: value;cr].  "displays the associations"
+\end{code}
+
+%---------------------------------------------------------
+\subsection{Collecting results (\lct{collect:})}
+If you want to process the elements of a collection and produce a new collection as a result, rather than using \ct{do:}, you are probably better off using \ct{collect:}, or one of the other iterator methods.
+Most of these can be found in the \protind{enumerating} protocol of \ct{Collection} and its subclasses.
+
+Imagine that we want a collection containing the doubles of the elements in another collection. Using the method \ct{do:} we must write the following:
+
+\begin{code}{@TEST | double |}
+double := OrderedCollection new.
+#(1 2 3 4 5 6) do: [:e | double add: 2 * e].
+double --> an OrderedCollection(2 4 6 8 10 12)
+\end{code}
+
+\noindent
+The method \mthind{Collection}{collect:} executes its argument block for each element and returns a new collection containing the results. 
+Using \ct{collect:} instead, the code is much simpler:
+\begin{code}{@TEST}
+#(1 2 3 4 5 6) collect: [:e | 2 * e] --> #(2 4 6 8 10 12)
+\end{code}
+
+The advantages of \ct{collect:} over \mthind{Collection}{do:} are even more dramatic in the following example, where we take a collection of integers and generate as a result a collection of absolute values of these integers:
+
+\begin{code}{@TEST |aCol result|}
+aCol :=  #( 2 -3 4 -35 4 -11).
+result := aCol species new: aCol size.
+1 to: aCol size do: [ :each | result at: each put: (aCol at: each) abs].
+result --> #(2 3 4 35 4 11)
+\end{code}
+\noindent
+Contrast the above with the much simpler following expression:
+\begin{code}{@TEST}
+#( 2 -3 4 -35 4 -11) collect: [:each | each abs ] --> #(2 3 4 35 4 11)
+\end{code}
+\noindent
+A further advantage of the second solution is that it will also work for sets and bags.
+
+Generally you should avoid using \ct{do:}, unless you want to send messages to each of the elements of a collection.
+
+Note that sending the message \ct{collect:} returns the same kind of collection as the receiver.
+For this reason the following code fails.
+(A \ct{String} cannot hold integer values.)
+\begin{code}{}
+'abc' collect: [:ea | ea asciiValue ]      "errorBANG"
+\end{code}
+\noindent
+Instead we must first convert the string to an \ct{Array} or an \ct{OrderedCollection}:
+\begin{code}{@TEST}
+'abc' asArray collect: [:ea | ea asciiValue ] --> #(97 98 99)
+\end{code}
+
+Actually \ct{collect:} is not guaranteed to return a collection of exactly the same class as the receiver, but only the same \emph{``species''}.  In the case of an \ct{Interval}, the species is actually an \ct{Array}!
+\begin{code}{@TEST}
+(1 to: 5) collect: [ :ea | ea * 2 ] --> #(2 4 6 8 10)
+\end{code}
+
+%---------------------------------------------------------
+\subsection{Selecting and rejecting elements}
+% (\ct{select:}, \ct{reject:}, \ct{detect:})}
+
+\mthind{Collection}{select:} returns the elements of the receiver that satisfy a particular condition:
+
+\begin{code}{@TEST}
+(2 to: 20) select: [:each | each isPrime] --> #(2 3 5 7 11 13 17 19)
+\end{code}
+
+\mthind{Collection}{reject:} does the opposite:
+\begin{code}{@TEST}
+(2 to: 20) reject: [:each | each isPrime] --> #(4 6 8 9 10 12 14 15 16 18 20)
+\end{code}
+
+%---------------------------------------------------------
+\subsection{Identifying an element with \lct{detect:}}
+The method \mthind{OrderedCollection}{detect:} returns the first element of the receiver that matches block argument. 
+
+\begin{code}{@TEST}
+'through' detect: [:each | each isVowel] --> $o
+\end{code}
+
+The method \mthind{Collection}{detect:ifNone:} is a variant of the method \ct{detect:}. Its second block is evaluated
+when there is no element matching the block.
+
+\begin{code}{@TEST}
+Smalltalk allClasses detect: [:each | '*java*' match: each asString] ifNone: [ nil ] --> nil
+\end{code}
+
+%---------------------------------------------------------
+\subsection{Accumulating results with \lct{inject:into:}}
+Functional programming languages often provide a higher-order function called \emph{fold} or \emph{reduce} to accumulate a result by applying some binary operator iteratively over all elements of a collection.
+In \sq this is done by \cmind{Collection}{inject:into:}.
+
+The first argument is an initial value, and the second argument is a two-argument block which is applied to the result this far, and each element in turn.
+
+A trivial application of \ct{inject:into:} is to produce the sum of a collection of numbers.
+Following Gauss, in \sq we could write this expression to sum the first 100 integers:
+\begin{code}{@TEST}
+(1 to: 100) inject: 0 into: [:sum :each | sum + each ] --> 5050
+\end{code}
+
+Another example is the following one-argument block which computes factorials:
+\begin{code}{@TEST |factorial|}
+factorial := [:n | (1 to: n) inject: 1 into: [:product :each | product * each ] ].
+factorial value: 10 --> 3628800
+\end{code}
+
+%---------------------------------------------------------
+\subsection{Other messages}
+
+\paragraph{\mthind{Collection}{count:}} The message \ct{count:} returns the number of elements satisfying a condition.  The condition is represented as a boolean block.
+
+\begin{code}{@TEST}
+Smalltalk allClasses count: [:each | 'Collection*' match: each asString ] --> 2
+\end{code}
+
+\paragraph{\mthind{Collection}{includes:}} The message \ct{includes:} checks whether the argument is contained in the collection. 
+
+\begin{code}{@TEST | colors |}
+colors := {Color white . Color yellow. Color red . Color blue . Color orange}.
+colors includes: Color blue. --> true
+\end{code}
+
+\paragraph{\mthind{OrderedCollection}{anySatisfy:}} The message \ct{anySatisfy:} answers true if at least one element of the collection satisfies the condition represented by the argument.
+
+\begin{code}{@TEST | colors | colors := {Color white . Color yellow. Color red . Color blue . Color orange}.}
+colors anySatisfy: [:c | c red > 0.5] --> true
+\end{code}
+%=========================================================
+\section{Some hints for using collections}
+
+\paragraph{A common mistake with \mthind{OrderedCollection}{add:}} The following error is one of the most frequent \st mistakes.
+\index{Collection!common errors}
+
+\begin{code}{@TEST | collection | }
+collection := OrderedCollection new add: 1; add: 2.
+collection --> 2
+\end{code}
+\noindent
+Here the variable \ct{collection} does not hold the newly created collection but rather the last number added. 
+This is because the method \ct{add:} returns the element added and not the receiver.
+
+The following code yields the expected result:
+\begin{code}{@TEST | collection |}
+collection := OrderedCollection new.
+collection add: 1; add: 2.
+collection --> an OrderedCollection(1 2)
+\end{code}
+
+You can also use the message \mthind{Object}{yourself} to return the receiver of a \ind{cascade} of messages:
+
+\begin{code}{@TEST | collection |}
+collection := OrderedCollection new add: 1; add: 2; yourself --> an OrderedCollection(1 2)
+\end{code}
+
+\paragraph{Removing an element of the collection you are iterating on.} Another mistake you may make is to remove an element from a collection you are currently iterating over.
+\mthind{Collection}{remove:}
+\begin{code}{@TEST |range|}
+range := (2 to: 20) asOrderedCollection.
+range do: [:aNumber | aNumber isPrime ifFalse: [ range remove: aNumber ] ].
+range --> an OrderedCollection(2 3 5 7 9 11 13 15 17 19)
+\end{code}
+\noindent
+This result is clearly incorrect since 9 and 15 should have been filtered out!
+
+The solution is to copy the collection before going over it.
+\begin{code}{@TEST |range|}
+range := (2 to: 20) asOrderedCollection.
+range copy do: [:aNumber | aNumber isPrime ifFalse: [ range remove: aNumber ] ].
+range --> an OrderedCollection(2 3 5 7 11 13 17 19)
+\end{code}
+
+\paragraph{Redefining both \ct{=} and \ct{hash}.}
+A difficult error to spot is when you redefine \ct{=} but not \ct{hash}. The symptoms are that you will lose elements that you put in sets or other strange behaviour. One solution proposed by Kent Beck is to use \ct{xor:} to redefine \ct{hash}.
+Suppose that we want two books to be considered equal if their titles and authors are the same.
+Then we would redefine not only \ct{=} but also \ct{hash} as follows:
+\index{Dictionary!overriding \ct{=} and \ct{hash}}
+
+\begin{method}{Redefining \lct{=} and \lct{hash}.}
+Book>>>= aBook
+   self class = aBook class ifFalse: [^ false].
+   ^ title = aBook title and: [ authors = aBook authors]
+
+Book>>>hash 
+   ^ title hash xor: authors hash
+\end{method}
+
+Another nasty problem arises if you use a mutable object, \ie an object that can change its hash value over time, as an element of a \ct{Set} or as a key to a \ct{Dictionary}.
+Don't do this unless you love debugging!
+
+%=========================================================
+\section{Chapter summary}
+
+The \st collection hierarchy provides a common vocabulary for uniformly manipulating a variety of different kinds of collections.
+
+\begin{itemize}
+  \item A key distinction is between \ct{SequenceableCollection}s, which maintain their elements in a given order, \ct{Dictionary} and its subclasses, which maintain key-to-value associations, and \ct{Set}s and \ct{Bag}s, which are unordered.
+  \item You can convert most collections to another kind of collection by sending them the messages \ct{asArray}, \ct{asOrderedCollection} \etc.
+  \item To sort a collection, send it the message \ct{asSortedCollection}.
+  \item Literal \ct{Array}s are created with the special syntax \ct{#( ... )}.  Dynamic \ct{Array}s are created with the syntax \ct|{ ... }|.
+  \item A \ct{Dictionary} compares keys by equality. It is most useful when keys are instances of \ct{String}. An \ct{IdentityDictionary} instead uses object identity to compare keys.  It is more suitable when \ct{Symbol}s are used as keys, or when mapping object references to values.
+  \item \ct{String}s also understand the usual collection messages.  In addition, a \ct{String} supports a simple form of pattern-matching. For more advanced application, look instead at the RegEx package.
+  \item The basic iteration message is \ct{do:}. It is useful for imperative code, such as modifying each element of a collection, or sending each element a message.
+  \item Instead of using \ct{do:}, it is more common to use \ct{collect:}, \ct{select:}, \ct{reject:}, \ct{includes:}, \ct{inject:into:} and other higher-level messages to process collections in a uniform way.
+  \item Never remove an element from a collection you are iterating over. If you must modify it, iterate over a copy instead.
+  \item If you override \ct{=}, remember to override \ct{hash} as well!
+\end{itemize}
+
+%=========================================================
+\ifx\wholebook\relax\else
+   \bibliographystyle{jurabib}
+   \nobibliography{scg}
+   \end{document}
+\fi
+%=========================================================
+

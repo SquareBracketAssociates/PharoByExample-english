@@ -1,0 +1,1041 @@
+% $Author$
+% $Date$
+% $Revision$
+%=================================================================
+\ifx\wholebook\relax\else
+% --------------------------------------------
+% Lulu:
+	\documentclass[a4paper,10pt,twoside]{book}
+	\usepackage[
+		papersize={6in,9in},
+		hmargin={.75in,.75in},
+		vmargin={.75in,1in},
+		ignoreheadfoot
+	]{geometry}
+	\input{../common.tex}
+	\pagestyle{headings}
+	\setboolean{lulu}{true}
+% --------------------------------------------
+% A4:
+%	\documentclass[a4paper,11pt,twoside]{book}
+%	\input{../common.tex}
+%	\usepackage{a4wide}
+% --------------------------------------------
+    \graphicspath{{figures/} {../figures/}}
+	\begin{document}
+	\renewcommand{\nnbb}[2]{} % Disable editorial comments
+	\sloppy
+\fi
+%=================================================================
+\chapter{The \st object model}
+\label{cha:SqueakModel}\label{cha:model}
+
+\st's programming model is simple and uniform: everything is an object, and objects communicate only by sending each other messages.
+However, this simplicity and uniformity can be a source of difficulty for programmers used to other languages. In this chapter we present the core concepts of the \st object model; in particular we discuss the consequences of representing classes as objects.
+
+%=========================================================
+\section{The rules of the model}
+\label{sec:rules}
+
+The \st object model is based on a set of simple 
+rules that are applied \emph{uniformly}. The rules are as follows:
+
+\begin{enumerate}[label={\textbf{Rule \arabic{*}}.}, ref={Rule \arabic{*}}, leftmargin=*]
+\item{} \label{rule:everything}
+	Everything is an object.
+
+\item{} \label{rule:instance}
+	Every object is an instance of a class.
+
+\item{}  \label{rule:inheritance}
+	Every class has a superclass.
+
+\item{}  \label{rule:message}
+	Everything happens by message sends.
+
+\item{}  \label{rule:lookup}
+	Method lookup follows the inheritance chain.
+
+\end{enumerate}
+
+\noindent
+Let us look at each of these rules in some detail.
+
+
+%=========================================================
+\section{Everything is an Object}
+
+%\ruleref{everything}
+
+The mantra ``everything is an object'' is highly contagious.
+After only a short while working with \st, you will start to be surprised at how this rule simplifes everything you do.
+Integers, for example, are truly objects, so you can send messages to them, just as you do to any other object.
+
+\begin{code}{@TEST}
+3 + 4            --> 7    "send '+ 4' to 3, yielding 7"
+20 factorial  --> 2432902008176640000   "send factorial, yielding a big number"
+\end{code}
+
+The representation of \ct{20 factorial} is certainly different from the representation of \ct{7}, but because they are both objects, none of the code\,---\,not even the implementation of \ct{factorial}\,---\,needs to now about this.
+
+\needlines{3}
+Perhaps the most fundamental consequence of this rule is the following:
+\important{Classes are objects too.}
+Furthermore, classes are not second-class objects: they are really first-class objects that you can send messages to, inspect, and so on.
+This means that \squeak is a truly reflective system, which gives a great deal of expressive power to developers.
+
+Deep in the implementation of \st, there are three different kinds of objects.  There are (1) ordinary objects with instance variables that are passed by references, there are (2) \emph{small integers} that are passed by value, and there are (3) indexable objects like arrays that hold a contiguous portion of memory.  The beauty of \st is that you normally don't need to care about the differences between these three kinds of object.
+
+%=========================================================
+\section{Every object is an instance of a class}
+
+%\ruleref{instance}
+
+Every object has a class; you can find out which by sending it the message \ct{class}.
+
+\begin{code}{@TEST}
+1 class                 --> SmallInteger
+20 factorial class --> LargePositiveInteger
+'hello' class          --> ByteString
+#(1 2 3) class       --> Array
+(4@5) class         --> Point
+Object new class --> Object
+\end{code}
+
+A class defines the \emph{structure} of its instances via instance variables,
+and the \emph{behavior} of its instances via methods.
+Each method has a name, called its \emphsubind{method}{selector}, which is unique within the class.
+
+Since \emph{classes are objects}, and \emph{every object is an instance of a class}, it follows that classes must also be instances of classes.
+A class whose instances are classes is called a \emphind{metaclass}.
+Whenever you create a class, the system automatically creates a metaclass for you.
+The metaclass defines the structure and behavior of the class that is its instance.
+99\% \damien{Did any of you verify it is 99\%? Maybe 'Most' would have been better than '99\%'} of the time you will not need to think about metaclasses, and may happily ignore them.
+(We will have a closer look at metaclasses in \charef{metaclasses}.)
+
+%---------------------------------------------------------
+\subsection{Instance variables}
+
+Instance variables in \st are private to the \emph{instance} itself.
+This is in contrast to \ind{Java} and \ind{C++}, which allow instance variables (also known as ``fields'' or ``member variables'') to be accessed by any other instance that happens to be of the same class.
+We say that the \emphind{encapsulation boundary} of objects in Java and C++ is the class, whereas in \st it is the instance.
+\seeindex{variable!instance}{instance variable}
+\seeindex{field}{instance variable}
+\seeindex{attribute}{instance variable}
+\seeindex{slot}{instance variable}
+\index{instance variable}
+
+In \st, two instances of the same class cannot access each other's instance variables unless the class defines ``\ind{accessor} methods''.
+There is no language syntax that provides direct access to the instance variables of any other object.
+(Actually, a mechanism called \ind{reflection}
+%, discussed in \charef{metaprog},
+does provide a way to ask another object for the values of its instance variables; meta-programming is intended for writing tools like the object \ind{inspector}, whose sole purpose is to look inside other objects.)
+
+Instance variables can be accessed by name in any of the instance methods of the class that defines them, and also in the methods defined in its subclasses. This means that \st instance variables are similar to \emph{protected} variables in C++ and Java. However, we prefer to say that they are private, because it is considered bad style in \st to access an instance variable directly from a subclass. 
+
+\subsubsection{Example}
+Method \cmind{Point}{dist:} (\mthref{dist:}) computes the distance between the receiver and another point. The instance variables \ct{x} and \ct{y} of the receiver are accessed directly by the method body.  However, the instance variables of the other point must be accessed by sending it the messages \ct{x} and \ct{y}.
+
+\needlines{7}
+\begin{method}[dist:]{the distance between two points}
+Point>>>dist: aPoint 
+	"Answer the distance between aPoint and the receiver."  
+	| dx dy |
+	dx := aPoint x - x.
+	dy :=  aPoint y - y.
+	^ ((dx * dx) + (dy * dy)) sqrt
+\end{method}
+
+\begin{code}{@TEST}
+1@1 dist: 4@5 --> 5.0
+\end{code}
+
+The key reason to prefer instance-based encapsulation to class-based encapsulation is that it enables different implementations of the same abstraction to coexist.
+For example, method \ct{point>>>dist:}, need not know or care whether the argument \ct{aPoint} is an instance of the same class as the receiver.  The argument object might be represented in polar coordinates, or as a record in a database, or on another computer in a distributed system; as long as it can respond to the messages \ct{x} and \ct{y}, the code in \mthref{dist:} will still work.
+
+%---------------------------------------------------------
+\subsection{Methods}
+
+All methods are \subind{method}{public}.\footnote{Well, almost all.  In \squeak, methods whose selectors start with the string \ct{pvt} are private: a \ct{pvt} message can be sent \emph{only} to \self.  However, \ct{pvt} methods are not used very much.}
+Methods are grouped into protocols that indicate their intent.
+Some common protocol names have been established by convention, for example, \protind{accessing} for all accessor methods, and \protind{initialization} for establishing a consistent initial state for the object.
+The protocol \protind{private} is sometimes used to group methods that should not be seen from outside.
+Nothing, however, prevents you from sending a message that is implemented by such a ``private'' method.
+
+Methods can access all instance variables of the object.
+Some \st developers prefer to access instance variables only through accessors.
+This practice has some value, but it also clutters the interface of your classes, and worse, exposes private state to the world.
+
+%---------------------------------------------------------
+\subsection{The instance side and the class side}
+
+Since classes are objects, they can have their own instance variables and their own methods.
+We call these \emph{class instance variables} and \emph{class methods}, but they are really no different from ordinary instance variables and methods:
+class instance variables are just instance variables defined by a metaclass, and class methods are just methods defined by a \ind{metaclass}. 
+\index{class!instance variable}
+\seeindex{variable!class instance}{class, instance variable}
+\index{class!method}
+
+A class and its \ind{metaclass} are two separate classes, even though the former is an instance of the latter. 
+However, this is largely irrelevant to you as a programmer: you are concerned with defining the behavior of your objects and the classes that create them.
+
+\begin{figure}[htb]
+\begin{center}
+\includegraphics[width=\textwidth]{Color-Buttons}
+\caption{Browsing a class and its metaclass.
+% \sd{Do we use Key everywhere in the picture as a legend indicator?}
+% \on{sure, wherever appropriate}
+\label{fig:Buttons}}
+\end{center}
+\end{figure}
+
+For this reason, the browser \index{system browser} helps you to browse both class and metaclass as if they were a single thing with two ``sides'': the ``\subind{system browser}{instance side}'' and the ``\subind{system browser}{class side}'', as shown in \figref{Buttons}. Clicking 
+on the \button{instance} button browses the class \ct{Color}, \ie you browse the methods that are executed when messages
+are sent to an instance of \ct{Color}, like the blue color. Pressing the \button{class} button browses the class \ct{Color class}, \ie you see
+the methods that will be executed when messages are sent to the class \ct{Color} itself.
+For example, \ct{Color blue} sends the message \ct{blue} to the class \clsind{Color}.
+You will therefore find the method \ct{blue} defined on the class side of \ct{Color}, not on the instance side.
+\seeindex{class side}{system browser!class side}
+\seeindex{instance side}{system browser!instance side}
+
+\needlines{5}
+\begin{code}{@TEST | aColor |}
+aColor := Color blue.               "Class side method blue"
+aColor        --> Color blue
+aColor red  --> 0.0         "Instance side accessor method red"
+aColor blue --> 1.0        "Instance side accessor method blue"
+\end{code}
+
+You define a class by filling in the template proposed on the \subind{system browser}{instance side}.
+When you accept this template, the system creates not just the class that you defined, but also the corresponding metaclass.
+You can browse the metaclass by clicking on the \button{class} button.
+The only part of the metaclass creation template that makes sense for you to edit directly is the list of instance variable names.
+
+Once a class has been created, clicking the \button{instance} button lets you edit and browse the methods that will be possessed by instances of that class (and of its subclasses). For example, we can see in \figref{Buttons} that the method \ct{hue} is defined on instances of the class \ct{Color}.
+In contrast, the \button{class} button lets you browse and edit the metaclass (in this case \ct{Color class}).
+
+%---------------------------------------------------------
+\subsection{Class methods} 
+
+Class methods can be quite useful; browse \ct{Color class} for some good examples.
+You will see that there are two kinds of \subind{class}{method} defined on a class: those that create instances of the class, like \cmind{Color class}{blue} and those that perform a utility function, like 
+\cmind{Color class}{showColorCube}.
+This is typical, although you will occasionally find class methods used in other ways.
+
+It is convenient to place utility methods on the \subind{system browser}{class side} because they can be executed without having to create any additional objects first.
+Indeed, many of them will contain a comment designed to make it easy to execute them.
+
+\dothis{Browse method \ct{Color class>>>showColorCube}, double-click just inside the quotes on the comment \ct{"Color showColorCube"} and type \short{d}.}
+You will see the effect of executing this method.  (Select \menu{World \go \ind{restore display}~(r)} to undo the effects.)
+
+For those familiar with \ind{Java} and \ind{C++},  class methods may seem similar to static methods. 
+However, the uniformity of \st means that they are somewhat different: whereas Java static methods are really just statically-resolved procedures, \st class methods are dynamically-dispatched methods.  This means that inheritance, overriding and super-sends work for class methods in \st, whereas they don't work for static methods in Java.  
+
+%---------------------------------------------------------
+\subsection{Class instance variables}
+With ordinary instance variables, all the instances of a class have the same set of variable names, and the instances of its subclasses inherit those names; however, each instance has its own private set of values.
+The story is exactly the same with class \subind{class}{instance variable}{}s: each class has its own private class instance variables.
+A subclass will inherit those class instance variables, \emph{but it has its own private copies of those variables}.
+Just as objects don't share instance variables, neither do classes and their subclasses share class instance variables.
+
+You could use a class instance variable called \ct{count} to keep track of how many instances you create of a given class.
+However, any subclass would have its own \ct{count} variable, so subclass instances would be counted separately.
+
+\paragraph{Example: class instance variables are not shared with subclasses.}
+Suppose we define classes \ct{Dog} and \ct{Hyena}, where \ct{Hyena} inherits the class instance variable \ct{count} from \ct{Dog}.
+
+\begin{classdef}[dog]{Dogs and Hyenas}
+Object subclass: #Dog
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'SBE-CIV'
+
+Dog class
+	instanceVariableNames: 'count'
+
+Dog subclass: #Hyena
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'SBE-CIV'
+\end{classdef}
+
+Now suppose we define class methods for \ct{Dog} to initialize its \ct{count} to \ct{0}, and to increment it when new instances are created:
+\begin{method}[dogcount]{Keeping count of new dogs}
+Dog class>>>initialize
+	super initialize.
+	count := 0.
+
+Dog class>>>new
+	count := count +1.
+	^ super new
+
+Dog class>>>count
+	^ count
+\end{method}
+
+Now when we create a new \ct{Dog} its count is incremented, and so is that of every \ct{Hyena}, but they are counted separately:
+\begin{code}{}
+Dog initialize.
+Hyena initialize.
+Dog count     --> 0
+Hyena count --> 0
+Dog new.
+Dog count     --> 1
+Dog new.
+Dog count     --> 2
+Hyena new.
+Hyena count --> 1
+\end{code}
+% ON: In order to make this a test, I need the previous code to be part of the setup. Bleh.
+
+Note also that class instance variables are private to a class in exactly the same way that instance variables are private to the instance.
+Since classes and their instances are different objects,
+this has the following immediate consequences:
+\important{A class does not have access to the instance variables of its own instances.}
+\important{An instance of a class does not have access to the class instance variables of its class.}
+For this reason, instance initialization methods must always be defined on the \subind{system browser}{instance side}\,---\,the \subind{system browser}{class side} has no access to instance variables, so cannot initialize them!  
+All that the class can do is to send \ind{initialization} messages, possibly using accessors, to newly created instances.
+
+Similarly, instances can only access class instance variables indirectly, by sending accessor messages to their class.
+
+\ind{Java} has nothing equivalent to class instance variables.  
+Java and \ind{C++} static variables are more like \st class variables, which we will discuss in \secref{classVars}: all of the subclasses and all of their instances share the same static variable.
+
+\paragraph{Example: Defining a Singleton.}
+The \ind{Singleton pattern}~\cite{Alpe98a} provides a typical example of the use of class instance variables and class methods.
+Imagine that we would like to implement a class \ct{WebServer} and use the Singleton pattern to ensure that it has only one instance.
+
+Clicking on the \button{instance} button in the browser, we define the class \clsind{WebServer} as follows (\clsref{singleton}).
+
+\begin{classdef}[singleton]{A singleton class}
+Object subclass: #WebServer
+	instanceVariableNames: 'sessions' 	
+	classVariableNames: '' 	
+	poolDictionaries: '' 	
+	category: 'Web'
+\end{classdef}
+
+Then, clicking on the \button{class} button, we add the instance variable \ct{uniqueInstance} to the \subind{system browser}{class side}.
+
+\begin{classdef}[webserver]{The class side of the singleton class}
+WebServer class 	
+	instanceVariableNames: 'uniqueInstance'
+\end{classdef}
+
+The consequence of this is that the class \ct{WebServer} now has another instance variable,
+in addition to the variables that it inherits, such as \ct{superclass} and \ct{methodDict}.
+
+We can now define a class \subind{class}{method} named \ct{uniqueInstance} as shown in \mthref{uniqueInstance}. 
+This method first checks whether \ct{uniqueInstance} has been initialized.
+If it has not, the method creates an instance and assigns it to the class instance variable \ct{uniqueInstance}.  
+Finally the value of \ct{uniqueInstance} is returned.
+Since \ct{uniqueInstance} is a class instance variable, this method can directly access it.
+    
+\begin{method}[uniqueInstance]{uniqueInstance (on the class side)}
+WebServer class>>>uniqueInstance
+     uniqueInstance ifNil: [uniqueInstance := self new].
+     ^ uniqueInstance
+\end{method}
+
+The first time that \ct{WebServer uniqueInstance} is executed, an instance of the class \ct{WebServer} will be created and assigned to the \ct{uniqueInstance} variable. 
+The next time, the previously created instance will be returned instead of creating a new one. 
+
+Note that the instance creation code inside the conditional in \mthref{uniqueInstance} is written as \ct{self new} and not as \ct{WebServer new}.
+What is the difference?   Since the \ct{uniqueInstance} method is defined in \ct{WebServer class}, you might think that they were the same.    And indeed, until someone creates a subclass of \ct{WebServer}, they are the same.  But suppose that \ct{ReliableWebServer} is a subclass of \ct{WebServer}, and inherits the \ct{uniqueInstance} method.  We would clearly expect \ct{ReliableWebServer uniqueInstance} to answer a \lct{ReliableWebServer}:. Using \self ensures that this will happen, since it will be bound to the respective class.
+Note also that \ct{WebServer} and \ct{ReliableWebServer} will each have their own class instance variable called \ct{uniqueInstance}.  These two variables will of course have different values.
+
+%=========================================================
+\section{Every class has a superclass}
+
+%\ruleref{inheritance}
+
+Each class in \st inherits its behaviour and the description of its structure from a single \emphind{superclass}.
+This means that \st has single \ind{inheritance}.
+
+\needlines{2}
+\begin{code}{@TEST}
+SmallInteger superclass --> Integer
+Integer superclass          --> Number
+Number superclass        --> Magnitude
+Magnitude superclass    --> Object
+Object superclass           --> ProtoObject
+ProtoObject superclass  --> nil
+\end{code}
+
+Traditionally the root of the \st inheritance hierarchy is the class \clsind{Object} (since everything is an object).
+In \squeak, the root is actually a class called \clsind{ProtoObject}, but you will normally not pay any attention to this class.
+\ct{ProtoObject} encapsulates the minimal set of messages that all objects \emph{must} have.  However, most classes inherit from \ct{Object}, which defines many additional messages that almost all objects ought to understand and respond to.
+Unless you have a very good reason to do otherwise, when creating application classes you should normally subclass \ct{Object}, or one of its subclasses.
+
+\dothis{A new class is normally created by sending the message
+\ct{subclass: instanceVariableNames: ...}
+to an existing class.
+There are a few other methods to create classes.
+Have a look at the protocol \prot{Kernel-Classes \go Class \go subclass creation} to see what they are.}
+\scatindex{Kernel-Classes}
+\protindex{creation}
+
+%There is no special syntax for creating abstract classes in \st.
+%An abstract class is an ordinary class in which the implementation of some methods is deferred to a subclass.
+%This is repeated in the next section
+
+Although \squeak does not provide multiple inheritance, since version 3.9 it has incorporated a mechanism called \emphind{trait}{}s for sharing behaviour across unrelated classes.
+Traits are collections of methods that can be reused by multiple classes that are not related by inheritance. Using traits allows one to share code between different classes without duplicating code.
+
+%---------------------------------------------------------
+\subsection{Abstract methods and abstract classes}
+
+An \subind{class}{abstract} class is a class that exists to be subclassed, rather than to be instantiated.
+An abstract class is usually incomplete, in the sense that it does not define all of the methods that it uses.
+The ``missing'' methods\,---\,those that the other methods assume, but which are not themselves defined\,---\,are called \subind{method}{abstract} methods.
+\seeindex{abstract class}{class, abstract}
+\seeindex{abstract method}{method, abstract}
+
+\st has no dedicated syntax to specify that a method or a class is abstract. 
+By convention, the body of an abstract method consists of the expression \mbox{\ct{self subclassResponsibility}.} 
+This is known as a ``marker method'', and indicates that subclasses have the responsibility to define a concrete version of the method. 
+\ct{self subclassResponsibility} methods should always be overridden, and thus should never be executed.
+If you forget to override one, and it is executed, an exception will be raised. 
+\cmindex{Object}{subclassResponsibility}
+
+A class is considered abstract if one of its methods is abstract.
+Nothing actually prevents you from creating an instance of an abstract class; everything will work until an abstract method is invoked. 
+
+\subsubsection{Example: the class \ct{Magnitude}.}
+\clsind{Magnitude} is an abstract class that helps us to  define objects that can be compared to each other. Subclasses of \ct{Magnitude} should implement the methods \ct{<}, \ct{=} and \ct{hash}. Using such messages \ct{Magnitude} defines other methods such as \ct{>}, \ct{>=}, \ct{<=}, \ct{max:}, \ct{min:} \ct{between:and:} and others for comparing objects. Such methods are inherited by subclasses. The method \mthind{Magnitude}{<} is abstract and defined as shown in \mthref{MagnitudeLessThan}.
+
+\begin{method}[MagnitudeLessThan]{\ct{Magnitude>>><}}
+Magnitude>>>< aMagnitude 
+	"Answer whether the receiver is less than the argument."
+	^self subclassResponsibility
+\end{method}
+
+\noindent
+By contrast, the method \mthind{Magnitude}{>=} is concrete; it is defined in terms of \ct{<}:
+
+\begin{method}[Magnitude>=]{\ct{Magnitude>>>>=}}
+>= aMagnitude 
+	"Answer whether the receiver is greater than or equal to the argument."
+	^(self < aMagnitude) not
+\end{method}
+The same is true of the other comparison methods.
+
+\clsind{Character} is a subclass of \ct{Magnitude}; it overrides the \mthind{Object}{subclassResponsibility} method for \ct{<} with its own version of \ct{<} (see \mthref{CharacterLessThan}).  \ct{Character} also defines methods \ct{=} and \ct{hash}; it inherits from \ct{Magnitude} the methods \ct{>=}, \ct{<=}, \ct{~=} and others.
+
+\begin{method}[CharacterLessThan]{\ct{Character>>><}}
+Character>>>< aCharacter 
+	"Answer true if the receiver's value < aCharacter's value."
+	^self asciiValue < aCharacter asciiValue
+\end{method}
+
+%---------------------------------------------------------
+\subsection{Traits}
+A \emphind{trait} is a collection of methods that can be included in the behaviour of a class without the need for inheritance.
+This makes it easy for classes to have a unique superclass, yet still share useful methods with otherwise unrelated classes.
+
+To define a new trait, simply replace the subclass creation template by a message to the class \clsind{Trait}.
+
+\needspace{5\baselineskip}
+\begin{classdef}[tauthor]{Defining a new trait}
+Trait named: #TAuthor
+	uses: { }
+	category: 'SBE-Quinto'
+\end{classdef}
+
+\noindent
+Here we define the trait \ct{TAuthor} in the category \scat{SBE-Quinto}.
+This trait does not \emph{use} any other existing traits.
+In general we can specify a \emph{trait composition expression} of other traits to use as part of the \ct{uses:} keyword argument.
+Here we simply provide an empty array.
+
+Traits may contain methods, but no instance variables.
+Suppose we would like to be able to add an \ct{author} method to various classes, independent of where they occur in the hierarchy.
+We might do this as follows:
+
+\begin{method}[author]{An author method}
+TAuthor>>>author
+    "Returns author initials"
+	^ 'on'    "oscar nierstrasz"
+\end{method}
+
+\noindent
+Now we can use this trait in a class that already has its own superclass, for instance the \ct{SBEGame} class that we defined in \charef{firstApp}.
+We simply modify the class creation template for \ct{SBEGame} to include a \ct{uses:} keyword argument that specifies that \ct{TAuthor} should be used.
+
+\begin{classdef}[sbegamewithtrait]{Using a trait}
+BorderedMorph subclass: #SBEGame
+	uses: TAuthor
+	instanceVariableNames: 'cells'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'SBE-Quinto'
+\end{classdef}
+
+If we now instantiate \ct{SBEGame}, it will respond to the \ct{author} message as expected.
+
+\begin{code}{}
+SBEGame new author --> 'on'
+\end{code}
+
+Trait composition expressions may combine multiple traits using the \ct{+} operator.
+In case of conflicts (\ie if multiple traits define methods with the same name), these conflicts can be resolved by explicitly removing these methods (with \ct{-}), or by redefining these methods in the class or trait that you are defining.
+It is also possible to \emph{alias} methods (with \ct{@}), providing a new name for them.
+
+Traits are used in the system kernel.
+One good example is the class \clsind{Behavior}.
+
+\needlines{8}
+\begin{classdef}[behaviorwithtraits]{\ct{Behavior} defined using traits}
+Object subclass: #Behavior
+	uses: TPureBehavior @ {#basicAddTraitSelector:withMethod:->#addTraitSelector:withMethod:}
+	instanceVariableNames: 'superclass methodDict format'
+	classVariableNames: 'ObsoleteSubclasses'
+	poolDictionaries: ''
+	category: 'Kernel-Classes'
+\end{classdef}
+\noindent
+Here we see that the method \ct{addTraitSelector:withMethod:} defined in the trait \ct{TPureBehavior} has been aliased to \ct{basicAddTraitSelector:withMethod:}.
+Support for traits is currently being added to the browsers.
+
+%=========================================================
+\section{Everything happens by message sending}
+
+%\ruleref{message}
+
+This rule captures the essence of programming in \st.
+
+In procedural programming, the choice of which piece of code to execute when a procedure is called is made by the caller.
+The caller chooses the procedure or function to execute \emph{statically}, by name.  
+
+In object-oriented programming, we do \emph{not} ``call methods'': we ``\subind{message}{send} messages.''
+The choice of terminology is significant.
+Each object has its own responsibilities.
+We do not \emph{tell} an object what to do by applying some procedure to it.
+Instead, we politely \emph{ask} an object to do something for us by sending it a message.
+The message is \emph{not} a piece of code: it is nothing but a name and a list of arguments.
+The receiver then decides how to respond by selecting its own \emph{method} for doing what was asked.
+Since different objects may have different methods for responding to the same message, the method must be chosen \emph{dynamically}, when the message is received.
+\begin{code}{@TEST}
+3 + 4         --> 7          "send message + with argument 4 to integer  3"
+(1@2) + 4 --> 5@6    "send message + with argument 4 to point (1@2)"
+\end{code}
+\noindent
+As a consequence, we can send the \emph{same message} to different objects, each of which may have \emph{its own method} for responding to the message.
+We do not tell the \ct{SmallInteger} \ct{3} or the \ct{Point} \ct{1@2} how to respond to the message \ct{+ 4}.
+Each has its own method for \ct{+}, and responds to \ct{+ 4} accordingly.
+
+One of the consequences of \st's model of message sending is that it encourages a style in which objects tend to have very small methods and delegate tasks to other objects, rather than implementing huge, procedural methods that assume too much responsibility.
+Joseph Pelrine
+\ab{Citation?}
+\on{sorry, just personal communication and my own lecture notes!}
+expresses this principle succinctly as follows:
+\important{Don't do anything that you can push off onto someone else.}
+\index{Pelrine, Joseph}
+
+Many object-oriented languages provide both static and dynamic operations for objects; in \st there are only dynamic message sends. Instead of providing static class operations, for instance, classes are objects and we simply send messages to classes.
+
+\emph{Nearly} everything in \st happens by message sends.
+At some point action must take place:
+\begin{itemize}
+  \item \emph{Variable declarations} are not message sends.
+  		In fact, variable \subind{variable}{declaration}{}s are not even executable.
+  		Declaring a variable just causes space to be allocated for an object reference.
+  \item \emph{Assignments} are not message sends.
+  		An \ind{assignment} to a variable causes that variable name to be freshly bound in the scope of its definition.
+  \item \emph{Returns} are not message sends.
+  		A \ind{return} simply causes the computed result to be returned to the sender.
+  \item \emph{Primitives} are not message sends.
+  		They are implemented in the \ind{virtual machine}.
+		\index{primitive}
+\end{itemize}
+Other than these few exceptions, pretty much everything else does truly happen by sending messages.
+In particular, since there are no ``public fields'' in \st, the only way to update an \ind{instance variable} of another object is to send it a message asking that it update its own field.
+Of course, providing setter and getter methods for all the instance variables of an object is not good object-oriented style.
+Joseph Pelrine also states this very nicely:
+\important{Don't let anyone else play with your data.}
+
+%=========================================================
+\section{Method lookup follows the inheritance chain} 
+
+%\ruleref{lookup}
+
+What exactly happens when an object receives a message?
+
+The process is quite simple:
+the class of the receiver looks up the method to use to handle the message.
+If this class does not have a method, it asks its \ind{superclass}, and so on, up the \ind{inheritance} chain.
+When the method is found, the arguments are bound to the parameters of the method, and the \ind{virtual machine} executes it.
+\index{method!lookup}
+
+It is essentially as simple as this.
+Nevertheless there are a few questions that need some care to answer:
+
+\begin{itemize}
+  \item \emph{What happens when a method does not explicitly return a value?}
+  \item \emph{What happens when a class reimplements a superclass method?}
+  \item \emph{What is the difference between \pvind{self} and \pvind{super} sends?}
+  \item \emph{What happens when no method is found?}
+\end{itemize}
+
+The rules for method lookup that we present here are conceptual: virtual machine implementors use all kinds of tricks and optimizations to speed-up method lookup. 
+That's their job, but you should never be able to detect that they are doing something different from our rules.
+% Whatever the implementation does, these rules will give you a clear understanding of the semantics of sending messages to \self and \super.
+
+First let us look at the basic lookup strategy, and then consider these further questions.
+
+%---------------------------------------------------------
+\subsection{Method lookup}
+Suppose we create an instance of \ct{EllipseMorph}.
+\begin{code}{@TEST | anEllipse |}
+anEllipse := EllipseMorph new.
+\end{code}
+\noindent
+If we now send this object the message \ct{defaultColor}, we get the result \ct{Color yellow}:
+\begin{code}{@TEST | anEllipse | anEllipse := EllipseMorph new.}
+anEllipse defaultColor --> Color yellow
+\end{code}
+\noindent
+The class \ct{EllipseMorph} implements \ct{defaultColor}, so the appropriate method is found immediately.
+
+\begin{method}[defaultColor]{A locally implemented method}
+EllipseMorph>>>defaultColor
+	"answer the default color/fill style for the receiver"
+	^ Color yellow
+\end{method}
+\cmindex{EllipseMorph}{defaultColor}
+
+In contrast, if we send the message \ct{openInWorld} to \ct{anEllipse}, the method is not immediately found, since the class \ct{EllipseMorph} does not implement \ct{openInWorld}.
+The search therefore continues in the superclass, \lct{BorderedMorph}, and so on, until an \ct{openInWorld} method is found in the class \ct{Morph} (see \figref{openInWorldLookup}).
+
+\begin{method}[openInWorld]{An inherited method}
+Morph>>>openInWorld
+	"Add this morph to the world.  If in MVC, then provide a Morphic window for it."
+	self couldOpenInMorphic
+		ifTrue: [self openInWorld: self currentWorld]
+		ifFalse: [self openInMVC]
+\end{method}
+\cmindex{Morph}{openInWorld}
+
+\begin{figure}[htb]
+\begin{center}
+\ifluluelse
+	{\includegraphics[width=\textwidth]{openInWorldLookup}}
+	{\includegraphics[width=0.8\textwidth]{openInWorldLookup}}
+\caption{Method lookup follows the inheritance hierarchy.\label{fig:openInWorldLookup}}
+\end{center}
+\end{figure}
+
+%---------------------------------------------------------
+\subsection{Returning self}
+
+Notice that \ct{EllipseMorph>>>defaultColor} (\mthref{defaultColor}) explicitly returns \ct{Color yellow} whereas \ct{Morph>>>openInWorld} (\mthref{openInWorld}) does not appear to return anything.
+
+Actually a method \emph{always} answers a message with a value\,---\,which is, of course, an object.
+The answer may be defined by the \ct{^} construct in the method, but if execution reaches the end of the method without executing a \ct{^}, the method still answers a value: it answers the object that received the message.
+We usually say that the method ``answers \self'', because in Smalltalk the pseudo-variable \self represents the receiver of the message, rather like \ct{this} in \ind{Java}.
+\index{variable!pseudo}
+\index{return}
+\seeindex{caret}{return}
+
+This suggests that \mthref{openInWorld} is equivalent to \mthref{openInWorldReturnSelf}:
+
+\needlines{5}
+\begin{method}[openInWorldReturnSelf]{Explicitly returning self}
+Morph>>>openInWorld
+	"Add this morph to the world.  If in MVC,
+	then provide a Morphic window for it."
+	self couldOpenInMorphic
+		ifTrue: [self openInWorld: self currentWorld]
+		ifFalse: [self openInMVC].
+	^ self		"Don't do this unless you mean it!"
+\end{method}
+
+Why is writing \ct{^ self} explicitly not a good thing to do?
+Well, when you return something explicitly, you are communicating that you are returning something of interest to the sender.
+When you explicitly return \self, you are saying that you expect the sender to use the returned value.
+This is not the case here, so it is best not to explicitly return \self.
+
+This is a common idiom in \st, which Kent Beck refers to as ``Interesting return value'' \cite{Beck97a}:
+\index{Beck, Kent}
+
+\important{Return a value only when you intend for the sender to use the value.}
+
+%---------------------------------------------------------
+\subsection{Overriding and extension}
+
+If we look again at the \ct{EllipseMorph} class hierarchy in \figref{openInWorldLookup}, we see that the classes \ct{Morph} and \mbox{\ct{EllipseMorph}} both implement \ct{defaultColor}.
+In fact, if we open a new morph (\ct{Morph new openInWorld}) we see that we get a blue morph, whereas an ellipse will be yellow by default.
+\index{method!overriding}
+\index{method!extension}
+\seeindex{overriding}{method, overriding}
+\seeindex{extension}{method, extension}
+
+We say that \ct{EllipseMorph} \emph{overrides} the \ct{defaultColor} method that it inherits from \ct{Morph}.
+The inherited method no longer exists from the point of view of \ct{anEllipse}.
+
+Sometimes we do not want to override inherited methods, but rather \emph{extend} them with some new functionality, that is, we would like to be able to invoke the overridden method \emph{in addition to} the new functionality we are defining in the subclass.
+In \st, as in many object-oriented languages that support single inheritance, this can be done with the help of \super sends.
+
+The most important application of this mechanism is in the \ct{initialize} method.
+Whenever a new instance of a class is initialized, it is critical to also initialize any inherited instance variables.
+However, the knowledge of how to do this is already captured in the \ct{initialize} methods of each of the superclass in the inheritance chain.
+The subclass has no business even trying to initialize inherited instance variables!
+
+It is therefore good practice whenever implementing an initialize method to send \ct{super initialize} before performing any further \ind{initialization}:
+\index{super!initialize}
+
+\needlines{6}
+\begin{method}[morphinit]{Super initialize}
+BorderedMorph>>>initialize
+	"initialize the state of the receiver"
+	super initialize.
+	self borderInitialize
+\end{method}
+
+\important{An \ct{initialize} method should always start by sending \ct{super initialize}.}
+
+%---------------------------------------------------------
+\subsection{Self sends and super sends}
+
+We need \super \subind{super}{send}{}s to compose inherited behaviour that would otherwise be overridden.
+The usual way to compose methods, whether inherited or not, however, is by means of \self \subind{self}{send}{}s.
+
+How do \self sends differ from \super sends?
+Like \self, \super represents the receiver of the message.
+The only thing that changes is the \ind{method lookup}.
+Instead of lookup starting in the class of the receiver, it starts in the superclass of the class of the method where the \super send occurs.
+
+Note that \super is \emph{not} the superclass!
+It is a common and natural mistake to think this.
+It is also a mistake to think that lookup starts in the superclass of the receiver.
+We shall see with the following example precisely how this works.
+
+Consider the message \ct{initString}, which we can send to any morph:
+\begin{code}{@TEST | anEllipse | anEllipse := EllipseMorph new.}
+anEllipse initString --> '(EllipseMorph newBounds: (0@0 corner: 50@40) color: Color yellow) setBorderWidth: 1 borderColor: Color black'
+\end{code}
+The return value is a string that can be evaluated to recreate the morph.
+
+How exactly is this result obtained through a combination of \self and \super sends?
+First, \ct{anEllipse initString} will cause the method \ct{initString} to be found in the class \ct{Morph},
+as shown in \figref{initStringLookup}.
+
+\begin{figure}[htb]
+\begin{center}
+\ifluluelse
+	{\includegraphics[width=\textwidth]{initStringLookup}}
+	{\includegraphics[width=0.8\textwidth]{initStringLookup}}
+\caption{\self and \super sends\label{fig:initStringLookup}}
+\end{center}
+\end{figure}
+
+\needlines{5}
+\begin{method}[initString]{A \self send}
+Morph>>>initString
+	^ String streamContents: [:s | self fullPrintOn: s]
+\end{method}
+The method \cmind{Morph}{initString} performs a \self send of \ct{fullPrintOn:}.
+This causes a second lookup to take place, starting in the class \ct{EllipseMorph}, and finding \mthind{BorderedMorph}{fullPrintOn:} in \ct{BorderedMorph} (see \figref{initStringLookup} once again).
+What is critical to notice is that the \self send causes the method lookup to start again in the class of the receiver, namely the class of \ct{anEllipse}.
+
+\important{A \self send triggers a \emph{dynamic} method lookup starting in the class of the receiver.}
+
+\needlines{4}
+\begin{method}[fullPrintOn]{Combining \super and \self sends}
+BorderedMorph>>>fullPrintOn: aStream
+	aStream nextPutAll: '('.
+	!\textbf{super fullPrintOn: aStream.}!
+	aStream nextPutAll: ') setBorderWidth: '; print: borderWidth;
+		nextPutAll: ' borderColor: ' , (self colorString: borderColor)
+\end{method}
+At this point, \ct{BorderedMorph>>>fullPrintOn:} does a \super send to extend the 
+\ct{fullPrintOn:} behaviour it inherits from its superclass.
+Because this is a \super send, the lookup now starts in the superclass of the class where the \super send occurs, namely in \ct{Morph}.
+We then immediately find and evaluate \ct{Morph>>>fullPrintOn:}.
+
+Note that the \super lookup did not start in the superclass of the receiver.
+This would have caused lookup to start from \ct{BorderedMorph}, resulting in an infinite loop!
+
+\important{A \super send triggers a \emph{static} method lookup starting in the superclass of the class of the method performing the \super send.}
+
+If you think carefully about \super send and \figref{initStringLookup}, you will realize that \super bindings are static: all that matters is the class in which the text of the \super send is found.
+By contrast, the meaning of \self is dynamic: it always represents the receiver of the currently executing message. This means that  \emph{all}  messages sent to \self are looked-up by starting in the receiver's class.
+
+%---------------------------------------------------------
+\subsection{Message not understood}
+
+What happens if the method we are looking for is not found?
+\index{message!not understood}
+
+Suppose we send the message \ct{foo} to our ellipse.
+First the normal method lookup would go through the inheritance chain all the way up to \clsind{Object} (or rather \clsind{ProtoObject}) looking for this method.
+When this method is not found, the \ind{virtual machine} will cause the object to send \ct{self doesNotUnderstand: #foo}.
+(See \figref{fooNotFound}.)
+
+\begin{figure}[htb]
+\begin{center}
+\ifluluelse
+	{\includegraphics[width=\textwidth]{fooNotFound}}
+	{\includegraphics[width=0.8\textwidth]{fooNotFound}}
+\caption{Message \lct{foo} is not understood\label{fig:fooNotFound}}
+\end{center}
+\end{figure}
+
+Now, this is a perfectly ordinary, dynamic message send, so the lookup starts again from the class \ct{EllipseMorph}, but this time searching for the method \ct{doesNotUnderstand:}.
+As it turns out, \ct{Object} implements \ct{doesNotUnderstand:}.
+This method will create a new \ct{MessageNotUnderstood} object which is capable of starting a Debugger in the current execution context.
+
+Why do we take this convoluted path to handle such an obvious error?
+Well, this offers developers an easy way to intercept such errors and take alternative action.
+One could easily override the method \mthind{Object}{doesNotUnderstand:} in any subclass of \ct{Object} and  provide a different way of handling the error.
+
+In fact, this can be an easy way to implement automatic delegation of messages from one object to another.
+A \ct{Delegator} object could simply delegate all messages it does not understand to another object whose responsibility it is to handle them, or raise an error itself!
+
+%=========================================================
+\section{Shared variables}
+
+Now we will look at an aspect of \st that is not so easily covered by our five rules: \subind{variable}{shared} variables.
+
+\st provides three kinds of shared variables: (1) \emph{globally} shared variables; (2) variables shared between instances and classes (\emph{class variables}), and (3) variables shared amongst a group of  classes (\emph{pool variables}).  The names of all of these shared variables start with a capital letter, to warn us that they are indeed shared between multiple objects.
+\index{variable!global}
+\index{class!variable}
+\index{variable!pool}
+
+%---------------------------------------------------------
+\subsection{Global variables}
+In \squeak, all global variables are stored in a namespace called \glbind{Smalltalk}, which is implemented as an instance of the class \clsind{SystemDictionary}.
+Global variables are accessible everywhere. 
+Every class is named by a global variable; in addition, a few globals are used to name special or commonly useful objects.
+
+The variable \glbind{Transcript} names an instance of \clsind{TranscriptStream}, a stream that writes to a scrolling window.
+The following code displays some information and then goes to the next line in the \ct{Transcript}.
+
+\begin{code}{}
+Transcript show: 'Squeak is fun and powerful' ; cr
+\end{code}
+
+\noindent
+Before you \menu{do it}, open a transcript by dragging one from the \emph{Tools} flap.
+
+\hint{Writing to the Transcript is slow, especially when the transcript window is open. 
+So, if you experience some sluggishness and are writing to the Transcript, think about collapsing it.}
+
+\subsubsection{Other useful global variables}
+
+\begin{itemize}
+\item
+\ct{Smalltalk} is the instance of \ct{SystemDictionary} that defines all of the globals\,---\,including \ct{Smalltalk} itself.   
+The keys to this dictionary are the symbols that name the global objects in \st code.
+So, for example,
+\begin{code}{@TEST}
+Smalltalk at: #Boolean --> Boolean
+\end{code}
+Since \ct{Smalltalk} is itself a global variable,
+\begin{code}{}
+Smalltalk at: #Smalltalk-->a SystemDictionary(lots of globals)}
+\end{code} 
+and
+\begin{code}{@TEST}
+(Smalltalk at: #Smalltalk) == Smalltalk --> true
+\end{code}
+
+\item \clsind{Sensor} is an instance of \clsind{EventSensor}, and represents input to \squeak.
+For example, \lct{Sensor keyboard} answers the next character input on the keyboard, and \ct{Sensor leftShiftDown} answers \ct{true} if the left shift key is being held down, while \ct{Sensor mousePoint} answers a \ct{Point} indicating the current mouse location.
+
+\item \glbind{World} is an instance of \clsind{PasteUpMorph} that represents the screen.
+\ct{World bounds} answers a rectangle that defines the whole screen space; all Morphs on the screen are submorphs of \ct{World}.
+\index{Morphic}
+
+\item 
+\glbind{ActiveHand} is the current instance of \clsind{HandMorph}, the graphical representation of the cursor.  \ct{ActiveHand}'s submorphs hold anything being dragged by the mouse.
+\ab{I have never used this, and had to browse the image to see what it is!  What do you use it for?}
+
+\item
+\glbind{Undeclared} is another dictionary\,---\,it contains all the undeclared variables.
+If you write a method that references an undeclared variable, the browser will normally
+prompt you to declare it, for example, as a global or as an instance variable of the class.
+However, if you later delete the declaration, the code will then reference an undeclared variable.
+Inspecting \ct{Undeclared} can sometimes help explain strange behaviour!
+
+\item
+\glbind{SystemOrganization} is an instance of \clsind{SystemOrganizer}: it records the organization of classes into packages.  More precisely, it categorizes the \emph{names} of classes, so
+\begin{code}{@TEST}
+SystemOrganization categoryOfElement: #Magnitude --> #'Kernel-Numbers'
+\end{code}
+
+\end{itemize}
+
+Current practice is to strictly limit the use of global variables; it is usually better to use class instance variables or class variables, and to provide class methods to access them.  Indeed, if \squeak were to be implemented from scratch today, most of the global variables that are not classes would be replaced by singletons.
+
+The usual way to define a global is just to \menu{do it} on an assignment to a capitalized but undeclared identifier.  The parser will then offer to declare the global for you.  If you want to define a global programmatically, just execute \ct{Smalltalk at: #AGlobalName put: nil}.  To remove it, execute \ct{Smalltalk removeKey: #AGlobalName}.
+\glbindex{Smalltalk}
+
+%---------------------------------------------------------
+\subsection{Class variables}
+\label{sec:classVars}
+
+Sometimes we need to share some data amongst all the instances of a 
+class and the class itself.
+This is possible using \emph{class variables}. 
+The term class \subind{class}{variable} indicates that the lifetime of the variable is the same as that of the class. However, what the
+term does not convey is that these variables are shared amongst all the instances of a class as well as the class itself,
+as shown in \figref{privateSharedVar}.
+Indeed, a better name would have been \emph{shared variables} since this expresses more clearly their role, and also warns of the danger of using them, particularly if they are modified.
+
+\begin{figure}[htb]
+\begin{center}
+\ifluluelse
+	{\includegraphics[width=\textwidth]{privateSharedVarColor}}
+	{\includegraphics[width=0.7\textwidth]{privateSharedVarColor}}
+\caption{Instance and class methods accessing different 
+variables.\label{fig:privateSharedVar}}
+\end{center}
+\end{figure}
+
+In \figref{privateSharedVar} we see that \ct{rgb} and \ct{cachedDepth} are instance variables of \ct{Color}, hence only accessible to instances of \clsind{Color}.
+We also see that \lct{superclass}, \lct{subclass}, \lct{methodDict} and so on are class instance variables, \ie instance variables only accessible to the \lct{Color} class.
+
+But we can also see something new: \ct{ColorNames} and \ct{CachedColormaps} are \emph{class variables} defined for \ct{Color}.
+The capitalization of these variables gives us a hint that they are shared.
+In fact, not only may all instances of \ct{Color} access these shared variables, but also the \ct{Color} class itself, \emph{and any of its subclasses}.
+Both instance methods and class methods can access these shared variables.
+
+%\begin{figure}
+%\begin{center}\includegraphics[width=6cm]{dateToday}\caption{A date is an object that  represents only anumber of days; all the information about month names, day names, etc.\ is shared among all the instances \label{fig:dateToday}}\end{center}.
+%\end{figure}
+
+A class \subind{class}{variable} is declared in the class definition template.
+For example, the class \ct{Color} defines a large number of class variables to speed up color creation; its definition is shown below (\clsref{Color}).
+
+\begin{classdef}[Color]{Color and its class variables}
+Object subclass: #Color 	
+        instanceVariableNames: 'rgb cachedDepth cachedBitPattern'
+        classVariableNames: 'Black Blue BlueShift Brown CachedColormaps ColorChart ColorNames ComponentMask ComponentMax Cyan DarkGray Gray GrayToIndexMap Green GreenShift HalfComponentMask HighLightBitmaps IndexedColors LightBlue LightBrown LightCyan LightGray LightGreen LightMagenta LightOrange LightRed LightYellow Magenta MaskingMap Orange PaleBlue PaleBuff PaleGreen PaleMagenta PaleOrange PalePeach PaleRed PaleTan PaleYellow PureBlue PureCyan PureGreen PureMagenta PureRed PureYellow RandomStream Red RedShift TranslucentPatterns Transparent VeryDarkGray VeryLightGray VeryPaleRed VeryVeryDarkGray VeryVeryLightGray White Yellow'
+        poolDictionaries: '' 	
+        category: 'Graphics-Primitives'
+\end{classdef}
+
+The class variable \cvind{ColorNames} is an array containing the name of frequently-used colors. This array is shared by all the instances of \ct{Color} and its subclass \clsind{TranslucentColor}. It is accessible from all the instance and class methods. % (see \figref{ClassVarAccess2}).
+
+\ct{ColorNames} is initialized once in \cmind{Color class}{initializeNames}, but it is accessed from instances of \ct{Color}.
+The method \cmind{Color}{name} uses the variable to find the name of a color.
+Since most colors do not have names, it was thought inappropriate to add an instance variable \ct{name} to every color.
+
+\subsubsection{Class initialization}
+
+The presence of class variables raises the question: how do we initialize them?  
+One solution is lazy \subind{class}{initialization}.
+This can be done by introducing an accessor method which, when executed, initializes the variable if it has not yet been initialized. This implies that we must use the accessor all the time and never use the class variable directly.  This furthermore imposes the cost of the accessor send and the initialization test.
+It also arguably defeats the point of using a class variable, since in fact it is no longer shared.
+
+\begin{method}[colorclasscolornames]{Color class>>colorNames}
+Color class>>>colorNames	
+	ColorNames ifNil: [self initializeNames].
+	^ ColorNames
+\end{method}	
+\cmindex{Color class}{colorNames}
+
+Another solution is to override the class method \ct{initialize}.
+
+\needlines{3}
+\begin{method}[colorclassinit]{Color class>>initialize}
+Color class>>>initialize	
+	!\ldots!
+	self initializeNames
+\end{method}	
+\cmindex{Color class}{initialize}
+
+\noindent
+If you adopt this solution, you need to remember to invoke the \ct{initialize} method after you define it, \eg by evaluating \ct{Color initialize}.
+Although \subind{system browser}{class side} \ct{initialize} methods are executed automatically when code is loaded into memory, they are \emph{not} executed automatically when they are first typed into the browser and compiled, or when they are edited and re-compiled.
+
+%---------------------------------------------------------
+\subsection{Pool variables}
+Pool variables are variables that are shared between several classes that may not be related by inheritance.
+Pool variables were originally stored in pool dictionaries; now they should be defined as class variables of dedicated classes (subclasses of SharedPool). Our advice is to avoid them; you will need them only in rare and specific circumstances.
+Our goal here is therefore to explain \subind{variable}{pool} variables just enough so that you can understand them when you are reading code. 
+
+A class that accesses a pool variable must mention the pool in its class definition. 
+For example, the class \clsind{Text} 
+indicates that it is using the pool dictionary \ct{TextConstants}, which contains all the text constants such as \glbind{CR} and \glbind{LF}. 
+This dictionary has a key \ct{#CR} that is bound to the value \ct{Character cr}, \ie the carriage return character.
+\cmindex{Character class}{cr}
+
+\begin{classdef}[textpooldict]{Pool dictionaries in the \ct{Text} class}
+ArrayedCollection subclass: #Text
+        instanceVariableNames: 'string runs' 	
+        classVariableNames: '' 	
+        !\textbf{poolDictionaries: 'TextConstants'}!
+        category: 'Collections-Text'
+\end{classdef}
+   
+This allows methods of the class \ct{Text} to access the keys of the dictionary in the method body \emph{directly}, \ie by using variable syntax rather than an explicit dictionary lookup.
+For example, we can write the following method. 
+  
+\begin{method}[texttestcr]{Text>>testCR}
+Text>>>testCR 	
+      ^ CR == Character cr
+\end{method}
+
+Once again,  we recommend that you avoid the use of pool variables and pool dictionaries. 
+
+%=========================================================
+\section{Chapter summary}
+
+The object model of \squeak is both simple and uniform.
+Everything is an object, and pretty much everything happens by message sends.
+
+\begin{itemize}
+  \item Everything is an object.
+  Primitive entities like integers are objects, but also classes are first-class objects.
+
+  \item Every object is an instance of a class.
+  Classes define the structure of their instances via \emph{private} instance variables and the behaviour of their instances via \emph{public} methods. Each class is the unique instance of its metaclass.  Class variables are private variables shared by the class and all the instances of the class.
+  Classes cannot directly access instance variables of their instances, and instances cannot access instance variables of their class.
+  Accessors must be defined if this is needed.
+
+  \item Every class has a superclass.
+  The root of the single inheritance hierarchy is \lct{ProtoObject}.
+  Classes you define, however, should normally inherit from \ct{Object} or its subclasses.
+  There is no syntax for defining abstract classes.
+  An abstract class is simply a class with an abstract method\,---\,one 
+  whose implementation consists of the expression \ct{self subclassResponsibility}.
+  Although \squeak supports only single inheritance, it is easy to share implementations of methods by packaging them as \emph{traits}.
+
+  \item Everything happens by message sends.
+	We do not ``call methods'', we ``send messages''.
+	The receiver then chooses its own method for responding to the message.
+
+  \item Method lookup follows the inheritance chain;
+  \self sends are dynamic and start the method lookup again in the class of the receiver, whereas
+  \super sends are static, and start in the superclass of class in which the \super send is written.
+  
+  \item There are three kinds of shared variables.
+  		Global variables are accessible everywhere in the system.
+		Class variables are shared between a class, its subclasses and its instances.
+		Pool variables are shared between a selected set of classes.
+		You should avoid shared variables as much as possible.
+
+\end{itemize}
+
+%=========================================================
+\ifx\wholebook\relax\else
+   \bibliographystyle{jurabib}
+   \nobibliography{scg}
+   \end{document}
+\fi
+%=========================================================
+
+%=================================================================
+%%% Local Variables:
+%%% coding: utf-8
+%%% mode: latex
+%%% TeX-master: t
+%%% TeX-PDF-mode: t
+%%% ispell-local-dictionary: "english"
+%%% End:
+
+%---------------------------------------------------------

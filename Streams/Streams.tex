@@ -1,0 +1,712 @@
+% $Author$
+% $Date$
+% $Revision$
+%=================================================================
+\ifx\wholebook\relax\else
+% --------------------------------------------
+% Lulu:
+	\documentclass[a4paper,10pt,twoside]{book}
+	\usepackage[
+		papersize={6in,9in},
+		hmargin={.75in,.75in},
+		vmargin={.75in,1in},
+		ignoreheadfoot
+	]{geometry}
+	\input{../common.tex}
+	\pagestyle{headings}
+	\setboolean{lulu}{true}
+% --------------------------------------------
+% A4:
+%	\documentclass[a4paper,11pt,twoside]{book}
+%	\input{../common.tex}
+%	\usepackage{a4wide}
+% --------------------------------------------
+    \graphicspath{{figures/} {../figures/}}
+	\begin{document}
+	\renewcommand{\nnbb}[2]{} % Disable editorial comments
+	\sloppy
+\fi
+%=================================================================
+\chapter{Streams}\label{cha:streams}
+
+\clsindexmain{Stream}
+Streams are used to iterate over sequences of elements such as sequenced
+collections, files, and network streams.
+Streams may be either readable, or writeable, or both.
+Reading or writing is always relative to the current position in the stream.
+Streams can easily be converted to collections, and vice versa.
+\lr{"Streams can easily be converted into collections." I wouldn't say it like this, because it is not true for all streams (infinite streams). According to Kent Beck we should only talk about conversion when the same protocol is supported. Collections and Streams do not support the same protocol. (p. 249)}
+
+%=============================================================
+\section{Two sequences of elements}
+A good metaphor to understand a stream is the following: A stream
+can be represented as two sequences of elements: a past element sequence
+and a future element sequence. The stream is positioned between the two
+sequences. Understanding this model is important since all stream
+operations in Smalltalk rely on it.
+For this reason, most of the \clsind{Stream} classes are subclasses of \clsind{PositionableStream}.
+\figref{_abcde} presents a stream which contains five characters. This stream is in its original position, \ie there is no element in the past. You can go back to this position using the message \mthind{PositionableStream}{reset}.
+
+\begin{figure}[ht]
+\centerline{\includegraphics[scale=0.5]{_abcdeStef}}
+\caption{A stream positioned at its beginning.}
+\label{fig:_abcde}
+\vspace{.2in}
+\end{figure}
+
+Reading an element conceptually means removing the first element of the future element sequence  and putting it after the last element in the past
+element sequence. After having read one element using the message \ct{next}, the state of your stream is that shown in \figref{a_bcde}.
+
+\begin{figure}[ht]
+\centerline{\includegraphics[scale=0.5]{a_bcdeStef}}
+\caption{The same stream after the execution of the method \ct{next}: the character \ct{a} is ``in the past'' whereas \ct{b}, \ct{c}, \ct{d} and \ct{e} are ``in the future''.}
+\label{fig:a_bcde}
+\vspace{.2in}
+\end{figure}
+
+Writing an element means replacing the first element of the future sequence by the new one and moving it to the past. \figref{ax_cde} shows the state of the same stream after having written an \ct{x} using the message \mthind{Stream}{nextPut:} \ct{anElement}.
+
+\begin{figure}[h!t]
+\centerline{\includegraphics[scale=0.5]{ax_cdeStef}}
+\caption{The same stream after having written an \ct{x}.}
+\label{fig:ax_cde}
+\vspace{.2in}
+\end{figure}
+
+%=============================================================
+\section{Streams vs. collections}
+
+The collection protocol supports the storage, removal and enumeration
+of the elements of a collection, but does not allow these operations
+to be intermingled.  For example, if the elements of an
+\clsind{OrderedCollection} are processed by a \mthind{OrderedCollection}{do:} method, it is not
+possible to add or remove elements from inside the \ct{do:} block.
+Nor does the collection protocol offer ways to iterate over two
+collections at the same time, choosing which collection goes forward
+and which does not. Procedures like these require that a traversal index or
+position reference is maintained outside of the collection itself:
+this is exactly the role of \clsind{ReadStream}, \clsind{WriteStream} and
+\clsind{ReadWriteStream}.
+
+These three classes are defined to \emph{stream over} some collection.
+For example, the following snippet creates a stream on an interval,
+then it reads two elements.
+\needlines{5}
+\begin{code}{@TEST |r|}
+r := ReadStream on: (1 to: 1000).
+r next.   --> 1
+r next.   --> 2
+r atEnd.--> false
+\end{code}
+
+\ct{WriteStream}s can write data to the collection:
+\begin{code}{@TEST |w|}
+w := WriteStream on: (String new: 5).
+w nextPut: $a.
+w nextPut: $b.
+w contents. -->  'ab'
+\end{code}
+
+It is also possible to create \ct{ReadWriteStream}s that support both
+the reading and writing protocols.
+
+The main problem with \ct{WriteStream} and \ct{ReadWriteStream} is
+that they only support arrays and strings in Squeak. This is currently
+being changed by the development of a new library named Nile, 
+but for now if you try to stream over another kind of
+collection, you will get an error:
+
+\needlines{3}
+\begin{code}{}
+w := WriteStream on: (OrderedCollection new: 20).
+w nextPut: 12. -->  raises an error
+\end{code}
+
+Streams are not only meant for collections, they can be used for files or sockets
+too. The following example creates a file named \ct{test.txt}, writes two strings to it, separated by a carriage return, and closes the file.
+
+\needlines{3}
+\begin{code}{}
+StandardFileStream
+  fileNamed: 'test.txt'
+  do: [:str | str
+                nextPutAll: '123';
+                cr;
+                nextPutAll: 'abcd'].
+\end{code}
+\cmindex{FileStream class}{fileNamed:do:}
+
+The following sections present the protocols in more depth.
+
+%=============================================================
+\section{Streaming over collections}
+
+Streams are really useful when dealing with collections of
+elements. They can be used for reading and writing elements in
+collections. We will now explore the stream features for the
+collections.
+
+%-----------------------------------------------------------------
+\subsection{Reading collections}
+
+This section presents features used for reading collections. Using a
+stream to read a collection essentially provides you a pointer into the collection. That pointer will move forward on reading and you can place it wherever you want. The class \clsindmain{ReadStream} should be used to read elements from collections.
+
+Methods \mthind{ReadStream}{next} and \mthind{ReadStream}{next:} are used to
+retrieve one or more elements from the collection.
+
+\begin{code}{@TEST |stream|}
+stream := ReadStream on: #(1 (a b c) false).
+stream next. -->   1
+stream next. -->   #(#a #b #c)
+stream next. -->   false
+\end{code}
+\cmindex{PositionableStream class}{on:}
+
+\begin{code}{@TEST |stream|}
+stream := ReadStream on: 'abcdef'.
+stream next: 0. -->   ''
+stream next: 1. -->   'a'
+stream next: 3. -->   'bcd'
+stream next: 2. -->   'ef'
+\end{code}
+
+The message \mthind{PositionableStream}{peek} is used when you want to know what is the next element in
+the stream without going forward.
+
+\begin{code}{@TEST |stream negative number|}
+stream := ReadStream on: '-143'.
+negative := (stream peek = $-).    "look at the first element without reading it"
+negative. --> true
+negative ifTrue: [stream next].       "ignores the minus character"
+number := stream upToEnd.
+number. --> '143'
+\end{code}
+\noindent
+This code sets the boolean variable \ct{negative} according to the sign of the
+number in the stream and \ct{number} to its absolute value. The method
+\mthind{ReadStream}{upToEnd} returns everything from the current position to the end
+of the stream and sets the stream to its end. This code can be
+simplified using \mthind{PositionableStream}{peekFor:}, which moves forward if the following element equals the parameter and doesn't move otherwise.
+
+\begin{code}{@TEST |stream negative number|}
+stream := '-143' readStream.
+(stream peekFor: $-) --> true
+stream upToEnd         --> '143'
+\end{code}
+\noindent
+\ct{peekFor:} also returns a boolean
+indicating if the parameter equals the element.
+
+You might have noticed a new way of constructing a stream in
+the above example: one can simply send \mthind{SequenceableCollection}{readStream} to a sequenceable collection to get a reading stream on that particular
+collection.
+
+\paragraph{Positioning.} There are methods to position the stream
+pointer. If you have the index, you can go directly to it using
+\mthind{PositionableStream}{position:}. You can request the current position using
+\mthind{PositionableStream}{position}. Please remember that a stream is not positioned on an
+element, but between two elements. The index corresponding to the
+beginning of the stream is 0.
+
+You can obtain the state of the stream depicted in
+\figref{ab_cde} with the following code:
+
+\begin{code}{@TEST |stream|}
+stream := 'abcde' readStream.
+stream position: 2.
+stream peek --> $c
+\end{code}
+
+\begin{figure}[h!t]
+\centerline{\includegraphics[scale=0.5]{ab_cdeStef}}
+\caption{A stream at position 2}
+\label{fig:ab_cde}
+\vspace{.2in}
+\end{figure}
+
+To position the stream at the beginning or the end,
+% If you want to go to the beginning or at the end is what you want, 
+you can use
+\mthind{PositionableStream}{reset} or \mthind{PositionableStream}{setToEnd}. \mthind{PositionableStream}{skip:} and \mthind{PositionableStream}{skipTo:} are used to
+go forward to a location relative to the current position: \ct{skip:}
+accepts a number as argument and skips that number of elements whereas
+\ct{skipTo:} skips all elements in the stream until it finds an
+element equal to its parameter. Note that it positions the stream
+after the matched element.
+
+\begin{code}{@TEST |stream|}
+stream := 'abcdef' readStream.
+stream next.        --> $a    "stream is now positioned just after the a"
+stream skip: 3.                           "stream is now after the d"
+stream position.  -->   4
+stream skip: -2.                          "stream is after the b"
+stream position.  --> 2
+stream reset.
+stream position.  --> 0
+stream skipTo: $e.                      "stream is just after the e now"
+stream next.        --> $f
+stream contents. --> 'abcdef'
+\end{code}
+
+As you can see, the letter \ct{e} has been skipped.
+
+The method \mthind{PositionableStream}{contents} always returns a copy of the entire stream.
+
+\paragraph{Testing.} Some methods allow you to test the state of the current stream:
+\mthind{PositionableStream}{atEnd} returns true if and only if no more elements can be read whereas \mthind{PositionableStream}{isEmpty} returns true if and only if there is no element at all in the collection.
+
+Here is a possible implementation of an algorithm using \ct{atEnd} that takes two sorted collections as parameters and merges those collections into another sorted collection:
+
+\needlines{4}
+\begin{code}{@TEST |stream1 stream2 result|}
+stream1 := #(1 4 9 11 12 13) readStream.
+stream2 := #(1 2 3 4 5 10 13 14 15) readStream.
+
+"The variable result will contain the sorted collection."
+result := OrderedCollection new.
+[stream1 atEnd not & stream2 atEnd not]
+  whileTrue: [stream1 peek < stream2 peek
+    "Remove the smallest element from either stream and add it to the result."
+    ifTrue: [result add: stream1 next]
+    ifFalse: [result add: stream2 next]].
+
+"One of the two streams might not be at its end. Copy whatever remains."
+result
+  addAll: stream1 upToEnd;
+  addAll: stream2 upToEnd.
+
+result. -->   an OrderedCollection(1 1 2 3 4 4 5 9 10 11 12 13 13 14 15)
+\end{code}
+
+%-----------------------------------------------------------------
+\subsection{Writing to collections}
+
+We have already seen how to read a collection by iterating over its
+elements using a \ct{ReadStream}. We'll now learn how to create
+collections using \clsindmain{WriteStream}{}s.
+
+\ct{WriteStream}s are useful for appending a lot of data to a collection at various locations. They are often used to construct strings that are based on static and dynamic parts as in this example:
+
+\begin{code}{NB: can't be tested due to the changing number of classes}
+stream := String new writeStream.
+stream
+  nextPutAll: 'This Smalltalk image contains: ';
+  print: Smalltalk allClasses size;
+  nextPutAll: ' classes.';
+  cr;
+  nextPutAll: 'This is really a lot.'.
+
+stream contents. --> 'This Smalltalk image contains: 2322 classes.
+This is really a lot.'
+\end{code}
+
+This technique is used in the different implementations of the method
+\ct{printOn:} for example. There is a simpler and more efficient way
+of creating streams if you are only interested in the content of the
+stream:
+
+\begin{code}{@TEST |string|}
+string := String streamContents:
+		[:stream |
+			stream
+                 print: #(1 2 3);
+                 space;
+                 nextPutAll: 'size';
+                 space;
+                 nextPut: $=;
+                 space;
+                 print: 3.	].
+string. -->   '#(1 2 3) size = 3'
+\end{code}
+
+The method \mthind{SequenceableCollection class}{streamContents:} \label{sec:streamContents} creates a collection and a stream on
+that collection for you. It then executes the block you gave passing
+the stream as a parameter. When the block ends, \ct{streamContents:}
+returns the content of the collection.
+
+The following \ct{WriteStream} methods are especially useful in this context:
+
+\begin{description}
+\item[\lct{nextPut:}] adds the parameter to the stream;
+\item[\lct{nextPutAll:}] adds each element of the collection, passed as a
+  parameter, to the stream;
+\item[\lct{print:}] adds the textual representation of the parameter to the
+  stream.
+	\cmindex{Stream}{print:}
+\end{description}
+
+There are also methods useful for printing different kinds of characters to
+the stream like \mthind{WriteStream}{space}, \mthind{WriteStream}{tab} and
+\mthind{WriteStream}{cr} (carriage return). Another useful
+method is \mthind{WriteStream}{ensureASpace} which ensures that the last character
+in the stream is a space; if the last character isn't a space it adds one.
+
+\paragraph{About Concatenation.}
+Using \mthind{WriteStream}{nextPut:} and \mthind{WriteStream}{nextPutAll:} on a \ct{WriteStream} is often the best way to
+concatenate characters. Using the comma concatenation operator (\ct{,}) is far
+less efficient:
+\index{Collection!comma operator}
+
+\begin{code}{}
+[| temp |
+  temp := String new.
+  (1 to: 100000)
+    do: [:i | temp := temp, i asString, ' ']] timeToRun --> 115176 "(milliseconds)"
+
+[| temp |
+  temp := WriteStream on: String new.
+  (1 to: 100000)
+    do: [:i | temp nextPutAll: i asString; space].
+  temp contents] timeToRun --> 1262 "(milliseconds)"
+\end{code}
+
+The reason that using a stream can be much more efficient is that 
+comma creates a new string containing
+the concatenation of the receiver and the argument, so it must copy both of them.
+When you repeatedly concatenate onto the same receiver, it gets longer and longer each time,
+so that the number of characters that must be copied goes up exponentially.
+This also creates a lot of garbage, which must be collected. Using
+a stream instead of string concatenation is a well-known optimization.
+\lr{About Concatenation. This is not true for real world examples (the example benchmark is unrealistic). Most of the time concatenation is simpler, cleaner and much faster, for example when being used on a small number of longer strings. (p. 257)}
+In fact, you can use \mthind{SequenceableCollection class}{streamContents:} (mentioned on page \pageref{sec:streamContents}) to help you do this:
+
+\begin{code}{}
+String streamContents: [ :tempStream |
+  (1 to: 100000)
+       do: [:i | tempStream nextPutAll: i asString; space]] 
+\end{code}
+
+%-----------------------------------------------------------------
+\subsection{Reading and writing at the same time}
+
+It's possible to use a stream to access a collection for reading and
+writing at the same time.
+Imagine you want to create an \ct{History} class which will manage
+backward and forward buttons in a web browser.
+A history would react as in figures from \ref{fig:emptyStream} to
+\ref{fig:page4}.
+
+\begin{figure}[!ht]
+\centerline{\includegraphics[scale=0.5]{emptyStef}}
+\caption{A new history is empty. Nothing is displayed in the web browser.}
+\label{fig:emptyStream}
+\vspace{.2in}
+\end{figure}
+
+\begin{figure}[!ht]
+\centerline{\includegraphics[scale=0.5]{page1Stef}}
+\caption{The user opens to page 1.}
+\label{fig:page1}
+\vspace{.2in}
+\end{figure}
+
+\begin{figure}[!ht]
+\centerline{\includegraphics[scale=0.5]{page2Stef}}
+\caption{The user clicks on a link to page 2.}
+\label{fig:page2}
+\vspace{.2in}
+\end{figure}
+
+\begin{figure}[!ht]
+\centerline{\includegraphics[scale=0.5]{page3Stef}}
+\caption{The user clicks on a link to page 3.}
+\label{fig:page3}
+\vspace{.2in}
+\end{figure}
+
+\begin{figure}[!ht]
+\centerline{\includegraphics[scale=0.5]{page2_Stef}}
+\caption{The user clicks on the back button. He is now viewing page 2 again.}
+\label{fig:page2_}
+\vspace{.2in}
+\end{figure}
+
+\begin{figure}[!ht]
+\centerline{\includegraphics[scale=0.5]{page1_Stef}}
+\caption{The user clicks again the back button. Page 1 is now displayed.}
+\label{fig:page1_}
+\vspace{.2in}
+\end{figure}
+
+\begin{figure}[!ht]
+\centerline{\includegraphics[scale=0.5]{page4Stef}}
+\caption{From page 1, the user clicks on a link to page 4. The history forgets pages 2 and 3.}
+\label{fig:page4}
+\vspace{.2in}
+\end{figure}
+
+This behaviour can be implemented using a \clsind{ReadWriteStream}.
+
+\needlines{6}
+\begin{code}{}
+Object subclass: #History
+  instanceVariableNames: 'stream'
+  classVariableNames: ''
+  poolDictionaries: ''
+  category: 'SBE-Streams'
+
+History>>initialize
+    super initialize.
+    stream := ReadWriteStream on: Array new.
+\end{code}
+
+Nothing really difficult here, we define a new class which contains a
+stream. The stream is created during the \ct{initialize} method.
+
+We need methods to go backward and forward:
+
+\begin{code}{}
+History>>goBackward
+  self canGoBackward ifFalse: [self error: 'Already on the first element'].
+  stream skip: -2.
+  ^ self next.
+
+History>>goForward
+  self canGoForward ifFalse: [self error: 'Already on the last element'].
+  ^ stream next
+\end{code}
+
+Until then, the code was pretty straightforward. Now, we have to deal
+with the \ct{goTo:} method which should be activated when the user
+clicks on a link. A possible solution is:
+
+\begin{code}{}
+History>>goTo: aPage
+    stream nextPut: aPage.
+\end{code}
+
+This version is incomplete however. This is because when the user
+clicks on the link, there should be no more future pages to go to,
+\ie the forward button must be deactivated. To do this, the simplest
+solution is to write \ct{nil} just after to indicate the history end:
+
+\begin{code}{}
+History>>goTo: anObject
+  stream nextPut: anObject.
+  stream nextPut: nil.
+  stream back.
+\end{code}
+
+Now, only methods \ct{canGoBackward} and \ct{canGoForward} have to be
+implemented.
+
+A stream is always positioned between two elements. To go backward,
+there must be two pages before the current position: one page is the
+current page, and the other one is the page we want to go to.
+
+\begin{code}{}
+History>>canGoBackward
+  ^ stream position > 1
+
+History>>canGoForward
+  ^ stream atEnd not and: [stream peek notNil]
+\end{code}
+
+Let us add a method to peek at the contents of the stream:
+\begin{code}{}
+History>>contents
+  ^ stream contents
+\end{code}
+
+And the history works as advertised:
+\begin{code}{}
+History new
+	goTo: #page1;
+	goTo: #page2;
+	goTo: #page3;
+	goBackward;
+	goBackward;
+	goTo: #page4;
+	contents --> #(#page1 #page4 nil nil)
+\end{code}
+
+%=============================================================
+\section{Using streams for file access}
+
+You have already seen how to stream over collections of elements. It's
+also possible to stream over files on your hard disk.
+Once created, a stream on a file is really like a stream on a
+collection: you will be able to use the same protocol to read, write
+or position the stream.
+The main difference appears in the creation of the stream.
+There are several different ways to create file streams, as we shall now see.
+
+%-----------------------------------------------------------------
+\subsection{Creating file streams}
+\label{sec:creat-file-stre}
+
+To create file streams, you will have to use one of the following
+instance creation methods offered by the class \clsindmain{FileStream}:
+
+\begin{description}
+
+\item[\lct{fileNamed:}] Open a file with the given name for reading and
+  writing. If the file already exists, its prior contents may be
+  modified or replaced, but the file will not be truncated on
+  close. If the name has no directory part, then the file will be
+  created in the default directory.
+  \cmindex{FileStream class}{fileNamed:}
+  
+\item[\lct{newFileNamed:}] Create a new file with the given name,
+  and answer a stream opened for writing on that file. If the file
+  already exists, ask the user what to do.
+  \cmindex{FileStream class}{newFileNamed:}
+  
+\item[\lct{forceNewFileNamed:}] Create a new file with the given
+  name, and answer a stream opened for writing on that file. If the
+  file already exists, delete it without asking before creating the
+  new file.
+  \cmindex{FileStream class}{forceNewFileNamed:}
+
+\item[\lct{oldFileNamed:}] Open an existing file with the given
+  name for reading and writing. If the file already exists, its prior
+  contents may be modified or replaced, but the file will not be
+  truncated on close. If the name has no directory part, then the file
+  will be created in the default directory.
+  \cmindex{FileStream class}{oldFileNamed:}
+
+\item[\lct{readOnlyFileNamed:}] Open an existing file with the
+  given name for reading.
+  \cmindex{FileStream class}{readOnlyFileNamed:}
+
+\end{description}
+
+You have to remember that each time you open a stream on a file, you
+have to close it too. This is done through the \mthind{FileStream}{close} method.
+
+\begin{code}{@TEST |stream|}
+stream := FileStream forceNewFileNamed: 'test.txt'.
+stream
+    nextPutAll: 'This text is written in a file named ';
+    print: stream localName.
+stream close.
+
+stream := FileStream readOnlyFileNamed: 'test.txt'.
+stream contents. --> 'This text is written in a file named ''test.txt'''
+stream close.
+\end{code}
+
+% \on{need way to clean up test files afterwards}
+
+%[:fileName | (FileDirectory forFileName: fileName)
+%	deleteFileNamed: fileName
+%	ifAbsent: [ 'Could not delete ', fileName ] ]
+%	value: 'test.txt'
+
+The method \mthind{FileStream}{localName} answers the last component of the name of the file. You can
+also access the full path name using the method
+\mthind{StandardFileStream}{fullName}.
+
+You will soon notice that manually closing the file stream is
+painful and error-prone. That's why \ct{FileStream} offers a message called \mthind{FileStream class}{forceNewFileNamed:do:} to
+automatically close a new stream after evaluating a block that
+sets its contents.
+
+\begin{code}{@TEST |string|}
+FileStream
+    forceNewFileNamed: 'test.txt'
+    do: [:stream |
+        stream
+            nextPutAll: 'This text is written in a file named ';
+            print: stream localName].
+string := FileStream
+            readOnlyFileNamed: 'test.txt'
+            do: [:stream | stream contents].
+string --> 'This text is written in a file named ''test.txt'''
+\end{code}
+
+The stream-creation methods that take a block as an argument first
+create a stream on a file, then execute the block with the stream
+as an argument, and finally close the stream. These methods return what
+is returned by the block, which is to say, the value of the last
+expression in the block. This is used in the previous example to get
+the content of the file and put it in the variable \ct{string}.
+
+%-----------------------------------------------------------------
+\subsection{Binary streams}
+\label{sec:binary-streams}
+
+By default, created streams are text-based which means you will read
+and write characters. If your stream must be binary, you have to send
+the message \mthind{FileStream}{binary} to your stream.
+
+When your stream is in binary mode, you can only write numbers from 0
+to 255 (1 Byte). If you want to use \ct{nextPutAll:} to write more
+than one number at a time, you have to pass a \clsind{ByteArray} as
+argument.
+
+\begin{code}{@TEST}
+FileStream
+  forceNewFileNamed: 'test.bin'
+  do: [:stream |
+          stream
+            binary;
+            nextPutAll: #(145 250 139 98) asByteArray].
+
+FileStream
+  readOnlyFileNamed: 'test.bin'
+  do: [:stream |
+          stream binary.
+          stream size.         --> 4
+          stream next.         --> 145
+          stream upToEnd. --> a ByteArray(250 139 98)
+      ].
+\end{code}
+
+Here is another example which creates a picture in a file named
+``test.pgm'' (portable graymap file format). You can open this file with your favorite drawing program.
+
+% The following does not assert anything, but @TEST is used to ensure
+% that no error is thrown.
+\begin{code}{@TEST}
+FileStream
+  forceNewFileNamed: 'test.pgm' 
+  do: [:stream |
+	stream
+		nextPutAll: 'P5'; cr;
+		nextPutAll: '4 4'; cr;
+		nextPutAll: '255'; cr;
+		binary;
+		nextPutAll: #(255 0 255 0) asByteArray;
+		nextPutAll: #(0 255 0 255) asByteArray;
+		nextPutAll: #(255 0 255 0) asByteArray;
+		nextPutAll: #(0 255 0 255) asByteArray
+	]
+\end{code}
+
+This creates a 4x4 checkerboard as shown in \figref{checkerboard4x4}.
+
+\begin{figure}[!ht]
+\centerline{\includegraphics[width=0.25\textwidth]{checkerboard4x4}}
+\caption{A 4x4 checkerboard you can draw using binary streams.}
+\label{fig:checkerboard4x4}
+\vspace{.2in}
+\end{figure}
+
+%=============================================================
+\section{Chapter summary}
+
+Streams offer a better way than collections to incrementally read and write a sequence of elements. There are easy ways to convert back and forth between streams and collections.
+
+\begin{itemize}
+  \item Streams may be either readable, writeable or both readable and writeable.
+  \item To convert a collection to a stream, define a stream ``on'' a collection, \eg \ct{ReadStream on: (1 to: 1000)}, or send the messages \ct{readStream}, \etc to the collection.
+  \item To convert a stream to a collection, send the message \ct{contents}.
+  \item To concatenate large collections, instead of using the comma operator, it is more efficient to create a stream, append the collections to the stream with \ct{nextPutAll:}, and extract the result by sending \ct{contents}.
+  \item File streams are by default character-based. Send \ct{binary} to explicitly make them binary.
+\end{itemize}
+
+%=================================================================
+\ifx\wholebook\relax\else\end{document}\fi
+%=================================================================
+
+%-----------------------------------------------------------------
+
+%%% Local Variables: 
+%%% coding: utf-8
+%%% mode: latex
+%%% TeX-master: t
+%%% TeX-PDF-mode: t
+%%% ispell-local-dictionary: "english"
+%%% End:

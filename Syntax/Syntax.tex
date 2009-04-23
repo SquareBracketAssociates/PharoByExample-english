@@ -1,0 +1,638 @@
+% $Author$
+% $Date$
+% $Revision$
+% $Id$
+%=================================================================
+\ifx\wholebook\relax\else
+% --------------------------------------------
+% Lulu:
+	\documentclass[a4paper,10pt,twoside]{book}
+	\usepackage[
+		papersize={6in,9in},
+		hmargin={.75in,.75in},
+		vmargin={.75in,1in},
+		ignoreheadfoot
+	]{geometry}
+	\input{../common.tex}
+	\pagestyle{headings}
+	\setboolean{lulu}{true}
+% --------------------------------------------
+% A4:
+%	\documentclass[a4paper,11pt,twoside]{book}
+%	\input{../common.tex}
+%	\usepackage{a4wide}
+% --------------------------------------------
+    \graphicspath{{figures/} {../figures/}}
+	\begin{document}
+	\renewcommand{\nnbb}[2]{} % Disable editorial comments
+	\sloppy
+\fi
+%=================================================================
+\chapter{Syntax in a nutshell}
+\label{cha:syntax}
+
+\sd{We should add pragmas.}
+\on{Please do so.}
+
+% \sd{It would be good to add link to the chapter where the reader can learn about conditional, exceptions and loops.}
+% \on{There are links already.}
+
+\sq, like most modern \st dialects, adopts a syntax very close to that of \st-80.
+The \ind{syntax} is designed so that program text can be read aloud as though it were a kind of pidgin English:
+
+\begin{code}{}
+(Smalltalk includes: Class) ifTrue: [ Transcript show: Class superclass ]
+\end{code}
+
+\noindent
+\sq's syntax is minimal.
+Essentially there is syntax only for \emph{sending messages} (\ie expressions) \damien{I don't think there is a syntax for declaring methods; in my opinion, this is just a feature of our browsers. That's why I'm commenting: and \emph{declaring methods}}.
+Expressions are built up from a very small number of  primitive elements.
+There are only 6 keywords, and there is no syntax for control structures or declaring new classes.
+Instead, nearly everything is achieved by sending messages to objects.
+For instance, instead of an if-then-else control structure, \st sends messages like \ct{ifTrue:} to \clsind{Boolean} objects.
+New \mbox{(sub-)classes} are created by sending a message to their superclass.
+
+%=================================================================
+\section{Syntactic elements}
+
+Expressions are composed of the following building blocks:
+(i) six reserved keywords, or \emph{pseudo-variables}:
+\pvind{self}, \pvind{super}, \pvind{nil}, \pvind{true}, \pvind{false}, and \pvind{thisContext},
+(ii) constant expressions for \emphind{literal objects} including numbers, characters, strings, symbols and arrays,
+(iii) variable declarations,
+(iv) assignments,
+(v) \ind{block} closures, and
+(vi) messages.
+\seeindex{pseudo-variable}{variable, pseudo}
+
+%:FIGURE -- Squeak Syntax in a Nutshell
+\begin{table}\centering
+	\begin{tabular}{ll}
+		\toprule
+		Syntax & What it represents \\
+		\midrule
+		\lct{startPoint}			&	a variable name\\
+		\lct{Transcript}			&	a global variable name\\
+		\lct{self}				&	pseudo-variable \\
+		\midrule
+		\lct{1}				 	&	decimal integer \\
+		\lct{2r101}				&	binary integer \\
+		\lct{1.5}					&	floating point number \\
+		\lct{2.4e7}				&	exponential notation \\
+		\lct{\$a}					&	the character `a' \\
+		\lct{'Hello'}				&	the string ``Hello'' \\
+		\lct{\#Hello}				&	the symbol \lct{\#Hello} \\
+		\lct{\#(1 2 3)}			&	a literal array \\
+		\lct{\{1. 2. 1+2\}}		&	a dynamic array \\
+		\midrule
+		\lct{"a comment"} 		&	a comment \\
+		\midrule
+		\lct{| x y |}				&	declaration of variables \lct{x} and \lct{y}	\\
+		\lct{x := 1}				&	assign 1 to \lct{x} \\
+		\lct{[ x + y ]}			&	a block that evaluates to \lct{x+y} \\
+		\lct{<primitive: 1>}		&	virtual machine primitive or annotation\\
+		\midrule
+		\lct{3 factorial}			&	unary message \\
+		\lct{3+4}					&	binary messages \\
+		\lct{2 raisedTo: 6 modulo: 10}		&	keyword message \\
+		\midrule
+		\lct{$\uparrow$ true} 			&	return the value true	\\
+		\lct{Transcript show: 'hello'. Transcript cr }		&	expression separator (\lct{.})	\\
+		\lct{Transcript show: 'hello'; cr}					&	message cascade (\lct{;}) \\
+		\bottomrule
+	\end{tabular}
+	\caption{\sq Syntax in a Nutshell\label{tab:syntax}}
+\end{table}
+
+We can see examples of the various syntactic elements in \tabref{syntax}.
+\begin{description}
+\item[Local variables]	\ct{startPoint} is a variable name, or identifier.
+		By convention, identifiers are composed of words in ``\ind{camelCase}'' (\ie each word except the first starting with an upper case letter).
+		The first letter of an instance variable, method or block argument, or temporary variable must be lower case.
+		This indicates to the reader that the variable has a private scope.
+
+\item[Shared variables]	Identifiers that start with upper case letters are \subind{variable}{global} variables, class \subind{class}{variable}{}s, \subind{variable}{pool} dictionaries or class names.
+		\ct{Transcript} is a global variable, an instance of the class \ct{TranscriptStream}.
+		\seeindex{global variable}{variable, global}
+		\seeindex{pool dictionary}{variable, pool}
+		\seeindex{variable!class}{class, variable}
+
+\item[The receiver.]	\pvind{self} is a keyword that refers to the object inside which the current method is executing. We call it ``the receiver'' because this object will normally have received the message that caused the method to execute.
+		\self is called a ``\subind{variable}{pseudo}-variable'' since we cannot assign to it.
+
+\item[Integers.] In addition to ordinary decimal integers like \ct{42}, \sq also provides a \ind{radix notation}.
+	\ct{2r101} is \ct{101} in radix 2 (\ie binary), which is equal to decimal 5.
+	\index{literal}
+	\index{literal!number}
+
+\item[Floating point numbers] can be specified with their base-ten \ind{exponent}: \mbox{\ct{2.4e7}} is $2.4\times 10^7$.
+	\index{floating point number}
+
+\item[Characters.] A dollar sign introduces a literal \subind{literal}{character}: \ct{$a}\ignoredollar$ is the literal for `a'.
+		Instances of non-printing characters can be obtained by sending appropriately named messages to the \clsind{Character} class, such as \ct{Character space} \cmindex{Character class}{space} and \ct{Character tab}\cmindex{Character class}{tab}.
+		
+\item[Strings.] Single quotes are used to define a literal \subind{literal}{string}.
+		If you want a string with a quote inside, just double the quote, as in \ct{'G''day'}.
+
+\item[Symbols] are like Strings, in that they contain a sequence of characters.  
+	However, unlike a string, a literal \subind{literal}{symbol} is guaranteed to be globally unique.
+		There is only one Symbol object \ct{#Hello} but there may be multiple String objects with the value \ct{'Hello'}.
+		\seeindex{\#@{\textsf{\#}}}{literal symbol}
+
+\item[Compile-time arrays] are defined by \ct{#( )}, surrounding space-separated literals.
+		Everything within the parentheses must be a compile-time constant.
+		For example,  \ct{#(27 #(true false) abc)} is a \subind{Array}{literal} \subind{literal}{array} of three elements: the integer \ct{27}, the compile-time array containing the two booleans, and the symbol \ct{#abc}.
+
+\item[Run-time arrays.] Curly braces \ct|{ }| define a (\subind{Array}{dynamic}) array at run-time.
+		Elements are expressions separated by periods.
+		So \ct|{ 1. 2. 1+2 }| defines an array with elements 1, 2, and the result of evaluating 1+2.
+		(The curly-brace notation is peculiar to the \sq dialect of \st!
+		In other \st{}s you must build up dynamic arrays explicitly.)
+
+\item[Comments] are enclosed in double quotes.
+		\ct{"hello"} is a \ind{comment}, not a string, and is ignored by the \sq compiler.
+		Comments may span multiple lines.
+		
+\item[Local variable definitions.]	Vertical bars \ct{| |} enclose the \subind{variable}{declaration} of one or more local variables in a method (and also in a block).
+		% \seeindex{\|@{\textsf{\|\|}}}{assignment}
+		% Can't seem to index or-bars! (special char for index macro)
+		\seeindex{declaration}{variable declaration}
+
+\item[Assignment.]	\ct{:=} assigns an object to a variable.
+		Sometimes you will see $\leftarrow$ used instead.
+		Unfortunately, since this is not an \textsc{ascii} character, it will appear as an underscore unless
+		you are using a special font.
+		So, \ct{x := 1} is the same as \ct{x _ 1} or \ct{x UNDERSCORE 1}. You should use \ct{:=} since the other representations have been deprecated since Squeak 3.9.
+		\index{assignment}
+		\seeindex{:=@{\textsf{:=}}}{assignment}
+		\seeindex{\_@{\textsf{\_}}}{assignment}
+		\seeindex{<-@{$\leftarrow$}}{assignment}
+
+\item[Blocks.] Square brackets \ct{[ ]} define a \ind{block}, also known as a block closure or a lexical closure, which is a first-class object representing a function.
+		As we shall see, blocks may take arguments and can have local variables.
+	\seeindex{[ ]@{\textsf{[ ]}}}{block}
+	\seeindex{closure}{block}
+	\seeindex{lexical closure}{block}
+
+\item[Primitives.]	\ct{<primitive: ...>} denotes an invocation of a \ind{virtual machine} \ind{primitive.}
+	(\ct{<primitive: 1>} is the VM primitive for \ct{SmallInteger>>>+}.)
+	Any code following the primitive is executed only if the primitive fails. Since Squeak 3.9, the same syntax is also used for method annotations.
+
+\item[Unary messages] consist of a single word (like \ct{factorial}) sent to a receiver (like \ct{3}).
+	\index{message!unary}
+	\seeindex{unary message}{message, unary}
+
+\item[Binary messages] are operators (like \ct{+}) sent to a receiver and taking a single argument. In \ct{3+4}, the receiver is \ct{3} and the argument is \ct{4}.
+	\index{message!binary}
+	\seeindex{binary message}{message, binary}
+
+\item[Keyword messages] consist of multiple keywords (like \ct{raisedTo:modulo:}), each ending with a colon and taking a single argument. 
+In the expression \ct{2 raisedTo: 6 modulo: 10}, the \emphind{message selector} \ct{raisedTo:modulo:} takes the two arguments \ct{6} and \ct{10}, one following each colon.  We send the message to the receiver \ct{2}.
+	\index{message!keyword}
+	\seeindex{keyword message}{message, keyword}
+
+\item[Method return.] \ct{^} is used to \emphind{return} a value from a method.  (You must type \verb|^| to obtain the \ct{^} character.)
+\md{\ct{^} always returns from the method, even if used in a block, it returns from the enclosing method.}
+
+\item[Sequences of statements.]	A period or full-stop (\ct{.}) is the \emph{statement} \emphsubind{statement}{separator}. Putting a period between two expressions turns them into independent statements.	
+	\seeindex{full stop}{statement separator}
+	\seeindex{period}{statement separator}
+	\seeindex{\ct{.}}{statement separator}
+
+\item[Cascades.] Semicolons can be used to send a \emphind{cascade} of messages to a single receiver.  In \ct{Transcript show: 'hello'; cr} we first send the keyword message \ct{show: 'hello'} to the receiver \ct{Transcript}, and then we send the unary message \ct{cr} to the same receiver.
+	\seeindex{;}{cascade}
+
+\end{description}
+
+The classes \ct{Number}, \ct{Character}, \ct{String} and \ct{Boolean} are described in more detail in \charef{basic}.
+
+\on{Blocks are described in \charef{blocks}. (Control flow and Iterators).}
+
+%=================================================================
+\section{Pseudo-variables}
+
+In \st, there are 6 reserved keywords, or \emph{pseudo-variables}:
+\pvind{nil}, \pvind{true},  \pvind{false},  \pvind{self}, \pvind{super}, and \pvind{thisContext}.
+They are called \subind{variable}{pseudo}-variables because they are predefined and cannot be assigned to.
+\ct{true}, \ct{false}, and \ct{nil} are constants while the values of \ct{self}, \ct{super}, and \ct{thisContext} vary dynamically as code is executed.
+
+\ct{true} and \ct{false} are the unique instances of the \clsind{Boolean} classes \clsind{True} and \clsind{False}.
+See \charef{basic} for more details.
+
+\pvind{self} always refers to the receiver of the currently executing method.
+
+\ct{super} also refers to the receiver of the current method, but when you send a message to \super, the method-lookup changes so that it starts from the superclass of the class containing the method that uses \ct{super}.
+For further details see \charef{model}.
+
+\ct{nil} is the undefined object.
+It is the unique instance of the class \clsind{UndefinedObject}. 
+Instance variables, class variables and local variables are initialized to \ct{nil}.
+
+\ct{thisContext} is a pseudo-variable that represents the top frame of the run-time stack.
+In other words, it represents the currently executing \clsind{MethodContext} or \clsind{BlockContext}.
+\ct{thisContext} is normally not of interest to most programmers, but it is essential for implementing development tools like the debugger and it is also used to implement exception handling and continuations.
+
+%=================================================================
+\section{Message sends}
+
+There are three kinds of messages in \sq.
+\begin{enumerate}
+  \item \emph{Unary} messages take no argument.
+  \ct{1 factorial} sends the message \ct{factorial} to the object \ct{1}.
+  \item \emph{Binary} messages take exactly one argument.
+  	\ct{1 + 2} sends the message \ct{+} with argument \ct{2} to the object \ct{1}.
+  \item \emph{Keyword} messages take an arbitrary number of arguments.
+  	\ct{2 raisedTo: 6 modulo: 10} sends the message consisting of the message selector
+	\ct{raisedTo:modulo:} and the arguments \ct{6} and \ct{10} to the object \ct{2}.
+\end{enumerate}
+
+Unary message selectors consist of alphanumeric characters, and start with a lower case letter.
+\index{message!unary}
+
+Binary message selectors consist of one or more characters from the following set:
+\index{message!binary}
+\begin{code}{}
++ - / \ * ~ < > = @ % | & ! ? ,
+\end{code}
+\noindent
+% [\~\!\@\%\&\*\-\+\=\\\|\?\/\>\<\,]
+\on{It seems that 3 or more chars work fine, but it is not possible to have more than one ``-'' in a binary selector. Perhaps due to a conflict with parsing negative numbers?}
+\ab{That's right; $-$ is weird.}
+Keyword message selectors consist of a series of alphanumeric keywords, where each keyword starts with a lower-case letter and ends with a colon.
+\index{message!keyword}
+
+Unary messages have the highest precedence, then binary messages, and finally keyword messages, so:
+\begin{code}{@TEST}
+2 raisedTo: 1 + 3 factorial --> 128
+\end{code}
+(First we send \ct{factorial} to \ct{3}, then we send \ct{+ 6} to \ct{1}, and finally we send \ct{raisedTo: 7} to \ct{2}.)  
+Recall that we use the notation \lct{\emph{expression}}\ct{-->}\lct{\emph{result}} to show the result of evaluating an expression.
+
+Precedence aside, evaluation is strictly from left to right, so
+\begin{code}{@TEST}
+1 + 2 * 3 --> 9
+\end{code}
+not \ct{7}.
+Parentheses must be used to alter the order of evaluation:
+\begin{code}{@TEST}
+1 + (2 * 3) --> 7
+\end{code}
+
+Message sends may be composed with periods and semi-colons. A period-separated sequence of expressions causes each expression in the series to be evaluated as a \emphind{statement}, one after the other.
+\index{statement!separator}
+
+\begin{code}{}
+Transcript cr.
+Transcript show: 'hello world'.
+Transcript cr
+\end{code}
+
+\noindent
+This will send \ct{cr} to the \glbind{Transcript} object, then send it \ct{show: 'hello world'}, and finally send it another \ct{cr}.
+
+When a series of messages is being sent to the \emph{same} receiver, then this can be expressed more succinctly as a \emphind{cascade}.
+The receiver is specified just once, and the sequence of messages is separated by semi-colons:
+
+\begin{code}{}
+Transcript cr;
+    show: 'hello world';
+    cr
+\end{code}
+This has precisely the same effect as the previous example.
+
+%=================================================================
+\section{Method syntax}
+
+Whereas expressions may be evaluated anywhere in \sq (for example, in a workspace, in a debugger, or in a browser), methods are normally defined in a browser window, or in the debugger.
+(Methods can also be filed in from an external medium, but this is not the usual way to program in \sq.)
+
+Programs are developed one method at a time, in the context of a given class.
+(A class is defined by sending a message to an existing class, asking it to create a subclass, so there is no special syntax required for defining classes.)
+
+Here is the method \mthind{String}{lineCount} in the class \clsind{String}.
+(The usual convention is to refer to methods as \ct{ClassName>>>methodName}, so we call this method \ct{String>>>lineCount}.)
+
+\needlines{9}
+\begin{method}[lineCount]{Line count}
+String>>>lineCount
+   "Answer the number of lines represented by the receiver,
+   where every cr adds one line."
+   | cr count |
+   cr := Character cr.
+   count := 1 min: self size.
+   self do:
+      [:c | c == cr ifTrue: [count := count + 1]].
+   ^ count
+\end{method}
+
+Syntactically, a method consists of:
+\begin{enumerate}
+  \item the method pattern, containing the name (\ie \ct{lineCount}) and any arguments (none in this example);
+  \item comments (these may occur anywhere, but the convention is to put one at the top that explains what the method does);
+  \item declarations of local variables (\ie \ct{cr} and \ct{count}); and
+  \item any number of expressions separated by dots; here there are four.
+\end{enumerate}
+
+The evaluation of any expression preceded by a \ct{^} (typed as \verb|^|) will cause the method to exit at that point, returning the value of that expression.
+A method that terminates without explicitly returning some expression will implicitly \ind{return} \pvind{self}.
+\index{return!implicit}
+
+Arguments and local variables should always start with lower case letters.
+Names starting with upper-case letters are assumed to be global variables.
+Class names, like \ct{Character}, for example, are simply global variables referring to the object representing that class.
+
+%=================================================================
+\section{Block syntax}
+
+Blocks provide a mechanism to defer the evaluation of expressions.
+A \ind{block} is essentially an anonymous function. A block is evaluated by sending it the message \mthind{BlockClosure}{value}.
+The block answers the value of the last expression in its body, unless there is an explicit return (with \ct{^}), in which case it does not answer any value.
+\seeindex{value}{BlockClosure}
+
+\begin{code}{@TEST}
+[ 1 + 2 ] value --> 3
+\end{code}
+
+Blocks may take parameters, each of which is declared with a leading colon.
+A  vertical bar separates the parameter declaration(s) from the body of the block.
+To evaluate a block with one parameter, you must send it the message \mthind{BlockClosure}{value:} with one argument.
+A two-parameter block must be sent \mthind{BlockClosure}{value:value:}, and so on, up to 4 arguments.
+
+\begin{code}{@TEST}
+[ :x | 1 + x ] value: 2 --> 3
+[ :x :y | x + y ] value: 1 value: 2 --> 3
+\end{code}
+
+If you have a block with more than four parameters, you must use \mthind{BlockClosure}{valueWithArguments:} and pass the arguments in an array.
+(A block with a large number of parameters is often a sign of a design problem.)
+
+Blocks may also declare local variables, which are surrounded by vertical bars, just like local variable declarations in a method.
+Locals are declared after any arguments:
+\index{variable!declaration}
+
+\begin{code}{@TEST}
+[ :x :y | | z | z := x+ y. z ] value: 1 value: 2 --> 3
+\end{code}
+
+Blocks are actually lexical \emph{closures}, since they can refer to variables of the surrounding environment.
+The following block refers to the variable \ct{x} of its enclosing environment:
+
+\begin{code}{@TEST}
+| x |
+x := 1.
+[ :y | x + y ] value: 2 --> 3
+\end{code}
+
+Blocks are instances of the class \clsind{BlockContext}.
+This means that they are objects, so they can be assigned to variables and passed as arguments just like any other object.
+% For both understandability and performance, it is better for blocks to refer only to their parameters and local variables; blocks that do not refer external variables are optimized by the compiler.
+% MARCUS sez: I would just delete the sentence. There is nothing optimized, accessign outer temps is as fast as inner, so the only reason to avoid accessing outer temps would be that the code is easier to understand. But that's a relatively weak argument, I think.
+% However, the ability to refer (``capture'') non-local variables can be very powerful when it is needed. 
+
+\emph{Caveat:}
+In the current version (3.9), \sq does not actually support true block-closures, since block arguments are actually simulated as temporary variables of the enclosing method. There is a new compiler that supports full block closures, but it is still being worked on and is not used by default.
+In somewhat obscure situations this problem can lead to naming conflicts.
+This situation arises because \sq is based on an early implementation of \st.
+If you encounter this problem, have a look at the senders of the method \mthind{BlockClosure}{fixTemps}, or load the \emphind{Closure Compiler}.
+
+%\paragraph{Really important.} \^\ acts as an escaping mechanism. 
+%Return expressions inside a nested block expression will terminate the enclosing method.
+%In the example 
+
+%\begin{script}[detect]{...} when the expression \ct{^\ x@y} is executed, the method \ct{detect:}
+% escapes the current iteration and returns it. 
+
+%TwoLevelSet>>detect: aBlock
+
+%   firstLevel keysAndValuesDo: [ :x :v |
+%      v do: [ :y | (aBlock value: x@y) ifTrue: [^x@y]]
+%   ].
+%   ^nil
+%\end{script}
+
+
+%=================================================================
+\section{Conditionals and loops in a nutshell}
+
+\st offers no special syntax for control constructs.
+Instead, these are typically expressed by sending messages to booleans, numbers and collections, with blocks as arguments.
+
+Conditionals are expressed by sending one of the messages \mthind{Boolean}{ifTrue:}, \mthind{Boolean}{ifFalse:} or \mthind{Boolean}{ifTrue:ifFalse:} to the result of a boolean expression. See \charef{basic} for more about booleans.
+
+\begin{code}{}
+(17 * 13 > 220)
+   ifTrue: [ 'bigger' ]
+   ifFalse: [ 'smaller' ] --> 'bigger'
+\end{code}
+% ON: Not a test.
+% My regex approach cannot handle multi-line expressions :-(
+
+Loops are typically expressed by sending messages to blocks, integers or collections.
+Since the exit condition for a loop may be repeatedly evaluated, it should be a block rather than a boolean value.
+Here is an example of a very procedural loop:
+\index{iteration}
+\index{iteration|seealso{Collection, iteration}}
+\seeindex{loops}{iteration}
+\seeindex{enumeration}{iteration}
+\seeindex{control constructs}{iteration}
+
+\begin{code}{@TEST | n |}
+n := 1.
+[ n < 1000 ] whileTrue: [ n := n*2 ].
+n --> 1024
+\end{code}
+\cmindex{BlockClosure}{whileTrue:}
+
+\noindent
+\mthind{BlockClosure}{whileFalse:} reverses the exit condition.
+\begin{code}{@TEST | n |}
+n := 1.
+[ n > 1000 ] whileFalse: [ n := n*2 ].
+n --> 1024
+\end{code}
+
+\noindent
+\mthind{Integer}{timesRepeat:} offers a simple way to implement a fixed iteration:
+
+\begin{code}{@TEST | n |}
+n := 1.
+10 timesRepeat: [ n := n*2 ].
+n --> 1024
+\end{code}
+
+We can also send the message \mthind{Number}{to:do:} to a number which then acts as the initial value of a loop counter.
+The two arguments are the upper bound, and a block that takes the current value of the loop counter as its argument:
+
+\needlines{4}
+\begin{code}{@TEST | result |}
+result := String new.
+1 to: 10 do: [:n | result := result, n printString, ' '].
+result --> '1 2 3 4 5 6 7 8 9 10 '
+\end{code}
+
+\damien{I think the previous example that I've just added is clearer than the one which is commented here.}
+% \begin{code}{@TEST | n |}
+% n := 0.
+% 1 to: 10 do: [ :counter | n := n + counter ].
+% n --> 55
+% \end{code}
+
+\paragraph{High-Order Iterators.}
+Collections comprise a large number of different classes, many of which support the same protocol.
+The most important messages for iterating over collections include
+\mthind{Collection}{do:}, \mthind{Collection}{collect:}, \mthind{Collection}{select:}, \mthind{Collection}{reject:}, \mthind{Collection}{detect:} and \mthind{Collection}{inject:into:}.
+These messages define high-level iterators that allow one to write very compact code.
+
+An \clsind{Interval} is a collection that lets one iterate over a sequence of numbers from the starting point to the end.
+\ct{1 to: 10} represents the interval from 1 to 10.
+Since it is a collection, we can send the message \ct{do:} to it.
+The argument is a block that is evaluated for each element of the collection.
+
+\begin{code}{@TEST | result |}
+result := String new.
+(1 to: 10) do: [:n | result := result, n printString, ' '].
+result --> '1 2 3 4 5 6 7 8 9 10 '
+\end{code}
+
+\damien{Again, I think the previous example is clearer than the one which is commented here.}
+% \begin{code}{@TEST | n |}
+% n := 0.
+% (1 to: 10) do: [ :element | n := n + element ].
+% n --> 55
+% \end{code}
+
+\ct{collect:} builds a new collection of the same size, transforming each element.
+\begin{code}{@TEST}
+(1 to: 10) collect: [ :each | each * each ] --> #(1 4 9 16 25 36 49 64 81 100)
+\end{code}
+
+\ct{select:} and \ct{reject:} build new collections, each containing a subset of the elements satisfying (or not) the boolean block condition.
+\ct{detect:} returns the first element satisfying the condition.
+Don't forget that strings are also collections, so you can iterate over all the characters.
+
+\begin{code}{@TEST}
+'hello there' select: [ :char | char isVowel ] --> 'eoee'
+'hello there' reject: [ :char | char isVowel ] --> 'hll thr'
+'hello there' detect: [ :char | char isVowel ] --> $e
+\end{code}
+
+Finally, you should be aware that collections also support a functional-style \emph{fold} operator in the \ct{inject:into:} method.
+This lets you generate a cumulative result using an expression that starts with a seed value and injects each element of the collection.
+Sums and products are typical examples.
+\seeindex{fold}{\ct{Collection>>>inject:into}}
+
+\begin{code}{@TEST}
+(1 to: 10) inject: 0 into: [ :sum :each | sum + each ] --> 55
+\end{code}
+
+\noindent
+This is equivalent to \ct{0+1+2+3+4+5+6+7+8+9+10}.
+
+More about collections can be found in  \charef{collections}.
+
+%=================================================================
+\section{Primitives and pragmas}
+
+In \st everything is an object, and everything happens by sending messages.
+Nevertheless, at certain points we hit rock bottom.
+Certain objects can only get work done by invoking \ind{virtual machine} \ind{primitive}{}s.
+
+For example, the following are all implemented as primitives:
+memory allocation (\mthind{Behavior}{new}, \mthind{Behavior}{new:}),
+bit manipulation (\mthind{Integer}{bitAnd:}, \mthind{Integer}{bitOr:}, \mthind{Integer}{bitShift:}),
+pointer and integer arithmetic (\ct{+}, \ct{-},  \ct{<},  \ct{>}, \ct{*}, \ct{/ }, \ct{=}, \ct{==}...),
+and array access (\mthind{Object}{at:}, \mthind{Object}{at:put:}).
+\seeindex{new@{\ct{new}}}{\ct{Behavior>>>new}}
+
+Primitives are invoked with the syntax \ct{<primitive: aNumber>}.
+A method that invokes such a primitive may also include \st code, which will be evaluated \emph{only} if the primitive fails.
+
+Here we see the code for \cmind{SmallInteger}{+}.
+If the primitive fails, the expression \ct{super + aNumber} will be evaluated and returned.
+
+\needlines{6}
+\begin{method}[primitive]{A primitive method}
++ aNumber 
+  "Primitive. Add the receiver to the argument and answer with the result
+  if it is a SmallInteger. Fail if the argument or the result is not a
+  SmallInteger  Essential  No Lookup. See Object documentation whatIsAPrimitive."
+
+  <primitive: 1>
+  ^ super + aNumber
+\end{method}
+
+%The other use of primitives is to optimize some crucial methods. The idea is that the system could work 
+%without the primitive but it would be slow. The following method shows that the method \ct{@} is calling the primitive 18. Here the point creation is clearly expressible in \st therefore the code after the primitive is just the creation of a point illustrating what the primitive is actually doing. Note that such a code will be never called except if the primitive would failed which is extremely rare.  
+
+%\begin{method}[xxx]{xxx}
+%Integer>>@ y 
+%   "Primitive. Answer a Point whose x value is the receiver and whose y 
+%   value is the argument. Optional. No Lookup. See Object documentation 
+%   whatIsAPrimitive."
+
+%   <primitive: 18>
+%   ^Point x: self y: y
+%\end{method}
+
+
+Since \sq 3.9, the angle bracket syntax is also used for method annotations called pragmas.
+\sd{we should give an example}\ab{Please do!  Is don't know about these.}\damien{it's the third time we talk about pragmas without saying what they are and how to use them.}
+
+%=================================================================
+\section{Chapter summary}
+
+\begin{itemize}
+
+\item	\sq has (only) six reserved identifiers also called \textit{pseudo-variables}: \ct{true}, \ct{false}, \ct{nil}, \ct{self}, \ct{super},  and  \ct{thisContext}.
+
+\item	There are five kinds of literal objects: numbers (\ct{5}, \ct{2.5}, \ct{1.9e15}, \ct{2r111}), characters (\ct{$a}), strings (\ct{'hello'}), symbols (\ct{#hello}), and arrays (\ct{#('hello' #hello)})
+
+\item	Strings are delimited by single quotes, comments by double quotes.
+		To get a quote inside a string, double it.
+
+\item	Unlike strings, symbols are guaranteed to be globally unique.
+
+\item	Use \ct{#( ... )} to define a literal array.
+		Use \ct|{ ... }| to define a dynamic array.
+		Note that 
+		\ct{#( 1 + 2 ) size --> 3}, but 
+		\ct|{ 1 + 2 } size --> 1|
+
+\item	There are three kinds of messages:
+		\emph{unary} (\eg \ct{1 asString}, \ct{Array new}),
+		\emph{binary} (\eg \ct{3 + 4}, \ct{'hi' , ' there'}), and
+		\emph{keyword} (\eg \ct{'hi' at: 2 put: $o})
+
+\item	A \emph{cascaded} message send is a sequence of messages sent to the same target, separated by semi-colons:
+\ct{OrderedCollection new add: #calvin; add: #hobbes; size --> 2}
+
+\item	Local variables are declared with vertical bars.
+		Use \ct{:=} for assignment; \ct{_} or \ct{UNDERSCORE} will work as well but are deprecated since \sq 3.9.
+		\ct{|x| x:=1}
+
+\item	Expressions consist of message sends, cascades and assignments, possibly grouped with parentheses.
+		\emph{Statements} are expressions separated by periods.
+
+\item	Block closures are expressions enclosed in square brackets.
+		Blocks may take arguments and can contain temporary variables.
+		The expressions in the block are not evaluated until you send the block a 
+		\ct{value...} message with the correct number of arguments.\\
+		\ct{[:x | x + 2] value: 4 --> 6}.
+
+\item	There is no dedicated syntax for control constructs, just messages that conditionally evaluate blocks.\\
+		\ct{(\st includes: Class) ifTrue: [ Transcript show: Class superclass ]}
+
+\end{itemize}
+
+%=================================================================
+\ifx\wholebook\relax\else
+\end{document}\fi
+%=================================================================
+%%% Local Variables:
+%%% coding: utf-8
+%%% mode: latex
+%%% TeX-master: t
+%%% TeX-PDF-mode: t
+%%% ispell-local-dictionary: "english"
+%%% End:

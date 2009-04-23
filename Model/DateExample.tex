@@ -1,0 +1,88 @@
+% $Author$
+% $Date$
+% $Revision$
+%=================================================================
+\ifx\wholebook\relax\else
+% --------------------------------------------
+% Lulu:
+	\documentclass[a4paper,10pt,twoside]{book}
+	\usepackage[
+		papersize={6in,9in},
+		hmargin={.75in,.75in},
+		vmargin={.75in,1in},
+		ignoreheadfoot
+	]{geometry}
+	\input{../common.tex}
+	\pagestyle{headings}
+	\setboolean{lulu}{true}
+% --------------------------------------------
+% A4:
+%	\documentclass[a4paper,11pt,twoside]{book}
+%	\input{../common.tex}
+%	\usepackage{a4wide}
+% --------------------------------------------
+    \graphicspath{{figures/} {../figures/}}
+	\begin{document}
+	\renewcommand{\nnbb}[2]{} % Disable editorial comments
+	\sloppy
+\fi
+%=================================================================
+
+
+\chapter{Case Study}
+
+\subsubsection{A Case Study: The Class \ct{Date}.}
+A date is an object representing the date. \ct{Date today} returns the object that represents the current day. If we ask 
+this object to print itself, we obtain, for example, '27 November 2002'. %%%/// update this?
+\figref{dateToday} shows a date object in
+an inspector obtained using the expression \ct{Date today inspect}. What we see is that a date object  records only a number
+of days. There are no instance variables representing the month names, the day names, the number of days per month, and so on.
+In fact, such information is shared by all the instances of the class and is then represented by the class variables 
+\ct{DaysInMonth FirstDayOfMonth MonthNames  SecondsInDay WeekDayNames} %%%/// should there be commas between these names?
+ of the \ct{Date} class definition, as shown in  
+\clsref{cls:dateclass}.
+
+
+\begin{classdef}{}\label{cls:dateclass}
+Magnitude subclass: \#Date
+   instanceVariableNames: 'julianDayNumber '
+   \ct{classVariableNames: 'DaysInMonth FirstDayOfMonth MonthNames 
+     SecondsInDay WeekDayNames '}
+   poolDictionaries: ''
+   category: 'Kernel-Magnitudes'
+\end{classdef}
+
+
+All instance methods of the class \ct{Date} (and subclasses) can directly access the  class variables defined by the class 
+\ct{Date}, as shown by Method \ct{mth:monthName}, where the method \ct{monthName} accesses the class variable
+\ct{MonthNames}.
+
+\begin{method}{}\label{mth:monthName}
+Date>>>monthName
+   "Answer the name of the month in which the receiver falls."
+
+   ^MonthNames at: self monthIndex
+\end{method}
+
+In a similar fashion, all class methods can access class variables. The class \mthref{nameOfDay} \ct{nameOfDay:} 
+accesses the class variable \ct{WeekDayNames}.
+
+\begin{method}{}\label{mth:nameOfDay}
+Date class>>>nameOfDay: dayIndex 
+   "Answer a symbol representing the name of the day indexed by dayIndex, 1-7."
+
+   ^WeekDayNames at: dayIndex
+\end{method}
+
+
+%%%/// Should this go after or in the paragraph below called "pool dictionaries"?
+Pool dictionary are really static concepts, %%%/// Unclear. "A pool dictionary is a static concept"?  
+ and they %%%/// "and it"? 
+should be defined before a method
+can use them.  %%%/// can use it?
+We strongly encourage you not to use them. %%%/// not to use pool dictionaries?
+
+%=================================================================
+\ifx\wholebook\relax\else
+\end{document}\fi
+%=================================================================

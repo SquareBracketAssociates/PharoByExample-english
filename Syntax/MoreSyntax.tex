@@ -1,0 +1,652 @@
+% $Author$
+% $Date$
+% $Revision$
+% $Id$
+%=================================================================
+\ifx\wholebook\relax\else
+% --------------------------------------------
+% Lulu:
+	\documentclass[a4paper,10pt,twoside]{book}
+	\usepackage[
+		papersize={6in,9in},
+		hmargin={.75in,.75in},
+		vmargin={.75in,1in},
+		ignoreheadfoot
+	]{geometry}
+	\input{../common.tex}
+	\pagestyle{headings}
+	\setboolean{lulu}{true}
+% --------------------------------------------
+% A4:
+%	\documentclass[a4paper,11pt,twoside]{book}
+%	\input{../common.tex}
+%	\usepackage{a4wide}
+% --------------------------------------------
+    \graphicspath{{figures/} {../figures/}}
+	\begin{document}
+	\renewcommand{\nnbb}[2]{} % Disable editorial comments
+	\sloppy
+\fi
+%=================================================================
+\chapter{Unused syntax stuff}
+
+\on{Most of this stuff does not really add anything useful.
+Perhaps some can be recycled in other chapters.}
+
+\on{TO DO: replace printIt and PrintItAnd by \lct{-->}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Class definition}
+
+\on{this should go to the object model, I think}
+
+There is no specific construct to define classes in \st. Classes are created by sending messages to the 
+superclass of the class we want to create.  Several kinds of classes can be created depending whether their
+instances have fixed size  or their instances can have arbitrary size such as arrays do.
+
+\paragraph{Ordinary Class Definition.} The first kind of classes is created using the message \lct{subclass:\-instance\-VariableNames:\-classVariableNames:\-poolDictionaries:\-category:} and this is the way you will create classes in 99\% of the cases. Instances of such a classes have named instance variables hence a precise size. 
+
+\begin{classdef}[xxx]{xxx}
+SuperClass subclass: #NameOfClass
+    instanceVariableNames: 'instVarName1 instVarName2'
+    classVariableNames: 'ClassVarName1 ClassVarName2'
+    poolDictionaries: ''
+    category: 'Major-Minor'
+\end{classdef}
+
+\paragraph{Variable Class Definition.}
+The second kind of classes is created by using one of the three following messages \lct{variableSubclass:...}, \lct{variableByteSubclass:...}, or  \lct{variableWordSubclass:...}. These kinds of classes are used to create indexable objects, \textit{i.e.}, like instances of \lct{Array}, \lct{ByteArray}, and \lct{WordArray}. The instances of such a class have a size which is arbitrary and is specified at the instance creation using the message \lct{new: anInteger}.
+The different messages indicates the kind of indexable entity: \lct{variableSubclass:...} specifies that instances have indexed variables which contain object pointers, \lct{variableByteSubclass:...} that instances have indexed variables which contain bytes, and that instances have indexed variables which contain words.  We included here for completeness, but it is extremely rare that you need them. 
+
+\begin{classdef}[xxx]{xxx}
+SuperClass variableSubclass: #NameOfClass
+    instanceVariableNames: 'instVarName1 instVarName2'
+    classVariableNames: 'ClassVarName1 ClassVarName2'
+    poolDictionaries: ''
+    category: 'Major-Minor'
+         
+SuperClass variableByteSubclass: #NameOfClass
+    instanceVariableNames: 'instVarName1 instVarName2'
+    classVariableNames: 'ClassVarName1 ClassVarName2'
+    poolDictionaries: ''
+    category: 'Major-Minor'
+         
+SuperClass variableWordSubclass: #NameOfClass
+    instanceVariableNames: 'instVarName1 instVarName2'
+    classVariableNames: 'ClassVarName1 ClassVarName2'
+    poolDictionaries: ''
+    category: 'Major-Minor'
+\end{classdef}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Exceptions}
+
+\on{where do we put this??? -- Basic Classes?}
+
+\sq supports ANSI standard exceptions. Exceptions are objects too. Exceptions are again not another construct. They are just methods associated with blocks. To catch an exception use the method \lct{on: anException do: aUnaryBlock}. To raise an exception use the method \lct{signal} defined on the class \lct{Exception}.
+
+\begin{script}[xxx]{xxx}
+[| tmp | 
+10 to: -10 by: -1 do: [:i | Transcript show: (100 / i) printString ; cr]] 
+   on: ZeroDivide
+   do: [:ex |  ]
+\end{script}
+
+The most important messages defined on the class \lct{BlockContext} are: 
+\lct{ensure: aTerminationBlock} which evaluates aTerminationBlock after evaluating the receiver, regardless of whether the receiver's evaluation completes, \lct{ifCurtailed: aTerminationBlock} which evaluate the receiver. If it terminates abnormally, evaluates aTerminationBlock, and \lct{on: exception do: handlerActionBlock} which evaluates the receiver in the scope of an exception handler, \lct{handlerActionBlock}.
+
+\begin{script}[xxx]{xxx}
+["target code, which may abort"] 
+   ensure: 
+      ["code that will always be executed after the target code,
+      whatever whatever may happen"] 
+
+["target code, which may abort"]
+   ifCurtailed: 
+      ["code that will be executed whenever the
+      target code terminates without a normal return"]
+
+["target code, which may abort"] 
+   on: Exception
+   do: 
+      [:exception |
+      "code that will be executed whenever the identified Exception
+      is signaled."]
+\end{script}
+
+Exception have rich possibilities such as been resumed, restarted, or 
+signal other exception. Browse the class \lct{Exception} if you want 
+to know more.
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Comments and identifiers}
+\paragraph{Comments.}
+
+\on{Mostly covered already.}
+
+Comments are any sequence of characters delimited by \lct{"} and \lct{"}. Double double quotes to include them in comment. 
+
+
+\begin{script}{Comments}
+"a comment:  any sequence of characters, surrounded by double quotes"
+"comments can include the 'string delimiting' character"
+"and comments can include double quote characters by ""doubling"" them"
+"comments can span many
+many
+lines"
+\end{script}
+
+\paragraph{Identifiers.}
+Identifiers are any sequence of characters starting by a alphabetical character.
+This definition may vary but avoid to use any cryptic non alphabetical character if you want your code
+to look like \st code. 
+
+\begin{itemize}
+\item \st identifiers are case-sensitive. Hence \lct{lunchTime} and \lct{LunchTime} are different identifiers. 
+\item It is a \st convention for identifiers (instance and temporaries) of several words to begin with a lower case character, and then capitalize subsequent words (\textit{e.g.,} \lct{thisIsAnIdentifier}).
+\item  Certain identifiers, for example, globals like \lct{Transcript} and class variables, are by convention capitalized. The names of all classes are also global variables (\textit{e.g.,} \lct{OrderedCollection}), and are therefor capitalized.
+\end{itemize}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Literals (constant expressions)}
+
+\on{Much of this is already covered, more compactly.
+Maybe some examples can move to the Basic Classes chapter.}
+
+Constant expressions are expressions that are evaluated at compile-time. 
+In the following, \ct{-->} means "prints as".
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Numbers}
+
+\begin{itemize}
+\item \sq supports small integer arithmetic defined in the class \lct{SmallInteger} with fast internal primitives.
+
+\item \sq supports arbitrary precision arithmetic seamlessly (automatically coercing instances of \lct{SmallInteger} to instance of \lct{LargePositiveInteger} and \lct{LargeNegativeInteger} where appropriate), albeit at a slight cost in speed. Try: \lct{(SmallInteger maxVal + 1) class}. We add one to the biggest small integer and we get the smallest \lct{LargePositiveInteger}. Try the following expression to see that \sq can easily represent huge numbers: \lct{1000 factorial}
+
+\item \sq supports several other kinds of numerical entities, such as fractions (using the class \lct{Fraction}, representing arbitrary precision rational numbers) and points (\lct{Point}). While there are no literals for these objects, they are naturally expressed as operations on built-in literals, \eg{} 2/3 and 2@3. Try the following to see the automatic coercion at work:  \lct{1000 factorial / 999 factorial} or \lct{(9/11) + (2/11)}. 
+
+\item Numbers may be represented in many radices, but the radix specification itself is always expressed in base 10. 
+The base for the exponent part is the same as the radix. So: 
+
+\end{itemize}
+
+
+%\begin{script}{Numbers}
+%\textrm{Decimal integer:} 1234, 12345678901234567890
+%\textrm{Octal integer:} 8r177, 8r1777777777777777777777
+%\textrm{Hex integer:} 16rFF, 16r123456789ABCDEF012345
+%\textrm{Arbitrary base integer:} 2r1010 \eval{} 10
+%\textrm{Integer with exponent:} 123e2 \eval{} 12300, 2r1010e2 \eval{} 40
+%\textrm{Float (double precision):} 3.14e-10
+%\textrm{Arbitrary base float:} 2r1.1 \eval{} 1.5
+%\textrm{Float with exponent:} 2r1.1e2 \eval{} 6.0
+%\end{script}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Characters (instances of class Character)}
+Printable characters starts by the sign % \$.
+To obtain a unprintable character
+such as tab, cr, or space, send a message to the class \lct{Character}.
+
+\begin{script}{Characters}
+\$x "A character is any character (even unprintable ones), preceded by a dollar sign"
+\$3 "Don't be shy about characters that are digits"
+\$< "or symbols"
+\$\$ "or even the dollar sign"
+Character space "To get character for space, carriage return, tab"
+Character cr "send a message to the class itself"
+Character tab 
+\end{script}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Constant arrays (instances of class Array)}
+The \ct{#()} construct defines compile-time \index{array}\index{compile-time array} arrays; 
+\ct{#()} arrays are also called \textit{constant arrays}. 
+% Since they are created at compile-time, the elements must be compile-time constants.
+
+\begin{itemize}
+\item Constant arrays are constants, and their elements must therefore be constants, \emph{not} arbitrary expressions.
+Sequences of symbols that could represent expressions are not evaluated, but are parsed as sequences of symbols, so \ct{#(1 + 3)} is an array with 3 elements\,---\,\ct{1}, the symbol \ct{#+}, and \lct{3}.
+\item Constant arrays may contain constant arrays. The hash sign for nested constant arrays is optional.
+\item Identifiers and sequences of characters in constant arrays are treated as symbols; the hash sign for internal symbols is optional.
+\item All arrays are indexed so that the first element has index 1.
+\end{itemize}
+
+\noindent
+See \secref{syn:brace} for arrays created at run-time, which can have arbitrary elements. 
+
+\begin{script}{Arrays}
+#(1 2 3 4 5) "An array of size 5 comprising five Integers (1 to 5)"
+#('this' #is $a #'constant' array) 
+"An array of size 5 comprising 
+ a String ('this'), a Symbol (#is), a Character (\$a),
+ and two Symbols (#constant and #array)."
+#(1 2 (1 #(2) 3 ) 4) 
+"An array of size 4 comprising two Integers (1 and 2), 
+an Array of size 3, and another Integer (4)."
+#(1 + 2) 
+"An array of size 3 comprising 1, #+, and 2.
+It is not the singleton array comprising 3."
+\end{script}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Brace Arrays}
+\label{sec:brace}
+Because arrays defined using \ct{#()} are constants, 
+to create arrays containing objects other than literals we have to add the individual elements as shown in the \egref{boring} which is boring to type and, more importantly, hard to read. 
+
+\begin{script}{Traditional Array Creation}\label{eg:boring}
+| ar | 
+ar := Array new: 2. 
+ar at: 1 put: (Date today).
+ar at: 2 put: (100 factorial)
+
+"or"
+| ar | 
+ar := Array with: (Date today) with: (100 factorial)
+\end{script}
+
+Unlike other \st dialects, \sq  provides a way to define non-literal arrays in a compact form using \index{\{\}} \ct|{| and \ct|}|. An array created using \{ \} is called a \index{brace array} \textit{brace array}; both the array and its elements are computed at run-time. The elements of a brace array are the results of the execution of the expressions between the braces.
+As in a method, periods are used to separate the expressions. 
+
+\begin{script}{Dynamic Arrays}
+\{ 1. 2 . 3 . 4 . 5 \} 
+"An array of size 5 comprising five Integers (1 to 5)"
+
+| blop |
+blop := 100 factorial. 
+\{ \$a . #brace . blop + 1\} 
+"An array of size 3 comprising a Character (\$a) a Symbol (#brace),
+ and the value of the variable blop plus one."
+
+\{ 1 + 2 \} "An array of size 1 comprising the single integer 3."
+\end{script}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Strings (instances of class String)}
+A \index{string} string is a sequence of characters enclosed within \index{single quote} \lct{'}single quotes\lct{'}. 
+If you need to include a single quote in the string, you use two quotes.
+A string is really an array containing characters, so that you can index a string, which will answer the character at the corresponding position, starting with 1. 
+So:
+
+\begin{code}{@TEST}
+'bell' at: 1 --> $b
+\end{code}
+
+\lct{'bell' at: 1 put: \$w} changes the first character of the receiver to \textit{w}.   \lct{at:put:} answers the newly put object, so 
+
+\begin{code}{@TEST}
+'bell' at: 1 put: $w --> $w
+'bell' at: 1 put: $w; yourself --> 'well'
+\end{code}
+
+\begin{script}{Strings}
+'a string comprises any sequence of characters, surrounded by single quotes'
+'strings can include the "comment delimiting" character'
+'and strings can include single quote characters by doubling'' them'
+'strings can contain embedded
+newlines'
+'' "and don't forget the empty string"
+\$a asString  "the string 'a'"
+String with: \$a 
+\end{script}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Symbols (instances of class Symbol)}
+\index{symbol}Symbols are \textit{unique} strings. Symbols start with the sign \index{#}\ct{#}. 
+
+\begin{itemize}
+\item The class \lct{Symbol} is a subclass of \lct{String}, and understands, in large part, the same messages.
+\item The primary difference between a symbol and a string is that all symbols comprising the same sequence of characters are the \textit{same} instance. Two different string instances can both have the characters 'test one two three', but every symbol having the characters \ct{#'test one two three'} is the \textit{same} and \textit{unique} instance. This \textit{unique instance} property means that symbols can be efficiently compared, because equality (\lct{=}) is the same as identity (\lct{==}). \index{identity}\index{equality}
+Try: \ct{'aaa' == 'aaa'} and \ct{#aaa == #aaa}.
+
+\item Symbols containing colons (\textit{e.g.,} \ct{#at:},  \ct{#a:keyword:selector:}) are often referred to as keyword selectors because they are used to build keyword messages.
+\item Single special character and multiple special character symbols (\textit{e.g.,} \ct{#*} or \ct{#++}) are often referred to as binary selectors. The permissible characters for binary symbols are \lct{+$-/\star\sim\,<\;=\;>@\,\%\;|\;$\&\,?\,!}. 
+However, it is a peculiarity of \st's syntax that \ct{#$--$} is not a symbol (or a binary selector); you must write \ct{#'$--$'}, which is a symbol (but not a binary selector). 
+\end{itemize}
+
+
+\begin{script}{Symbols}
+#'A string literal preceded by a hash sign is a Symbol'
+#orAnyIdentifierPrefixedWithAHashSign
+#orAnIdentifierEndingWithAColon:
+#or:several:identifiers:each:ending:with:a:colon:
+#- "A symbol can also be a hash followed by - or any special character"
+#+< "or a hash followed by any sequence of special characters other than -\,-"
+\end{script}
+
+\ab{It's becoming really important that $\backslash$ct and $\backslash$begin\{script\}\ldots$\backslash$end\{script\} should typeset the same.  The translations stuff in listings appears not to work. Hyphen in script environment should translate to math $-$, * to $\star$, etc.}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Temporary variable definition and assignment}
+
+\on{all covered}
+
+\paragraph{Temporary Variable.} To define a temporary variable we surround it by \lct{|}. 
+\lct{| a |} has no value. 
+
+\begin{script}{Temporary variables}
+| aTemporaryVariable | "a temporary variable" 
+| var1 var2 | "Two temporary variables" 
+\end{script}
+
+\paragraph{Assignments.}
+Variable assignments are expressed using the sign \lct{\_}, $\leftarrow$, or \lct{:=}. 
+
+@@should say that now := is favored@@
+\begin{script}{Assignments}
+identifier \lct{\_} expression
+identifier <- expression
+identifier :=  expression
+" := is always a legal alternative to , but the pretty printer
+ uses \lct{\_} or <- "
+\end{script}
+
+\begin{itemize}
+\item The identifier (whether instance variable, class variable, temporary variable, or otherwise) will thereafter refer to the object answered by the expression.
+\item The "$\leftarrow$" glyph can be typed in \sq by keying the underbar character (shift-hyphen).
+\item Assignments are expressions; they answer the result of evaluating the right-hand-side.
+\end{itemize}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Control structures}
+\label{sec:control}
+
+\on{check if this is already in basic classes}
+
+As we already mentioned it, in \st  there is no dedicated constructs with particular syntax for loops, 
+conditional, or exceptions. Keywords-based messages with blocks-closures are enough
+to express them. 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Conditional control structures (receiver is a boolean)}
+\label{sec:conditional}
+There are four methods defined on the classes \lct{Boolean}, \lct{True}, and \lct{False} that define conditional execution: \index{ifTrue:ifFalse:}\lct{ifTrue:ifFalse:}, \index{ifFalse:ifTrue:}\lct{ifFalse:ifTrue:}, \index{ifTrue:}\lct{ifTrue:}, and \index{ifFalse:}\lct{ifFalse:}. 
+
+These methods have the following behavior:
+
+\begin{itemize}
+\item \lct{aBooleanExpression ifTrue: trueAlternativeBlock ifFalse: falseAlternativeBlock} and \lct{ifFalse: falseAlternativeBlock ifTrue: trueAlternativeBlock} answer the value of \lct{trueAlternativeBlock} if the receiver is \lct{true}. Answer the value of \lct{falseAlternativeBlock} if the receiver is \lct{false}. Otherwise, signal an error. 
+
+\item \lct{aBooleanExpression ifTrue: alternativeBlock} answers \lct{nil} if the receiver is \lct{false}. Signal an error 
+if the receiver is not a boolean. Otherwise, answer the result of evaluating \lct{alternativeBlock}.
+
+\item 
+Symetrically \lct{aBooleanExpression ifFalse: alternativeBlock} answers \lct{nil} if the receiver is \lct{true}. Signal an error if the receiver is not a boolean. Otherwise answer the result of evaluating the argument, \lct{alternativeBlock}.
+\end{itemize}
+
+Note that the block used for conditional are blocks without argument and that as any block they can contain sequences of messages. All these conditional expressions are just methods defined on boolean classes. Note that the compiler is optimizing them drastically so that the messages are not even sent. 
+
+
+\begin{script}[xxx]{xxx}
+10 factorial isOdd
+   ifTrue: [Transcript show: 'odd Number'; cr ]
+   ifFalse: [Transcript show: 'even Number'; cr. 
+                \st beep]
+\end{script}
+
+\paragraph{Composing Boolean Expressions.}
+Boolean classes also defines methods to compose boolean expressions: 
+\index{\lct{\&}}\index{and}\lct{\& aBoolean} (and), 
+\index{and:} \index{lazy and}\lct{and: aBlock} (lazy and),  
+\index{|} \index{or} \lct{| aBoolean} (or), 
+\index{or:} \index{lazy or} \lct{or: aBlock} (lazy or), 
+\index{not} \index{negation}\lct{not}(negation), 
+and \index{xor}\lct{xor: aBlock}\index{exclusive or}(exclusive or) (see \charef{boolean}. 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Iterative conditional structures (receiver is aBlockContext)}
+\label{sec:loopCondition}
+Besides conditional expressions, the class \lct{BlockContext} defines the following methods that implement  iterative conditional control structures: \index{whileTrue}  \index{whileTrue:} \index{whileFalse} \index{whileFalse:} \lct{whileTrue},  \lct{whileTrue:}, \lct{whileFalse}, and  \lct{whileFalse:}.
+
+These methods have the following behavior: 
+\begin{itemize}
+\item \lct{aBlock whileTrue} evaluates the receiver and continues to evaluate the receiver for so long as the result is true.
+\item \lct{aBlock whileTrue: anotherBlock} evaluates the receiver. If the receiver returns true, evaluates \lct{anotherBlock} and repeat as shown in the \egref{whileloop}.
+\item \lct{whileFalse} and \lct{whileFalse:} 
+\end{itemize}
+
+\begin{script}[xxx]{xxx}\label{eg:whileloop}
+|counter |
+counter := 0.
+[counter < 100] whileTrue: 
+    [counter := counter + 1. 
+    Beeper beep]
+\end{script}
+
+The definition of the methods \lct{whileTrue:} and \lct{whileTrue} is another example of use of conditional loops (see \mthref{while}). Note again that for the methods \lct{whileTrue} and \lct{whileTrue:} the compiler heavily optimizes their  invocation to the point that they are not executed in this current form. 
+
+\begin{method}[xxx]{xxx}\label{mth:while}
+BlockClosure>>whileTrue: aBlock
+   ^ self value 
+        ifTrue:	
+           [aBlock value. 
+         	  self whileTrue: aBlock]
+
+BlockClosure>>whileTrue
+   ^ [self value] whileTrue: [] 
+\end{method}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Enumeration control structures (receiver is anInteger)}
+\label{sec:loopInteger}
+The class \lct{Integer} defines the following  unconditional loops \index{timesRepeat:}\lct{timesRepeat:}, 
+\index{to:do:} \lct{to:do:}, and \index{to:by:do:} \lct{to:by:do:} that have the following 
+behavior: 
+
+\begin{itemize}
+\item \lct{startInteger timesRepeat: aBlock} evaluates the argument, aBlock, the number of times represented by the receiver.
+\item \lct{startInteger to: stopInteger do: aOneArgBlock} evaluates \lct{aOneArgBlock} with each element of the interval \lct{(self to: stop by: 1)} as argument as illustrated in the \egref{fact} that defines factorial.
+\item \lct{startInteger to: stopInteger by: stepInteger do: aOneArgBlock}	evaluates \lct{aOneArgBlock} with each element of the interval \lct{(self to: stop by: step)} as argument.
+\end{itemize}
+
+\begin{script}[xxx]{xxx}
+4 timesRepeat: [Beeper beep]
+1 to: 3 do: [:i | Transcript show: i printString ;cr] 
+"This sends #to:do: (with two parameters) to integer 1"
+(1 to: 3) do:  [:i | Transcript show: i printString ;cr] 
+"This sends #do: to the Interval given by evaluating '1 to: 3'"
+\end{script}
+
+\begin{script}{factorial?}\label{eg:fact}
+| tmp |
+tmp := 1.
+2 to: self do: [:i | tmp := tmp * i].
+tmp
+\end{script}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Enumeration control structures (receiver is Collection)}
+\label{sec:loopCollection}
+\st also defines extremely powerful methods for iterating over collections that have copied 
+in other languages, namely \index{do:} \index{collect:}
+\index{select:} \index{reject:} \index{detect:}
+\index{detect:ifNone:} \index{with:do:} \index{inject:into:}
+\lct{do:}, \lct{collect:},
+\lct{select:}, \lct{reject:}, \lct{detect:}, 
+\lct{detect:ifNone:}, \lct{with:do:}, \lct{inject:into:}. 
+
+The behavior of these method is the following: 
+\begin{itemize}
+\item \lct{aCollection do: aOneArgBlock} applies \lct{aOneArgBlock}, a block requiring one argument, to each of the collection element.
+
+\item \lct{aCollection collect: aOneArgBlock} returns a collection containing all the results obtained by the application of the block \lct{aOneArgBlock} on each collection elements. 
+
+\item \lct{aCollection with: anotherCollection do: aBinaryBlock} iterates in parallel over each elements of the two collections and executes the block requiring two arguments with the elements of each collection. 
+\end{itemize}
+
+\begin{script}{Cool iterators}
+#(15 10 19 68) do:  
+   [:i | Transcript show: i printString ; cr ]
+
+#(15 10 19 68) collect: [:i | i odd ]
+   --> #(true false true false)
+
+#(1 2 3) with: #(10 20 30) 
+   do: [:x :y| Transcript show: (y ** x) printString ; cr ]
+\end{script}
+
+
+\begin{itemize}
+\item  \lct{aCollection select: aOneArgPredicateBlock} returns a collection representing all the elements of the collection 
+satisfying the block \lct{aOneArgPredicateBlock} a block should take one argument and return a boolean. 
+\item  \lct{aCollection reject: aOneArgPredicateBlock} returns a collection representing all the elements of the collection 
+not satisfying the block \lct{aPredicateBlock}
+
+\item  \lct{aCollection detect: aOneArgPredicateBlock} returns the first element satisfying  the block \lct{aOneArgPredicateBlock}. Raise an error if none of the elements satisfy the block. 
+\item  \lct{aCollection 
+      detect: aOneArgPredicateBlock 
+      ifNone: aNoneBlock} returns the first element satisfying the block \lct{aOneArgPredicateBlock}. If no element satisfies it  returns the value returned by the \lct{aNoneBlock}
+\end{itemize}
+
+\begin{script}[xxx]{xxx}
+#(15 10 19 68) select: [:i|i odd] 
+--> #(15 19)
+#(15 10 19 68) reject: [:i|i odd] 
+--> #(10 68)		
+#(12 10 19 68 21) detect: [:i|i odd]
+-->  19
+#(12 10 12 68) detect: [:i|i odd] ifNone:[1] 
+--> 1
+\end{script}
+
+
+\begin{itemize}
+\item \lct{aCollection inject: aStartValue into: aBinaryBlock} applies the block \lct{aBinaryBlock} on all the elements of the receiver, accumulating the result in the first argument starting with \lct{aStartValue}.
+\end{itemize}
+
+
+\begin{script}[xxx]{xxx}
+|acc|
+acc := 0.
+#(1 2 3 4 5) do: [:element | acc := acc + element].
+acc 
+-->  15
+
+"Is equivalent to" 
+
+#(1 2 3 4 5) 
+   inject: 0 
+   into: [:acc :element| acc + element]
+\end{script}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Method definition}
+\on{already done}
+Methods are defined by writing the method signature followed by the method body in the browsers and compiling them using the accept menu item. The class in which the method is defined is not explicitly mentioned as shown by \mthref{lineCount}. 
+The browsers compile a method in the class in which the method is defined. Note that there exist a couple of messages to explicitly ask the class to compile a method but these messages are used by the compiler or the environment such as the browser or the file list to create methods. A normal programmer does not need to know them. 
+
+Methods always return a value; there is an implicit \lct{\^\  self} at the end of every method to make sure that this is the case. In the method \mthref{lineCount2} (from \lct{String}) the method returns explicitly a value while in the method~\mthref{openbrowser} defined on the class \lct{Browser} there is no
+explicit return so the method returns self which here represents the class itself as the method is a class method. 
+
+\begin{method}[xxx]{xxx}\label{mth:lineCount2}
+lineCount
+   "Answer the number of lines represented by the receiver, where every
+   cr adds one line."
+    
+   | cr count |
+   cr  Character cr.
+   count  1  min: self size.
+   self do:
+      [:c | c == cr ifTrue: [count  count + 1]].
+   ^ count
+\end{method}
+
+\begin{method}[xxx]{xxx}\label{mth:openbrowser}
+openBrowser
+   "Create and schedule a BrowserView with default browser label. The
+   view consists of five subviews, starting with the list view of system
+   categories of SystemOrganization. The initial text view part is empty."
+
+   | br |
+   br := self new.
+   self
+      openBrowserView: (br openEditString: nil)
+      label: br defaultBrowserTitle
+\end{method}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Two graphical examples}
+
+\on{Don't know where this fits. Not here.}
+
+Before going in the details of the syntax we present two scripts. 
+
+\paragraph{Image Capture.}
+\sq allows the handling of bitmaps (classes \lct{BitBlt} and \lct{WarpBlt}) as well as common image formats like GIF, JPEG, and PNG. \scrref{capt} captures a part of the screen and saves it in a file.
+
+\begin{script}{Capturing an Image}\label{scr:capt}
+| im |
+im := Form fromUser.
+GIFReadWriter putForm: im onFileNamed: 'test.gif'
+\end{script}
+
+\noindent
+This script first declares the temporary variable \lct{im}, then asks the user to capture a part of the screen by sending the unary message \lct{fromUser} to the class \lct{Form}, and finally saves the captured screenshot as a GIF file by sending the keyword message \lct{putForm:onFileNamed:} to the class \lct{GIFReadWriter}. Note that the message name is really \lct{putForm:onFileNamed:}, 
+and includes the two colons. \lct{im} and \lct{'test.gif'} are the arguments.
+
+\begin{figure}
+\begin{center}\includegraphics[scale=0.7]{rotated}\end{center}
+\caption{Rotating and zooming a part of the screen.\label{fig:rotated}}
+\end{figure}
+
+\paragraph{Image Transformations.}
+All image formats are internally translated into instances of the class \lct{Form}. A Form allows multiple transformations such as flip, rotation, and zoom. The \scrref{rotate} shows you how to rotate and zoom 
+the portion of the screen that surrounds the mouse, as illustrated in \figref{rotated}.
+
+\begin{script}{Playing with images}\label{scr:rotate}
+| angle form rotatingForm |
+form := Form fromDisplay: (0@0 extent: 300@300).
+angle := 0.
+[Sensor anyButtonPressed] whileFalse: [
+   rotatingForm := (Form fromDisplay:
+               (Rectangle 
+                    center: Sensor cursorPoint 
+                    extent: 130@66)).
+   (rotatingForm 
+      rotateBy: angle	
+      magnify: 2 
+      smoothing: 1) display.
+   angle := angle + 5].
+form display
+\end{script}
+
+Let's explain this code.
+\begin{itemize}
+\item First, after having declared three variables (\lct{angle}, \lct{form}, and \lct{rotatedForm}) we capture and store in the variable \lct{form} a part of the display screen.
+The idea is that we will use this to restore the display when we have finished our manipulation. 
+Which part of the display? 
+The part enclosed by the \lct{Rectangle} with top-left corner \lct{0@0}, extending down to \lct{300@300}.
+\lct{@} is a binary message that creates a point from two numbers, and extent: is a message understood by \lct{Point}s that answers a \lct{Rectangle}.
+\item Next we initialize the variable \lct{angle}. Then, as long as no ``sensor'' (\ie{} mouse) button is pressed, we create a new \lct{Form} from a screen area based on the position of the
+mouse and assign it to the variable \lct{rotatingForm}. \lct{Sensor cursorPoint} answers the position of the mouse. \lct{Rectangle center: Sensor cursorPoint extent: 130@66} answers a rectangle centered on the mouse position with a size of \lct{130$\times$66} pixels.
+\item Then we ask this form to rotate on itself while enlarging it. 
+Note that the name of the method is \lct{rotateBy:magnify:smoothing:}
+and thus it has 3 arguments. Once rotated we ask this form to display itself, 
+then we increment the angle. We continue until a mouse button is pressed.
+\item When a button is pressed, we redisplay the original part of the screen.
+\end{itemize}
+
+\ifx\wholebook\relax\else
+\end{document}\fi

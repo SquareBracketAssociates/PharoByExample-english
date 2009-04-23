@@ -1,0 +1,77 @@
+% $Author$
+% $Date$
+% $Revision$
+%=================================================================
+\ifx\wholebook\relax\else
+% --------------------------------------------
+% Lulu:
+	\documentclass[a4paper,10pt,twoside]{book}
+	\usepackage[
+		papersize={6in,9in},
+		hmargin={.75in,.75in},
+		vmargin={.75in,1in},
+		ignoreheadfoot
+	]{geometry}
+	\input{../common.tex}
+	\pagestyle{headings}
+	\setboolean{lulu}{true}
+% --------------------------------------------
+% A4:
+%	\documentclass[a4paper,11pt,twoside]{book}
+%	\input{../common.tex}
+%	\usepackage{a4wide}
+% --------------------------------------------
+    \graphicspath{{figures/} {../figures/}}
+	\begin{document}
+	\renewcommand{\nnbb}[2]{} % Disable editorial comments
+	\sloppy
+\fi
+%=================================================================
+
+%-----------------------------------------------------------------
+\subsection{Associating}
+\sd{I would remove that section too}
+The \emph{associating} method category contains a single method \ct{->}, which is used to create an \ct{Association} between a key (the receiver) and a value (the argument). An \ct{Array} of \ct{Associations} can be used to conveniently initialize a \ct{Dictionary}:
+
+\begin{code}{@TEST}
+Dictionary newFrom: { #start -> (1@1) . #end -> (3@4) } --> a Dictionary(#end->3@4 #start->1@1 )
+\end{code}
+
+\ct{Object>>>-->} is an example of a \emph{Shortcut Constructor Method}\footnote{See: Kent Beck, \emph{Smalltalk Best Practice Patterns}, Prentice-Hall, 1997.}, which allows you to construct an object by sending a message to one of its constructor arguments. Shortcut Constructor Methods have the great advantage that they make object creation much more concise, but if abused they can clutter the receiver class with many methods unrelated to the key responsibilities of the class.
+
+%-----------------------------------------------------------------
+\subsection{Converting}
+
+\sd{here}
+\sd{I do not like to talk about that here. I would remove that section. Add a note on the asString and printString difference}
+Whenever it is possible in Smalltalk to convert an object from one class \ct{A} to be an instance of another class \ct{B}, this is usually accomplished by sending it a message of the form \ct{asB}. Of course, there is no magic, so this must be implemented at the appropriate level. There are a few such messages provided already by the class \ct{Object}. The most important are \ct{asString} and \ct{asOrderedCollection}.
+
+Every object should have a \ct{String} representation. The default implementation is to return the \ct{printString} representation of the object. We will see this in more detail when we look at \ct{Object}'s \emph{printing} method category below.
+
+\begin{code}{}
+Object>>>asString
+    "Answer a string that represents the receiver."
+    ^ self printString
+\end{code}
+
+\begin{code}{@TEST}
+Object new --> an Object
+\end{code}
+
+The other standard conversion method is \ct{asOrderedCollection}:
+
+\begin{code}{}
+Object>>>asOrderedCollection
+    "Answer an OrderedCollection with the receiver as its only element."
+    ^ OrderedCollection with: self
+\end{code}
+
+\begin{code}{@TEST}
+1 asOrderedCollection --> an OrderedCollection(1)
+\end{code}
+
+
+%=================================================================
+\ifx\wholebook\relax\else
+\end{document}\fi
+%=================================================================

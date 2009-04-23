@@ -1,0 +1,11 @@
+% FirstApp.top
+\unprotect
+\setupsystem[\c!n=1,\c!m=1]
+\def\MPOSTformatswitch{-progname=metafun -mem=}
+\setupsystem[\c!method=2]
+\setupsystem[\c!type=macosx]
+\setupoutput[pdftex]
+\setupsystem[\c!random=193]
+\setupsystem[inputfile=FirstApp.tex]
+\protect
+\endinput

@@ -1,0 +1,770 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Web.sty package,                  2000-3-05          %%
+%% Copyright (C) 1999-2000  D. P. Story                 %%
+%%   dpstory@uakron.edu                                 %%
+%%                                                      %%
+%% This program can redistributed and/or modified under %%
+%% the terms of the LaTeX Project Public License        %%
+%% Distributed from CTAN archives in directory          %%
+%% macros/latex/base/lppl.txt; either version 1 of the  %%
+%% License, or (at your option) any later version.      %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%
+%% History: Noel Vaillant began developing a better web.sty
+%%   based on my earlier published web.sty. Many thanks
+%%   to him for starting me off.
+%%
+\ProvidesPackage{web}[2000/04/03 v2.0 web.sty package (dps)]
+\NeedsTeXFormat{LaTeX2e}[1997/12/01]
+
+\DeclareOption{forpaper}{\eqforpapertrue  % for print
+  \PassOptionsToPackage{monochrome}{color}%
+  \PassOptionsToPackage{forpaper}{exerquiz}}
+\DeclareOption{latexlayout}{\web@layoutfalse}
+\DeclareOption{navibar}{\web@navibartrue}  % navigation bar
+\DeclareOption{nodirectory}{\web@directoryfalse} % no directory on title page
+\DeclareOption{latextoc}{\web@latextoctrue} % standard latex toc
+\DeclareOption{dvipsone}{\PassOptionsToPackage{dvipsone}{hyperref}%
+   \PassOptionsToPackage{dvipsone}{color}%
+   \def\web@set@paper{\special{papersize=\the\paperwidth,\the\paperheight}}}
+\DeclareOption{dviwindo}{\PassOptionsToPackage{dviwindo}{hyperref}%
+   \PassOptionsToPackage{dviwindo}{color}
+   \PassOptionsToPackage{dviwindo}{exerquiz}%
+   \def\web@set@paper{\special{papersize=\the\paperwidth,\the\paperheight}}}
+\DeclareOption{dvipdfm}{\PassOptionsToPackage{dvipdfm}{hyperref}
+   \PassOptionsToPackage{dvipdfm}{color}
+   \PassOptionsToPackage{dvipdfm}{exerquiz}
+   \def\web@set@paper{\AtBeginDvi{\special{papersize=\the\paperwidth,\the\paperheight}}}}
+\DeclareOption{dvips}{\PassOptionsToPackage{dvips}{hyperref}
+   \PassOptionsToPackage{dvips}{color}%
+   \def\web@set@paper{\special{papersize=\the\paperwidth,\the\paperheight}}}
+\DeclareOption{pdftex}{\PassOptionsToPackage{pdftex}{hyperref}
+   \PassOptionsToPackage{pdftex}{color}\PassOptionsToPackage{pdftex}{exerquiz}
+   \def\web@set@paper{}}
+\DeclareOption{tight}{% Try to make environments a little tighter
+   \AtEndOfPackage{\tightsettings}}
+\DeclareOption{designi}{%
+    \AtEndOfPackage{%
+        \margins{.25in}{.25in}{24pt}{.25in} % left,right,top, bottom
+        \screensize{3.72in}{4.67in} % web.sty dimensions
+        \def\margins#1#2#3#4{}\def\screensize#1#2{}%
+    }%
+}
+\DeclareOption{designii}{%
+    \AtEndOfPackage{
+        \margins{.25in}{.25in}{24pt}{.25in} % left,right,top, bottom
+        \screensize{4.5in}{5in} % height, width
+        \def\margins#1#2#3#4{}\def\screensize#1#2{}%
+    }%
+}
+\DeclareOption{designiii}{%
+    \AtEndOfPackage{%
+        \margins{.25in}{.25in}{24pt}{.25in} % left,right,top, bottom
+        \screensize{5in}{6in} % height, width
+        \def\margins#1#2#3#4{}\def\screensize#1#2{}%
+    }%
+}
+\def\tightsettings{%
+   \setlength\partopsep{2\p@ \@plus 1\p@ \@minus 1\p@}%
+   \def\@listi{\leftmargin\leftmargini
+      \parsep 2\p@ \@plus2\p@ \@minus\p@  %4\p@ \@plus2\p@ \@minus\p@
+      \topsep 2\p@ \@plus1\p@ \@minus\p@ %8\p@ \@plus2\p@ \@minus4\p@
+      \itemsep2\p@ \@plus1\p@ \@minus\p@}%
+      \let\@listI\@listi
+      \@listi
+      \def\@listii {\leftmargin\leftmarginii
+           \labelwidth\leftmarginii
+           \advance\labelwidth-\labelsep
+           \topsep    \z@ \@plus\p@ \@minus\p@
+           \parsep    \z@ \@plus\p@  \@minus\p@
+           \itemsep   \parsep}%
+     \def\@listiii{\leftmargin\leftmarginiii
+           \labelwidth\leftmarginiii
+           \advance\labelwidth-\labelsep
+           \topsep    \z@ \@plus\p@\@minus\p@
+           \parsep    \z@
+           \partopsep \p@ \@plus\z@ \@minus\p@
+           \itemsep   \topsep}%
+}
+
+\DeclareOption{french}{%
+  \AtEndOfPackage{%
+  %======> Modification : JMS
+  % Recouvrement de \today
+  \def\today{\the\day\ \ifcase\month\or janvier
+        \or f\'evrier \or mars  \or avril
+        \or mai \or juin  \or juillet  \or ao\^ut
+        \or septembre  \or octobre  \or novembre
+        \or d\'ecembre \fi \the\year}
+  %======> Modification : JMS
+  \def\web@toc{Table des mati\`{e}res}
+  \def\web@continued{suite}
+  \def\web@article{D\'{e}but \hyperlink{section.1}{Document}}
+  \def\web@directory{R\'{e}pertoire}
+  \def\web@revision{Mise \`{a} jour :}
+  \def\web@copyright{Copyright}
+  \def\web@versionlabel{Version}
+  \def\web@back{Retour}}
+  \PassOptionsToPackage{french}{exerquiz}
+}
+\DeclareOption{german}{%
+  \AtEndOfPackage{%
+  \def\today{\the\day. \ifcase\month\or Januar
+        \or Februar \or M\"{a}rz  \or April
+        \or Mai \or Juni  \or Juli  \or August
+        \or September  \or Oktober  \or November
+        \or Dezember \fi \the\year}
+  \def\web@versionlabel{Version}
+  \def\web@toc{Inhaltsverzeichnis}
+  \def\web@continued{Forts.}
+  \def\web@article{Anfang \hyperlink{section.1}{Artikel}}
+  \def\web@directory{\"Ubersicht}
+  \def\web@revision{Letzte \"Anderung:}
+  \def\web@copyright{Copyright}
+  \def\web@section{Abschnitt}
+  \def\web@back{Zur\"uck}
+  \def\web@doc{Dok}}
+  \PassOptionsToPackage{german}{exerquiz}
+}
+\DeclareOption{norsk}{%
+  \AtEndOfPackage{%
+  \def\today{\ifcase\month\or Januar
+        \or Februar \or Mars \or April
+        \or Mai \or Juni  \or Juli  \or August
+        \or September  \or Oktober  \or November
+        \or Desember \fi \the\day,  \the\year}
+  \def\web@versionlabel{Versjon}
+  \def\web@toc{Innholdsfortegnelse}
+  \def\web@continued{forts.}
+  \def\web@article{Start \hyperlink{section.1}{artikkel}}
+  \def\web@directory{Katalog}
+  \def\web@revision{Sist endret:}
+  \def\web@copyright{Copyright}
+  \def\web@section{Avsnitt}
+  \def\web@back{Tilbake}
+  \def\web@doc{Dok}}
+  \PassOptionsToPackage{norsk}{exerquiz}
+}
+\DeclareOption{dutch}{%
+  \AtEndOfPackage{%
+  \def\today{\the\day~\ifcase\month\or januari
+        \or februari \or maart \or april
+        \or mei \or juni  \or juli  \or augustus
+        \or september  \or oktober  \or november
+        \or december \fi \space \the\year}
+    \def\web@versionlabel{Versie}
+    \def\web@toc{Inhoudsopgave}
+    \def\web@continued{vervolg}
+    \def\web@article{Begin \hyperlink{section.1}{Artikel}}
+    \def\web@directory{Overzicht}
+    \def\web@revision{Laatste wijziging:}
+    \def\web@copyright{Copyright}
+    \def\web@section{Sectie}
+    \def\web@back{Terug}
+    \def\web@doc{Doc}}
+  \PassOptionsToPackage{dutch}{exerquiz}
+}
+\DeclareOption{spanish}{%
+  \AtEndOfPackage{%
+    \def\today{\the\day\ de \ifcase\month\or Enero
+            \or Febrero \or Marzo \or Abril
+            \or Mayo \or Junio  \or Julio  \or Agosto
+            \or Septiembre  \or Octubre  \or Noviembre
+            \or Deciembre \fi de \the\year}
+    \renewcommand\web@versionlabel{Versi\noexpand\'{o}n}
+    \renewcommand\web@toc{Tabla de Contenido}
+    \renewcommand\web@continued{cont.}
+    \renewcommand\web@article{Inicio
+    \hyperlink{section.1}{Art\'{\i}culo}}
+    \renewcommand\web@directory{Directorio}
+    \renewcommand\web@revision{Actualizado el:}
+    \renewcommand\web@copyright{Copyright}
+    \renewcommand\web@section{Secci\'on}
+    \renewcommand\web@back{Volver}
+    \renewcommand\web@doc{Doc}}
+  \PassOptionsToPackage{spanish}{exerquiz}
+}
+\DeclareOption{italian}{%
+  \AtEndOfPackage{%
+    \def\today{\ifcase\month\or Gennaio
+            \or Febbraio \or Marzo \or Aprile
+            \or Maggio \or Giugno  \or Luglio  \or Agosto
+            \or Settembre  \or Ottobre  \or Novembre
+            \or Dicembre \fi \the\day,  \the\year}
+    \renewcommand\web@versionlabel{Versione}
+    \renewcommand\web@toc{Indice}
+    \renewcommand\web@continued{cont.}
+    \renewcommand\web@article{Inizio \hyperlink{section.1}{Articolo}}
+    \renewcommand\web@directory{Directory}
+    \renewcommand\web@revision{Data Ultima Revisione:}
+    \renewcommand\web@copyright{Copyright}
+    \renewcommand\web@section{Sezione}
+    \renewcommand\web@back{Back}
+    \renewcommand\web@doc{Doc}}
+  \PassOptionsToPackage{italian}{exerquiz}
+}
+\DeclareOption{russian}{%
+  \AtEndOfPackage{%
+  \def\today{\the\day\ \ifcase\month
+        \or \cyrya\cyrn\cyrv\cyra\cyrr\cyrya
+        \or \cyrf\cyre\cyrv\cyrr\cyra\cyrl\cyrya
+        \or \cyrm\cyra\cyrr\cyrt\cyra
+        \or \cyra\cyrp\cyrr\cyre\cyrl\cyrya
+        \or \cyrm\cyra\cyrya
+        \or \cyri\cyryu\cyrn\cyrya
+        \or \cyri\cyryu\cyrl\cyrya
+        \or \cyra\cyrv\cyrg\cyru\cyrs\cyrt\cyra
+        \or \cyrs\cyre\cyrn\cyrt\cyrya\cyrb\cyrr\cyrya
+        \or \cyro\cyrk\cyrt\cyrya\cyrb\cyrr\cyrya
+        \or \cyrn\cyro\cyrya\cyrb\cyrr\cyrya
+        \or \cyrd\cyre\cyrk\cyrya\cyrb\cyrr\cyrya \fi{ }%
+        \the\year\ \cyrg.}
+  \gdef\eq@protected#1#2{{\ifhmode #2\else
+        \ifvmode #2\else\ifinner#2\else\noexpand #1\fi\fi\fi}}%
+  \def\cyrCommand#1#2{\def#1{\eq@protected#1{#2}}}%
+  \cyrCommand\web@toc{\CYRO\cyrg\cyrl\cyra\cyrv\cyrl\cyre\cyrn\cyri\cyre}
+  \cyrCommand\web@continued{\cyrp\cyrr\cyro\cyrd\cyro\cyrl\cyrzh\cyre\cyrn\cyri\cyre}
+  \cyrCommand\web@article{\CYRN\cyra\cyrch\cyra\cyrl\cyro{ }%
+  \hyperlink{section.1}{\cyrd\cyro\cyrk\cyru\cyrm\cyre\cyrn\cyrt\cyra}}
+  \cyrCommand\web@directory{\CYRS\cyro\cyrd\cyre\cyrr\cyrzh\cyra\cyrn\cyri\cyre}
+  \cyrCommand\web@revision{\CYRP\cyro\cyrs\cyrl\cyre\cyrd\cyrn\cyrya\cyrya{ }%
+    \cyrr\cyre\cyrv\cyri\cyrz\cyri\cyrya:}
+  \let\web@copyright=\@gobble
+%  \cyrCommand\web@copyright{%\CYRK\cyro\cyrp\cyri\cyrr\cyra\cyrishrt\cyrt
+%  }% In Russian publications only the symbol presents
+  \cyrCommand\web@versionlabel{\CYRV\cyre\cyrr\cyrs\cyri\cyrya}
+  \cyrCommand\web@back{\CYRN\cyra\cyrz\cyra\cyrd}
+  \cyrCommand\web@section{\CYRCH\cyra\cyrs\cyrt\cyrsftsn}}
+  \PassOptionsToPackage{russian}{exerquiz}
+}
+\DeclareOption{dansk}{%
+  \AtEndOfPackage{%
+  \def\today{\ifcase\month\or Januar
+  \or Februar \or Marts \or April
+  \or Maj \or Juni  \or Juli  \or August
+  \or September  \or Oktober  \or November
+  \or December \fi \the\day,  \the\year}
+  \renewcommand\web@versionlabel{Version}
+  \renewcommand\web@toc{Indholdsfortegnelse}
+  \renewcommand\web@continued{forts.}
+  \renewcommand\web@article{Begin \hyperlink{section.1}{Artikel}}
+  \renewcommand\web@directory{Katalog}
+  \renewcommand\web@revision{Sidst revideret:}
+  \renewcommand\web@copyright{Copyright}
+  \renewcommand\web@section{Afsnit}
+  % Label Navibar
+  \renewcommand\web@back{Tilbage}
+  \renewcommand\web@doc{Dok}}   % restricted to three characters
+  \PassOptionsToPackage{dansk}{exerquiz}
+}
+\DeclareOption{polish}{%
+    \AtEndOfPackage{%
+    \def\today{\ifcase\month\or {Stycze\'{n}}
+            \or Luty \or Marzec \or {Kwiecie\'{n}}
+            \or Maj \or Czerwiec  \or Lipiec  \or {\'{S}ierpie\'{n}}
+            \or {Wrzesie\'{n}}  \or {Pa\'{z}dziernik}  \or Listopad
+            \or {Grudzie\'{n}} \fi \the\day,  \the\year}
+    \renewcommand\web@versionlabel{Wersja}
+    \renewcommand\web@toc{Spis Tre\'{s}ci}
+    \renewcommand\web@continued{verte}
+    \renewcommand\web@article{Pocz\k{a}tek do \hyperlink{section.1}{Tekstu}}
+    \renewcommand\web@directory{Zawarto\'{s}\'{c}}
+    \renewcommand\web@revision{Ostatnia zmiana:}
+    \renewcommand\web@copyright{Copyright}
+    \renewcommand\web@section{Cze\'{s}\'{c}}
+    % Label Navibar
+    \renewcommand\web@back{Wstecz}
+    \renewcommand\web@doc{Dok}}   % restricted to three characters
+    \PassOptionsToPackage{polish}{exerquiz}
+}
+
+
+\newif\ifweb@navibar\web@navibarfalse
+\newif\ifweb@directory\web@directorytrue
+\newif\ifweb@latextoc\web@latextocfalse
+\newif\ifeqforpaper \eqforpaperfalse  % for those who insist on paper
+\newif\ifweb@layout \web@layouttrue
+
+\def\NaviBarOn{\web@navibartrue}
+\def\NaviBarOff{\web@navibarfalse}
+
+%
+% Look for configuration file, web.cfg
+%    \ExecuteOptions{dvipsone}  % set the default as dvipsone
+\InputIfFileExists{web.cfg}{}{}
+
+\ProcessOptions
+\RequirePackage{color}
+\RequirePackage{amssymb}             % used for navibar
+\RequirePackage[bookmarks,bookmarksnumbered,bookmarksopen,colorlinks,
+   linkcolor=webgreen,filecolor=webbrown,citecolor=webgreen,
+   urlcolor=webbrown,pagebackref,pdfpagemode=None,pdfstartview=Fit]{hyperref}
+
+%\newdimen\oldltxtextheight \setlength\oldltxtextheight\textheight  % save old values
+\newdimen\oldltxtextwidth  \setlength\oldltxtextwidth\textwidth   %  ditto
+
+%%% This code by Radhakrishnan C V
+
+\newdimen\@Leftmargin   \@Leftmargin=0pt
+\newdimen\@Rightmargin  \@Rightmargin=0pt
+\newdimen\@Bottommargin \@Bottommargin=0pt
+
+% In web.sty, \@Topmargin is the distance from the
+% top of the paper to the top of the text region
+\newdimen\@Topmargin    \@Topmargin=0pt
+
+% In web.sty, \web@Topmargin is the distance from
+% the top of the page to the top of the running header
+\newdimen\web@Topmargin \web@Topmargin=8pt
+
+\ifeqforpaper\else
+  \setlength\headheight{8pt}
+  \hoffset=0pt
+  \voffset=0pt
+\fi
+
+\pagestyle{empty}
+
+\def\InitLayout{
+\ifeqforpaper\else
+  \setlength{\textwidth}{\paperwidth}
+  \setlength{\textheight}{\paperheight}
+  \addtolength{\textheight}{-\@Topmargin}
+  \addtolength{\textheight}{-\@Bottommargin}
+%
+% \topmargin = \web@Topmargin - 1in
+% \@Topmargin = \web@Topmargin + \headheight + \headsep
+%  so \headsep = \@Topmargin - \headheight - \web@Topmargin
+   \setlength{\headsep}{\@Topmargin}
+   \addtolength\headsep{-\headheight}
+   \setlength{\topmargin}{\web@Topmargin}
+   \addtolength\headsep{-\topmargin}
+   \addtolength{\topmargin}{-1in}
+
+  \setlength\footskip{\@Bottommargin}
+  \addtolength{\footskip}{-2pt} % depth of navibar
+
+  \setlength{\oddsidemargin}{\@Leftmargin}
+  \addtolength{\oddsidemargin}{-1in}
+  \setlength{\evensidemargin}{\@Leftmargin}
+  \addtolength{\evensidemargin}{-1in}
+\fi
+\ifweb@layout
+  \addtolength{\textwidth}{-\@Leftmargin}
+  \addtolength{\textwidth}{-\@Rightmargin}
+\fi
+}
+
+\def\screensize#1#2{%
+\ifeqforpaper
+\setlength\textwidth{#2}
+\else
+\paperheight=#1
+\paperwidth=#2
+\fi
+\web@set@paper  % dps modified
+\InitLayout
+}
+
+\def\margins#1#2#3#4{%
+\@Leftmargin=#1
+\@Rightmargin=#2
+\@Topmargin=#3
+\@Bottommargin=#4
+\InitLayout
+}
+\let\marginsize=\margins
+
+%%% End code due to Radhakrishnan C V
+
+%\marginsize{.25in}{.25in}{6pt}{2pt} % left,right,top, bottom
+%\screensize{3.72in}{4.67in} % web.sty dimensions
+%
+% Make Title Definitions.
+\def\title{\@ifnextchar[{\@title}{\@title[]}}
+\def\@title[#1]#2{\gdef\webtitle{#2}\hypersetup{pdftitle={#2}}%
+    \ifx#1\empty\gdef\shortwebtitle{#2}\else\gdef\shortwebtitle{#1}\fi}
+\def\author#1{\gdef\webauthor{#1}\hypersetup{pdfauthor={#1}}}
+\def\subject{\@ifnextchar[{\@subject}{\@subject[]}}
+\def\@subject[#1]#2{\gdef\websubject{#2}\hypersetup{pdfsubject={#2}}%
+    \ifx#1\empty\gdef\shortwebsubject{#2}\else\gdef\shortwebsubject{#1}\fi}
+\def\email#1{\gdef\webemail{#1}}
+\def\keywords#1{\gdef\webkeywords{#1}\hypersetup{pdfkeywords={#1}}}
+\def\university#1{\gdef\webuniversity{#1}}
+\def\version#1{\gdef\dps@tmp{#1}\edef\webversion{\ifx\dps@tmp\empty
+   \else\web@versionlabel\ #1\fi}}
+\def\copyrightyears#1{\gdef\webcopyrightyears{#1}}
+%
+% Language dependent definitions
+\def\web@versionlabel{Version}
+\def\web@toc{Table of Contents}
+\def\web@continued{cont.}
+\def\web@article{Begin \hyperlink{section.1}{Article}}
+\def\web@directory{Directory}
+\def\web@revision{Last Revision Date:}
+\def\web@copyright{Copyright}
+\def\web@section{Section}
+% Label Navibar
+\def\web@back{Back}
+\def\web@doc{Doc}   % restricted to three characters
+%
+% set  some detaults
+\title{}\author{}\email{}\subject{}\keywords{}\version{}
+\university{}\copyrightyears{2000}
+\def\optionalpagematter{}
+
+\newcommand\titleauthorproportion{.33}
+\newcommand\minimumskip{\medskip}
+% Redesign \maketitle
+\def\maketitle{%
+    \thispagestyle{empty}
+    \ifeqforpaper\vspace*{2\baselineskip}\else
+    % if not for paper, restrict title and author to
+    % \titleauthorproportion of the page
+    \vbox to\titleauthorproportion\textheight\bgroup%
+\fi
+%    \begin{center}\bfseries\color{blue}\ifeqforpaper\large\fi
+    \noindent\makebox[\linewidth]{\parbox{\linewidth}%
+    {\bfseries\color{blue}\ifeqforpaper\large\fi\centering\webuniversity}}
+%    \webuniversity
+%    \end{center}
+    \par\ifeqforpaper\else\minimumskip\fi\vspace{\stretch{1}}
+    \noindent\makebox[\linewidth]{\parbox{.7\linewidth}%
+       {\bfseries\ifeqforpaper\Large\else\large\fi\centering\webtitle}}%
+    \par\ifeqforpaper\vspace{2\baselineskip}\else\minimumskip\vspace{\stretch{1}}\fi
+    \noindent\makebox[\linewidth]{\parbox{.4\linewidth}%
+       {\bfseries\ifeqforpaper\large\fi\centering\webauthor}}
+\ifeqforpaper\else
+\egroup
+\fi
+    \optionalpagematter
+    \par\vspace{\stretch{1}}
+    \ifweb@directory
+    \par\ifeqforpaper\else\minimumskip\fi\vspace{\stretch{1}}
+    \begin{flushleft}\textbf{\large\web@directory}
+    \vspace{-3pt}
+    \begin{itemize}\setlength{\itemsep}{-3pt}
+        \bfseries
+        \item \leavevmode\hyperlink{webtoc}{\web@toc}
+        \item \web@article
+    \end{itemize}
+    \end{flushleft}
+    \fi
+    \par\ifeqforpaper\else\minimumskip\fi\vspace{\stretch{1}}
+%    \par\ifeqforpaper\vspace{\stretch{1}}\else\minimumskip\fi
+    \vfill\noindent\web@copyright\ \copyright\ \webcopyrightyears\
+    \href{mailto:\webemail}{\webemail}\\
+    \web@revision\ \@date \hfill\webversion
+    \newpage
+}
+
+
+% \ifweb@layout
+% \setlength{\textheight}{3in}
+% \setlength{\textwidth}{4.166in}
+% \setlength{\oddsidemargin}{0pt}
+% \setlength{\evensidemargin}{0pt}
+% \setlength{\headsep}{14pt}
+% \setlength{\marginparwidth}{0pt}
+% \setlength{\footskip}{24pt} %{12pt}
+% \fi
+\setcounter{secnumdepth}{3}
+\setcounter{tocdepth}{3}
+
+\ifeqforpaper\else
+    \clubpenalty=50       % try to squeeze a little more in per page.
+    \widowpenalty=50
+\fi
+
+%
+% Make normalsize math display a little tighter
+% For Web application, 10pt should be used. People using the
+% forpaper option might want to use 11pt or 12pt; for example
+% with the eqExam.sty for publishing their exams on paper or for
+% the web. So, I'll insert the boolean. Redefine \normalsize
+% only for the case of 10pt, otherwise, use LaTeX's definitions.
+%
+\ifnum\@ptsize=0
+\renewcommand\normalsize{%
+   \@setfontsize\normalsize\@xpt\@xiipt
+   \abovedisplayskip 5\p@ \@plus3\p@ \@minus1\p@
+   \abovedisplayshortskip \z@ \@plus3\p@
+   \belowdisplayshortskip 3\p@ \@plus2\p@ \@minus2pt
+   \belowdisplayskip \abovedisplayskip
+   \let\@listi\@listI}
+\normalsize
+\fi
+
+\let\insertwebtoc=\relax
+\def\insert@webtoc{\hyperlink{webtoc}{\colorbox{\@menuBgColor}%
+{\makebox[30pt][c]{\footnotesize\color{webblue}Toc}}\ }}
+%
+% Navigational Bar, appears in response to the option 'navibar'
+%
+\def\navibarTextColor#1{\def\@menucolor{#1}}
+\def\navibarBgColor#1{\def\@menuBgColor{#1}}
+\def\@menucolor{webblue}
+\def\@menuBgColor{webgray}
+\newcommand\web@navigationbar{%
+\hfil\bfseries\footnotesize\setlength{\fboxsep}{2pt}%
+\insertwebtoc
+\Acrobatmenu{FirstPage}{\colorbox{\@menuBgColor}{\makebox[30pt][c]{\normalsize$\blacktriangleleft\blacktriangleleft$}}}\
+\Acrobatmenu{LastPage}{\colorbox{\@menuBgColor}{\makebox[30pt][c]{\normalsize$\blacktriangleright\blacktriangleright$}}}\
+\Acrobatmenu{PrevPage}{\colorbox{\@menuBgColor}{\makebox[30pt][c]{\normalsize$\blacktriangleleft$}}}\
+\Acrobatmenu{NextPage}{\colorbox{\@menuBgColor}{\makebox[30pt][c]{\normalsize$\blacktriangleright$}}}\
+\Acrobatmenu{GoBack}{\colorbox{\@menuBgColor}{\makebox[30pt][c]{\footnotesize\web@back}}}\
+\Acrobatmenu{GoBackDoc}{\colorbox{\@menuBgColor}{\makebox[30pt][c]{\normalsize$\blacktriangleleft$\ \footnotesize\web@doc}}}\
+\Acrobatmenu{GoForwardDoc}{\colorbox{\@menuBgColor}{\makebox[30pt][c]{\footnotesize\web@doc\ \normalsize$\blacktriangleright$}}}%
+\hfil}
+
+%
+% \pagestyle{webheadings}
+%
+\def\web@defaultrightheader{\thepage}
+\let\web@rightheader=\web@defaultrightheader
+\newcommand{\ps@webheadings}
+  {\renewcommand{\@oddhead}{\normalfont\small\rightmark\hfil\web@rightheader}
+   \renewcommand{\@evenhead}{\@oddhead}
+   \renewcommand{\@oddfoot}{\ifweb@navibar\web@navigationbar\fi}
+   \renewcommand{\@evenfoot}{\@oddfoot}}
+\renewcommand{\sectionmark}[1]
+  {\markright{\web@section\ \thesection: #1}}
+
+\AtEndOfPackage{\pagestyle{webheadings}}
+
+\renewcommand*\thesection{\arabic{section}}
+\renewcommand*\thesubsection{\thesection.\arabic{subsection}}
+\renewcommand*{\thesubsubsection}{\textbullet}
+
+\renewcommand{\section}{%
+   \renewcommand{\@seccntformat}[1]{\csname the##1\endcsname.\enspace}%
+   \@startsection{section}{1}{\z@}%
+   {-3ex\@plus -1ex \@minus-.2ex}%
+   {1ex\@plus .2ex}% 6pt
+   {\normalfont\large\bfseries\noindent\color{blue}}}%
+\renewcommand\subsection{%
+   \renewcommand{\@seccntformat}[1]{\csname the##1\endcsname.\enspace}%
+   \@startsection{subsection}{2}{\z@}%
+   {-2.5ex\@plus -1ex \@minus -.2ex}%
+   {1ex \@plus .2ex}%
+   {\normalfont\large\bfseries\noindent\color{blue}}}
+\renewcommand\subsubsection{%
+   \renewcommand{\@seccntformat}[1]{\color{blue}\large$\bullet$\enspace}
+   \@startsection{subsubsection}{3}{\z@}%
+     {-2ex\@plus -1ex \@minus -.2ex}%
+     {.5ex \@plus .2ex}%
+     {\normalfont\normalsize\bfseries}}
+
+%
+% Some Useful Colors
+%
+\definecolor{webgreen}{rgb}{0,.5,0}
+\definecolor{webbrown}{rgb}{.6,0,0}
+\definecolor{webyellow}{rgb}{0.98,0.92,0.73}
+\definecolor{webgray}{rgb}{.753,.753,.753}
+\definecolor{webblue}{rgb}{0,0,.8}
+
+%
+% Navigational Aids
+%
+\def\insertnaviiconhere#1{\xdef\@thispage{\the\c@page}
+\gdef\web@rightheader{\ifnum\c@page=\@thispage#1\else
+\web@defaultrightheader\fi}}
+
+\def\insertnaviiconhereafter#1{\gdef\web@rightheader{#1}}
+
+\def\defaultpageheader{\gdef\web@rightheader{\web@defaultrightheader}}
+
+%
+% Pre-Fab Rule Icons\Uparrow\Downarrow
+%
+\newcommand\ArrowUp[1]{\setlength{\fboxsep}{6pt}\normalsize
+\raisebox{-\depth}[0pt][0pt]{#1{\colorbox{webgray}%
+{\textcolor{webblue}{$\bigl\Uparrow$}}}}}
+
+\newcommand\ArrowDown[1]{\setlength{\fboxsep}{6pt}\normalsize
+\raisebox{-\depth}[0pt][0pt]{#1{\colorbox{webgray}%
+{\textcolor{webblue}{$\bigl\Downarrow$}}}}}
+
+%
+% Redefine the table of contents.
+%
+\ifweb@latextoc
+    \@ifclassloaded{book}
+    {% book.cls
+        \renewcommand*\l@section{\@dottedtocline{1}{1.5em}{1.3em}}
+        \renewcommand*\l@subsection{\@dottedtocline{2}{2.8em}{2.2em}}
+        \renewcommand*\l@subsubsection{\@dottedtocline{3}{5.0em}{1.2em}}
+    }{% article.cls
+        \renewcommand*\l@subsubsection{\@dottedtocline{3}{3.8em}{1.2em}}
+    }
+\fi
+
+
+\renewcommand\part{\secdef\web@@part\web@@spart}
+\def\web@@part[#1]#2{%
+    \newpage
+    \ifnum \c@secnumdepth >\m@ne
+      \refstepcounter{part}%
+      \addcontentsline{toc}{part}{#1}%
+%      \addcontentsline{toc}{part}{\thepart\hspace{1em}#1}%
+    \else
+      \addcontentsline{toc}{part}{#1}%
+    \fi
+    {\parindent \z@ \raggedright
+     \interlinepenalty \@M
+     \normalfont
+%     \ifnum \c@secnumdepth >\m@ne
+%       \Large\bfseries \partname~\thepart
+%       \par\nobreak
+%     \fi
+     \large \bfseries #2%
+     \markboth{}{}\par}%
+    \nobreak
+    \vskip 1ex
+    \@afterheading}
+\def\web@@spart#1{%
+    {\parindent \z@ \raggedright
+     \interlinepenalty \@M
+     \normalfont
+     \large \bfseries #1\par}%
+     \nobreak
+     \vskip 1ex
+     \@afterheading}
+
+\@ifclassloaded{book}{%
+\renewcommand\chapter
+{%
+%\if@openright\cleardoublepage\else\clearpage\fi
+%                   \thispagestyle{plain}%
+                    \global\@topnum\z@
+                    \@afterindentfalse
+                    \secdef\web@@chapter\web@@schapter
+}
+\def\web@@chapter[#1]#2{\ifnum \c@secnumdepth >\m@ne
+                       \if@mainmatter
+                         \refstepcounter{chapter}%
+                         \typeout{\@chapapp\space\thechapter.}%
+                         \addcontentsline{toc}{chapter}%
+                                   {\protect\numberline{\thechapter}#1}%
+                       \else
+                         \addcontentsline{toc}{chapter}{#1}%
+                       \fi
+                    \else
+                      \addcontentsline{toc}{chapter}{#1}%
+                    \fi
+                    \chaptermark{#1}%
+                    \addtocontents{lof}{\protect\addvspace{10\p@}}%
+                    \addtocontents{lot}{\protect\addvspace{10\p@}}%
+                    \if@twocolumn
+                      \@topnewpage[\web@makechapterhead{#2}]%
+                    \else
+                      \web@makechapterhead{#2}%
+                      \@afterheading
+                    \fi}
+\def\web@makechapterhead#1{%
+  \vspace{3\p@}%
+  {\parindent \z@ \raggedright \normalfont
+    \ifnum \c@secnumdepth >\m@ne
+      \if@mainmatter
+        \large\bfseries \@chapapp\space \thechapter:
+        \par\nobreak
+      \fi
+    \fi
+    \interlinepenalty\@M
+    \noindent\enspace\large \bfseries #1\par\nobreak
+    \vskip 12\p@
+  }}
+\def\web@@schapter#1{\if@twocolumn
+                   \@topnewpage[\@makeschapterhead{#1}]%
+                 \else
+                   \web@makeschapterhead{#1}%
+                   \@afterheading
+                 \fi}
+\def\web@makeschapterhead#1{%
+  \vspace{3\p@}%
+  {\parindent \z@ \raggedright
+    \normalfont
+    \interlinepenalty\@M
+    \large \bfseries  #1\par\nobreak
+    \vskip 12\p@
+  }}
+}{} % end \ifpackageloaded{book}
+
+\def\tableofcontents{\global\let\insertwebtoc=\insert@webtoc%
+\def\contentsname{\web@toc}%
+\pdfbookmark[1]{\web@toc}{toc}%
+    \thispagestyle{empty}%
+    \markright{{\normalfont\small \web@toc\ (\web@continued)}}%
+    \begin{center}\hypertarget{webtoc}{}%
+    \normalfont\bfseries\Large\color{blue}%
+    \contentsname
+    \end{center}\par
+\ifweb@latextoc
+  \@starttoc{toc}%  LaTeX toc listing with page numbers
+\else
+  \webtableofcontents
+\fi\newpage}
+
+%
+% Routines for typesetting toc entries.
+%
+\def\webtableofcontents{\begingroup
+%
+% Sample line from .aux
+%   \contentsline {section}{\numberline {1}Introduction}{4}{section.1}
+%   \contentsline {section}{\numberline {}References}{56}{section*.1}
+%                                   #1                 #2   #3
+\parindent20pt
+\def\par{\endgraf\leftskip=0pt}%
+%\def\contentsname{Table of Contents}
+\def\numberline##1{\llap{##1\enspace}}%
+\def\contentsline##1##2##3##4{\csname web@##1\endcsname{##2}{##3}{##4}}%
+\def\web@parse##1##2##3\\{\def\web@title{##3}\def\numberline{##2}}%
+\def\web@part##1##2##3{\par\noindent{\bfseries\hyperlink{##3}{##1}}\par\smallskip}
+\def\web@chapter##1##2##3{\web@parse##1\\\par\mbox{}\textbf{%
+    \llap{\hyperlink{##3}{\numberline.\phantom{0}}\space}\web@title}%
+    }%
+\def\web@section##1##2##3{\penalty-500\web@parse##1\\\par\mbox{}\textbf{%
+  \ifx\numberline\empty
+    \hyperlink{##3}{\web@title}%
+  \else
+    \llap{\hyperlink{##3}{\numberline.}\space}\web@title
+  \fi}%
+  \endgraf
+  }%
+\def\web@subsection##1##2##3{\web@parse##1\\\par\penalty-50 \hspace*{20pt}\mbox{}%
+    \textbf{\llap{\hbox to20pt{\hyperlink{##3}{\numberline.}\hfil}}\web@title}\endgraf}%
+\def\web@subsubsection##1##2##3{\web@parse##1\\\def\numberline{\strut$\bullet$}%
+   \leftskip40pt\noindent\unskip\mbox{}\penalty-50\hyperlink{##3}{\numberline}~\web@title\ }%
+\@starttoc{toc}
+\leftskip40pt
+\par\endgroup}
+
+% A convenient definition for people using the forpaper option
+\newcommand\NewPage{\ifeqforpaper\else\newpage\fi}
+
+
+\raggedbottom
+\endinput
+
+
+New
+\def\navibarTextColor#1{\def\@menucolor{#1}}
+\def\navibarBgColor#1{\def\@menuBgColor{#1}}
+\def\@menucolor{webblue}
+\def\@menuBgColor{webgray}
+
+
+% book.cls
+\renewcommand*\l@section{\@dottedtocline{1}{1.5em}{2.3em}}
+\renewcommand*\l@subsection{\@dottedtocline{2}{3.8em}{3.2em}}
+\renewcommand*\l@subsubsection{\@dottedtocline{3}{7.0em}{4.1em}}
+\renewcommand*\l@paragraph{\@dottedtocline{4}{10em}{5em}}
+\renewcommand*\l@subparagraph{\@dottedtocline{5}{12em}{6em}}
+
+% article.cls
+\renewcommand*\l@subsection{\@dottedtocline{2}{1.5em}{2.3em}}
+\renewcommand*\l@subsubsection{\@dottedtocline{3}{3.8em}{1.2em}}
+\renewcommand*\l@paragraph{\@dottedtocline{4}{7.0em}{4.1em}}
+\renewcommand*\l@subparagraph{\@dottedtocline{5}{10em}{5em}}
