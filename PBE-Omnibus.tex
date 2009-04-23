@@ -1,0 +1,215 @@
+% $Author: oscar $
+% $Date: 2008-05-16 12:34:09 +0200 (Fri, 16 May 2008) $
+% $Revision: 18734 $
+%=================================================================
+% This is the main file for the Pharo By Example Omnibus.
+% The individual chapters can also be latexed by themselves.
+%=================================================================
+\documentclass[a4paper,10pt,twoside]{book}
+\usepackage[
+	papersize={6in,9in},
+	hmargin={.75in,.75in},
+	vmargin={.75in,1in},
+	ignoreheadfoot
+]{geometry}
+\input{common.tex}
+\setboolean{lulu}{true}
+%=================================================================
+% A4
+%\documentclass[a4paper,11pt,twoside]{book}
+%\input{common.tex}
+%\usepackage{a4wide}
+%=================================================================
+% Add the path for the figures of each chapter here:
+\graphicspath{
+	{figures/}
+	% BOOK 1
+	{BasicClasses/figures/}
+	{Collections/figures/}
+	{Environment/figures/}
+	{FirstApp/figures/}
+	{Messages/figures/}
+	{Metaclasses/figures/}
+	{Model/figures/}
+	{Morphic/figures/}
+	{Preface/figures/}
+	{Profiling/figures/}
+	{QuickTour/figures/}
+	{SUnit/figures/}
+	{Streams/figures/}
+	{Syntax/figures/}
+	% BOOK 2
+	% {Announcements/figures/}
+	{Compiler/figures/}
+	{Concurrency/figures/}
+	% {Debugging/figures/}
+	{Exceptions/figures/}
+	{Installer/figures/}
+	% {Magma/figures/}
+	{Metaprogramming/figures/}
+	{Monticello/figures/}
+	{Omnibrowser/figures/}
+	{Profiling/figures/}
+	{Regex/figures/}
+	{Seaside/figures/}
+}
+%=================================================================
+\let\wholebook=\relax
+\makeindex
+\makeglossary
+%=================================================================
+\renewcommand{\nnbb}[2]{} % Disable editorial comments
+%=================================================================
+\begin{document}
+\frontmatter
+%=================================================================
+\setcounter{page}{1}
+\pagestyle{headings}
+%=================================================================
+%:Inside cover
+\author{
+	Andrew P. Black\quad
+	St\'ephane Ducasse\\[1ex]
+	Oscar Nierstrasz\quad
+	Damien Pollet
+	\\[4ex]
+	with Damien Cassou and Marcus Denker}
+% (to be updated at the end)
+\title{\Huge\bf Pharo by Example\\ Omnibus edition}
+\isodate
+\date{\emph{Version of \today}}
+\maketitle
+%=================================================================
+%:Copyright notice
+~ % force the vfill
+\vfill
+\begin{footnotesize}
+\setlength{\parindent}{0pt}
+This book is available as a free download from \sbe, hosted by the
+Institute of Computer Science and Applied Mathematics of the
+University of Bern, Switzerland.\\[1cm]
+
+Copyright \copyright~2007, 2008 by Andrew P. Black, St\'ephane Ducasse, Oscar Nierstrasz and Damien Pollet.\\[1cm]
+
+The contents of this book are protected under Creative Commons Attribution-ShareAlike 3.0 Unported license.
+
+\emph{You are free:}
+\begin{description}
+  \item[to Share] \,---\, to copy, distribute and transmit the work
+  \item[to Remix] \,---\, to adapt the work
+\end{description}
+\emph{Under the following conditions:}
+\begin{description}
+  \item[Attribution.] You must attribute the work in the manner specified by the author or licensor (but not in any way that suggests that they endorse you or your use of the work).
+  \item[Share Alike.] If you alter, transform, or build upon this work, you may distribute the resulting work only under the same, similar or a compatible license.
+\end{description}
+\begin{itemize}
+  \item For any reuse or distribution, you must make clear to others the license terms of this work. The best way to do this is with a link to this web page:
+  \url{creativecommons.org/licenses/by-sa/3.0/}
+  \item Any of the above conditions can be waived if you get permission from the copyright holder.
+  \item Nothing in this license impairs or restricts the author's moral rights.
+\end{itemize}
+\raisebox{-0.25cm}{\includegraphics[width=2cm]{CreativeCommons-BY-SA}}\quad
+\parbox{\textwidth-2cm-1em}{
+	Your fair dealing and other rights are in no way affected by the above.
+	This is a human-readable summary of the Legal Code (the full license):\\
+	\url{creativecommons.org/licenses/by-sa/3.0/legalcode}}\\[1cm]
+Published by Square Bracket Associates, Switzerland. \sba\\
+% ISBN 978-3-9523341-0-2\\
+% First Edition, September, 2007. Revised editions with corrections, March 2008, May 2008.
+Special Omnibus edition, September 2009 (planned)
+\end{footnotesize}
+\vfill
+%=================================================================
+%\bibliographystyle{jurabib}
+%\end{document}
+%=================================================================
+%:TOC
+\tableofcontents
+% \listoffigures
+% \listoftables
+% \lstlistoflistings
+\sloppy % To avoid LaTeX's annoying habit of letting lines stick over the margins!
+%=================================================================
+%:Preface
+\input{Preface/Preface.tex}
+\mainmatter
+%=================================================================
+%:PART 1 -- Getting Started
+\part{Getting Started}
+%:Quick Tour
+\input{QuickTour/QuickTour.tex}
+%:First Application
+\input{FirstApp/FirstApp.tex}
+%:Syntax
+\input{Syntax/Syntax.tex}
+%:Messages
+\input{Messages/Messages.tex}
+%=================================================================
+%:PART 2 -- Developing in Squeak
+\part{Developing in Squeak}
+%:Model
+\input{Model/Model.tex}
+%:Environment
+\input{Environment/Environment.tex}
+%:SUnit
+\input{SUnit/SUnit.tex}
+%:Basic Classes
+\input{BasicClasses/BasicClasses.tex}
+%:Collections
+\input{Collections/Collections.tex}
+%:Streams
+\input{Streams/Streams.tex}
+%:Morphic
+\input{Morphic/Morphic.tex}
+%=================================================================
+%:PART 3 -- Advanced Squeak
+\part{Advanced Squeak}
+%:Metaclasses
+\input{Metaclasses/Metaclasses.tex}
+
+%=================================================================
+%:PLANNED for 2d edition
+\part{Software Development}
+\input{Monticello/Monticello.tex}
+%\input{Debugging/Debugging.tex}
+%\input{Profiling/Profiling.tex}
+%\input{Installer/Installer.tex}
+
+\part{Frameworks}
+\input{Seaside/Seaside.tex}
+%\input{Magma/Magma.tex}
+\input{Regex/Regex.tex}
+\input{Omnibrowser/Omnibrowser.tex}
+
+\part{Language details}
+\input{Exceptions/Exceptions.tex}
+%\input{Concurrency/Concurrency.tex}
+%\input{Announcements/Announcements.tex}
+\input{Metaprogramming/Metaprogramming.tex}
+%=================================================================
+
+%:Final Material
+\appendix
+\part{Appendices}
+%:FAQ
+\input{FAQ/FAQ.tex}
+%=================================================================
+%:BIBLIOGRAPHY
+% \printglossary
+\bibliographystyle{jurabib}
+\bibliography{scg}
+%=================================================================
+%:INDEX
+{\small\raggedright\printindex}
+%=================================================================
+% Round out to multiple of 4 pages
+% NB: we *must* have some blank pages at the end
+\cleardoublepage
+~ % Force some space
+\cleardoublepage
+~ % Force some space
+\cleardoublepage
+%=================================================================
+\end{document}
+%=================================================================
