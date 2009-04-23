@@ -1,0 +1,194 @@
+% $Author$
+% $Date$
+% $Revision$
+%=================================================================
+\ifx\wholebook\relax\else
+% --------------------------------------------
+% Lulu:
+	\documentclass[a4paper,10pt,twoside]{book}
+	\usepackage[
+		papersize={6in,9in},
+		hmargin={.75in,.75in},
+		vmargin={.75in,1in},
+		ignoreheadfoot
+	]{geometry}
+	\input{../common.tex}
+	\pagestyle{headings}
+	\setboolean{lulu}{true}
+% --------------------------------------------
+% A4:
+%	\documentclass[a4paper,11pt,twoside]{book}
+%	\input{../common.tex}
+%	\usepackage{a4wide}
+% --------------------------------------------
+    \graphicspath{{figures/} {../figures/}}
+	\begin{document}
+	\renewcommand{\nnbb}[2]{} % Disable editorial comments
+	\sloppy
+	\frontmatter
+\fi
+%=================================================================
+\chapter{Preface}\label{cha:intro}
+
+%=================================================================
+\section*{What is \sq?}
+
+\sq is a modern, open source, fully-featured implementation of the \st programming language and environment.
+
+\sq is highly portable --- even its virtual machine is written entirely in \st, making it easy to debug, analyze, and change. \sq is the vehicle for a wide range of innovative projects from multimedia applications and educational platforms to commercial web development environments. 
+
+%=================================================================
+\section*{Who should read this book?}
+
+This book presents the various aspects of \sq, starting with the basics, and proceeding to more advanced topics.
+
+This book will not teach you how to program. The reader should have some familiarity with programming languages. Some background with object-oriented programming would be helpful.
+
+This book will introduce the \sq programming environment, the language and the associated tools.  You will be exposed to common idioms and practices, but the focus is on the technology, not on object-oriented design. Wherever possible, we will show you lots of examples. (We have been inspired by Alec Sharp's excellent book on Smalltalk\cite{Shar97a}.)
+\index{Sharp, Alex}
+
+There are numerous other books on \st freely available on the web but none of these focuses specifically on \sq. See for example:
+\url{stephane.ducasse.free.fr/FreeBooks.html}
+
+\ifluluelse{}{\newpage} % layout hint
+%=================================================================
+\section*{A word of advice}
+
+% http://www.surfscranton.com/architecture/KnightsPrinciples.htm
+
+Do not be frustrated by parts of \st that you do not immediately understand.
+You do not have to know everything!
+Alan Knight expresses this principle as follows\footnote{\url{www.surfscranton.com/architecture/KnightsPrinciples.htm}}:
+\index{Knight, Alan}
+\important{{\bf Try not to care.}
+Beginning \st programmers often have trouble because they think they need to understand all the details of how a thing works before they can use it. This means it takes quite a while before they can master \ct{Transcript show: 'Hello World'}. One of the great leaps in OO is to be able to answer the question ``How does this work?'' with ``I don't care''.}
+
+%=================================================================
+\section*{An open book}
+
+This book is an open book in the following senses: 
+
+\begin{itemize}
+
+\item	The content of this book is released under the Creative Commons Attribution-ShareAlike (by-sa) license.
+		In short, you are allowed to freely share and adapt this book, as long as you respect the conditions of the license available at the following URL: 
+		\url{creativecommons.org/licenses/by-sa/3.0/}.
+
+\item	This book just describes the core of \sq.
+		Ideally we would like to encourage others to contribute chapters
+		on the parts of \sq that we have not described.
+		If you would like to participate in this effort, please
+		contact us.  We would like to see this book grow!
+\end{itemize}
+
+For more details, visit the book's web site, \sbe, hosted by the Institute of Computer Science and Applied Mathematics of the University of Bern, Switzerland.
+
+%=================================================================
+\section*{The \sq community}
+
+The \sq community is friendly and active.
+Here is a short list of resources that you may find useful:
+
+\begin{itemize}
+\item \url{www.squeak.org} is the main web site of \sq. (Do not confuse it with \url{www.squeakland.org} which is dedicated to the eToy environment built on top of \sq but whose audience is elementary school teachers.)
+
+\item \url{www.squeaksource.com} is the equivalent of SourceForge for \sq projects.
+
+\item \url{wiki.squeak.org/squeak} is a wiki with up-to-date information about \sq.
+\end{itemize}
+
+\paragraph{About mailing-lists.} There are a lot of mailing-lists and sometimes they can be just a little bit too active. If you do not want to get flooded by mail but would still like to participate we suggest you to use \url{news.gmane.org} or \url{www.nabble.com/Squeak-f14152.html} to browse the lists.
+
+You can find the complete list of \sq mailing-lists at \url{lists.squeakfoundation.org/mailman/listinfo}.
+
+\begin{itemize}
+\item Note that \emph{\sq-dev} refers to the developers' mailing-list, which can be browsed here:\\
+\url{news.gmane.org/gmane.comp.lang.smalltalk.squeak.general}
+\item \emph{Newbies} refers to a friendly mailing-list for beginners where any question can be asked:\\
+\url{news.gmane.org/gmane.comp.lang.smalltalk.squeak.beginners}\\
+(There is so much to learn that we are all beginners in some aspect of \sq!)
+\end{itemize}
+
+\paragraph{IRC.}
+Have a question that you need answered quickly? Would you like to meet with other squeakers around the world? A great place to participate in longer-term discussions is the IRC channel on the ``\#squeak'' channel at \url{irc.freenode.net}. Stop by and say ``Hi!''
+
+\paragraph{Other sites.} There are several websites supporting the \sq community today in various ways.
+Here are some of them:
+\begin{itemize}
+  \item \url{people.squeakfoundation.org} is the site of SqueakPeople, which is a kind of ``\url{advogato.org}'' for squeakers. It offers articles, diaries and an interesting trust metric system.
+
+  \item \url{planet.squeak.org} is the site of PlanetSqueak which is an RSS aggregator. It is good place to get a flood of squeaky things. This includes the latest blog entries from developers and others who have an interest in \sq.
+
+  \item \url{www.frappr.com/squeak} is a site that tracks \sq users around the world.
+
+\end{itemize}
+
+%=================================================================
+\section*{Examples and exercises}
+
+We make use of two special conventions in this book.
+
+We have tried to provide as many examples as possible.
+In particular, there are many examples that show a fragment of code which can be evaluated.  We use the symbol \ct{-->} to indicate the result that you obtain when you select an expression and \menu{print it}:
+
+\begin{code}{@TEST}
+3 + 4 --> 7    "if you select 3+4 and 'print it', you will see 7"
+\end{code}
+
+In case you want to play in \sq with these code snippets, you can download a plain text file with all the example code from the book's web site: \sbe.
+
+The second convention that we use is to display the icon \dothisicon{} to indicate when there is something for you to do:
+
+\dothis{Go ahead and read the next chapter!}
+
+%=================================================================
+%\section*{Typographic convention}
+
+%\on{This is repeated in the First Application chapter.  I suggest we remove it from the Preface.}
+
+%Programming in \st means defining classes and methods.
+%Unlike most programming languages where programs sit in files, in \st classes and methods are objects too, and they are edited using a dedicated code browser.
+%The browser will show you the code of a method in the context of the class it belongs to.
+
+%Unfortunately this book is not (yet) interactive, so when we show you the code of a method, it is not always immediately clear for which class it is defined.
+%For example, we cannot immediately tell which class the method \ct{cellsPerSide} belongs to:
+
+%\begin{code}{}
+%cellsPerSide
+%   "The number of cells along each side of the game"
+%   ^ 10
+%\end{code}
+
+%The \st convention to indicate that a method \ct{aMethod} belongs to a class \ct{aClass} is to write its name as \ct{aClass>>>aMethod}.
+%So, if it is not immediately clear from the context which class a method belongs to, we will show it explicitly like this:
+
+%\begin{code}{}
+%SBEGame>>>cellsPerSide
+%   "The number of cells along each side of the game"
+%   ^ 10
+%\end{code}
+
+%Of course, when you actually type the code of the method into the browser, you don't have to type the class name or the \ct{>>>}; instead, you just make sure that the appropriate class is selected in the browser.
+
+%=================================================================
+\section*{Acknowledgments}
+
+% We would like to thank various people who have contributed to this book.
+% In particular, we thank
+We would like to thank Hilaire Fernandes and Serge Stinckwich who allowed us to translate parts of their columns on \st, and Damien Cassou for contributing the chapter on streams.
+We also thank Tim Rowledge for the use of the \sq logo, and Frederica Nierstrasz for the original cover art.
+
+We especially thank Lukas Renggli and Orla Greevy for their comments on drafts of the first release.
+
+We thank the University of Bern, Switzerland, for graciously supporting this open-source project and for hosting the web site of this book.
+
+We also thank the Squeak community for their enthusiastic support of this project, and for informing us of the errors found in the first edition of this book.
+Finally we thank the team that developed Squeak in the first place for making this amazing development environment available to us.
+
+%=============================================================
+\ifx\wholebook\relax\else
+   \bibliographystyle{jurabib}
+   \nobibliography{scg}
+   \end{document}
+\fi
+%=============================================================
