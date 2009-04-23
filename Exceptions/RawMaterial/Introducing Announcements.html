@@ -1,0 +1,203 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<!-- 	
+	Cincom Smalltalk Community Blog
+	Powered by Cincom Smalltalk
+	http://smalltalk.cincom.com
+	James A. Robertson, Vassili Bykov
+
+	Structure:
+
+       body
+       	#container
+			#header
+			#main
+				#content
+					#posts
+						.post *
+					#referrers
+				#menu
+-->
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+
+	
+
+	
+
+	
+	<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+
+
+	<style type="text/css" media="screen, projection">@import "/css/water-blog.css";</style>
+	<style type="text/css" media="print, handheld">@import "http://www.cincomsmalltalk.com/css/minimal.css";</style>
+
+
+	
+	<title>Introducing Announcements</title>
+
+	<style type="text/css" media="screen, projection">@import "/css/water-blog.css";</style>
+	<style type="text/css" media="print, handheld">@import "http://www.cincomsmalltalk.com/css/minimal.css";</style>
+
+
+	<link rel="alternate" type="text/xml" title="RSS Feed" href="http://www.cincomsmalltalk.com/rssBlog/vbykov-rss.xml" />
+	<link rel="alternate" type="application/rss+xml" title="RSS Feed" href="http://www.cincomsmalltalk.com/rssBlog/vbykov-rss.xml" />
+	<link rel="pingback" href="servlet/PingbackServlet" />
+
+	<meta name="description" content="The best place to find out about Smalltalk" />
+	<meta name="keywords" content="Smalltalk, OOP, Object, Object Technology, Object-Oriented Programming, VisualWorks, ObjectStudio, ParcPlace, Cincom, Linux, blog, Cincom Smalltalk" />
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<meta name="ICBM" content="39.214103, -76.878807" />
+	<meta name="DC.title" content="Cincom Smalltalk Blog - Smalltalk with Rants" /> 
+
+	<script language="JavaScript">
+	<!--
+	
+	function sendMailTo(name, company, domain) {
+	  locationstring = 'mai' + 'lto:' + name + '@' + company + '.' + domain;
+	  window.location.replace(locationstring);
+	}
+	//-->
+	</script>
+
+</head>
+
+
+<body>
+
+    <div id="container">
+
+	<div id="header">
+	<div class="watermark"></div>	
+		
+		<p id="communityblogs">
+			<a href="/userblogs">Cincom Smalltalk Community Blogs</a>
+		</p>
+		<a href="/userblogs" title="Cincom Smalltalk Community Blogs">
+		 	<div id="logo"></div>
+		</a>
+		
+		
+	
+		<h1><a href="blogView">Making Smalltalk Easier</a></h1>
+		<h2><a href="javascript:sendMailTo('smalltalkbigot', 'gmail', 'com')" title="Email author">Vassili Bykov</a></h2>
+		<div id="blurb">
+			<p><a href="/" title="Cincom Smalltalk">Powered by Cincom Smalltalk</a></p>
+			<p>Opinions expressed in this blog are not necessarily those of Cincom Systems, Inc.</p>
+		</div>
+	
+		<p class="accessibility"><a href="#menu">Skip to Menu</a></p>
+
+	</div> <!-- #header -->
+
+	<div id="main">
+	<div class="watermark"></div>	
+
+		<div id="content">
+		<div class="watermark"></div>	
+		
+			<p id="showcomments">
+			<a href="blogView">hide all comments</a>
+			</p>
+		
+			<div id="posts">	
+			<div class="watermark"></div>	
+				<a name="3310034894"></a><div class="post"><p class="category"><a href="blogView?searchCategory=Announcements Framework">Announcements Framework</a></p><h2><a href="blogView?showComments=true&printTitle=Introducing_Announcements&entry=3310034894" rel="bookmark">Introducing Announcements</a></h2><p class="timestamp">November 21, 2005 14:08:14 EST</p><div class="postbody"><div xmlns="http://www.w3.org/1999/xhtml"><p>The preview directory of VisualWorks 7.4 will include Announcements, a new event notification framework that will be used in new VisualWorks components instead of the &quot;traditional&quot; triggerEvent: system. Pollock will change to using announcements in Feature Set 3.</p><p>It's also published to Open Repository as packages System-Announcements and System-Announcements-Tests.</p><p>This is the first of what will hopefully become a series of posts describing the framework. This one will answer the usual questions I've been asked about it.</p><h3>Why a new framework for something this fundamental? triggerEvent has been around for a while and seems to be doing the job.</h3><p>It is doing the job, but poorly once you get beyond the basics. I got especially skeptical about it while implementing some more advanced event handling for tooltips and list item overlay implementation for Pollock. It was much harder than it felt it ought to be. There are other issues as well, such as its very complex implementation--hard to understand and introducing a highly dubious #evaluate method throughout the object hierarchy.</p><p>The cause of these problems is simple. triggerEvent is not object-oriented. Events in it are not objects--they are nothing but handler code invocations. This is what's ultimately behind all of the framework's problems.</p><p>triggerEvent comes to VisualWorks from Smalltalk/V by way of VisualSmalltalk. Smalltalk/V DOS 2.0 of 1987 vintage already included something very similar to the framework as it is now--though it got more complex over the years. At the time, the decision not to reify events was probably a deliberate and reasonable design choice, to lessen the load on the object memory and garbage collector. There's only so much design purity one can afford in 640K of memory. As events are becoming more important in VisualWorks, the framework is starting to really show its age.</p><p>In the new framework, an event is a real object rather than a symbol. It's very much like the ANSI exception framework. An event someone might want to announce, such as a button click or an attribute change, is defined as a subclass of the abstract superclass Announcement. The subclass can have instance variables for additional information to pass along, such as a timestamp, or mouse coordinates at the time of the event, or the old value of the parameter that has changed. To signal the actual occurrence of an event, the &quot;announcer&quot; creates and configures an instance of an appropriate announcement, then broadcasts that instance. Objects subscribed to receive such broadcasts from the announcer receive a broadcast notification together with the instance. They can talk to the instance to find out any additional information about the event that has occurred.</p><h3>Announcement is such a long name. Why not simply Event? Just now you said &quot;event&quot; more than once while talking about these things.</h3><p>One problem with Event is that it's about as generic a concept as Object. One could even argue that the objects the announcements framework passes around are indeed announcements rather than events themselves. An event is something intangible, such as the fact that a ValueHolder's value has changed from 2 to 3. An announcement is a tangible notification another object receives to let it know about that change.</p><p>Another motivation for using a different name was more pragmatic. We already have a number of other things in the system called events. There are OS input events which are arrays filled by the VM input primitive and handled by InputState. There are image-level input events which are instances of subclasses of UI.Event. There are system events such as #earlySystemInstallation or #aboutToQuit, with SystemEventInterest and related framework to work with those. Even Exceptions are also sometimes called exceptional events.</p><p>This creates ample opportunities for confusion, especially when events are related. &quot;The image receives a WM_LBUTTONDOWN event and then as we process MouseButtonPressed event something goes wrong in the handling of the #pressed event&quot;. To someone not intimately familiar with all the pieces involved, this adds a few more bits to untangle. Is the argument to triggerEvent: supposed to be an instance of UI.Event? Sounds like it might be.</p><p>So to avoid overloading the term even further, the new thing is called Announcement.</p><h3>What is the new framework like?</h3><p>Here is a real example of ObservedValue augmented with ChangedValue announcement. ChangedValue has instance variables oldValue and newValue and an instance creation method #from:to:. ObservedValue&gt;&gt;value: method announces the value change as follows:</p><pre>	...	changedAnnouncement := ChangedValue from: value to: anObject.	value := anObject.	self announce: changedAnnouncement</pre><p>The code interested in these announcements subscribes to them using something like:</p><pre>	anObservedValue		when: ChangedValue		do: [:change |			Transcript				cr; show: 'changed from: '; print: change oldValue;				show: ' to: '; print: change newValue]</pre><p>Something like the above already was impossible in the old framework since no values were passed as part of the event. But to spice it up, here is another simple example:</p><pre>	anObject		when: Announcement		do: [:announcement | Transcript cr; print: announcement]</pre><p>This implements an announcement spy. Just like with exceptions, a subscription to an announcement class will also receive an instance of any subclass of that class. So, a subscription for Announcement  will receive any announcement broadcast by anObject.</p><h3>So events are now objects instead of symbols. What's the big deal? The old events can have arguments too.</h3><p>The big deal is that they are objects. In follow-up posts I'll point out the things trivial in the new framework that were hard or impossible in the old one. But here are some obvious differences.</p><p>When you receive an announcement, you get a real object describing the event you are notified about. Any additional information comes as part of that instance rather than extra arguments the handler method should be prepared to accept. That means that you can funnel multiple announcements into a single piece of handler code. This was almost impossible with triggerEvent, since an event there has no &quot;substance&quot;--it's nothing but the fact of invoking the handler. A handler cannot handle multiple events if they have a different number of arguments, and you cannot tell which event in particular caused the handler to run. </p><p>New events introduce announcement taxonomy you can use for &quot;wholesale&quot; processing, like  the spy example above.</p><p>Because announcements are classes, they can be documented. Look at #eventsTriggeredDeclaration on the class side of Pollock's AbstractPane and Button. What's the difference between the #clicked event and the #pressed event? Were those events real classes, you could read their class comments and find out.</p><p>More about documentation. The #boundsChanging: event has an argument. What is that argument? All we know about it is that it exists (and even that is only by convention to use keyword selectors for events with arguments). Is it a Rectangle with the pane's new bounds? Or the old bounds? We have no way of knowing. If BoundsChanging were a class, the argument would be an instance variable with at least a meaningful name, at best a comment.</p><p>If you misspell #pressed as #presed in your code you will only notice it when you get a runtime error saying there is no such event. With Announcements, if you misspell Pressed as Presed you immediately get a compiler error saying there is no such class.</p><p>With all their benefits, Announcements implementation is much simpler and easier to understand than triggerEvent. Because in triggerEvent events and their arguments are method and block invocations, advanced event processing requires you to write mind-bending block concoctions to tweak the arguments as they are delivered. After you understand the mind-bending framework that stands behind that delivery. Announcement framework needs none of that complexity--all it does is passes a single object around. The implementation is smaller and simpler, at the same time being more flexible.</p><h3>Announcements sound kind of like Exceptions--why don't you just use Exceptions?</h3><p>They are like exceptions because they notify about events, but they are different in the nature of relationship between the announcer and the handler. Exceptions are for communication along the sender chain (the stack). There is no explicit connection between the announcer and the handler apart from the fact that the handler calls the announcer, directly or indirectly. Announcements are for communications across the object network, with a connection between the announcer and the handler pre-established by subscribing.</p><p>Before signing off for this installment, I want to thank my friends and colleagues who helped this work with their comments and encouragement: Sam Shuster, Steve Dahl, Rich Demers, Travis Griggs, Georg Heeg, and Terry Raymond.</p></div></div><div class="postcomments"><h3>Comments</h3><a name="3310042608"></a><div class="comment" id="3310042608"><h4>Sounds good to me</h4><p class="commentauthor">[Carl Gundel] November 21, 2005 16:16:48 EST</p><p><div xmlns="http://www.w3.org/1999/xhtml"><p>Thanks Vassili.  Since I'm very comfortable with the trigger based system I probably wouldn't have missed it if this new framework had not been provided, but it sounds very nice indeed.  Can't wait to use it.  :-) </p></div></p></div><a name="3310051998"></a><div class="comment" id="3310051998"><h4>Announcements</h4><p class="commentauthor">[Michael Lucas-Smith] November 21, 2005 18:53:18 EST</p><p><div xmlns="http://www.w3.org/1999/xhtml"><p>Comment by Michael Lucas-Smith</p><p><p>I was skeptical at first.. but now I love the idea. I look forward to having it pervasively through-out all of Pollock.</p></p></div></p></div><a name="3310356485"></a><div class="comment" id="3310356485"><h4>Very nice!!</h4><p class="commentauthor">[Robin Barendregt] November 25, 2005 07:28:05 EST</p><p><div xmlns="http://www.w3.org/1999/xhtml"><p>I had an event system of my own which was halfway what Announcements does (still used symbols, but there was always just one argument, namely an instance of an Event subclass), but this is so much more elegant.To fit my purpose, I've already made a small addition by objectizing the veto aspect in an AnnouncementVeto class, which can hold a return value and a boolean to indicate whether the original announcement for which a veto was announced can be resumed or not.</p></div></p></div><a name="3310730394"></a><div class="comment" id="3310730394"><h4>Relating Announcements to Classes</h4><p class="commentauthor">[Richard Demers] November 29, 2005 15:19:54 EST</p><p><div xmlns="http://www.w3.org/1999/xhtml"><p>Trackback from Smalltalk Musings<br/><a href="http://www.cincomsmalltalk.com/userblogs/rademers/blogView?showComments=true&entry=3310730390">Relating Announcements to Classes</a>  by Richard Demers</p><p><div xmlns="http://www.w3.org/1999/xhtml"><p>I  sent  the  following note  to  Vassili  Bykov shortly  after  his  first blog  item   <a href="http://www.cincomsmalltalk.com/userblogs/vbykov/blogView?showComments=true&amp;entry=3310034894">Introducing  Announcements</a>,  a replacement  system  for  the Events  system  of VisualWorks.</p><blockquote><p>Thanks  for  the  blog items  on  Announcements.  As you  know,  I  am in  favor  of  reifying the  parts  of  Smalltalk that  are  now  not very  object-oriented.  (Another area  is  that  of protocols.)  I</p><p>I  hope  you  will  also cover  how  Announcements are  connected  to  the classes  that  trigger  them (similar  to  the  use of  #constructEventsTriggered  for events)  along  with  any possibilities  of  inheritance and  overriding. </p><p>A  particular  requirement  of SmalltalkDoc  is  to  be able  to  lists  the announcements  defined  by a  specific  class.  For events,  it  currently sends  #constructEventsTriggered  to the  class  and  separately to  its  superclass,  and then  subtracts  out  the superclass  events.  This works,  but  separate #allAnnouncements  and  #definedAnnouncements methods  would  be better. </p></blockquote><p>These  days,  Vassili  is busy  working  on  the latest  release  of VisualWorks,  so  he  probably hasn't  had  to  time to  consider  this further.   This  has  given me  time  to  think about  the  issue  I raised  a  bit  deeper.</p><p> SmalltalkDoc,  a  comprehensive documentation  subsystem  Mark Roberts  and  I  have been  working  on  (as resources  permit),  needs to  be  able  to document  the  list  of Announcements  that  objects of  ClassX  announce.  Why?  So  that programmers  know  what announcements  from  ClassX  objects they  can  subscribe  to and  handle  --  without having  to  pour  through the  code  of  ClassX.  That's  why  something like  #constructEventsTriggered  is needed  for  Announcements, too. </p><p>But  there  is  a deeper  reason  than  just for  documentation.   In  a word,  it  is  <b><i>reflectivity</i></b>,  a  fundamental  property of  Smalltalk  ,  the ability  of  programs  to get  information  about themselves  and  work  with it.   This  is particularly  valuable  for  the creation  of  tools.  For  example,  suppose someone  wanted  to  create tools  that  help programmers  bridge  the  gap between  Pollock  UI panes  and  the  objects of  a  domain  model.  It  would  be  necessary to  tell  them  about UI  pane  announcements.  The  Parts  subsystem  of the  old  Visual Smalltalk  product  is  an example  of  this.   Who knows  what  other  tools could  also  take advantage  of  this  information.</p></div></p></div></p></div><a name="3310741306"></a><div class="comment" id="3310741306"><h4>Thoughts on thw Announcement</h4><p class="commentauthor">[James Robertson] November 29, 2005 18:21:46 EST</p><p><div xmlns="http://www.w3.org/1999/xhtml"><p>Trackback from Smalltalk Tidbits, Industry Rants<br/><a href="http://www.cincomsmalltalk.com/blog/blogView?showComments=true&entry=3310741297">Thoughts on thw Announcement</a>  by James Robertson</p><p><div xmlns="http://www.w3.org/1999/xhtml"><p><a href="http://www.cincomsmalltalk.com/userblogs/rademers/blogView?showComments=true&amp;entry=3310730390">Rich Demers</a> returns to blogging with some thoughts on <a href="http://www.cincomsmalltalk.com/userblogs/vbykov/blogView?showComments=true&amp;entry=3310034894">Vassili's Announcements framework</a>, and how it might be used in SmalltalkDoc.</p></div></p></div></p></div><a name="3310886352"></a><div class="comment" id="3310886352"><h4>Object>>subscriptions</h4><p class="commentauthor">[Robin Barendregt] December 01, 2005 10:39:12 EST</p><p><div xmlns="http://www.w3.org/1999/xhtml"><p>It seems to me that the name 'subscriptions', as an addition on the Object level, is a bit too common. I just encountered a problem with some customer code that had instance methods of the same name and caused some nasty errors. Wouldn't it be possible to make it 'announcementSubscriptions' or some such?</p></div></p></div><a name="3310909630"></a><div class="comment" id="3310909630"><h4>Re: Object>>subscriptions</h4><p class="commentauthor">[Vassili] December 01, 2005 17:07:10 EST</p><p><div xmlns="http://www.w3.org/1999/xhtml"><p>Interesting, I just renamed it and related methods, though for a different primary reason. It was bothering me that in the presence of AnnouncementSubscription, #subscriptions sounded like it returns a collection of those rather than a SubscriptionRegistry. In any case, the new name is #subscriptionRegistry. Two related methods are also renamed. It's published as "preview-8.0" in the open repository.</p></div></p></div><a name="3311134110"></a><div class="comment" id="3311134110"><h4>Making Smalltalk Easier</h4><p class="commentauthor">[Cees' Blog] December 04, 2005 07:28:30 EST</p><p><div xmlns="http://www.w3.org/1999/xhtml"><p>Trackback from Cees' Blog<a href="http://www.cdegroot.com/blog/2005/12/04/making-smalltalk-easier/">Making Smalltalk Easier</a>In his Making Smalltalk Easier weblog, Vassili Bykov discusses a new event framework in VisualWorks (introduction).
+It makes event handling object-oriented, much in the way that exceptions are handled - which means that event handling can be more powerful, events have more ways to describe themselves, etcetera. Read the intro and the rest of his weblog on the topic, it’s interesting....</p></div></p></div><a name="3311134140"></a><div class="comment" id="3311134140"><h4>Making Smalltalk Easier</h4><p class="commentauthor">[Cees' Blog] December 04, 2005 07:29:00 EST</p><p><div xmlns="http://www.w3.org/1999/xhtml"><p>Trackback from Cees' Blog<a href="http://www.cdegroot.com/blog/2005/12/04/making-smalltalk-easier/">Making Smalltalk Easier</a>In his Making Smalltalk Easier weblog, Vassili Bykov discusses a new event framework in VisualWorks (introduction).
+It makes event handling object-oriented, much in the way that exceptions are handled - which means that event handling can be more powerful, events have more ways to describe themselves, etcetera. Read the intro and the rest of his weblog on the topic, it’s interesting....</p></div></p></div></div></div>
+			</div> <!-- #posts -->
+			
+			
+		</div> <!-- #content -->
+	
+		<!--		THE MENU SECTION		-->
+	
+		<div id="menu">
+		<div class="watermark"></div>	
+	
+			<h2>Posts</h2>
+			<ul>
+				<li><a href="blogView">Recent</a></li>
+				<li><span>January 2008</span></li><li><span>December 2007</span></li><li><span>November 2007</span></li><li><span>October 2007</span></li>
+				<li><a href="blogArchive">Archives</a></li>
+				<li><a class="feedbutton" href="http://www.cincomsmalltalk.com/rssBlog/vbykov-rss.xml" target="_new" title="Subscribe using your RSS reader">RSS</a></li>
+				<li><hr />
+				<li><a href="http://technorati.com/faves/?blogView">add to technorati</a></li>
+			</ul>
+		
+			
+
+			<h2>Links</h2>
+			<ul>
+				<li><a href="http://www.whysmalltalk.com/">WhySmalltalk.com</a></li>
+			</ul>
+
+			<h2>Categories</h2>
+			<ul>
+				<select onChange="if (this.selectedIndex > 0) { window.location =this[this.selectedIndex].value }"><option>Select...</option><option value="blogView?searchCategory=Announcements Framework">Announcements Fram...</option><option value="blogView?searchCategory=Bits of History">Bits of History</option><option value="blogView?searchCategory=blog test">blog test</option><option value="blogView?searchCategory=Building UIs">Building UIs</option><option value="blogView?searchCategory=CSS">CSS</option><option value="blogView?searchCategory=Did You Know You Can...">Did You Know You C...</option><option value="blogView?searchCategory=Extended Reply">Extended Reply</option><option value="blogView?searchCategory=general">general</option><option value="blogView?searchCategory=Interfaces">Interfaces</option><option value="blogView?searchCategory=Just Smalltalk">Just Smalltalk</option><option value="blogView?searchCategory=Mac">Mac</option><option value="blogView?searchCategory=sightseeing">sightseeing</option><option value="blogView?searchCategory=Splash">Splash</option><option value="blogView?searchCategory=VisualWorks">VisualWorks</option></select>
+			</ul>
+		
+			<h2>Subscribe</h2>
+			<ul>
+		
+				
+				
+				
+				
+				<li><a class="feedbutton" href="http://www.cincomsmalltalk.com/rssBlog/vbykov-rss.xml" target="_new" title="Subscribe using your RSS reader">RSS</a></li>
+				<li><a href="/rssBlog/vbykov-rssBlogCommentView.xml" target="_new" title="Use this link in your RSS reader (Comments)." >RSS Comments</a></li>
+				<li><a href="http://localhost:8666/btf?rss=http://www.cincomsmalltalk.com/rssBlog/vbykov-rss.xml" title="Add this feed to a running copy of BottomFeeder" >BottomFeeder</a></li>
+				<li><a href="/rssBlog/vbykov-atom02.xml" target="_new">Atom</a></li>
+				<li><a href="/rssBlog/vbykov-atom02Comments.xml" target="_new">Atom Comments</a></li>
+				<li><a href="http://www.bloglines.com/sub/http://www.cincomsmalltalk.com/rssBlog/vbykov-rss.xml" target="_new" title="Subscribe in blogLines">BlogLines</a></li>
+				<li><a href="http://www.cincomsmalltalk.com/BottomFeeder" target="_new" title="Get The BottomFeeder RSS Viewer">Get BottomFeeder</a></li>
+	</ul>
+	<h2>Category Syndication Links</h2>
+	<ul>
+	<select onChange="if (this.selectedIndex > 0) { window.location =this[this.selectedIndex].value }"><option>Select...</option><option value="http://www.cincomsmalltalk.com/rssBlog/vbykov_AnnouncementsFramework.xml">Announcements Fram...</option><option value="http://www.cincomsmalltalk.com/rssBlog/vbykov_BitsofHistory.xml">Bits of History</option><option value="http://www.cincomsmalltalk.com/rssBlog/vbykov_blogtest.xml">blog test</option><option value="http://www.cincomsmalltalk.com/rssBlog/vbykov_BuildingUIs.xml">Building UIs</option><option value="http://www.cincomsmalltalk.com/rssBlog/vbykov_CSS.xml">CSS</option><option value="http://www.cincomsmalltalk.com/rssBlog/vbykov_DidYouKnowYouCan....xml">Did You Know You C...</option><option value="http://www.cincomsmalltalk.com/rssBlog/vbykov_ExtendedReply.xml">Extended Reply</option><option value="http://www.cincomsmalltalk.com/rssBlog/vbykov_general.xml">general</option><option value="http://www.cincomsmalltalk.com/rssBlog/vbykov_Interfaces.xml">Interfaces</option><option value="http://www.cincomsmalltalk.com/rssBlog/vbykov_JustSmalltalk.xml">Just Smalltalk</option><option value="http://www.cincomsmalltalk.com/rssBlog/vbykov_Mac.xml">Mac</option><option value="http://www.cincomsmalltalk.com/rssBlog/vbykov_sightseeing.xml">sightseeing</option><option value="http://www.cincomsmalltalk.com/rssBlog/vbykov_Splash.xml">Splash</option><option value="http://www.cincomsmalltalk.com/rssBlog/vbykov_VisualWorks.xml">VisualWorks</option></select>
+			</ul>
+			
+			<h2>Search</h2>
+			<form name="blogViewForm" method="post" action="servlet/SearchServlet">
+			<p><label for="searchID" accesskey="4">Archives:</label></p>
+			<p><input type="checkbox" checked name="searchTitle" value="searchTitle" />Title
+			     <input type="checkbox" checked name="searchBodies" value="searchBodies" />Body</p>
+			<p><input type="text" name="searchText" size="17" maxlength="80" id="searchID" />
+			     <input type="submit" value="Go" name="search_button" /></p>
+			</form>
+		
+			<h2>Feedster</h2>
+			<form name="feedsterForm" method="post" action="http://www.feedster.com/search.php">
+			<p><label for="searchF" accesskey="5"><a href="http://www.feedster.com">Feedster:</a></label></p>
+			<input type="hidden" value="UTF-8" name="ie" />
+			<p><input type="text" name="q"  size="17" maxlength="80" id="searchF" />
+			     <input type="submit" value="Go" name="btnG" /></p>
+			</form>
+		
+			<img src="/images/poweredBySmalltalk.png" />
+		
+	      </div> <!-- menu -->
+
+	
+      </div> <!-- #main -->
+
+    </div> <!-- container -->
+
+  </body>
+
+</html>
+<!-- Built with Cincom Smalltalk. http://www.cincomsmalltalk.com -->

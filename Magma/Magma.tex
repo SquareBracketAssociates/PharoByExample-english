@@ -1,0 +1,380 @@
+% $Author$
+% $Date$
+% $Revision$
+
+% HISTORY:
+% 2008-07-12 - Stef first version
+
+%=================================================================
+\ifx\wholebook\relax\else
+% --------------------------------------------
+% Lulu:
+	\documentclass[a4paper,10pt,twoside]{book}
+	\usepackage[
+		papersize={6in,9in},
+		hmargin={.75in,.75in},
+		vmargin={.75in,1in},
+		ignoreheadfoot
+	]{geometry}
+	\input{../common.tex}
+	\setboolean{lulu}{true}
+% --------------------------------------------
+% A4:
+%	\documentclass[a4paper,11pt,twoside]{book}
+%	\input{../common.tex}
+%	\usepackage{a4wide}
+% --------------------------------------------
+    \graphicspath{{figures/} {../figures/}}
+	\begin{document}
+\fi
+%=================================================================
+%\renewcommand{\nnbb}[2]{} % Disable editorial comments
+\sloppy
+%=================================================================
+\chapter{Installing }\label{cha:basic}
+
+\sd{Harvested from \url{http://wiki.squeak.org/squeak/2665} with permission from Chris Muller. (To be rewritten with his help.)}
+
+Magma is a fully supported, multi-user object database for Squeak 3.7, 3.8, 3.9, 3.10, and Croquet distributions. 
+
+Magma provides transparent access to a large-scale shared persistent object model, 
+supports multiple users concurrently via optimistic locking,  utilizes a simple transaction protocol, including nested transactions, supports collaborative program development via live class evolution, peer-to-peer model sharing and Monticello integration,  supports for large, indexed collections with robust querying, runs with pretty good performance and provides performance tuning mechanisms, 
+learning basic usage takes just a few minutes,  is fault tolerant,  includes a small suite of tools, is written 100\% in intelligible, well-factored Smalltalk.
+Magma  includes rigorous SUnit tests that utilize multiple images to simulate testing in a multi-user environment.
+
+Magma is stable and usable within its limits, and is still under active development.
+
+\section{Vocabulary point}
+
+\subsection{What is meant by transparent access?}
+
+Most object programs that interface to a database do so using an explicit interface, meaning at any point in the program where you "need some data," you write code to make a call to the database (perhaps through some kind of persistence framework).
+
+By contrast, when you connect your Squeak image to a Magma repository, you think of your local image as "expanded" to include the objects in the repository. Magma client programs can and should be written as if they are operating in one large image on a computer with lots of memory. You don't ever need to "read some data" because you are already "in" the data. Your program is free to explore the persistent object model and, through transactions, make changes. Magma uses weak collections for its caching, so your program only consumes as much memory as the objects it references.
+
+This level of transparency allows existing objects which have never been designed to reside in a database to reside in Magma. For example, no Morph knows anything about Magma, but Morphs may be stored, shared and collaborated via Magma.
+
+Object databases allow you to design complex domain relationships without reservation or compromise. Domain code remains pure, and completely independent of storage. 
+
+A number of commit-strategies allow Magma to be suitable for a variety of programs and users.
+
+\subsection{About optimistic locking}
+
+Locking of objects is done in multi-user systems to preserve integrity of changes; so that one persons changes do not accidently overwrite another.
+
+\paragraph{Optimistic locking.}
+
+With optimistic locking, you write your program under the assumption that any commit has a chance to fail on account of at least one the objects being committed was changed by someone else since you began the transaction.
+
+Optimistic locking offers reduced contention and higher performance than pessimistic locking. It also avoids deadlocks.
+
+\paragraph{Pessimistic locking.}
+In pessimistic locking, your program must explicitly obtain a lock on one or more objects before making any changes. This prevents any other session from making changes to those objects, so you can be more assured that committing the transaction will succeed.
+
+Once changes are complete, the objects are unlocked so that others may make changes to them.
+
+Pessimistic locking increases contention because objects are tied up for longer periods. Locking objects also imposes more work on the database server. When there is a conflict, sessions have to "get in line" to wait for an object to become unlocked. These sessions may, themselves, already have other objects locked up while they're waiting. If any of these objects needed by a session are farther ahead in line then you will have a "deadlock," which can be difficult to manage. ok
+
+
+
+
+\section{Getting started with Magma}
+
+\subsection{Getting Started}
+
+To use Magma, first download and install the code. Then you may decide in what mode would your magma be running and follow these steps:
+
+\paragraph{If Running in Server/Client Mode}
+
+\begin{itemize}
+	\item create a repository
+	\item start the server
+	\item open a session
+\end{itemize}
+
+\paragraph{If Running in Single-user Mode}
+\begin{itemize}
+\item create a repository
+\item open a session, in a different way(see: Single-user mode below)
+\end{itemize}
+
+\subsection{Creating a repository}
+
+To create a repository, you must provide two things:
+\begin{itemize}
+\item a path to the directory magma may use to keep and maintain its files
+\item the root object of the repository
+\end{itemize}
+
+Magma maintains a single directory on the filesystem for each repository. When creating or opening Magma repositories, you specify the fully-qualified directory in which it may create its various files.
+
+You should also provide the root object of the repository. This is the root of your domain object in the domain is referenced.
+
+The code, thus:
+
+\begin{code}{}
+	MagmaRepositoryController
+		create: 'c:\myMagmaFolder'
+		root: Dictionary new
+\end{code}
+
+\paragraph{Starting the server.}
+
+Magma utilizes TCP/IP for its network communications. To enable multi-user access to a Magma repository, you may start the Magma server in its own image and inspect the following:
+
+\begin{code}{}
+MagmaServerConsole new
+	open: 'c:\myMagmaFolder' ;
+	processOn: 51001
+\end{code}
+
+Be sure to inspect this so you will have access to console commands, such as \ct{shutdown}.
+
+\subsection{Open a MagmaSession}
+
+Once the server is running, a \clsind{MagmaSession} can be connected from the same or another image to gain access and change objects in the repository. Connecting a session requires the following information:
+
+\begin{itemize}
+	\item a name to identify your session. When someone tries to overlay changes you've made to objects, they will be notified that those objects were changed by your session, identified by the name you provide.
+	\item the IP address of the machine hosting the Magma repository, and the port it is listening on.
+\end{itemize}
+
+\begin{code}{}
+	| mySession |
+	mySession := MagmaSession
+		hostAddress: #(192 168 1 13) asByteArray
+		port: 51001.
+	mySession connectAs: 'chris'
+\end{code}
+If you run this from a Workspace, be sure to inspect the result so you will be able to properly disconnect from the server.
+
+Once connected, changes to the persistent model are committed through transactions. 
+
+\begin{code}{}
+mySession commit: 
+	[ mySession root
+		at: 'persons'
+		put: (OrderedCollection with: (Person name: 'Paula')) ]
+\end{code}
+
+While your session is connected, it is recommended you keep up-to-date every 30 seconds or so changes made by other users will be reflected in the objects you visit. If you know there are very few users then this less important, but your session may eventually get booted if you wait too long. You can do this simply by aborting, even if you don't have a transaction:
+
+\begin{code}{}
+	mySession abort
+\end{code}
+This will allow you to see changes to the persistent model that were made by others.
+
+You can access the root of the repository later and navigate from there.
+
+\begin{code}{}
+	mySession root at: 'persons'
+\end{code}
+
+To minimize concurrency it is recommended that transactions begin just before you make changes, and commit immediately after.
+
+Once you're done using the session, you should disconnect it:
+\begin{code}{}
+	mySession disconnect
+\end{code}
+
+\paragraph{Single-user mode}
+
+If you know will be operating in a single-user environment, starting a second image to run the server may not always be convenient. Thankfully, Magma supports a "direct-connect" single-user mode, where a single Magma session connects directly to the repository in one image.
+
+To run in single-user mode, you do not need to use MagmaServerConsole. 
+
+Instead, you must specify the name of the object file when opening a MagmaSession instead of the IP and port.
+
+\begin{code}{}
+	myMagmaSession := MagmaSession openLocal: 'c:\myMagmaFolder\myRepository.magma'.
+	myMagmaSession connectAs: 'chris'
+\end{code}
+
+Additionally, when you're ready to disconnect your last session, you also should close the repository:
+
+\begin{code}{}
+	myMagmaSession disconnect; closeRepository
+\end{code}
+
+The repository can then be opened again in single or multi-user mode.
+
+
+\subsection{Objects are persisted by reachability}
+
+With object databases, there is no notion of, "inserting objects into the database". Instead, you merely attach new objects to persistent ones and commit. All directly or indirectly referenced objects from any persistent object are automatically detected and saved into the database.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Designing for an ODBMS}
+Now we discuss some programming guidelines and best practices.
+Here are some advices
+
+\begin{itemize}
+	\item Web programming caution!
+	Do not share objects between MagmaSession instances. Two or more separate MagmaSessions should never reference the same identical object intance, including proxies. Each session must always keep its own separate view of the persistent model, they should never be linked across sessions. The persistent objects are still identical within the repository, just not in the image across session views.
+
+\item Try to keep transactions short.
+
+Short transactions are essential for good server health and avoiding getting kicked off. That's right. Magma server will disconnect any sessions that accumulate too many "challengers". The default maximumNumberOfChallengers is 1000. That means if 1000 commits by other users are performed and you haven't refreshed, you're outta there.
+
+\item Custom indexes.
+
+Custom index types must inherit from MaIndexDefinition because all index definitions are part of the protocol between clients and server. This also means that the server must be started after the custom index was created and must be present in the servers image.
+
+Since the server requires no other domain classes (though it won't hurt to have them), you may wish to define your custom index types in a separate package.
+
+\end{itemize}
+
+There are a number of design considerations when writing a Magma program such as the commit strategies, 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Magma Commit Strategies}
+One important and interesting question is how to avoid to maintain a MagmaSession in our domain objects. How can we perform the necessary commits, while still keeping it decoupled from Magma? There are at least three approaches that can be used.
+
+
+
+\paragraph{1) Program-controlled transactions:} You signal commit notifications in your domain. A controller catches these notifications and applies them to its session. When no controller is listening, the notifications are ignored, allowing testing of the domain with or without the database. While you do not have to reference a MagmaSession, it is not completely transparent because you do have to signal the notifications:
+
+\begin{code}{}
+	name: aString
+		MagmaSessionRequest signalCommit: [ name := aString ]
+\end{code}
+
+This approach gives the program control over when commits are performed. It also allows the user to be free of any concern about remembering to "save"; everything that requires a transaction will be committed without them thinking about it.
+
+One disadvantage is reduced concurrency-detection. The message \ct{signalCommit:} does the refresh, update and commit without the user ever seeing whether the changed value was already changed. For this reason, this sort of commmit strategy is useful for low-concurrency models, \ie where different analysts work on their "own" domain objects.
+
+
+\paragraph{2) User-controlled transactions, with auto-begin:} With this approach, the user is always in a transaction. The program provides a "Save" or "Commit" button which the user occasionally presses as they modify the domain model. The program could also provide its own "Cancel" function (which would send \ct{abort}, followed by \ct{begin} to the MagmaSession) to provide a rudimentary undo function. To use auto-begin, your program does an initial \ct{begin} when connecting the session, then every commit should instead use \ct{commitAndBegin} instead of \ct{commit}.
+
+Since Magma needs transactions to be short, this approach is most suitable for programs with very frequent domain changes; such as programs that support "data entry" activities. Performance is increased because the \ct{begin} step occurs right after the commit automatically with only one trip to the server.
+
+This approach also allows complete transparency; \ie, the domain can be written with no awareness of any database. No commits or signals are needed in the code.
+
+Concurrency detection is also much better; consider our name: setter example from above. This time, the code is, simply:
+
+\begin{code}{}
+	name: aString
+		name := aString
+\end{code}
+
+This time, if this object has changed the user will get a commit-error when they commit and the object will update to the current value.
+
+Users decide when to "save", therefore the program should be written so the user has control only when the domain is in a consistent state worthy of being committed. For example, in a banking application, when a user initiates a transfer, don't let them commit between the withdraw and the deposit, only after both.
+
+This approach is less favorable for programs that do not update the domain model frequently. Because users are always in a transaction, their MagmaSessions will not receive auto-abort signals. It is therefore up to the users to keep their views refreshed by either committing or aborting. If they do not, and there are lots of changes happening to the domain by other users, Magma will eventually terminate the an inactive users session, bloated with pending changes, and the user will have to log in again.
+
+
+\paragraph{3) User-controlled transactions, user-controlled begin:} In this approach, the program provides the user with both a "begin" as well as "commit" button somewhere, so they are in complete control of transactions. This is just like the previous option except, since the user is not always in a transaction, auto-abort signals will be received. This is in exchange for the additioonal clicking the user must do to explicitly \ct{begin} their transactions.
+
+
+\paragraph{About refreshPersistentObjectsEvenWhenChangedOnlyByMe}
+
+Within each of these strategies, another option further enhances their flexibility:
+\begin{code}{}
+	mySession refreshPersistentObjectsEvenWhenChangedOnlyByMe: true
+\end{code}
+
+Setting this option to true does reduce performance slightly, but is used to be "more-connected" to the repository. It causes your changes to be lost if they were changed by someone else.
+
+The default value is false which, when using commit-strategy (3), allows users to make changes to an object, "test" them, and, only after that, \ct{begin} and immediately \ct{commit} a transaction. The \ct{begin} is non-destructive to their own changes which were not changed by another user. In this way it is a sort of "merge" with the users local model.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{About read strategies}
+
+Magma provides programs with transparent access to an arbitrarily large, persistent object model. Memory consumption is minimized by way of the well-known "Proxy" design pattern. Parts of the object-model that are not being used by your program are "truncated" in your local image with a lightweight proxy object. Should the program happen to send a message to the proxy, the object it represents is materialized from the repository automatically. The proxy then "becomes" the real object.
+
+There is a cost to this materialization process, so doing too many of them may cause performance issues. When a proxy is materialized, it is usually assumed that you will send a message to it that will require access to at least one of its instance variables. For this reason, it is generally desirable to bring back the proxy and several of the objects it references.
+
+But bringing back more objects creates more work for the server, network and your client. For ideal performance, you want each materialization to bring back just the objects that will be needed, but not too many that won't be.
+
+Magma's default ReadStrategy will read one level deep by default, which means the proxy object and the objects each of its instance variables refers to. As a programmer, you can change this default 0, 1, 2 or 3 (or maybe even 4, but I wouldn't go beyond that) by supplying a ReadStrategy.
+
+minimumDepth, plus delta-depth
+
+The minimumDepth is how far it reads for any objects, all objects, every time, all the time. Therefore, you want to keep it very small, probably 0 or 1. Then, you can use a ReadStrategy to specify how much deeper to read, below the minimumDepth, by class and instance-variable. So what this means exactly is, whenever the server is reading a graph and encounters a buffer for the specified class, it will be sure to also grab n-levels deeper, regardless of how deep it already is, for whatever variable name specified. 
+
+\paragraph{Example.}
+Let's say you are about to display a list of Employees and their department names in a list. The Employee class defines a 'name' attribute, which is a String, and a 'department' object, an instance of class Department. Departments also have a name. If the list was to include each employee name and their department name, the default ReadStrategy would retrieve each Employee with its Department as a proxy. So the list would populate slowly because each Department would be materialized one at a time. To improve this performance, you could specify the ReadStrategy to read one additional level on the 'department' object.
+
+\begin{code}{}
+	| employeeListReadStrategy |
+	employeeListReadStrategy :=
+		(MaReadStrategy minimumDepth: 1)
+			forVariableNamed: 'department'
+			onAny: Employee
+			readToDepth: 1
+	mySession readStrategy: employeeListReadStrategy. "returns instantly, no server call"
+	"now enumerate the collection"
+	myEmployees do: [ :each | ".. display name and department name in your list.." ]
+\end{code}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Optimizing Magma's Performance}
+
+Efficiency was always a goal when building Magma. The work-load is heavy for the client but relatively light for the server, especially with short transactions allowing, theoretically, for consistent performance more client sessions connect.
+
+If profiling your program reveals a lot of time spent in Magma, considering the following performance-sensitive guidelines may help.
+
+
+\paragraph{Use ReadStrategies.} Read strategies can be used to optimize how many objects are accessed within a single call to the server.
+
+\paragraph{Keep your commits medium-small.} Commits should be put in your program as close to the mutations to the persistent model as possible. Commits are serialized on the server, so large commits that take several seconds will most likely cause requests to queue in the server.
+
+At the same time, you don't want commits to be so microscopic that you end up smothering the network with requests. For example, if building an OrderedCollection of 100 medium-sized objects, you should do those in one commit instead of 100 commits. However, if the objects are very large and completely non-persistent, you may want to do 100 commits.
+
+\paragraph{Keep your cachedObjectCount as low as possible.}
+
+With a connected Magma session, evaluate: \ct{mySession cachedObjectCount}
+This number reprensents how many entries Magma has in its IdentityDictionaries. Magma tries to avoid the performance issues related to Squeak's IdentityDictionaries, but it can still slow down if you allow tens of thousands of objects to be cached in memory.
+
+If you're not sure why your \ct{cachedObjectCount} is growing, you can use \ct{cachedObjectCountByClass} to see which ones are the most proliferate (they are sorted by most-occurrences at the top). If you see "UndefinedObject" near the top of the list, you need to send \ct{finalizeOids} to your session. This is because Squeak can be lazy about finalizing the entries in its \ct{WeakDictionary}'s.
+
+As you traverse parts of the model, you should \ct{stubOut:} objects you no longer need. For example, after iterating a collection of large objects, \ct{stubOut:} the collection object if you no longer need them. \ct{MagmaSession>>stubOut:} chops off large branches of objects so the memory they consume can be reclaimed by the garbage collector.
+
+But avoid too many calls to \ct{stubOut:}. For example, after you've enumerated the collection of large objects, \ct{stubOut:} the Collection object itself, not each object in the collection. This is due to unfortunate irony that \ct{stubOut:} requires use of one of Squeak's most inefficienct methods; \ct{Dictionary>>>removeKey:}. While fast in other Smalltalks, this method is VERY slow in Squeak but required for \ct{stubOut:}.
+
+Finally, after you've stubbed out a large object, you may find it necessary to call "mySession finalizeOids". Unfortunately, Squeak's WeakIdentityKeyDictionary does not always remove finalized entries in a timely fashion, resulting in, once again, these very important Dictionaries slowing everything down.
+ mySession finalizeOids
+
+\paragraph{Other optimizations.}
+
+Don't use MagmaSession>>refreshPersistentObjectsEvenWhenChangedOnlyByMe.
+Use \ct{commitAndBegin} for bulk-load programs. Experiment and optimize your key and record sizes of your MagmaCollections. Avoid too many duplicate keys (\eg, don't index the word "the").
+
+
+\paragraph{Know thy indexes.}
+MagmaCollections have good read performance, but adding and removing objects is very slow. In theory, starting with an empty MagmaCollection, the rate-of-insertion will deteriorate a little bit before settling on a relatively fixed rate, IF you have a good key-dispersal.
+
+If you put in a lot of duplicate keys, it will gradually get more costly to keep adding more of that key because a linear search for the "end" of that chain of keys is performed to find the point of insertion. So, for example, when you build a simple keyword index, consider eliminating prepositions such as "the" and "at".
+
+Removing from MagmaCollections is even more expensive than insertions. Avoid using this operation for performance-intensive operations.
+
+
+
+
+
+
+
+
+
+
+
+%=================================================================
+\ifx\wholebook\relax\else\end{document}\fi
+%=================================================================
+
+%-----------------------------------------------------------------
+
+%%% Local Variables:
+%%% coding: utf-8
+%%% mode: latex
+%%% TeX-master: t
+%%% TeX-PDF-mode: t
+%%% ispell-local-dictionary: "english"
+%%% End:

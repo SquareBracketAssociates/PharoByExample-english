@@ -1,0 +1,297 @@
+% $Author: oscar $
+% $Date: 2009-01-13 10:57:05 +0100 (Tue, 13 Jan 2009) $
+% $Revision: 23887 $
+
+
+% HISTORY: [see also Metaprogramming2.tex]
+% 2009-03-24 - Stef started new chapter (acttalk ...)
+
+
+%=================================================================
+\ifx\wholebook\relax\else
+% --------------------------------------------
+% Lulu:
+	\documentclass[a4paper,10pt,twoside]{book}
+	\usepackage[
+		papersize={6in,9in},
+		hmargin={.75in,.75in},
+		vmargin={.75in,1in},
+		ignoreheadfoot
+	]{geometry}
+	\input{../common.tex}
+	\pagestyle{headings}
+	\setboolean{lulu}{true}
+% --------------------------------------------
+% A4:
+%	\documentclass[a4paper,11pt,twoside]{book}
+%	\input{../common.tex}
+%	\usepackage{a4wide}
+% --------------------------------------------
+    \graphicspath{{figures/} {../figures/}}
+	\begin{document}
+	% \renewcommand{\nnbb}[2]{} % Disable editorial comments
+	\sloppy
+\fi
+%=================================================================
+\chapter{Dynamic metaprogramming}\label{cha:metaprog}
+
+Here I would like to have a more dynamic reflective chapter.
+May be we should move some code from the other chapters.
+
+	
+\begin{itemize}
+\item Creating new little kernel
+
+
+\item DynamicDeadCodeFinder 
+
+\item Object as Wrapper
+
+\item ObjectOut aka disk wrapper
+
+\item Actalk or may be in another chapter
+\end{itemize}
+
+
+
+\section{Minimal Object class}
+
+Pharo ProtoObject class is a minimal class in the sense that it only defines the bare minimum for an object to survive in the environement. This class is handy to build tools based on the handling of doesNotUnderstand:.
+In fact it is sometimes nice that any messages sent to an object get trapped and send the doesNotUnderstand: message.
+This way we can get a grip on the messages sent and do new things with them such as serializing obbjects, doing remote calls.
+
+Now as a simple illustration we would like to have a way to know what is the methods defined in Object used in a given tasks. 
+For that define the class MinimalObject
+
+\begin{classdef}{}
+ProtoObject subclass: #MinimalObject
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'MiniActalk'
+\end{classdef}
+
+and define the method doesNotUnderstand: so that if a message is not understood, it is copied from the class \ct{Object}
+to the MinimalObject one. 
+
+\begin{code}{}
+doesNotUnderstand: aMessage
+
+	| sel category |
+	sel := aMessage selector. 
+	Transcript show: 'Does not understand ',  aMessage selector printString ; cr.
+	category := (Object organization categoryOfElement: sel).
+	self class compile: (Object sourceCodeAt: sel) classified: category.
+	^ aMessage sentTo: self.
+\end{code}
+
+
+Notice the use of the message sentTo: which given a message can execute it on a given receiver. 
+
+Now if you open a Transcript and execute the following instruction \ct{MinimalObject new inspect}
+and interact with the inspector, you will see slowly the methods used for the interaction with the inspector
+compiled into your class. 
+
+Note that this technique does not really work for subclasses since a method may not be defined in a class
+but in one of its superclass and we will not know that.
+In a subsequent section, we will propose an extension of this code to deal with this problem but recompiling superclass method to raise
+errors and get replaced during the recompilation.
+
+
+\section{}
+
+
+\section{Actalk}
+
+
+An actor will be a class which treats concurrently the message it receives. So we will need to get the messages and queue them in a kind of mailbox. Therefore we will use the doesNotUnderstand: trick again. We will define in fact two classes: one that will be public actor object that will get the messages and treat them as asynchronously and another one that will represent the activity or behavior of the actor.
+ We defined the class \ct{TalkActor} as follows:
+
+
+
+\begin{classdef}{}
+ProtoObject subclass: #TalkActor
+	instanceVariableNames: 'mailBox behavior'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'MiniActalk'
+\end{classdef}
+
+\begin{method}{}
+TalkActor>>mailBox
+	^ mailBox
+	
+TalkActor>>initialize
+	mailBox := SharedQueue new
+	
+TalkActor>>initializeBehavior: aBehavior
+	behavior := aBehavior.
+	behavior initializeWithActor: self
+\end{method}
+
+\begin{method}{}
+TalkActor>>asynchronousSend: aMessage
+	mailBox nextPut: aMessage
+
+TalkActor>>doesNotUnderstand: aMessage
+ 	self asynchronousSend: aMessage 
+\end{method}
+
+\begin{method}{}
+TalkActor class>>behavior: aBehavior
+	^ self new initializeBehavior: aBehavior
+\end{method}
+The class TalkActorBehavior is plain normal class. Its key behavior will be that an instance will spawned a process
+whose job will be to wait for messages put in the mailbox and to execute them one by one when present. 
+So the message send to an Actor will be redirected to an actor behavior and executed by this object. 
+
+\begin{classdef}{}
+Object subclass: #TalkActorBehavior
+	instanceVariableNames: 'actor'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'MiniActalk'
+\end{classdef}
+
+\begin{method}{}
+TalkActorBehavior>>actor
+	^ ATalkActor behavior: self
+\end{method}
+
+\begin{method}{}
+TalkActorBehavior>>initializeWithActor: anActor
+
+	actor := anActor.
+	self setProcess
+TalkActorBehavior>>setProcess
+	"should have a way to kill all the actors storing the processes forked"
+	
+	[[true ] 
+		whileTrue: [self acceptNextMessage]] fork
+\end{method}
+
+
+\begin{method}{}
+TalkActorBehavior>>acceptNextMessage
+	self acceptMessage: actor mailBox next
+
+TalkActorBehavior>>acceptMessage: aMessage
+	^ self perform: aMessage selector withArguments: aMessage arguments
+\end{method}
+
+
+To make sure that you can use the debugger and inspector on your actor we mix the approach 
+presented before to copy down Object methods. 
+
+\begin{method}{}
+TalkActor>>doesNotUnderstand: aMessage
+
+	| sel |
+	sel := aMessage selector. 
+	(Object respondsTo: sel)
+		ifFalse: [ ^ self asynchronousSend: aMessage ] 
+		ifTrue: [	
+				Transcript show: 'Does not understand ',  aMessage selector printString ; cr.
+				self class compile: (Object sourceCodeAt: sel) classified: 'copied down'.
+				^ aMessage sentTo: self.]
+\end{method}
+
+
+\subsection{Counter Actor}
+A first actor is defined by subclassing the behavior of an actor.
+
+\begin{classdef}{}
+TalkActorBehavior subclass: #TalkCounter
+	instanceVariableNames: 'count'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'MiniActalk'
+\end{classdef}
+
+\begin{method}{}
+TalkCounter>>initialize
+	count := 0.
+
+TalkCounter>>increment
+	count := count + 1.
+	Transcript show: 'increment '; cr.
+\end{method}
+	
+	
+\begin{method}{}
+TalkCounter class>>example1
+	"self example1"
+
+	| anActorCounter |
+	anActorCounter := TalkCounter new actor.
+	anActorCounter increment; increment.	
+\end{method}
+
+
+
+Note that here even if we would add method count that returns the count number
+we would not get it by adding anActorCounter count since the message would be added into the queue
+but we do not have a mean to get the value to us. We will fix that in a moment.
+
+Now to check that the counter is really increased we can temporary violate the asynchronous
+nature of our actor and add the method \ct{behavior}. Then using it and waiting enough we can check that the 
+inner state of the actor changes as shown by the example2. 
+
+\begin{method}{}
+TalkActor>>behavior
+	^ behavior
+\end{method}
+
+\begin{method}{}
+TalkCounter class>>example2
+	"self example2"
+	
+	| anActorCounter |
+	anActorCounter := TalkCounter new actor.
+	anActorCounter increment; increment.
+	(Delay forSeconds: 2) wait.
+	^ anActorCounter behavior count. 
+\end{method}
+
+\section{Adding a printing actor}
+\begin{classdef}{}
+TalkActorBehavior subclass: #TalkPrinter
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'MiniActalk'
+\end{classdef}
+
+
+\begin{method}{}
+TalkPrinter>>reply: value
+	Transcript show: ' > ', value printString; cr  
+\end{method}
+
+\begin{method}{}
+TalkCounter>>consultAndReplyTo: replyDestination
+	replyDestination reply: count
+\end{method}
+
+
+\begin{code}{}
+| p |
+	p := TalkPrinter new actor. 
+	Transcript open.
+	TalkCounter new actor
+		increment; increment; consultAndReplyTo: p.
+\end{code}
+
+This way we do not query with a synchronous call the value of the counter
+but the actor execute a message on his mailbox which has as effect to 
+send another asynchronous message to another actor that will print the result. 
+	
+\subsection{Adding future}
+
+
+%=================================================================
+\ifx\wholebook\relax\else\end{document}\fi
+%=================================================================
+
+%-----------------------------------------------------------------
+\subsection{XXX}

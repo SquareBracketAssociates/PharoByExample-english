@@ -1,0 +1,222 @@
+% $Author$
+% $Date$
+% $Revision$
+
+% HISTORY:
+% 2008-09-29 - Damien Cassou started
+% 2009-01-21 - Stef revised
+
+%=================================================================
+\ifx\wholebook\relax\else
+% --------------------------------------------
+% Lulu:
+	\documentclass[a4paper,10pt,twoside]{book}
+	\usepackage[
+		papersize={6in,9in},
+		hmargin={.75in,.75in},
+		vmargin={.75in,1in},
+		ignoreheadfoot
+	]{geometry}
+	\input{../common.tex}
+	\setboolean{lulu}{true}
+% --------------------------------------------
+% A4:
+%	\documentclass[a4paper,11pt,twoside]{book}
+%	\input{../common.tex}
+%	\usepackage{a4wide}
+% --------------------------------------------
+    \graphicspath{{figures/} {../figures/}}
+	\begin{document}
+\fi
+%=================================================================
+%\renewcommand{\nnbb}[2]{} % Disable editorial comments
+\sloppy
+%=================================================================
+\chapter{Sake and Sake-Packages}
+\label{cha:sake}
+
+Sake is a library to define tasks based on pre-conditions and
+dependent tasks. It allows people to describe tasks (as done in the
+Ant/Java world) and execute these tasks when necessary.  Sake-Packages is
+another library which uses Sake to implement a packaging system with
+dependencies, as in the GNU/Linux world. Then, it describes a lot of
+Squeak packages with their dependencies to ease their installation.
+
+To install Sake and Sake-Packages:
+
+\begin{code}
+  Installer install: 'Packages'
+\end{code}
+
+This uses Installer (see \charef{installer}) which will take care of
+installing both Sake-Packages and its dependent library Sake.
+
+\section{Sake}
+\label{sec:sake}
+
+Sake proposed a domain specific language in Smalltalk to declare
+targets as in Make and Ant. It is most similar to the Ruby
+implementation Rake proposed by Martin
+Fowler\footnote{\url{http://rake.rubyforge.org}}.
+
+Sake defines the concept of a task (in the class \clsind{SakeTask}) with:
+\begin{description}
+\item[An action] a block of instructions;
+\item[A condition] a block whose value will determine if the action
+  needs to be executed;
+\item[Dependencies] a set of other tasks to run before evaluating the
+  current one.
+\end{description}
+
+The algorithm to run a task is defined in
+\cmind{SakeTask}{privateRunTakeOrdering:} and can be described like:
+
+\begin{enumerate}
+\item if the task has already been ran then stop;
+\item run all dependent tasks;
+\item evaluate the condition, if it is false then stop;
+\item execute the action.
+\end{enumerate}
+
+The condition ensures that the task is executed only if necessary,
+\eg{} if the task installs a package inside the image, the condition
+will verify that the package is not already in.
+
+A dependent task may also have dependent tasks and the previous
+algorithm will take care of running everything in the right order.
+
+A task is defined in a method like in:
+
+\begin{method}{Typical task}
+MakeTheTea>>fillCupOfTea
+  ^ SakeTask define: 
+                   [ :task |
+                        task dependsOn: { self taskBoilWater }.
+                        task if: [ Cup isEmpty ].
+                        task action: [ Cup add: 'tea'; add: 'water'. ].
+\end{method}
+
+The method \ct{fillCupOfTea} returns a new task whose role is to fill
+an empty cup with tea and boiled water. The method \ct{taskBoilWater}
+returns a new task which is used as the sole dependency of the
+\ct{fillCupOfTea} task.
+
+The methods \ct{addDependency:} and \ct{addAction:} can be used for
+respectively adding a new dependency or a new action to a task, instead of or in conjunction with \ct{dependsOn:} and \ct{if:}.
+
+Tasks can also be added as conditions of another task (in the \ct{if:}
+block). In that case, if the task succeeds then the action is
+performed, if the task fails then the action is considered not needed.
+
+To run this task you would execute
+
+\begin{code}{}
+  | aTeaMaker |
+  aTeaMaker := MakeTheTea new.
+  aTeaMaker fillCupOfTea run.
+\end{code}
+
+The last line will first run the task \ct{taskBoilWater}, then ensures
+the Cup is empty and if it is add the tea and the water.
+
+Alternatively \ct{runStepping}, or \ct{runLogging} are available for
+debugging.
+
+To see the hierarchy of tasks that will be traversed execute
+
+\begin{code}{}
+  aTeaMaker fillCupOfTea what explore.
+\end{code}
+
+\important{For implementation reasons, a method can only define at
+  most one task!}
+
+\subsection{Class-based tasks}
+
+Sake also provides mechanisms to deal with Smalltalk classes inside
+tasks. This is implemented by the class \clsind{SakeClassTask}.
+
+The following describes some examples of class-based tasks.
+
+\begin{code}{}
+myTask: className
+  ^ self define: [:task |
+      task
+        if: {SakeClassTask exists: className};
+        action: [...]
+    ]
+\end{code}
+
+The previous task action will be executed if and only if there is a
+class named \ct{className} in the system. This code also illustrates
+that tasks can be parametrized with a variable (here \ct{className} is
+a method parameter).
+
+\begin{code}{}
+(SakeTask class: #A) subclass: #B
+\end{code}
+
+This returns a task whose evaluation will result in the creation of a
+new class named \ct{B} sub-classing the class \ct{A}. This task
+depends on the existence of the class \ct{A}.
+
+\begin{code}{}
+(SakeTask class: #Cup) removeSelector: #tmp
+\end{code}
+
+This returns a class which, if ran, will remove the method \ct{tmp}
+from the class \ct{Cup}.
+
+\subsection{Controlling evaluation}
+\label{sec:contr-eval}
+
+Facilities exist to control the execution of a task. In the action block you could use the following:
+
+\begin{code}{}
+task step: 'Are you sure?'
+\end{code}
+
+This will ask confirmation from the user before going further. If the user cancels the dialog box, the task is canceled.
+
+\begin{code}{}
+task stop: 'Error message'
+\end{code}
+
+The method \ct{stop} displays an error message and cancels the task.
+
+The method \ct{answer:with:} is used to provide an automatic answer to a question asked by some code your task will ultimately run.
+
+\begin{code}{}
+SakeTask define: [:task |
+  task if: (SakeTask class: #WAKom) missing.
+  task answer: '.*username.*' with: 'admin'.
+  task answer: '.*password.*' with: 'seaside'.
+  task answer: '.*port number.*' with: '8080'.
+  task action: [Installer install: 'Seaside']]
+\end{code}
+
+\section{Sake-Packages}
+\label{sec:sake-packages}
+
+
+
+%=============================================================
+\ifx\wholebook\relax\else
+   \bibliographystyle{jurabib}
+   \nobibliography{scg}
+   \end{document}
+\fi
+%=============================================================
+
+
+
+
+%-----------------------------------------------------------------
+
+%%% Local Variables:
+%%% coding: utf-8
+%%% mode: latex
+%%% TeX-master: t
+%%% TeX-PDF-mode: t
+%%% ispell-local-dictionary: "english"
+%%% End:

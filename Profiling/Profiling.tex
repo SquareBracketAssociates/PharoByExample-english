@@ -1,0 +1,300 @@
+% $Author$
+% $Date$
+% $Revision$
+
+% HISTORY:
+% 2006-12-07 - Stef started chapter
+% 2009-02-12 - Stef added examples
+
+%=================================================================
+\ifx\wholebook\relax\else
+% --------------------------------------------
+% Lulu:
+	\documentclass[a4paper,10pt,twoside]{book}
+	\usepackage[
+		papersize={6in,9in},
+		hmargin={.75in,.75in},
+		vmargin={.75in,1in},
+		ignoreheadfoot
+	]{geometry}
+	\input{../common.tex}
+	\pagestyle{headings}
+	\setboolean{lulu}{true}
+% --------------------------------------------
+% A4:
+%	\documentclass[a4paper,11pt,twoside]{book}
+%	\input{../common.tex}
+%	\usepackage{a4wide}
+% --------------------------------------------
+    \graphicspath{{figures/} {../figures/}}
+	\begin{document}
+	% \renewcommand{\nnbb}[2]{} % Disable editorial comments
+	\sloppy
+\fi
+%=================================================================
+\chapter{Profiling applications}
+
+Profiling applications is not an obvious topics. Here we present a simple tutorial on using 
+\ct{MessageTally}. We thanks Andreas Raab for the original version of this tutorial.
+
+\sd{to be rewritten --- ask Alex!}
+
+\on{needs a case study / running example}
+
+\sd{We should have a look at the example in VW profiler --- impact of String concatenation vs Stream usage}
+
+How to improve 
+\begin{code}{}
+	Collection>>select:thenCollect:
+	Collection>>select:thenDo:
+	Collection>>collect:thenSelect:
+	
+	Here are some optimized implementations: 
+
+	#select:thenDo: apply to Collection
+	#select:thenCollect: apply to OrderedCollection
+	#collect:thenSelect: apply to OrderedCollection
+
+	select:thenCollect
+	==================
+	" Unoptimized version results ---> between 1951 - 2005 ms"
+	| coll |
+	coll := #(1 2 3 4 5 6 7 8) asOrderedCollection. 
+	[ 100000 timesRepeat:[
+	   ( coll select:[:each | each > 5] ) collect:[:i | i * i]
+	  ]
+	] timeToRun
+
+	" Optimized version results ---> between 1229 - 1289 ms "
+	| coll |
+	coll := #(1 2 3 4 5 6 7 8) asOrderedCollection. 
+	[ 100000 timesRepeat:[
+	    coll select:[:each | each > 5] thenCollect:[:i | i * i]
+	  ]
+	] timeToRun
+
+	select:thenDo:
+	==============
+	" Unoptimized version results ---> between 3496 - 3573 ms"
+	" Optimized version results ---> between 2488 - 2619 "
+
+	coll := #(1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20).
+	[ 100000 timesRepeat:[
+	        coll select: [ : i | i even] thenDo: [ : i | i * i ]
+	     ]
+	] timeToRun  
+
+	collect:thenSelect:
+	===================
+	" Unoptimized version results ---> between 1678 - 1691 ms"
+	| coll |
+	Smalltalk garbageCollect.
+	coll := #(1 2 3 4) asOrderedCollection.   
+	[ 100000 timesRepeat:[
+	   ( coll collect:[:i | i * i]) select:[:each | each > 5]
+	   ]
+	] timeToRun  
+
+	" Optimized version results ---> between 974 - 979"
+	| coll |
+	coll := #(1 2 3 4) asOrderedCollection.   
+	[ 100000 timesRepeat:[
+	    coll collect:[:i | i * i] thenSelect:[:each | each > 5]
+	   ]
+	] timeToRun
+
+	
+	
+	
+	
+	
+	
+benchButton
+	| browser button canvas time |
+	browser := OBPackageBrowser openOnClass: Object selector: #yourself.
+	browser position: 0@0.
+	button := browser allMorphs detect: [:m | (m
+	isKindOf:PluggableButtonMorph ) and: [ m label = 'browse' ]].
+
+	canvas := World assuredCanvas.
+	time := [1000 timesRepeat: [ button fullDrawOn: canvas ]] timeToRun.
+	browser delete.
+	^ time
+\end{code}
+
+\section{MessageTally}
+
+The primary tool to measure performance, both for Squeak in general  is \ct{MessageTally}. \ct{MessageTally} acts on a particular expression (\ct{MessageTally spyOn:["your expression here"]}) and provides
+the following information:
+
+\begin{enumerate}
+\item a) A hierarchy showing how much time was spent where in the computation.
+\item b) A list showing which amount of time was spent in which leaf nodes
+\item c) Memory statistics, incl. the growth rate, garbage collection info etc.
+\end{enumerate}
+
+MessageTally uses a technique known as "pc-sampling". What that means is
+that a high-priority process is started which (based on a timer) samples
+the call stack of the process and allocates a time value (typically
+whatever it's using for sampling).
+
+It is important to notice that this is a statistical measure - given a
+large enough number of samples, the reported result will be
+statistically valid. On the other hand, small numbers of samples are
+typically statistically invalid - a single garbage collection can lead
+to a major change in an otherwise insignificant part of the computation.
+
+Here is an example:
+
+\ct{MessageTally spyOn:[100 raisedTo: 1000].}
+
+resulted in the following output:
+
+\begin{verbatim}
+**Tree**
+100.0% {3ms} SmallInteger(Number)>>raisedTo:
+100.0% {3ms} SmallInteger(Number)>>raisedToInteger:
+50.0% {2ms} LargePositiveInteger>>*
+50.0% {2ms} primitives
+\end{verbatim}
+
+These results claim that we're spending 50\% of the overall time in
+Multiplying large integers. Which is completely bogus since we have only
+two samples (the default sampling rate is 1ms). If we run this for a
+longer period of time, like here:
+
+\ct{MessageTally spyOn:[1000 timesRepeat:[100 raisedTo: 1000]]}
+
+\begin{verbatim}
+**Tree**
+100.0% {1007ms} SmallInteger(Number)>>raisedTo:
+99.9% {1006ms} SmallInteger(Number)>>raisedToInteger:
+96.8% {975ms} primitives
+3.0% {30ms} LargePositiveInteger>>*
+\end{verbatim}
+
+We see that indeed, we only spend roughly 3\% in multiplying large
+integers. The other 97\% are spent in "primitives" which, unfortunately,
+are not broken out separately in the measures (however, if such a
+measure is critical, then the primitives can to be factored into
+separate methods which then call the primitives themselves - this allows
+message tally to "see" the method frames and report the usage accordingly).
+
+In a more complex situation, the percentage tree is typically useful to
+figure out roughly the areas in which time is spent which can then be
+measured individually.
+
+ \subsection{**Leaves**}
+
+
+The **Leaves* reported by MessageTally is the amount of time spent in a
+method WITHOUT the time spent in the methods called from that method. In
+our above example the leaves are reported as:
+
+\begin{verbatim}
+**Leaves**
+96.8% {975ms} SmallInteger(Number)>>raisedToInteger:
+\end{verbatim}
+
+which is the overall time spent in \ct{Number>>raisedToInteger: (1006ms)}
+minus the time spent in \ct{LargePositiveInteger>>* (30ms)}. If a method
+shows up in the leaves it typically means that this method is
+computationally expensive or just gets called a large number of times.
+
+ \subsection{**Memory**}
+
+
+The **Memory** statistics shown in MessageTally provide information
+about how various memory regions have changed:
+
+\begin{enumerate}
+\item old: Describes the "old space" in memory. This is the portion that
+will not be included in incremental garbage collection but only during a
+full garbage collection. See also the "tenure" information below.
+Extensively growing old space typically means that there is a problem
+with the allocation patterns or garbage collector settings.
+
+\item young: Describes the "young space" in memory, e.g., the region handled
+by the incremental garbage collector. Changes in young space are usually
+not relevant.
+
+\item used: Total amount of used memory.
+
+\item free: Total amount of unused memory.
+\end{enumerate}
+
+\subsection{**GCs**}
+
+The *GCs* statistics provide information about the garbage collector:
+
+\begin{enumerate}
+\item full: The number of "full" garbage collections and time spent in
+those. Automatic full garbage collections should be VERY rare, they are
+a sign that you're allocating huge amounts of memory repeatedly. Note
+that at times these garbage collections are manually triggered though
+(like in the checkpointing process) and a normal effect of the operation.
+
+\item incr: The number of "incremental" garbage collections and time spent
+in those. Generally speaking, IGCs should be quick (avg. < 2ms) and
+frequent (several times a second). However, the total time spent in IGCs
+should generally be less than 10\%, otherwise this is a sign of a problem
+with the allocation patterns. If the time spent in IGCs exceeds 25\%
+something is *definitely* wrong.
+
+\item tenures: Tenuring occurs when the number of surviving objects in young
+space exceeds a certain threshold. In this case, the young space
+boundary is increased (which adds to the size of "old space" mentioned
+above). Tenuring typically means that the working set of the application
+hasn't been reached. For example, in a space construction we would
+expect frequent tenuring until the space is fully constructed. Once the
+working set has been reached, tenuring should be rare to non-existent.
+Frequent tenuring in such cases means that the garbage collection
+parameters need to be adjusted.
+
+\item root table overflows: Root table overflows describe the (rare) case
+that the number of "roots" for the incremental garbage collector will
+overflow the internal table. This will force an immediate garbage
+collection plus tenuring. The measure is provided in order to be able to
+find such rare cases (which otherwise leave you wondering why the system
+is running full GCs all the time for no apparent reason)
+\end{enumerate}
+
+
+\subsection{Multiple processes}
+
+Historically, MessageTally measured and reported only the call stack of
+the current process. This had the disadvantage that if time was spent in
+a different process, it would be attributed to a bogus frame in current
+thread. For Croquet, I have changes this such that *all* processes are
+reported in order to be able to see "what else" is going on.
+
+For example, if we measure an expression like here:
+
+\ct{MessageTally spyOn:[(Delay forSeconds: 5) wait]}
+
+we will find that all of the time is reported here:
+
+\begin{verbatim}
+
+**Tree**
+99.5% {4975ms} ProcessorScheduler class>>startUp
+99.5% {4975ms} ProcessorScheduler class>>idleProcess
+\end{verbatim}
+
+The idle process is the process that is being activated when no other
+activity occurs (the implementation of the idle process requests the VM
+to sleep for a millisecond so that the VM isn't running a busy).
+Generally, time reported in idleProcess is time spent "doing nothing"
+(e.g., waiting for some activity).
+
+The other relevant system process that may show up is the finalization
+process. If the finalization process shows up, it means we're having a
+problem with too many weak references being finalized. This has been a
+*big* problem in the past, so keep an eye on it.
+
+%=================================================================
+\ifx\wholebook\relax\else\end{document}\fi
+%=================================================================
+
+%-----------------------------------------------------------------
+

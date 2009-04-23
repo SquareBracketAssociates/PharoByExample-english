@@ -1,0 +1,617 @@
+% $Author$
+% $Date$
+% $Revision$
+
+% HISTORY:
+% 2008-01-19 - Stef started
+% 2008-12-26 - Jannick Menanteau added text
+
+%=================================================================
+\ifx\wholebook\relax\else
+% --------------------------------------------
+% Lulu:
+	\documentclass[a4paper,10pt,twoside]{book}
+	\usepackage[
+		papersize={6in,9in},
+		hmargin={.75in,.75in},
+		vmargin={.75in,1in},
+		ignoreheadfoot
+	]{geometry}
+	\input{../common.tex}
+	\setboolean{lulu}{true}
+% --------------------------------------------
+% A4:
+%	\documentclass[a4paper,11pt,twoside]{book}
+%	\input{../common.tex}
+%	\usepackage{a4wide}
+% --------------------------------------------
+    \graphicspath{{figures/} {../figures/}}
+	\begin{document}
+\fi
+%=================================================================
+%\renewmessage{\nnbb}[2]{} % Disable editorial comments
+\sloppy
+%=================================================================
+\chapter{Installing Packages with Installer }\label{cha:installer}
+
+This chapter presents the Installer package developed by Keith Hodges which greatly simplifies the loading of code in \Pharo. Its official web page is at: \url{http://installer.pbwiki.com/Installer}.
+Installer provides a simple Domain Specific Language for installing packages from different formats such as the Monticello package system or SqueakMap. It supports a large number of Squeak dialects, therefore it should work if you are using  \Pharo or a Squeak distribution. 
+It defines an infrastructure to define build scripts. It allows one to manage several sources code systems such Monticello packages, Squeakmap Catalogues, Sake, Universes or any pieces of Squeak code in files or web format. Now in the context of this book we will focus on Monticello package loading since this is the most convenient and used format and the one chosen in \Pharo. 
+
+
+%In my case, I use a Squeakmap script when I load a new Squeak image. This script loads all packages I want from Monticello automatically.
+%\sd{really a squeakmap script?}
+
+Most of the time people define simples script that loads all the packages they need to load automatically from Monticello. 
+Installer offers a lot of possibilities and we will present its main API and functionality. 
+
+\section{How to get Installer}
+To download  the last version and install it, just load it from Monticello.
+In Monticello, you need to add a new HTTP repository and put the following lines as parameters. After that, you can load \ct{Installer} as explain the the chapter dedicated to \ct{Monticello}.
+\begin{code}{}
+MCHttpRepository
+	location: 'www.squeaksource.com/Installer'
+	user: 'squeak'
+	password: 'squeak'
+\end{code}
+
+You can also use \ct{ScriptLoader new installInstaller}.
+
+
+\section{Installer Basic  API}
+\sd{je ne regarderais pas les trucs commons car on ne sait pas si cela marche. Donc focus sur les truc simple 
+et surtout sur MC.}
+
+The class \ct{Installer} is a class factory of specific installers. Installer is based on a set of classes each 
+supporting a common protocol but also offering a specific protocol for each format. The specific installers share
+ a common API and each installer offers a specific protocol to install the format they can install. 
+
+Here is an example to get a monticello  and a squeakmap installer.
+\begin{code}{}
+	| mc squeakmap | 
+	mc := Installer monticello.
+	squeakmap := Installer squeakmap.
+\end{code}
+
+\subsection{Most Important Messages}
+When one uses Installer, some messages are the same if one uses monticello, squeakmap or others. These messages are basics but 
+allow one to define most of the scripts.  In this section, common and most important messages to install a package are explained and illustrated with examples. Installing a package is specifying what to load and sending the message \ct{install} to such configured object: for that we have install/install: and addPackage:. 
+
+\paragraph{Installing a package.} 
+\begin{description}
+\item \ct{addPackage: aPackageName} \quad
+It adds a package to the collection of packages to be installed. When no version number is specified, the latest version of the package is loaded.
+For example, here is the script to load. Note that Installer offers a large API and that for example \ct{addPackage:} is strictly equivalent to the message \ct{package:}  We suggest to only use \ct{addPackage:}. 
+
+\begin{code}{}
+	| monticello | 
+	monticello := Installer monticello 
+		http: 'http://www.squeaksource.com/eCompletion'.
+	monticello addPackage: 'ECompletion'.	
+\end{code}
+Note that it does not install yet the package. for this you should use the \ct{install} message shown below.
+When scripting Monticello you have to either pass the full path including the project in which the package is or
+use the message \ct{project:} as show the two equivalent scripts below. 
+
+\begin{code}{}
+	| monticello | 
+	monticello := Installer monticello 
+		http: 'http://www.squeaksource.com/BreakOut'.
+	monticello addPackage: 'BreakOut'.
+	monticello install
+\end{code}
+
+
+\begin{code}{}
+	| monticello | 
+	monticello := Installer monticello 
+		http: 'http://www.squeaksource.com/'.
+	monticello project: 'BreakOut'.
+	monticello addPackage: 'BreakOut'.
+	monticello install
+\end{code}
+
+
+It is possible to chain the loading of several of packages by chaining multiple \ct{addPackage:} message, but pay attention that they should
+be in the same project. 
+
+
+It is possible to specify to load an exact version. When no version number is specified the latest version is loaded.
+packages. 
+\begin{code}{}
+	| monticello | 
+	monticello := Installer monticello 
+		http: 'http://www.squeaksource.com/BreakOut'.
+	monticello addPackage: 'BreakOut-sd.5'
+\end{code}
+
+
+
+\item \ct{install} 
+It installs the packages defined with the message \ct{addPackage:}. Note that the message \ct{installQuietly} install the package without any warning message which could be important when you have running headless images. 
+	
+The following script shows how to load the elements \ct{OmniBrowser}  published on SqueakSource. When no version number is given, the installer loads the last version of the package.
+
+%\begin{code}{}
+%	| squeakmap | 
+%	squeakmap := Installer squeakmap.
+%	squeakmap package: 'DynamicBindings'.
+%	squeakmap install.
+%\end{code}
+
+\begin{code}{}
+	| monticello | 
+	monticello := Installer monticello 
+		http: 'source.lukas-renggli.ch/omnibrowser'.
+	monticello package: 'OmniBrowser'.
+	monticello install.
+\end{code}
+
+
+\item \ct{install: aPackageName} 
+
+	The method \ct{install:} installs the corresponding package. Using this message is more compact than the messages \ct{addPackage:} followed by  \ct{install}. As before it is possible to perform a quiet installation using the message \ct{installQuietly:}.
+
+\begin{code}{}
+	| monticello | 
+	monticello := Installer monticello 
+		http: 'source.lukas-renggli.ch/omnibrowser'.
+	monticello install: 'OmniBrowser';
+		install: 'OB-Standard'.
+\end{code}
+\end{description}
+
+
+
+
+%\sd{I would not stress squeakmap and use Monticello instead really few people use squeak map.}
+
+
+
+
+\paragraph{Messages for SqueakMap and Monticello.} 
+SqueakMap and Monticello have a specific user interface. It is possible to open this interface with \ct{Installer} by the use of message \ct{open}. 
+
+They support version management. One can manage versions with Installer. The following messages are then specific to SqueakMap and Monticello.
+
+
+
+
+\paragraph{Other messages.} 
+\begin{description}
+\item \ct{debug} 
+
+It is also possible to specify whether a debugger should be open or not in case of problems. The messages \ct{debug} and \ct{noDebug} control the debugger opening
+
+\begin{code}{}
+	Installer debug.
+\end{code}
+
+And one can stop the debug mode. In such a case Installer switches in log mode. This mode don't shows a debugger, but informs the user by writting informations in a Transcript window.
+\begin{code}{}
+	Installer noDebug
+\end{code}
+
+Notice that methods \ct{debug} and \ct{noDebug} are class methods.
+\end{description}
+
+\paragraph{Class Factories.} 
+Some class factories were used in examples above. Here is a list of some of them. 
+
+\begin{code}{}
+	Installer squeakmap.
+	Installer monticello.
+	Installer universe.
+	Installer file.
+	Installer web.
+\end{code}
+Each of these class methods creates a well-initialized installer. Each of these uses is explained in next sections.
+
+\section{Scripting Monticello}
+The installer supports scripting of Monticello packages using the message \mthind{monticello}{Installer class>>monticello} or using the shortcut message \mthind{mc}{Installer class>>mc}.
+
+Since Monticello packages can be stored in http, ftp, magma, goods or directory databases we have to specify the database kind to load a monticello package. These are the repository options:
+
+\begin{code}{}
+	Installer monticello http: anUrl.
+	Installer monticello http: anUrl user: name password: secret.
+	Installer monticello ftp: host directory: dir user: name password: secret.
+	Installer monticello magma: host port: aport
+	Installer monticello goods: host port: aport.
+	Installer monticello directory: stringOrFileDirectory.
+\end{code}
+
+\paragraph{Typical Usage.}
+First you have to specify the repository using one of the messages presented above. Here as we want to access SqueakSource we use the  \mthind{http:}{http:} method. Then you should specify the squeak source project from which you will be loading your packages and finally send the message \mthind{install:}{install:} with the corresponding package name. Here you see that we request one specific version of \ct{'Comet'} while we will get the latest versions of the \ct{'Seaside'} and  \ct{'Scriptaculous'} packages. 
+
+\begin{code}{}
+	| monticello | 
+	monticello := Installer monticello 
+		http: 'source.lukas-renggli.ch/omnibrowser'.
+	monticello install: 'OB-Morphic-lr.75'.
+\end{code}
+
+This code installs the version 75 of the package named \ct{'OB-Morphic'} posted by the author named lr.
+
+Now SqueakSource is a common source of Monticello packages and Installer provides the \ct{'ss'} shortcut for squeaksource or \ct{'lukas'} for the lukas renggli sources repository. The previous script is equivalent to the following one: 
+
+\begin{code}{}
+ 	Installer lukas project: 'omnibrowser';
+    		install: 'OB-Morphic-lr.75'.
+\end{code}
+
+Here is a list of default repository shortcuts.
+
+\begin{code}{}
+	Installer ss. "squeaksource"
+	Installer sf. "squeakFoundation"
+	Installer lukas.
+	Installer impara.
+	Installer wiresong.
+\end{code}
+
+New shortcuts can be introduced using the message \ct{rememberAs:} as follows: 
+\ct{Installer monticello http: 'http://www.myRepository.com'; rememberAs: #myrepo.}
+
+\paragraph{Specifying a password.} 
+
+Sometimes, to access to source code of a repository, user/password is required. One can specify this with the use of messages \ct{user:} and \ct{password:}. 
+
+\begin{code}{}
+Installer monticello 
+      http: 'http://www.squeaksource.com';
+      user: 'me'; password: 'asecret';
+      install: 'something'.
+\end{code}
+
+
+\paragraph{Loading specific package version.} You can also specify a list of different authors of a package and the latest version available of the package will be installed. Installer takes the latest version of the selected authors and install it. 
+
+\begin{code}{}
+	Installer lukas project: 'omnibrowser';
+		browse: #('OB-Tools-dkh' 
+			'OB-Tools-EL' 
+			'OB-Tools-damiencassou'). "either of these"
+		install: 'OB-Tools-EL.60'.     "specific version"
+\end{code}
+
+In this example, when we have written the chapter, \ct{OB-Tools-dkh} has as latest version the 57, \ct{OB-Tools-EL} has 60 and \ct{OB-Tools-damiencassou} has 58. So in these three versions, Installer install the latedt, so the version \ct{OB-Tools-EL.60}.
+\sd{I did not get it}
+
+\paragraph{Getting Package information.} 
+
+It is also possible to browse the packages without loading them in your image by using the message \ct{browse:}. 
+\ct{browse} gives a snapshot of the content of the package (\figref{browse}).
+
+\begin{code}{}
+	| monticello | 
+	monticello := Installer monticello 
+		http: 'source.lukas-renggli.ch/omnibrowser'.
+	monticello browse: 'OB-Morphic'.
+\end{code}
+
+\begin{figure}[ht]
+	\begin{center}
+	\includegraphics[width=1\linewidth]{browse}
+	\caption{Result of message \ct{browse}}
+	\figlabel{browse}
+	\end{center}
+\end{figure}
+
+
+Moreover, one can obtain all information of the last version of a package by using the message \ct{view:}. These informations are the name, date of creation of the version, author, ancestors of the version and comment done by the author (\figref{view}).
+
+\begin{code}{}
+	| monticello | 
+	monticello := Installer monticello 
+		http: 'source.lukas-renggli.ch/omnibrowser'.
+	monticello view: 'OB-Morphic'.
+\end{code}
+
+\begin{figure}[ht]
+	\begin{center}
+	\includegraphics[width=1\linewidth]{view}
+	\caption{Result of message \ct{view}}
+	\figlabel{view}
+	\end{center}
+\end{figure}
+
+\paragraph{Providing automatic answers.} 
+It is possible that a package request some information such as the default directory, admin and passwords or any configuration data. It is possible with Installer to specify answers to  questions that the package installation could ask. The message for this is \ct{answer:with:}
+
+\begin{code}{}
+Installer ss project: 'Seaside'.
+	answer: 'myPassword' with: 'admin';
+	install: 'Seaside2.8a1'
+\end{code}
+
+\paragraph{Looking for packages.} 
+% %%%% move that elsewhere --- sd
+% \sd{The following does not work and I do not understand why}
+% 
+% \begin{code}{}
+% Installer ss packagesMatching: 'Moose*'. 
+% Installer ss
+% 	 match: 'Moose*'. 
+% \end{code}
+% 
+% \begin{code}{}
+% Installer monticello http: 'http://www.squeaksource.com'; 
+% 	project: 'Moose';
+% 	match: 'Moose*
+% \end{code}
+% 
+% 
+
+
+\begin{description}
+\item \ct{open} This message opens the GUI of Monticello.
+
+\begin{code}{}
+	| monticello | 
+	monticello := Installer monticello 
+		http: 'www.squeaksource.com/Installer'.
+	monticello open.
+\end{code}
+
+
+
+\item \ct{versions} 
+
+The message \ct{versions} returns a collection of all versions of a squeakmap package. Each of them is a string made with the name of package and the version among parenthesis.
+
+\begin{code}{}
+	(Installer mc 
+		http: 'http://www.squeaksource.com'; 
+		project: 'Seaside'; 
+		versions) explore. 
+\end{code}
+
+\end{description}
+
+
+\paragraph{Make your own shortcut for repository.} 
+You can save a shortcut for a new repository of monticello. For this, the message \ct{rememberAs:} create an acronym. 
+\begin{code}{}
+Installer monticello http: 'http://gjallar.krampe.se'; rememberAs: #gjallar.
+\end{code}
+
+After, you can use your shortcut like this:
+\begin{code}{}
+Installer gjallar install: 'Q2'.
+\end{code}
+
+% \paragraph{Abbreviated instantiation.} 
+% 
+% Installer offers shortcut messages for monticello. So one can use \ct{mc} instead of \ct{monticello}
+% \begin{code}{}
+% 	monticello := Installer mc.
+% \end{code}
+
+% \section{Sake}
+% 
+% \ja{to do}
+
+%Sake-Packages n'a rien ˆ voir avec MC. Sake-Packages est plus proche d'un systme comme Universes, apt-get ou mac ports. MC a pour r™le de faciliter le dŽveloppement de projets en gŽrant les diffŽrentes versions et les branches. Un systme de package gre quand ˆ lui des distributions qui sont des ensembles de projets inter-dŽpendants. Un systme de package a des fonctionnalitŽs comme l'installation d'un package et des ses dŽpendances, la mise ˆ jour de la liste des packages disponibles (update) ainsi que la mise ˆ jour des packages installŽs (upgrade). Il doit aussi tre capable de dire quels sont les packages installŽs, quels sont ceux qui possdent une mise ˆ jour installable. En thŽorie, il doit aussi tre capable de supprimer un package et tous les packages qui en dŽpendent.
+
+
+%Tasks are typically defined class side, but can be added to any class in
+%the image. A typical task definition follows.
+
+%MakeTheTea classSide >> #taskMakeTea
+%SakeTask define: [ :task |
+%	task dependsOn: { MakeTheTea taskBoilWater. }.
+%	task if: [ Cup isEmpty ].
+%	task action: [ Cup add: 'tea'; add: 'water'. ].
+%].
+
+%To run the task:
+%MakeTheTea taskMakeTea run.
+
+%"create a needed class"
+%task dependsOn:{ (SakeTask class: Object) subclass: #Cup }
+%"create a needed class"
+%task dependsOn:{ (SakeTask class: Object)
+%				subclass: #Cup category:'Demo'}
+%task dependsOn:{ (SakeTask class: #Cup)
+%				removeSelector: #tmp }
+%task dependsOn:{ (SakeTask class: #Cup)
+%				removeSelectorsMatching: '*' }
+%task dependsOn:{ (SakeTask class: #Cup)
+%				removeSelectorsMatching: '*' }
+%task dependsOn:{ (SakeTask class: #Cup) ifExistsDo: [ :c | c rename:
+%#Glass ]  }
+
+
+%Notice that we have an unload block as well as a load block! This is a
+%new and very experimental feature, we can now define unload scripts for
+%each package, and Sake/Packages provides a way to capture and publish
+%them for some or all image versions. Indeed this feature is barely
+%tested, I mention it here simply to intoduce the concept.
+
+
+%usage:
+%PackagesSqueak310 new Seaside load.  or,  (PackagesSqueak310
+%named:'Seaside') load.
+%PackagesSqueak310 new Seaside unload. or,  (PackagesSqueak310
+%named:'Seaside') unload.
+%Packages/Sake is also supported by Installer in a manner similar to
+%universes support, e.g.
+%Installer sake addPackage: 'PackagesA'; addPackage: 'PackageB'; install.
+%Addendum: Sake/Packages no longer uses blocks as standard, but the
+%principle is the same.
+
+
+\section{Loading from SqueakMap}
+SqueakMap (SM) is a distributed catalog of source code artifacts: Monticello packages, SAR -- Squeak Archives a zip file-based format, changesets or even etoy projects.  Now the use of SqueakMap is declining because it is difficult to know if an catalog item will effectively work in a given version.  The community is using Monticello packages and Universes (see below) which acts as distribution of coherent set of packages.  SM lets us do the following actions: 
+\begin{itemize}
+\item Install simply Squeak packages. 
+\item Upgrade an installed packages. 
+\item Publish packages in SqueakMap which is immediately available for all to use.
+\end{itemize}
+
+
+\paragraph{Initializing Squeakmap.} 
+First, we must update the SqueakMap cache. This allows us to have an updated list of packages present in the SqueakMap database. For this, execute the following code:
+\begin{code}{}
+Installer squeakmap update.
+\end{code}
+
+\paragraph{Loading a specific version of a package.} 
+One can also specify a specific version of the catalog item by surrounding it with parentheses.
+\begin{code}{}
+	Installer sm install: 'Labby & Walker(17)'.
+\end{code}
+This code installs the version 17 of the catalog item named \ct{'Labby & Walker'}.
+
+\paragraph{Getting package information.} 
+We can obtain catalog item information such as for example its id, name, date of creation, download url... and many others.
+\begin{code}{}
+	Installer sm view: 'Labby & Walker(17)'.
+\end{code}
+
+Messages \ct{browse:} or \ct{view:} can be used to get informations of a catalog item. These two messages do the same thing  for Squeakmap.
+
+% \paragraph{Abbreviated instantiation.} 
+% Installer offers shortcut messages for squeakmap. So one can use \ct{sm} instead of \ct{squeakmap}
+% \begin{code}{}
+% 	squeakmap := Installer sm.
+% \end{code}
+
+We can see the difference \sd{which difference} in the SqueakMap GUI, the list of packages is composed by the name, and the window on the right of the list is the description with the fields \ct{author:}, \ct{name:}, \ct{summary:} and \ct{description:}.
+\begin{figure}[ht]
+	\begin{center}
+ 	\includegraphics[width=1\linewidth]{squeakmap}
+	\caption{SqueakMap GUI} 
+	\figlabel{squeakmap}
+ 	\end{center}
+ \end{figure}
+
+
+You can also look for squeakmap items as follows:
+ \begin{description}
+ \item \ct{match: aNamePatternString} This message returns the list of catalog item whose name is matching aPatternString. Any character is matched exactly except \ct{*} which represents any characters. \sd{what are the other magic characters?}
+ 	
+ \begin{code}{}
+ 	(Installer squeakmap match: 'Labby*') explore.
+ \end{code}
+ 
+ The message \ct{explore} allows us to explore the list of concerned catalog item.
+ 
+ \item \ct{search: aStringPattern}
+ 	This message searches the pattern string inside catalog item information. catalog item information can be its name, its author name, its summary and description. To match such as specific category one should use on the following strings as shown in the example \ct{author:}, \ct{name:}, \ct{summary:}, \ct{description:}. These properties are used as follows and are optional. 
+ If there is only a string to search with no property, the search is made in the four categories.
+
+\begin{code}{}
+ 	Installer sm search: 'author:*Bryant'. 
+ 	Installer sm search: 'name:Seaside'. 
+ 	Installer sm search: 'summary:*web components'. 
+ 	Installer sm search: 'description:*framework for building sophisticated web applications in Squeak*'. 
+ 	Installer sm search: 'seaside'.
+\end{code}
+
+Here, the last line searches all 'seaside' in all properties of all catalog item. The first lines searches all the catalog item whose author is matching 'Bryant'. The \ct{'*'} character means that a list of characters is matched. 
+ Other lines search informations in categories name, summary and description. It is not possible to composed them.
+\end{description}
+
+The difference between \ct{match:} and \ct{search:} is that \ct{match:} searches catalog item name, and \ct{search:} searches in the catalog item descriptions.
+
+
+\section{Universes}
+
+Universes is a distribution of packages. The universe contains all packages that are known to load in the environment. In addition, package dependencies are resolved within the universe package. So, if one loads a package A which depends on a package B, the package B is automatically loads before. 
+Universe looks like Monticello but for everyday work and dependency, the dependency resolution is too coarse-grained. 
+
+For example, if one wants to download \ct{Pier} with some common plugins.
+It depends on: Pier-OmniBrowser, Pier-Security, Pier-Documents, Pier-Tests, Magritte-Tests, Pier-Blog, Pier-Seaside, Pier-EditorEnh. So all of these packages are installed.
+
+\begin{code}{}
+Installer universe
+	addPackage: 'Pier';
+	install.
+\end{code}
+
+If one just wants to install the \ct{Pier-Blog} package, one don't need all of these packages. So, there are less dependancies. \ct{Pier-Blog} depends on RSRSS2 and Pier-Seaside packages. 
+\begin{code}{}
+Installer universe
+	addPackage: 'Pier-Seaside';
+	install.
+\end{code}
+
+\ct{install:} is always equivalent to \ct{addPackage:'pkg'; install}. For universes it makes sense to use the non abbreviated form, because it can process multiple packages in one install.
+\begin{code}{}
+Installer universe 
+	addPackage: 'a pkg';
+	addPackage: 'b pkg(1.1)';
+	install.
+\end{code}
+
+\section{Others}
+\paragraph{InstallerFile}
+With Installer, you can install packages from script files.
+The message file: needs the path of the file. (In example the path is '/MakeTestsGreen39.cs'). The message \ct{install} is used to install the script. 
+\begin{code}{}
+Installer file 
+	file: '/MakeTestsGreen39.cs'; 
+	install.
+\end{code}
+
+\paragraph{InstallerWeb}
+
+There are some possibilities to install a package via an URL. The three codes after do the same thing, but they are decomposed differently.
+
+
+\begin{code}{}
+Installer web 
+	url: 'http://wiki.squeak.org/squeak/uploads/5889/MakeTestsGreen39.cs'; 
+	install.
+
+
+Installer installUrl: 'http://wiki.squeak.org/squeak/uploads/5889/MakeTestsGreen39.cs'.
+
+
+Installer web 
+	url: 'http://wiki.squeak.org/squeak/uploads/5889/';
+	install: 'MakeTestsGreen39.cs'.
+\end{code}
+
+%\paragraph{Embedded scripts.}
+%Scripts embedded in html web pages are delimited by ...
+%\begin{code}{}
+%Installer web url: 'http://wiki.squeak.org/squeak/742'; install.
+%\end{code}
+
+%Custom markers for embedded scripts
+%\begin{code}{}
+%Installer web
+%    url: 'http://wiki.squeak.org/742';
+%    markers: 'beginning of script...end of script';
+%    install.
+%\end{code}
+%Note: Scripts embedded in html or a swiki page may need to escape some entities.
+%Supported entities are % \& \> \< * \" (see Installer-c-#entities)
+
+\section{Conclusion}
+
+\ja{to do}
+
+%=========================================================
+\ifx\wholebook\relax\else
+   \bibliographystyle{jurabib}
+   \nobibliography{scg}
+   \end{document}
+\fi
+
+%=================================================================
+\ifx\wholebook\relax\else\end{document}\fi
+%=================================================================
+
+%-----------------------------------------------------------------
+
+%%% Local Variables:
+%%% coding: utf-8
+%%% mode: latex
+%%% TeX-master: t
+%%% TeX-PDF-mode: t
+%%% ispell-local-dictionary: "english"
+%%% End:

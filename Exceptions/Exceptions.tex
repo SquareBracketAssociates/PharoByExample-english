@@ -1,0 +1,967 @@
+% $Author$
+% $Date$
+% $Revision$
+
+% HISTORY:
+% 2008-05-14 - Alex started chapter
+% 2008-06-11 - Alex ported text from Vassili Bykov
+% 2008-08-22 - Stef added part 1
+% 2008-11-26 - Alex completed translation from French article
+% 2008-11-29 - Damien Pollet fixes
+% 2008-12-13 - Oscar revised
+% 2009-03-18 - Stef extended
+
+%=================================================================
+\ifx\wholebook\relax\else
+% --------------------------------------------
+% Lulu:
+	\documentclass[a4paper,10pt,twoside]{book}
+	\usepackage[
+		papersize={6in,9in},
+		hmargin={.75in,.75in},
+		vmargin={.75in,1in},
+		ignoreheadfoot
+	]{geometry}
+	\input{../common.tex}
+	\pagestyle{headings}
+	\setboolean{lulu}{true}
+% --------------------------------------------
+% A4:
+%	\documentclass[a4paper,11pt,twoside]{book}
+%	\input{../common.tex}
+%	\usepackage{a4wide}
+% --------------------------------------------
+    \graphicspath{{figures/} {../figures/}}
+	\begin{document}
+	% \renewcommand{\nnbb}[2]{} % Disable editorial comments
+	\sloppy
+\fi
+
+%=================================================================
+\chapter{Handling exceptions}
+
+\on{I am editing this chapter. Started (again) March 3, 2009.}
+
+%=================================================================
+
+All applications have to deal with exceptional situations.
+Arithmetic errors may occur (division by zero), unexpected situations may arise (file not found), or resources may be exhausted (network down, disk full, \etc).
+The old-fashioned solution is to have operations that fail return a special \emph{error code}\,---\,client code must then check the return value of each operation, and take special action to handle errors.
+
+Modern programming languages, including \Squeak, instead offer a dedicated exception-handling mechanism that greatly simplifies the way in which exceptional situations are signaled and handled.
+Before ANSI Smalltalk (1996), several  exception handling mechanisms existed, often incompatible each other. \Squeak essentially uses the ANSI standard, which we present in this chapter from a user perspective.
+
+In a nutshell, different classes of \emph{exceptions} are specified to cover the unusual situations that may arise.
+Normal code does not clutter the main logic flow with checks for error codes, but specifies instead an \emph{exception handler} to ``catch'' exceptions.
+When something goes wrong, the corresponding exception is \emph{signaled}, capturing essential information about the offending context.
+This interrupts the main flow of execution, and allows the exception handler to decide what to do next.
+
+\Squeak's exception-handling mechanism is particularly expressive and flexible, covering a wide range of possibilities. Exception handlers can be used to \emph{ensure} that certain actions take place even if something goes wrong, or to take action only if something goes wrong.
+Like everything in \st, exceptions are objects, and respond to a number of different messages.
+A handler not only has the possibility to specify an alternative action to perform, but it may also ask the exception object \emph{resume} the interrupted operation, to \emph{retry} the operation, to \emph{pass} the exception on to another handler, or even to \emph{reraise} a completely different exception.
+
+With the help of a series of examples, we shall explore all of these possibilities, and we will also take a brief look into the internal mechanics of exceptions and exception handlers.
+
+%=================================================================
+\section{Ensuring execution}
+
+The \ct{ensure:} message can be sent to a block to make sure that, even if it fails, the argument block is guaranteed to be executed:
+\begin{code}{}
+!\emph{anyBlock}! ensure: !\emph{ensuredBlock}!    "ensuredBlock will run even if anyBlock fails"
+\end{code}
+
+Consider the following example, which creates an image file from a screenshot taken by the user:
+
+\needlines{4}
+\begin{code}{}
+| writer |
+[	writer := GIFReadWriter on: (FileStream newFileNamed: 'Squeak.gif').
+	writer nextPutImage: (Form fromUser)
+]	ensure: [ writer ifNotNil: [ writer close ] ]
+\end{code}
+
+Since most operating systems limit the number of files that a running application may have open at the same time, opening a file may fail.
+This code ensures that the \ct{writer} file handle will be closed, even if an error occurs while opening it or writing to it.
+
+The \ct{nextPutImage:} method of the class \ct{GIFReadWriter} converts a form (\ie an instance of the class \ct{Form}, representing a bitmap image) into a GIF image. This method writes into a stream which has been opened on a file. The \ct{nextPutImage:} method does not close the stream it is writing to, therefore we should be sure to close the stream even if a problem arises while writing. This is achieved by sending the message \ct{ensure:} to the block that does the writing. In case \ct{newFileNamed:} fails, the control flow will go directly into the block passed to \ct{ensure:} without initializing the variable \ct{writer}. For this reason we must check that \ct{writer} is not nil before attempting to close it.
+
+Here is another typical use of \ct{ensure:}.
+The mouse cursor should revert to its original shape after the argument block has terminated, even if it fails:
+
+\needlines{7}
+\begin{code}{}
+Sensor>>>showWhile: aBlock 
+	"While evaluating the argument, aBlock,
+	make the receiver be the cursor shape."
+	| oldcursor |
+	oldcursor := Sensor currentCursor.
+	self show.
+	^aBlock ensure: [ oldcursor show ]
+\end{code}
+
+The message \ct{ensure:} returns the value of the block to which this message is sent. The block argument is evaluated whether the receiver block signals an exception or not. Note that the result of \ct{ensure:} is the value of the receiver, not that of the argument.
+
+\begin{code}{@TEST}
+[ 1 ] ensure: [ 0 ] --> 1    "not 0"
+\end{code}
+
+%=================================================================
+\section{Handling non-local returns}
+
+The message \ct{ifCurtailed:} is typically used for ``cleaning'' actions. It is similar to \ct{ensure:}, but instead of ensuring that its argument block is evaluated even if the receiver terminates abnormally, \ct{ifCurtailed:} does so \emph{only} if the receiver terminates abnormally by signaling an exception or by performing a non-local return.
+
+In the following example, the argument to \ct{ifCurtailed:} performs an early return, so the following statement is never reached.
+In Smalltalk, this is referred to as a \emph{non-local return}.
+Nevertheless the argument block will be executed.
+\needlines{4}
+\begin{code}{}
+[^ 10 ] ifCurtailed: [Transcript show: 'We see this'].
+Transcript show: 'But not this'.
+\end{code}
+
+In the following example, we can see clearly that the argument to \ct{ifCurtailed:} is only evaluated if the receiver terminates abnormally.
+\begin{code}{}
+[Error signal] ifCurtailed: [Transcript show: 'Abandoned'].
+Transcript show: 'Proceeded'.
+\end{code}
+
+\dothis{Open a transcript and evaluate the code above in a workspace.
+When the pre-debugger windows opens, first try selecting \button{Proceed} and then \button{Abandon}. Note that argument to \ct{ifCurtailed:} is only evaluated when the receiver terminates abnormally. WHat happens when you select \button{Debug}?}
+
+Here are some  examples of \lct{ifCurtailed:} usage where the text displayed in the Transcript describes the situation:
+
+\begin{code}{}
+[^ 10] ifCurtailed: [Transcript show: 'This is displayed'; cr] 
+
+[10] ifCurtailed: [Transcript show: 'This is not displayed'; cr] 
+
+[1 / 0] ifCurtailed: [Transcript show: 'This is displayed after selecting Abandon in the debugger'; cr]
+\end{code}
+
+Although \ct{ifCurtailed:} and \ct{ensure:} are implemented as primitives in Squeak, in principle \ct{ifCurtailed:} could be implemented using \ct{ensure:} as follows:
+
+\begin{code}{}
+ifCurtailed: curtailBlock
+	| result curtailed |
+	curtailed := true.
+	[	result := self value.
+		curtailed := false
+	]	ensure: [ curtailed ifTrue: [ curtailBlock value ] ].
+	^ result
+\end{code}
+
+In a similar fashion, \ct{ensure:} could be implemented using \ct{ifCurtailed:} as follows:
+
+\begin{code}{}
+ensure: ensureBlock
+	| result |
+	result := self ifCurtailed: ensureBlock.
+	"If we reach this point, then the receiver has not been curtailed,
+	so ensureBlock still needs to be evaluated"
+	ensureBlock value.
+	^ result
+\end{code}
+
+Both mechanisms are used to handle abnormal situations without polluting the control flow of the program.
+Now we will see a more general mechanism for handling exceptions.
+
+%=================================================================
+\section{Exception handlers}
+
+Both \ct{ensure:} and \ct{ifCurtailed:} offer simple mechanisms to handle abnormal termination of code. A more general mechanism is provided by the message \ct{on:do:}. It looks like this:
+\begin{code}{}
+!\emph{aBlock}! on: !\emph{exception}! do: !\emph{handlerAction}!
+\end{code}
+\noindent
+The code that detects an abnormal situation and signals an exception (\lct{\emph{aBlock}}) is called a \emph{protected block}, and the block that is evaluated if an exception is signaled (\lct{\emph{handlerAction}}) is  an \emph{exception handler}.
+
+ANSI Smalltalk defines this message as follows:
+\begin{quote}
+``The receiver is evaluated such that if during its evaluation an exception corresponding to selector is signaled then action will be evaluated. The result of evaluating the receiver is returned.''
+\end{quote}
+
+The beauty of this mechanism lies in the fact that the receiver code is written as a straightforward flow of control, \emph{without regard to any possible errors}. A single handler block is responsible for taking care of anything that may go wrong.
+
+Consider the following example, where we want to copy the contents of one file to another.
+Although several things could go wrong, with exception handling we simply write a straightforward flow of control, defining a single exception handler for the whole transaction:
+\begin{code}{| source destination fromStream toStream |}
+source := 'log.txt'.
+destination := 'log-backup.txt'.
+[	fromStream := FileDirectory default oldFileNamed: source.
+	toStream := FileDirectory default newFileNamed: destination.
+	toStream nextPutAll: fromStream contents
+]
+	on: FileStreamException
+	do: [ :ex | UIManager default inform: 'Copy failed -- ', ex description ].
+fromStream ifNotNil: [fromStream close].
+toStream ifNotNil: [toStream close].
+\end{code}
+If anything goes wrong, we ask the exception object to provide more details about the error.
+We are guaranteed to get to the end of the protected block, at which point we can close the two file streams, if necessary.
+
+It is important to understand  that the message \ct{on:do:} defines the scope where the exception handler is valid. This block will be used only if the receiver (\ie the protected block) has not completed. Once completed, the exception handler will not be used anymore. Moreover, a block handler is associated exclusively with the kind of exception it handles. In the previous example, only a \ct{FileStreamException} exception (or a more specific variant) may be handled.
+
+%=================================================================
+\section{Error codes --- don't  do this!}
+
+Without exceptions, the only way to handle the case that a method may fail to produce an expected result is to introduce explicit error codes as possible return values. In fact, in languages like C, code is littered with checks for such error codes, thus obscuring the main application logic.
+Error codes are also fragile in the face of evolution: if error codes change, then all clients must be adapted to take the new codes into account. By using exceptions instead of error codes, the programmer is freed from the task of explicitly checking each return value, and the program logic stays uncluttered.
+
+If \Squeak would not provide exception-handling support, then the tiny example we saw in the previous section would look something like this:
+
+\begin{code}{| source destination fromStream toStream contents result success failure |}
+"Pseudo-code -- luckily Squeak does not work like this. Without the 
+benefit of exception handling we must check error codes for each operation."
+source := 'log.txt'.
+destination := 'log-backup.txt'.
+success := 1. "our wonderful error codes"
+failure := 0.
+fromStream := FileDirectory default oldFileNamed: source.
+fromStream ifNil: [
+	UIManager default inform: 'Copy failed -- could not open', source.
+	^ failure "terminate this block with error code" ].
+toStream := FileDirectory default newFileNamed: destination.
+toStream ifNil: [
+	fromStream close.
+	UIManager default inform: 'Copy failed -- could not open', destination.
+	^ failure ].
+contents := fromStream contents.
+contents ifNil: [
+	fromStream close.
+	toStream close.
+	UIManager default inform: 'Copy failed -- source file has no contents'.
+	^ failure ].
+result := toStream nextPutAll: contents.
+result ifFalse: [
+	fromStream close.
+	toStream close.
+	UIManager default inform: 'Copy failed -- could not write to ', destination.
+	^ failure ].
+fromStream close.
+toStream close.
+^ success.
+\end{code}
+\noindent
+What a mess!
+Without exception handling, we must explicitly check the result of each operation before proceeding to the next.
+Not only must we check error codes at each point that something might go wrong, but we must also be prepared to cleanup any operations performed up to that point and abort the rest of the code.
+
+%=================================================================
+\section{The Exception hierarchy}
+
+Exceptions are organized in a class hierarchy. Conceptually, the exceptions \ct{FileDoesNotExistException}, \ct{FileExistsException} and \ct{CannotDeleteFileException} are specializations of \ct{FileStreamException}. This notion of ``specialization'' enables an exception handler to be associated to a more general abnormal situation (\figref{hierarchy}).
+
+\begin{figure}[ht]\centering
+        \includegraphics[width=.5\linewidth]{SimpleHierarchy}
+        \caption{A small part of the Squeak exception hierarchy.\figlabel{hierarchy}}
+\end{figure}
+
+In Smalltalk, exceptions are objects just like any other entity. An exception is an instance of an exception class which is part of a hierarchy of exceptions.
+
+\ct{FileStreamException} is a class and adds information to characterize the specific abnormal situation it describes. \ct{FileStreamException} defines the \ct{fileName} instance variable which contains the name of the file that signaled the exception. The root of the exception class hierarchy is \ct{Exception}, which is a direct subclass of \ct{Object}.
+
+In some versions of Squeak, \ct{Exception} has 10 direct subclasses and 93 indirect subclasses!
+\begin{code}{} % NB: Fragile -- should not be a test
+Exception subclasses size     --> 10
+Exception subclasses 	        --> {Error . IllegalResumeAttempt . Notification . ProgressInitiationException . Abort . UnhandledError . TestFailure . Halt . MCNoChangesException . RefactoringWarning}
+Exception allSubclasses size --> 93
+\end{code}
+
+The two key messages are \ct{on:do:} (sent to blocks to set an exception handler) and \ct{signal} (sent to subclasses of \ct{Exception} to signal an exception).
+
+%=================================================================
+\section{Signaling an exception}
+
+To signal an exception\footnote{Synonyms are to ``raise'' or to ``throw'' an exception. Since the message to send is called \lct{signal}, we exclusively use that terminology in this chapter.}, you only need to create an instance of the exception class, and to send it the message \ct{signal}, or \ct{signal:} with a textual description. The class \ct{Exception} provides a convenience method \ct{signal} which creates and signals an exception. Below are the two equivalent ways to signal a \ct{ZeroDivide} exception.
+\begin{code}{}
+	ZeroDivide new signal.
+	ZeroDivide signal.    "class-side convenience method does the same as above"
+\end{code}
+
+You may wonder why it is necessary to create an instance of an exception in order to signal it, rather than simply sending a message to an exception class. Creating an instance is important because it encapsulates information about the context in which the exception was signaled. We can therefore have many exception instances, each describing the context of a different exception.
+
+When an exception is signaled, the exception handling mechanism searches in the method call stack for an exception handler associated to the signaled exception. When the handler encountered (\ie the message \ct{on:do:} is present in the stack), it is executed with the exception as its sole argument. We will see shortly the various ways that the handler may use the exception object.
+
+When signaling an exception, it is possible to provide information specific to the abnormal situation as illustrated in the code below. If the file to be opened does not exist, the name of the non-existent file is recorded in the exception object:
+
+\begin{code}{}
+StandardFileStream>>>oldFileNamed: fileName
+	"Open an existing file with the given name for reading and writing. If the name has no directory part, then the file will be created in the default directory. If the file already exists, its prior contents may be modified or replaced, but the file will not be truncated on close."
+	| fullName |
+	fullName := self fullName: fileName.
+	^(self isAFileNamed: fullName)
+		ifTrue: [self new open: fullName forWrite: true]
+		ifFalse: ["File does not exist..."
+			(FileDoesNotExistException new fileName: fullName) signal]
+\end{code}
+
+The exception handler may make use of this information to recover from the abnormal situation. The argument \ct{ex} in a block handler \ct{[:ex | ...]} will be an instance of \ct{FileDoesNotExistException} or of one of its subclasses. Here the exception is queried for the filename of the missing file by sending it the message \ct{fileName}.
+
+\begin{code}{}
+| result |
+result := [(StandardFileStream oldFileNamed: 'error42.log') contentsOfEntireFile]
+	on: FileDoesNotExistException
+	do: [:ex | ex fileName , ' not available'].
+Transcript show: result; cr
+\end{code}
+
+By default, every exception offers a description to be used by development tools to report abnormal situations in a clear and comprehensible manner. In that spirit, any exception instance answers to the message \ct{description}. Moreover, the descriptive message may be set  using the message \ct{messageText:} or by signaling the exception using \ct{signal:}.
+
+Another example can be seen in the \ct{doesNotUnderstand:} mechanism, a pillar of the reflective capabilities of Smalltalk. Whenever an object is sent a message that it does not understand, the VM will (eventually) send it the message \ct{doesNotUnderstand:} with a literal argument representing the offending message. The default implementation of this method, defined in the class \ct{Object}, simply signals a \ct{MessageNotUnderstood} exception, causing a debugger to be opened at that point in the execution.
+This method illustrates the need to store specific information such as the receiver and the message not understood.
+
+\needlines{4}
+\begin{code}{}
+Object>>>doesNotUnderstand: aMessage 
+	 "Handle the fact that there was an attempt to send the given message to the receiver but the receiver does not understand this message (typically sent from the machine when a message is sent to the receiver and no method is defined for that selector)."
+	MessageNotUnderstood new 
+		message: aMessage;
+		receiver: self;
+		signal.
+	^ aMessage sentTo: self.
+\end{code}
+
+%=================================================================
+\section{Setting breakpoints}
+
+In Smalltalk it is possible to set a breakpoint within a method by sending the message \ct{self halt}. The method \ct{halt}, implemented in \ct{Object}, makes use of exceptions to open a debugger at the location of the breakpoint.
+The method \ct{halt} is defined as follows:
+
+\needlines{6}
+\begin{code}{}
+Object>>>halt
+	"This is the typical message to use for inserting breakpoints during 
+	debugging. It behaves like halt:, but does not call on halt: in order to 
+	avoid putting this message on the stack. Halt is especially useful when 
+	the breakpoint message is an arbitrary one."
+	Halt signal
+\end{code}
+
+\ct{Halt} is a direct subclass of \ct{Exception}. A \ct{Halt} exception is \emph{resumable}, which means that it is possible to continue execution after this exception is signaled. The private \ct{Exception} method \ct{isResumable} tells us which exceptions are resumable, for example:
+\begin{code}{@TEST}
+Exception new isResumable --> true
+Halt new isResumable          --> true
+Error new isResumable         --> false
+\end{code}
+
+As it turns out, roughly 2/3 of all exceptions are resumable:
+\begin{code}{}
+(Exception allSubclasses select: [:each | each new isResumable]) size --> 58
+\end{code}
+
+\ct{Halt} redefines the \ct{defaultAction} method, which specifies the action to perform if the exception is not caught anywhere (\ie there is no exception handler for the type \ct{Halt}).
+
+\begin{code}{}
+Halt>>>defaultAction
+	"No one has handled this error, but now give them a chance to decide
+	how to debug it.  If no one handles this then open debugger
+	(see UnhandedError-defaultAction)"
+	UnhandledError signalForException: self
+\end{code}
+
+The method  \ct{defaultAction} of the \ct{Halt} class signals a new exception \ct{UnhandledError}, meaning that no handler is present. \ct {UnhandledError} opens a debugger, as its default action shows.
+
+\begin{code}{}
+UnhandledError>>>defaultAction
+	"The current computation is terminated. The cause of the error should be logged or reported to the user. If the program is operating in an interactive debugging environment the computation should be suspended and the debugger activated."
+	^ ToolSet debugError: exception.
+\end{code}
+
+A few messages later, the debugger opens:
+
+\begin{code}{}
+StandardToolSet>>>debug: aProcess context: aContext label: aString contents: contents fullView: aBool
+	^ Debugger openOn: aProcess context: aContext label: aString contents: contents fullView: aBool
+\end{code}
+
+%=================================================================
+\section{How handlers are looked up}
+
+We will now have a look at how block handlers are selected and fetched from the method call stack to handle a signaled exception. But before we do this, we need to understand how the control flow of a program is internally represented in the virtual machine.
+
+At each point in the execution of a program, the method call stack of a program is defined as a sequential list of activation contexts. Each activation context represents a method invocation and contains the information needed for its execution, namely its receiver, its arguments, and its local variables. It also contains a reference to the context that triggered its creation, \ie the activation context associated to the calling method. In Squeak, the classes \ct{MethodContext} and \ct{BlockContext} model this information. Activation contexts are linked to each other and form a chain describing the method call stack.
+
+Suppose that we attempt to open a \ct{BookMorph} on a non-existent file.
+A \ct{FileDoesNotExistException} will be signaled, and the method call stack will contain the activation contexts created by the methods \ct{openFromFile:}, \ct{oldFileNamed:}, and \ct{signal} (\figref{stack}):
+
+\begin{figure}[ht]\centering
+        \includegraphics[width=.9\linewidth]{Stack}
+        \caption{A Squeak method call stack.\figlabel{stack}}
+\end{figure}
+
+Since everything is an object in Smalltalk, we should expect activation contexts to also be objects.
+Actually, certain Smalltalk dialects and implementations use the native C execution stack of the virtual machine to avoid creating objects all the time.
+The Squeak virtual machine does not do this, but instead creates the list of activation context objects only on demand, for example, whenever the debugger is started.
+
+When we send \lct{\emph{aBlock} on: \emph{ExceptionClass} do: \emph{anHandler}}, we associate an exception handler (\lct{\emph{anHandler}}) to a given class of exceptions (\lct{\emph{ExceptionClass}}) for the activation context of the protected block (\lct{\emph{aBlock}}).
+This information is used to identify and invoke the exception handler whenever an exception is signaled. The handler will be available on the stack, and can be found by traversing the stack starting from the top down to the activation frame where the \ct{on:do:} message has been sent.
+
+If no exception handler is available on the stack, the message \ct{defaultAction} will be sent either by \ct{ContextPart>>>handleSignal:} or by \lct{UndefinedObject>>>handleSignal:}. The latter is associated to the bottom of the stack, and is defined as follows:
+
+\begin{code}
+UndefinedObject>>>handleSignal: exception
+	"When no more handler (on:do:) context is left in the sender chain, this gets called.  Return from signal with default action."
+	^ exception resumeUnchecked: exception defaultAction
+\end{code}
+
+The message \ct{handleSignal:} is sent by \ct{Exception>>>signal}. 
+
+When an exception E is signaled, the system identifies and fetches the corresponding exception handler by searching down the stack as follows:
+
+\begin{enumerate}
+
+\item Search in the current activation context for a handler for the signaled exception.
+(The exception should be of the same class, or a subclass of the handled exception class.)
+
+\item If no handler is found and the stack is not empty, go down the stack and return to step 1.
+
+\item If no handler is found and the stack is empty, then send \ct{defaultAction} to the exception. The default implementation in the \ct{Error} class leads to the opening of a debugger.
+
+\item If the handler is found, send it \ct{value:} with the exception as the argument.
+
+\end{enumerate}
+
+\paragraph{Nested Exceptions.}
+If an exception is signaled within an exception handler, a \emph{separate} handler must be set to catch the nested exception.
+
+Here is an example where the block to be evaluated is nested within another one, to catch errors signaled by the handler of the first:
+\begin{code}{@TEST | result |}
+result := [[ Error signal: 'error 1' ]
+	on: Exception
+	do: [ Error signal: 'error 2' ]]
+		on: Exception
+		do: [:ex | ex description ].
+result --> 'Error: error 2'
+\end{code}
+
+Without the second handler, the nested exception will not be caught, and the debugger will be invoked.
+
+An alternative would be to specify the second handler within the first one:
+\begin{code}{@TEST | result |}
+result := [ Error signal: 'error 1' ]
+	on: Exception
+	do: [[ Error signal: 'error 2' ]
+		on: Exception
+		do: [:ex | ex description ]].
+result --> 'Error: error 2'
+\end{code}
+
+%=================================================================
+\section{Handling exceptions}
+
+When an exception is signaled, the handler has several choices how to handle it.
+In particular, it may:
+\begin{itemize}
+\item[(i)] \emph{abandon} the execution of the protected block by simply specifying an alternative result;
+\item[(ii)] \emph{return} an alternative result for the protected block by sending \lct{return: \emph{aValue}} to the exception object;
+\item[(iii)] \emph{retry} the protected block by sending \ct{retry} or try a different block by sending \ct{retryUsing:};
+\item[(iv)] \emph{resume} the protected block at the failure point by sending \ct{resume} or \ct{resume:};
+\item[(v)] \emph{pass} the caught exception to the enclosing handler by sending \ct{pass}; or
+\item[(vi)] \emph{signal} a different exception by sending \ct{resignalAs:} to the exception.
+\end{itemize}
+
+We will briefly look at the first three possibilities, and then we will take a closer look at the remaining ones.
+
+%-----------------------------------------------------------------
+\subsection{Abandon the protected block}
+
+The first possibility is to abandon the execution of the protected block, as follows:
+\needlines{7}
+\begin{code}{@TEST |answer|}
+answer := [ |result|
+	result := 6 * 7.
+	Error signal.
+	result 	"This part is never evaluated"
+]	on: Error
+	do: [ :ex | 3 + 4 ].
+answer --> 7
+\end{code}
+
+The handler takes over from the point where the error is signaled, and any code following in the original block is not evaluated.
+
+%-----------------------------------------------------------------
+\subsection{Return a value with \ct{return:}}
+A block returns the value of the last statement in the block, regardless of whether the block is protected or not. However, there are some situations where the result needs to be returned by the handler block. The message \lct{return: \emph{aValue}} sent to an exception has the effect of returning \lct{\emph{aValue}} as the value of the protected block:
+
+\begin{code}{@TEST |result|}
+result := [Error signal]
+	on: Error
+	do: [ :ex | ex return: 3 + 4 ].
+result --> 7
+\end{code}
+
+The ANSI standard is not clear regarding the difference between \ct{do: [:ex | 100 ]} and \ct{do: [:ex | ex return: 100]} to return a value. We suggest you to use \ct{return:} since it is more intention-revealing, even if these two expressions are equivalent in Squeak.
+
+A variant of \ct{return:} is the message \ct{return}, which returns \ct{nil}. 
+
+Note that, in any case, control will \emph{not} return to the protected block, but will be passed on up to the enclosing context.
+
+\begin{code}{@TEST}
+6 * ([Error signal] on: Error do: [ :ex | ex return: 3 + 4 ]) --> 42
+\end{code}
+
+%-----------------------------------------------------------------
+\subsection{Retry a computation with \ct{retry} and \ct{retryUsing:}}
+
+Sometimes we may want to change the circumstances that led to the exception and retry the protected block. This is done by sending \ct{retry} or \ct{retryUsing:} to the exception object. It is important to be sure that the conditions that caused the exception be changed before retrying the protected block, else an infinite  loop will result:
+\begin{code}{}
+[Error signal] on: Error do: [:ex | ex retry]    "will loop endlessly"
+\end{code}
+
+Here is a better example.
+The protected block is re-evaluated within a modified environment where \ct{theMeaningOfLife} is properly initialized:
+\begin{code}{@TEST | result theMeaningOfLife |}
+result := [ theMeaningOfLife * 7 ]    "error -- theMeaningOfLife is nil"
+	on: Error
+	do: [:ex | theMeaningOfLife := 6. ex retry ].
+result --> 42
+\end{code}
+
+The message \ct{retryUsing: aNewBlock} enables the protected block to be replaced by \ct{aNewBlock}. This new block is executed and is protected with the same handler as the original block.
+
+\begin{code}{@TEST | x result |}
+x := 0.
+result := [ x/x ]    "fails for x=0"
+	on: Error
+	do: [:ex |
+		x := x + 1.
+		ex retryUsing: [1/((x-1)*(x-2))]    "fails for x=1 and x=2"
+	].
+result --> (1/2)    "succeeds when x=3"
+\end{code}
+
+The following code loops endlessly:
+\begin{code}{}
+[1 / 0] on: ArithmeticError do: [:ex | ex retryUsing: [ 1 / 0 ]]
+\end{code}
+whereas this will signal an \ct{Error}: 
+\begin{code}{}
+[1 / 0] on: ArithmeticError do: [:ex | ex retryUsing: [ Error signal ]]
+\end{code}
+
+As another example, recall the file handling code we saw earlier, in which we printed a message to the Transcript in case a file is not found. Instead, we could prompt for the file as follows:
+\begin{code}{}
+[(StandardFileStream oldFileNamed: 'error42.log') contentsOfEntireFile]
+	on: FileDoesNotExistException
+	do: [:ex | ex retryUsing: [FileList2 modalFileSelector contentsOfEntireFile] ]
+\end{code}
+
+%=================================================================
+\section{Resuming execution}
+
+The control flow of an application may be resumed right after an exception has been signaled. An exception handler may therefore perform some action, and then resume the execution flow. This behavior is achieved by sending \ct{resume:} to the exception in the handler.
+The argument is the value to be used in place of the expression that signaled the exception.
+In the following example we signal and catch \ct{MyResumableTestError}, which is defined in the Exceptions-Tests category:
+
+\begin{code}{}
+result := [ | log |
+	log := OrderedCollection new.
+	log addLast: 1.
+	log addLast: MyResumableTestError signal. 
+	log addLast: 2.
+	log addLast: MyResumableTestError signal.
+	log addLast: 3.
+	log ] 
+		on: MyResumableTestError 
+		do: [ :ex |  ex resume: 0 ].
+result --> an OrderedCollection(1 0 2 0 3)
+\end{code}
+Here we can clearly see that the value of \ct{MyResumableTestError signal} is the value that the handler passes to the exception when it is resumed.
+
+The message \ct{resume} is equivalent to \ct{resume: nil}.
+
+The usefulness of resuming a control flow is illustrated by the class \ct{Installer} (an automatic package loading mechanism). When installing packages, warnings may be signaled. Warnings should not be considered fatal errors, so the installer should simply ignore the warning and continue installing.
+
+\begin{code}{}
+Installer>>>installQuietly: packageNameCollectionOrDetectBlock 
+	self package: packageNameCollectionOrDetectBlock. 
+	 [ self install ] on: Warning do: [ :ex | ex resume ]. 
+%	 [ self install ] on: Warning do: [ :ex | ex resume: true ]. 
+\end{code}
+% The code actually says resume: true, but Keith Hodges confirms that this is not necessary
+
+Another typical situation can be seen when an interaction with the user is required, as in the following example:
+\on{should turn this into a real example or a test}
+\begin{code}{}
+MyApplication>>>readOptionsFrom: aStream 
+	| option |
+	[aStream atEnd] whileFalse: 	
+		[option := self parseOptionString. "nil if invalid" 
+		option isNil 
+			ifTrue: [InvalidOption signal] 
+			ifFalse: [self addOption: option]]. 
+	aStream close. 
+
+ MyApplication>>>readConfiguration 
+	| stream | 
+	stream := 'options' asFilename readStream. 
+	[self readOptionsFrom: stream] 
+		on: InvalidOption 
+		do: [:ex |
+			(UIManager default confirm: 'Invalid option line. Continue loading?') 
+				ifTrue: [ex resume] 
+				ifFalse: [ex return]]. 
+		stream close. 
+\end{code}
+
+If an invalid option is provided in \ct{readOptionsFrom:}, an \ct{InvalidOption} exception is signaled. The block handler in \ct{readConfiguration} resumes the exception, then the \ct{signal} method call in \ct{readOptionsFrom:} returns and the execution keeps going.
+
+It is not always a reasonable option to \ct{resume} an exception. For example, there is no sensible way to resume a \ct{FileNotFound} exception. The message \ct{isResumable} is used to determine whether an exception may be resumed or not. In \ct{Error>>>isResumable} returns \ct{false}, so by default subclasses of \ct{Error} are not resumable, unless they override this method to return \ct{true}.
+
+%=================================================================
+\section{Example: deprecation}
+
+\emph{Deprecation} offers a good case study of a simple mechanism built using exceptions.
+This design pattern allows a programmer to mark a method as being ``deprecated'', meaning that it may disappear in a future release and should not be used any more. In Squeak, a method can be marked as deprecated as follows:
+
+\begin{code}{}
+SequenceableCollection>>>upTo: anObject
+	self deprecated: 'Use #copyUpTo:'.
+	^ self copyUpTo: anObject
+\end{code}
+
+When the message \ct{upTo:} is sent, if the \ct{showDeprecationWarnings} preference is set to \ct{true}, then a pop-up window is displayed as a notification and the programmer may resume the application execution (see \figref{deprecation}).
+
+
+\begin{figure}[ht]\centering
+        \includegraphics[width=.8\linewidth]{Deprecation}
+        \caption{Sending a deprecated message.\figlabel{deprecation}}
+\end{figure}
+
+Deprecation is easily implemented in \Squeak in just a few steps.
+First, we define \ct{Deprecation} as a subclass of \ct{Warning}.
+We should normally consider overriding \ct{isResumable}, \ct{description}, and \ct{defaultAction}. In this case the default implementations are fine:
+
+\begin{itemize}
+\item \ct{isResumable} is inherited from \ct{Notification}, the superclass of \ct{Warning}, and returns \ct{true};
+\item \ct{description} is inherited from \ct{Exception}, and returns an adequate textual description;
+\item \ct{defaultAction} is inherited from \ct{Warning}, opening a debugger notification, and allowing a programmer to resume execution.
+\end{itemize}
+
+\begin{code}{}
+Warning>>>defaultAction 
+	"The user should be notified of the occurrence of an exceptional occurrence
+	and given an option of continuing or aborting the computation. The description
+	of the occurrence should include any text specified as the argument of the
+	#signal: message." 
+
+	ToolSet 
+		debugContext: thisContext 
+		label: 'Warning' 
+		contents: self messageText, 'Select Proceed to continue, or close this window to cancel the operation.' withCRs. 
+		self resume. 
+\end{code}
+
+The only method we need to implement is this convenience method on \ct{Object}:
+\begin{code}{}
+Object>>>deprecated: anExplanationString
+	"Warn that the sending method has been deprecated."
+	Preferences showDeprecationWarnings ifTrue:
+		[Deprecation signal: thisContext sender printString, ' has been deprecated. ', anExplanationString]
+\end{code}
+
+%=================================================================
+\section{Passing on exceptions}
+
+To illustrate the remaining possibilities for handling exceptions, we will look at how to implement a generalization of the \ct{perform:} method.
+If we send \ct{perform: aSymbol} to an object, this will cause the message named \ct{aSymbol} to be sent  to that object:
+\begin{code}{@TEST}
+5 perform: #factorial --> 120    "same as: 5 factorial"
+\end{code}
+
+Several variants of this method exist. For example:
+\begin{code}{@TEST}
+1 perform: #+ withArguments: #(2) --> 3    "same as: 1 + 2"
+\end{code}
+These \ct{perform:}-like methods are very useful for dynamically accessing an interface, since the messages to be sent can be determined at run-time.
+
+One message that is missing is one that will send a cascade of unary messages to a given receiver. A simple and naive implementation is:
+\begin{code}{}
+Object>>>performAll: selectorCollection
+	selectorCollection do: [:each | self perform: each]    "aborts on first error"
+\end{code}
+
+This method could be used as follows:
+\begin{code}{}
+Morph new performAll: #( #activate #beTransparent #beUnsticky)
+\end{code}
+
+However, there is a complication. There might be a selector in the collection that the object does not understand (such as \ct{#activate}). We would like simply to ignore such selectors and continue sending the remaining messages. The following implementation seems to be reasonable:
+
+\begin{code}{}
+Object>>>performAll: selectorCollection 
+	selectorCollection do: [:each |
+		[self perform: each]
+			on: MessageNotUnderstood
+			do: [:ex | ex return]]    "doesn't distinguish internal errors"
+\end{code}
+
+On closer examination we notice another problem. This handler will not only catch and ignore messages not understood by the original receiver, but also any messages sent but not understood in methods for messages that \emph{are} understood! This will simply hide programming errors in those methods, which is not our intent.
+To fix this, we need our handler to analyze the exception to see if it was indeed caused by the attempt to perform the current selector.
+Here is the correct implementation.
+\begin{code}{}
+Object>>>performAll: selectorCollection 
+	selectorCollection do: [:each | 
+		[self perform: each] 
+			on: MessageNotUnderstood 
+			do: [:ex | (ex receiver == self and: [ex message selector == each]) 
+				ifTrue: [ex return] 
+				ifFalse: [ex pass]]]    "pass on internal errors"
+\end{code}
+
+This has the effect of passing on \ct{MessageNotUnderstood} errors to the surrounding context when they are not part of the list of messages we are performing. The \ct{pass} message will pass the exception on to the next applicable handler in the run-time stack.
+
+If there is no next handler on the list, the \ct{defaultAction} message is sent to the exception instance. The \ct{pass} action does not modify the sender chain in any way\,---\,but the handler the control is passed to may do so. Like other messages we discussed in this section, \ct{pass} is special\,---\,it never returns to the sender.
+
+%=================================================================
+\section{Resending exceptions}
+
+Now suppose that in our \ct{performAll:} example we no longer want to ignore selectors not understood by the receiver. We do want to consider an occurrence of such a selector as an error. However, we want it to be signaled as an application-specific exception, let's say \ct{InvalidAction}, rather than the generic \ct{MessageNotUnderstood}. In other words, we want the ability to ``resignal'' a signaled exception as a different one.
+
+It might seem that the solution would simply be to signal the new exception in the handler block. The handler block in our implementation of \ct{performAll:} would be:
+
+\begin{code}{}
+[:ex | (ex receiver == self and: [ex message selector == each])
+	ifTrue: [InvalidAction signal]    "signals from the wrong context"
+	ifFalse: [ex pass]]
+\end{code}
+
+A closer look reveals a subtle problem with this solution, however. Our original intent was to replace the occurrence of \ct{MessageNotUnderstood} with \ct{InvalidAction}. This replacement should have the effect as if \lct{InvalidAction} were signaled in the same place in the program where the original \ct{MessageNotUnderstood} was. Our solution signals \ct{InvalidAction} in a different location. The difference in locations may well lead to the difference in the set of applicable handlers.
+
+To solve this problem, resignaling an exception should be a special action handled by the system. For this purpose, the system provides the message \ct{resignalAs:}. The correct implementation of a handler block in our \ct{performAll:} example should be:
+
+\begin{code}{}
+ [:ex |  (ex receiver == self and: [ex message selector == each])
+	ifTrue: [ex resignalAs: InvalidAction]    "resignals from original context"
+	ifFalse: [ex pass]]
+\end{code}
+
+%=================================================================
+\section{Outer vs. pass}
+
+The method \ct{outer} is very similar to \ct{pass}. If you send \ct{outer} to an exception, then this also has the effect of evaluating the enclosing handler action. The only difference is that if the outer handler resumes the exception, then control will be returned to the point where \ct{outer} was sent, not the original point where the exception was signaled:
+
+\begin{code}{@TEST | passResume |}
+passResume := [[ Warning signal . 1 ]    "resume to here"
+	on: Warning
+	do: [ :ex | ex pass . 2 ]]
+		on: Warning
+		do: [ :ex | ex resume ].
+passResume --> 1    "resumes to original signal point"
+\end{code}
+
+
+\begin{code}{@TEST | outerResume |}
+outerResume := [[ Warning signal . 1 ]
+	on: Warning
+	do: [ :ex | ex outer . 2 ]]    "resume to here"
+		on: Warning
+		do: [ :ex | ex resume ].
+outerResume --> 2    "resumes to where outer was sent"
+\end{code}
+
+%=================================================================
+\section{Catching sets of exceptions}
+
+So far we have always tried to catch just a single type of exception. The handler will only be invoked if the exception signaled is an instance of the specified exception class or one of its subclasses. It is easy to imagine, however, situations where we might like to catch multiple types of exceptions. This is easy to do:
+
+\begin{code}{@TEST | result |}
+result := [ Warning signal . 1/0 ]
+	on: Warning, ZeroDivide
+	do: [:ex | ex resume: 1 ].
+result --> 1
+\end{code}
+
+If you are wondering how this works, just have a look at the implementation of \ct{Exception class>>>,}.
+
+\begin{code}{}
+Exception class>>>, anotherException
+	"Create an exception set."
+
+	^ExceptionSet new
+		add: self;
+		add: anotherException;
+		yourself
+\end{code}
+
+The rest of the magic occurs in the class \ct{ExceptionSet}, which has a surprisingly trivial implementation.
+
+
+\section{How this is implemented?}
+
+\on{As an explanation, this part really does not work. I would prefer to leave it out.}
+\sd{no this is really important I did a new pass on it}
+
+Up until now, we presented the use of exceptions in Smalltalk and their power without really saying a word on their implementation
+at the execution engine level (Virtual Machine). Normally you do not need to know how handler are really looked up at execution time to use exception. Therefore in the first reading you can skip this section. Now if you are curious and really want to know how this is implemented 
+at the Virtual Machine level, this section is for you.  This section will uncover the internal of the Pharo exception mechanism. The mechanism is quite simple, making it worth to know how it operates. This section is a wonderful example on how Pharo can reveal information just by browsing its source code.
+
+\paragraph{Storing Handlers.}
+What we want to understand is how the information (exception type and its associated handler) is stored and how this information is found at run-time. Let us look at the definition of the central method \ct{on:do:} defined on the class \ct{BlockContext} which is the class representing the block-closure. 
+
+\begin{code}{}
+BlockContext>>>on: exception do: handlerAction 
+	"Evaluate the receiver in the scope of an exception handler." 
+	| handlerActive | 
+	<primitive: 199> 
+	handlerActive := true. 
+	^self value 
+\end{code}
+
+When reading the code we learn two things: First, this method is implemented as a primitive, which means that  a function defined in the virtual machine is executed, when this method is invoked. Second, the method body simply returns the value of the block receiver and sets the variable \ct{handlerActive} to true. Surprinsingly simple. 
+
+A primitive method as \ct{on:do:} has a body and a primitive number. Normally, the method body is not executed since the method is bound to a function written in C. When the method has to be executed, the C function is executed instead. In case of a failure in the C function, the Smalltalk method body is executed. The method body is then in charge of taking decisions on how to deal with the failure.
+Here the method \ct{on:do:} is associated with the primitive number 199. This number is important to understand the following. 
+
+So you are puzzled. Where the argument of the \ct{on:do:} method are then stored. Let's look at the instance variables of the class \ct{BlockContext}. 
+
+\begin{code}{}
+ContextPart variableSubclass: #BlockContext
+	instanceVariableNames: 'nargs startpc home'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'Kernel-Methods'
+\end{code}
+
+They are not defined there nor in the superclass. So what is the only solution left? To store the information in the object representing the stack itself. Let us have a look at that. The exception type associated and the exception handler are kept in this activation context (index 1 and 2, respectively). To verify this, you can inspect the following piece of code:
+
+\begin{code}{}
+| exception handler | 
+[exception := thisContext sender at: 1. 
+ handler := thisContext sender at: 2. 
+ 1 / 0] 
+on: Error 
+do: [:ex| ]. 
+{ exception . handler } 
+\end{code}
+
+The last statement is a 2-length array that contains the exception type and the exception handler. 
+
+
+\paragraph{Finding Handlers.}
+Now that we know how the information is stored, let's have a look at how it is looked up at runtime. 
+
+First, we might think that the primitive 199 is complex to write. But in our case, the C function that corresponds to the primitive 199 \emph{always} fails\footnote{The source code of the primitive is \ct{Interpreter>>>primitiveMarkHandlerMethod} in the VMMaker Squeaksource project}. Its definition is therefore trivial. The body of \ct{on:do:} is therefore always executed since the primitive fails. An important point is that the execution of the primitive marks the executing context with 199, the primitive number. 
+
+\begin{code}{}
+primitiveMarkHandlerMethod
+     "Primitive. Mark the method for exception handling. The primitive must fail after marking the 
+     context so that the regular code is run."
+     
+     self inline: false.
+    ^self primitiveFail
+\end{code}
+
+So now we know that when the method \ct{on:do:} is executed, the stack element is tagged and the handler and exception type 
+are stored there. Now if a signal is raised within the handler, the method signal will look for the nextHandler as the method \ct{signal}
+does it.
+
+\begin{code}{}
+Exception>>signal
+	"Ask ContextHandlers in the sender chain to handle this signal.  The default is to execute and return my defaultAction."
+
+	signalContext := thisContext contextTag.
+	^ thisContext nextHandlerContext handleSignal: self
+\end{code}
+
+\begin{code}{}
+Exception>>nextHandlerContext
+
+	^ self sender findNextHandlerContextStarting
+\end{code}
+
+The method \ct{findNextHandlerContextStarting} is implemented as a primitive (number 197), its body describes what it does. It looks 
+if the stack element is a context created by the execution of the method \ct{on:do:} (it just looks if the number is 199). If this is  the case it returns it. Since the context has all the information, it can be filtered and the look up can continue further or the associated handler can be executed. 
+
+\begin{code}{}
+MethodContext>>>findNextHandlerContextStarting 
+	"Return the next handler marked context, returning nil if there 
+	is none. Search starts with self and proceeds up to nil." 
+	| ctx |	
+	<primitive: 197> 
+	ctx := self. 
+	[ctx isHandlerContext ifTrue:[^ctx]. 
+	(ctx := ctx sender) == nil ] whileFalse. 
+	^nil 
+\end{code}
+
+The method \ct{findNextHandlerContextStarting} looks up for a call to \ct{on:do:} starting from the first activation context. \ct{Nil} is returned if none is found. 
+
+\begin{code}{}
+MethodContext>>>isHandlerContext 
+	"is this context for method that is marked?" 
+	^method primitive = 199 
+\end{code}
+
+So in summary the virtual machine finds the activation contexts that correspond to a \ct{on:do:} call. The virtual machine goes over the method call stack and selects the activation contexts that are marked with 199.
+
+
+
+%I could not get the following. \ugh{Method contexts are objects that may be manipulated as any plain objects. They represent a linked list of a which may be shortened a anytime. This is the principle of exception. In theory, it is not necessary to hardcode functions dedicated to exceptions in the virtual machine. This is a superb example of the Smalltalk flexibility.}
+
+\section{Error and Notification}
+\sd{probably redundant}
+\on{not very interesting or useful --- I would leave this out too}
+
+\ugh{First of all, let us have a look at the different kind of exceptions offered by Smalltalk. Among the exceptions that may be signaled, we make a distinction between errors and notifications. The first tells the programmer that the program falls into an abnormal situation. The latter tells that a particular event occurred but if no action is taken, the program will continue to execute. Notifications are often used as alters (\ct{Warning} class) which are used to notify abnormal but non-lethal behavior. Note that C\# and Java propose a similar use of exceptions.}
+
+Graphically user interfaces makes a great use of notifications. In Squeak, \ct{ProgressNotification} is used to move the progress bar forward when a task is being realized. \ct{ProgressNotification} is a subclass of \ct{Notification}.
+
+\begin{figure}[ht]\centering
+        \includegraphics[width=.6\linewidth]{hierarchy}
+        \caption{An except of the Squeak exception hierarchy.\figlabel{hierarchy}
+        \on{Kill Object. Which of these are resumable? Why this chart?}}
+\end{figure}
+
+Compared with other languages, Smalltalk features an interesting ability for its exceptions: the control flow that signaled an exception may be resumed in the exception handler that caught the exception. The control flow of the application before the exception was signaled may then continue. Of course, it is the responsibility of the exception handler to update the system in order to give sense to an exception resume.
+
+The property of being resumed is orthogonal to the notion of error. An error may be resumable. For example, the class \ct{MessageNotUnderstood} is a subclass of \ct{Error} but it is resumable:
+\on{? discussed above with Halt}
+
+\begin{code}{}
+MessageNotUnderstood>>>isResumable 
+     ^true
+\end{code}
+
+\ugh{Now, we will see how an exception handler may resume an exception.}
+
+%=================================================================
+\section{Chapter Summary}
+
+In this chapter we saw how to use exceptions to signal and handle abnormal situations arising in our code
+
+\begin{itemize}
+\item Use \lct{\emph{protectedBlock} ensure: \emph{actionBlock}} to ensure that \lct{\emph{actionBlock}} will be performed even if \lct{\emph{protectedBlock}} terminates abnormally.
+
+\item Use \lct{\emph{protectedBlock} ifCurtailed: \emph{actionBlock}} to ensure that \lct{\emph{actionBlock}} will be performed \emph{only} if \lct{\emph{protectedBlock}} terminates abnormally.
+
+\item Exceptions are objects. Exceptions classes form a hierarchy with the class \ct{Exception} at the root of the hierarchy.
+
+\item Use \lct{\emph{protectedBlock} on: \emph{ExceptionClass} \emph{handlerBlock}} to catch exceptions that are instances of \lct{\emph{ExceptionClass}} (or any of its subclasses). The \lct{\emph{handlerBlock}} should take an exception instance as its sole argument.
+
+\item Exceptions are signaled by sending one of the messages \lct{signal} or \lct{signal:}. \ct{signal:} takes a string description as its argument. The description of an exception can be obtained by sending it the message \ct{description}.
+
+\item You can set a breakpoint in your code by inserting the code \ct{self halt}. This signals a resumable \ct{Halt} exception. By default, this will open a debugger at the point where the breakpoint occurs.
+
+\item When an exception is signaled, the runtime system will search up the method call stack, searching for a handler for that specific type of exception. If none is found, the \ct{defaultAction} for that exception will be performed (\ie in most cases the debugger will be opened).
+
+\item An exception handler may return control to the enclosing context by sending \ct{return:} to the signaled exception, with the value to be returned as the argument.
+
+\item An exception handler may retry a protected block by sending \ct{retry} to the signaled exception. The handler remains in effect.
+
+\item An exception handler may specify a new block to try by sending \ct{retryUsing:} to the signaled exception, with the new block as its argument. Here too, the handler remains in effect.
+
+\item \on{add summary for remaining sections}
+
+\end{itemize}
+
+\paragraph{Acknowledgment.}  We gratefully acknowledge Vassili Bykov for the raw material he provided. We also thank Paolo Bonzini, the main developer of GNU Smalltalk, for the Smalltalk implementations of \ct{ensure:} and \ct{ifCurtailed:}.
+
+%=========================================================
+\ifx\wholebook\relax\else
+   \bibliographystyle{jurabib}
+   \nobibliography{scg}
+   \end{document}
+\fi
+%=========================================================
+

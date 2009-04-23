@@ -1,0 +1,53 @@
+% $Author$
+% $Date$
+% $Revision$
+%=================================================================
+\ifx\wholebook\relax\else
+% --------------------------------------------
+% Lulu:
+	\documentclass[a4paper,10pt,twoside]{book}
+	\usepackage[
+		papersize={6in,9in},
+		hmargin={.75in,.75in},
+		vmargin={.75in,1in},
+		ignoreheadfoot
+	]{geometry}
+	\input{../common.tex}
+	\pagestyle{headings}
+	\setboolean{lulu}{true}
+% --------------------------------------------
+% A4:
+%	\documentclass[a4paper,11pt,twoside]{book}
+%	\input{../common.tex}
+%	\usepackage{a4wide}
+% --------------------------------------------
+    \graphicspath{{figures/} {../figures/}}
+	\begin{document}
+	% \renewcommand{\nnbb}[2]{} % Disable editorial comments
+	\sloppy
+	\frontmatter
+\fi
+%=================================================================
+\chapter{Preface}\label{cha:intro}
+
+%=================================================================
+\section*{About this book}
+
+\on{Explain versions of Squeak.  We should pick one version of Squeak as the reference version for this book and all the screenshots!}
+
+%=================================================================
+\section*{Acknowledgments}
+
+Thanks to the following reviewers:
+Orla Greevy,
+Lukas Renggli.
+
+Thanks to Vassili Bykov for permission to adapt his Regex documentation.
+
+%=============================================================
+\ifx\wholebook\relax\else
+   \bibliographystyle{jurabib}
+   \nobibliography{scg}
+   \end{document}
+\fi
+%=============================================================

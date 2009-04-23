@@ -1,0 +1,242 @@
+% $Author$
+% $Date$
+% $Revision$
+
+% HISTORY:
+% 2007-05-12 - Stef started chapter
+
+%=================================================================
+\ifx\wholebook\relax\else
+% --------------------------------------------
+% Lulu:
+	\documentclass[a4paper,10pt,twoside]{book}
+	\usepackage[
+		papersize={6in,9in},
+		hmargin={.75in,.75in},
+		vmargin={.75in,1in},
+		ignoreheadfoot
+	]{geometry}
+	\input{../common.tex}
+	\setboolean{lulu}{true}
+% --------------------------------------------
+% A4:
+%	\documentclass[a4paper,11pt,twoside]{book}
+%	\input{../common.tex}
+%	\usepackage{a4wide}
+% --------------------------------------------
+    \graphicspath{{figures/} {../figures/}}
+	\begin{document}
+\fi
+%=================================================================
+%\renewcommand{\nnbb}[2]{} % Disable editorial comments
+\sloppy
+%=================================================================
+\chapter{Concurrency}\label{cha:basic}
+
+Squeak as any Smalltalk is a sequential language in the sense that at one point in time there is only 
+one computation is carried on. However, Smalltalk has the ability to run programs concurrently by interleaving their 
+executions. The idea behind Smalltalk was to propose a complete OS and as such a Smalltalk run-time offers the possibility to execute different threads that are scheduled by the Smalltalk thread scheduler. 
+
+Smalltalk's concurrency is \emph{collaborative} and \emph{preemptive}. It is preemptive in the sense that a process with higher priority can interrupt the current thread running. It is collaborative in the sense that thread of same priority should collaborate, the current thread should explicit release the control to give a chance to the other processes of the same priority can get executed by the scheduler. 
+
+In this chapter we present how processes are created and their lifetime. We will show how the process scheduler manages the system. We will present one basic abstraction proposed by Squeak:  Semaphore and the critical section. 
+
+The subsection chapter will present the other abstractions offered by Squeak: Monitor, Delay...
+
+Note in the current version of Squeak, the Transcript is not thread-safe. 
+
+Need to have a thread safe transcript.
+
+%=================================================================
+\section{Processes}
+
+
+\begin{figure}
+\includegraphics[width=10cm]{ProcessState}
+\end{figure}
+
+
+In Smalltalk, threads are called process, instance of the class \clsindmain{Process}.
+
+
+% For all intents and purposes, \clsindmain{Object} is the root of the inheritance hierarchy. Actually, in Squeak the true root of the hierarchy is \clsind{ProtoObject}, which is used to define minimal entities that masquerade as objects, but we can ignore this point for the time being.
+% % (more on this later in the chapter on reflection).
+% 
+% \ct{Object} can be found in the \scatind{Kernel-Objects} category. Astonishingly, there are some 400 methods to be found here (including extensions).  In other words, every class that you define will automatically provide these 400 methods, whether you know what they do or not. Note that some of the methods should be removed and new versions of Squeak may remove some of the superfluous methods. 
+% 
+% \sd{I do not like to quote something that can change and that people can find simply in the image but let us keep it for now.}
+% The class comment for the \ct{Object} states:
+% 
+% \ct{Object>>>printOn:} is very likely one of the methods that you will most frequently override. This method takes as its argument a \clsind{Stream} on which a \clsind{String} representation of the object will be written. The default implementation simply write the class name preceded by ``\ct{a}'' or ``\ct{an}''. \ct{Object>>>printString} returns the \ct{String} that is written:
+% 
+% For example, the class \clsind{Browser} does not redefine the method \ct{printOn:} and sending the message printString to an instance executes the methods defined in \ct{Object}. 
+% \begin{code}{@TEST}
+% Browser new printString --> 'a Browser'
+% \end{code}
+% 
+% The class \ct{TTCFont} shows an example of \mthind{TTCFont}{printOn:}
+% specialization. It prints the name of the class followed by the family
+% name, the size and the subfamily name of the font as shown by the code
+% below which prints an instance of the class.
+% 
+% \begin{method}[zork]{printOn: redefinition.}
+% TTCFont>>>printOn: aStream
+%         aStream nextPutAll: 'TTCFont(';
+% 		nextPutAll: self familyName; space;
+% 		print: self pointSize; space;
+% 		nextPutAll: self subfamilyName;
+% 		nextPut: $)
+% \end{method}\ignoredollar$
+% 
+% % \begin{code}{@TEST}
+% \begin{code}{} % ON: THIS IS FRAGILE -- breaks in Pharo
+% TTCFont allInstances anyOne printString --> 'TTCFont(BitstreamVeraSans 6 Bold)'
+% \end{code}
+% 
+% \begin{method}{Hash must be reimplemented for complex numbers}
+% Complex>>>hash
+%     "Hash is reimplemented because = is implemented."
+%     ^ real hash bitXor: imaginary hash.
+% \end{method}
+
+\section{Protocol}
+
+
+Squeak comme tous les Smalltalks offre la possibilité d'exécuter différents programmes en parallele. 
+La concurrence en Smalltalk est préemptive et collaborative. Préemptive car les processus de priorité superieure 
+prennent précédence sur ceux de priorité inferieure. Collaborative car pourqu'un processus ait une chance de s'executer alors qu'un processus de meme priorité est deja entrain de s'executer, celui-ci doit explicitement relacher le contrôle. Dans cet article nous montrons les élements de base et dans un prochain article nous montrerons les abstractions essentielles telleque Monitor, Delay.
+
+Les processus
+Pour les besoins de la programmation concurrente, Smalltalk offre une panoplie de classes qui permettent la manipulation de processus légers (threads) instances de la classe Process [sharp97]. Un processus est caractérisé par un bloc (instance de BlockContext) qui décrit les opérations qu'il doit exécuter et une priorité d'exécution.
+
+La gestion des processus est à la charge de l'instance unique de la class ProcessorScheduler. Cet objet référencé par la variable globale Processor - donne accès à l'ensemble des processus et permet ainsi de les retrouver et de les manipuler. En particulier, il permet de définir le processus à activer en fonction des priorités et de l'ordre de réveil.
+
+Priorités et préemption
+Comme les processus Smalltalk sont préemptifs, ceux à la priorité la plus importante (i.e. la plus proche de 100) sont ceux qui ont le plus de chance d'être exécutés. Le processus ayant la plus grande priorité est exécuté jusqu'à sa terminaison ou sa mise en sommeil.
+
+Tous les autres processus sont mis en attente. Dans le cas où plusieurs processus
+ont la même priorité, alors l'ordre de réveil est utilisé. Le premier à être réveillé sera exécuté jusqu'à sa terminaison ou mise en sommeil. Les autres processus de même priorité ou de priorité inférieure seront mis en attente.
+A titre d'exemple, supposons que nous disposions d'un objet compte bancaire référencé par la variable \verb!monCompte! utilisée dans les trois processus correspondant aux trois lignes suivantes~:
+
+@@change l'exemple@@
+
+[monCompte depot: 50] forkAt: 30.
+[monCompte solde] forkAt: 40.
+[monCompte retrait: 200] forkAt: 40.
+
+
+Dans chacune de ces trois lignes de code, un bloc donne les traitements réalisés par le processus. Le processus est ensuite créé et réveillé en envoyant le message forkAt: au bloc. L'argument de ce message correspond à la
+priorité du processus.
+
+Une fois la première ligne évaluée, le processus de dépôt est lancé. Cependant, il est rapidement mis en attente car la ligne suivante lance le processus de consultation de solde à une priorité plus élevée. La troisième ligne lance un processus de retrait à la même priorité que pour la consultation. De ce fait, il reste en attente. Lorsque la
+consultation est complètement terminée, le processus de retrait est activé car il a la priorité la plus forte. Ce n'est que lorsque tous les processus de priorité supérieure à 30 sont terminés que notre processus de dépôt est activé.
+
+En plus de ces règles, le programmeur Smalltalk peut créer des processus de même niveau de priorité qui ne se bloquent pas les uns les autres. Pour ce faire, chacun des processus doit régulièrement demander au gestionnaire de processus Processor d'activer les éventuels autres processus de même priorité mis en attente.
+Cette demande se fait à l'aide du message yield (Processor yield).
+
+Mise en sommeil
+Une autre solution consiste en une mise en sommeil. Pour ce faire, Smalltalk intègre la classe Delay qui permet de suspendre le processus actif pendant un laps de temps. Dans l'exemple suivant, le processus exécute une boucle de consultations de solde espacées de 30 secondes.
+
+[ | attente |
+    attente := Delay forSeconds: 30.
+    100 timesRepeat: [
+             attente wait.  "Mise en sommeil"
+             monCompte solde.]
+] forkAt: 40.
+
+
+Nous faisons l'hypothèse que monCompte est une variable qui référence un compte bancaire. Le processus commence par creer une instance de Delay qui correspond à l'intervalle d'attente entre deux consultations de solde. Il réalise ensuite 100 fois (message timesRepeat: envoyé à l'entier 100) une consultation précédée par une attente.
+
+\section{Synchronisation}
+Afin de gérer les accès concurrents aux ressources, Smalltalk dispose d'objets verrous. Ce sont des instances de la classe Semaphore qui permettent la synchronisation des sections critiques du code. Pour ce faire, tous les processus qui partagent une même ressource doivent envoyer au sémaphore le message wait avant l'accès et le message signal après l'accès. En effet, l'exécution du processus qui envoie un wait est suspendue. Lorsque le sémaphore reçoit un signal, il réveille le plus ancien processus (i.e. le premier à avoir envoyé wait).
+
+CompteBancaireCourant subclass: #CompteSynchronise
+   instanceVariableNames: `verrou'!\\
+   classVariableNames: `'!\\
+04&\tab \verb!poolDictionaraies: `'!\\
+05&\tab \verb!category: `Comptes Bancaires'!\\
+\hline
+06&{\bf initialize}\\
+07&\tab   \verb!super initialize.!\\
+08&\tab   \verb!verrou := Semaphore forMutualExclusion!\\
+\hline
+09&{\bf depot\verb!:! montant}\\
+10&\tab   \verb!verrou critical: [super depot: montant]!\\
+\hline
+11&{\bf retrait\verb!:! montant}\\
+12&\tab    \verb!verrou critical: [super retrait: montant]!\\
+\hline
+13&{\bf solde}\\
+14&\tab   \verb!verrou critical: [^super solde]!\\
+\hline
+\end{tabular}
+}
+    \caption{Définition de la classe {\tt CompteSynchronise}}
+     \label{fig:compteSynchronise}
+   \end{center}
+\end{figure}
+
+Par exemple, si nous souhaitons disposer de comptes courants dont les dépôts, retraits et consultation de solde sont synchronisés, nous définissons la sous-classe de CompteBancaireCourant comme suit~:
+
+ La sous-classe CompteSynchronise ajoute une variable d'instance
+verrou! qui représente un sémaphore (ligne~2, figure~\ref{fig:compteSynchronise})
+
+L'initialisation de la variable d'instance verrou est opérée dans la méthode d'initialisation initialize (lignes~6 à~8, figure~\ref{fig:compteSynchronise}). Cette méthode crée un sémaphore à l'aide le message forMutualExclusion qui (par opposition au new) retourne un sémaphore qui ne suspend pas le premier processus qui envoie un message wait. Le but étant de ne suspendre les processus qu'en cas d'accès concurrents, un tel sémaphore est un sémaphore normal qui a reçu un signal juste après sa création.
+
+Les méthodes depot: (lignes~9 et~10, figure~), retrait: (lignes~11 et~12, figure ) et solde (lignes~13 et~14, figure) sont redéfinies pour synchroniser les accès.
+A noter qu'au lieu d'utiliser un couple wait/signal, nous utilisons le message critical: qui réalise le même traitement. L'avantage de ce dernier est d'envoyer toujours le signal et donc la libération de la ressource même en cas d'exception.
+
+
+Afin de simplifier les échanges de données (des objets) entre processus, Smalltalk introduit des files synchronisées, instances de la classe SharedQueue. Plusieurs processus producteurs peuvent ainsi injecter des données dans la file, pendant que des processus consommateurs les retirent. Le recours aux sémaphores est inutile, puisque la file assure la synchronisation. En particulier, elle suspend les processus consommateurs lorsqu'elle est vide et les réveille quand des producteurs injectent des données.
+
+Ce comportement simple peut bien sûr être étendu. Par exemple, il est possible d'enrichir le comportement FIFO ({\em first in first out}) avec des priorités \cite{sharp97}.
+Chaque objet injecté dans la file est marqué d'une priorité.
+Les objets les plus prioritaires sont les premiers à être extraits de la file.
+
+
+Liens 
+[BLUEB] Smalltalk-80: The Language and its Implementation : http://stephane.ducasse.free.fr/FreeBooks/BlueBook/ 
+
+Le site officiel : http://www.squeak.org/
+Le Wiki de la communauté française : http://community.ofset.org/wiki/Squeak
+Le groupe des utilisateurs européens de Smalltalk (European Smalltalk User Group). L'adhésion est gratuite : http://www.esug.org/
+Des livres gratuits en ligne sur Smalltalk et Squeak : http://stephane.ducasse.free.fr/FreeBooks.html
+Un livre sur Squeak en français: http://stephane.ducasse.free.fr/Books.html : Squeak,  X. Briffault et S. Ducasse, Eyrolles, 2002. 
+
+\section{semaphore}
+	Boolean vs integer
+	
+\section{Critical Section}
+
+\section{Scheduler}
+How does it work?
+
+\section{Delay}
+
+\chapter{Avanced Abstractions}
+
+\section{Monitor -- Broken}
+
+\section{SharedQueue}
+
+\section{Mutex - Reentrant Semaphore}
+RecursionLock in VW
+
+
+%=============================================================
+\ifx\wholebook\relax\else
+   \bibliographystyle{jurabib}
+   \nobibliography{scg}
+   \end{document}
+\fi
+%=============================================================
+
+%-----------------------------------------------------------------
+
+%%% Local Variables:
+%%% coding: utf-8
+%%% mode: latex
+%%% TeX-master: t
+%%% TeX-PDF-mode: t
+%%% ispell-local-dictionary: "english"
+%%% End:
