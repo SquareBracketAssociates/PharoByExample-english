@@ -7,6 +7,7 @@
 % 2007-12-18 - Andrew review pass
 % 2008-05-30 - Stef review pass
 % 2009-04-22 - Oscar revised
+% 2009-04-23 - Alex revised (added \alex{} annotation to indicate difference between Squeak and Pharo)
 
 %=================================================================
 \ifx\wholebook\relax\else
@@ -40,6 +41,8 @@
 
 %=================================================================
 \chapter{Versioning your code with \MC}
+
+\alex{Maybe a section on MC Configuration maps may be given}
 
 A versioning system helps you to store and log multiple versions of your code. In addition it may help you to manage concurrent accesses to a common source code repository. It keeps track of all changes to a set of documents and enables several developers to collaborate. As soon as the size of your software increases beyond a few classes, you probably need a versioning system.
 
@@ -81,7 +84,7 @@ Of course these tests will fail as we have not yet implemented the \ct{isPerfect
 %-----------------------------------------------------------------
 \subsection{Launching \MC}
 
-\MC is included in the standard Squeak distribution\footnote{\url{http://www.squeak.org}} and in the image for developers\footnote{\url{http://damiencassou.seasidehosting.st/Smalltalk/squeak-dev}}.
+\MC is included in the standard Squeak distribution\footnote{\url{http://www.squeak.org}} and in the image for developers\footnote{\url{http://damiencassou.seasidehosting.st/Smalltalk/squeak-dev}}\alex{The distributed Pharo will be the image for developpers}. 
 We will assume that \MC is already installed in your image.
 %\on{We should state explicitly which version of Squeak we are using for the screen shots for the entire book. This should be explained in the Foreword. I am redoing the figures using the SBE download image. (For some reason the snapshots in this chapter were of very poor quality, so I have to redo them anyway.)}
 %If you use another image that does not have \MC pre-installed, you can install yourself it using application deployment tools such as \emph{SqueakMap} and \emph{Universe} (normally accessible via \menu{open ...} then \menu{SqueakMap Package Loader} and \menu{Package Universe Browser}). A universe is a distribution of packages: all the packages within a universe have be validated to work for a specific version of Squeak. 
@@ -177,6 +180,7 @@ PerfectTest>>>testPerfectBoundary
 
 Although these methods do not belong to the \ct{Perfect} system category, they \emph{do} belong to the \ct{Perfect} package since they are in a protocol whose name starts with \ct{*} and matches the package name. Such methods are known as \emph{class extensions}, since they extend existing classes with new methods. These methods will \emph{only} be available to someone who loads our \ct{Perfect} package.
 
+\alex{We could give a reference to the Cmd-p command in the OB browser. This keystroke is used to turn a method into a class-extension.}
 %-----------------------------------------------------------------
 \subsection{``Clean'' and ``Dirty'' packages}
 
@@ -316,6 +320,7 @@ Congratulations! You have now created a new branch of the \ct{Perfect} package.
 %-----------------------------------------------------------------
 \subsection{Merging}
 
+\alex{This subsection will need a major overhaul when turning the chapter for Pharo. The merging tool is radically different}
 You can merge one version of a package with another using the \button{Merge} button in the \MCB. Typically you will want to do this when (i) you discover that you have been working on a out-of-date version, or (ii) branches that were supposed to be independent have to be re-integrated. Both scenarios are common when multiple developers are working on the same package.
 
 Consider the current situation with our \ct{Perfect} package, as illustrated at the left of \figref{branching-merging}. We have published a new version 3 that is based on version 1.
@@ -391,6 +396,8 @@ If you now refresh the \RI, you will see that there are no more versions shown i
 \MC has many other useful features. As we can see in \figref{monticelloMain}, the \MCB window has nine buttons. We have already used four of them\,---\,\button{+Package}, \button{Save}, \button{+Repository} and \button{Open}.
 We will now look at \button{Browse}, \button{History} and \button{Changes}, which are used to explore the state and history of repositories
 
+\alex{The ordering is different in Pharo}
+
 %-----------------------------------------------------------------
 \subsection{Browse}
 
@@ -408,6 +415,8 @@ The advantage of the snapshot browser over the system browser is its ability to 
 For example, \figref{packageviewer} shows the class extensions defined in the \pkg{Perfect} package. Note that code cannot be edited here, though by yellow-clicking (\ie right-clicking, if your environment has been set up accordingly) on a class or a method name you can open a regular system browser.
 
 It is a good practice to always browse the code of your package before publishing it, to ensure that it really contains what you think it does.
+
+\alex{David's browser shows class extensions, although it does not supersede the snapshot browser, it should be mention here}
 
 %-----------------------------------------------------------------
 \subsection{History} 
@@ -459,6 +468,8 @@ Now we will have a look at several advanced topics, including backporting, manag
 
 %-----------------------------------------------------------------
 \subsection{Backporting}
+
+\alex{I am wondering how useful this is. I personally never used it}
 
 Sometimes we want to port changes from one branch to another, without actually being forced to merge those branches.
 Backporting is a process of applying selected changes from one version of a package to an ancestor so that these changes can be merged into later branches.  This is especially useful when corrections to software defects must be merged into multiple branches.
@@ -548,7 +559,7 @@ Note that when \ct{Perfect-All} is selected in the \MCB, the dependent packages 
 Here is the reason why:
 
 \begin{itemize}
-\item If you load \ct{Perfect-All} from a repository (package-ccache, or anywhere else), this will cause \ct{Perfect-Extensions} and \ct{Perfect-Tests} to be loaded from the same repository.
+\item If you load \ct{Perfect-All} from a repository (package-cache, or anywhere else), this will cause \ct{Perfect-Extensions} and \ct{Perfect-Tests} to be loaded from the same repository.
 \item If you modify the \ct{PerfectTest} class, this will cause the \ct{Perfect-Tests} and \ct{Perfect-All} packages to both become dirty (but not \ct{Perfect-Extensions}).
 \item To commit the change, you should save \ct{Perfect-All}. This will commit a new version of \ct{Perfect-All} which then requires the new version of \ct{Perfect-Tests}. (It will also depend on the existing, unmodified version of \ct{Perfect-Extensions}.)  Loading the latest version of \ct{Perfect-All} will also load the latest version sof the required packages.
 \item If instead you save \ct{Perfect-Tests}, this will \emph{not} cause \ct{Perfect-All} to be saved.  This is bad because you effectively break the dependency.  If you then load the latest version of \ct{Perfect-All} you will not get the latest versions of the required packages. Don't do it!
