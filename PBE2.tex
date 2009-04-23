@@ -2,7 +2,7 @@
 % $Date$
 % $Revision$
 %=================================================================
-% This is the main file for the Squeak By Example book.
+% This is the main file for the Pharo By Example book.
 % The individual chapters can also be latexed by themselves.
 % Note that the \end{document} marker occurs near the
 % middle of this file, to leave out additional material
@@ -55,7 +55,7 @@
 	St\'ephane Ducasse\\[1ex]
 	Oscar Nierstrasz\quad}
 % (to be updated at the end)
-\title{\Huge\bf More Squeak by Example\\[1ex]}
+\title{\Huge\bf More Pharo by Example\\[1ex]}
 \isodate
 \date{\emph{Version of \today}}
 \maketitle
@@ -168,7 +168,7 @@ Time.
 
 \section{XML processing :)}
 
-\section{How make an image self executable withSqueak}
+\section{How make an image self executable with Squeak}
 We save an image with our main application window already opened, and unwanted things disabled (halos, alt-., menus, etc). Additionally, we have a class-side \#startUp: method to initialize what's necessary on startup, like re-reading config files etc.
 
 The image is started automatically when double-clicking  "plopp.exe", or rather a short-cut in the program menu placed there by the installer. This exe is nothing more than a renamed Squeak.exe, with a different icon patched in using a resource editor. There is a VM config file "plopp.ini", which most importantly contains the path to the image to load (see http://minnow.cc.gatech.edu/squeak/3274).
