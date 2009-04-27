@@ -127,14 +127,26 @@ Processes are scheduled, \ie prioritized by the unique instance of the class \ct
 \end{table}
 
 \paragraph{Priority and Preemption}
+Smalltalk processes are preemptive: process whose priority is higher have a higher chance to get run than those of lower priority. A process is run until it either releases explicit the control using \ct{Processor yield}, it gets waiting on a semaphore or it terminates its execution. 
 
-Priorités et préemption
-Comme les processus Smalltalk sont préemptifs, ceux à la priorité la plus importante (i.e. la plus proche de 100) sont ceux qui ont le plus de chance d'être exécutés. Le processus ayant la plus grande priorité est exécuté jusqu'à sa terminaison ou sa mise en sommeil.
+When a process is run, all the other processes are suspended. 
+
 
 Tous les autres processus sont mis en attente. Dans le cas où plusieurs processus
 ont la même priorité, alors l'ordre de réveil est utilisé. Le premier à être réveillé sera exécuté jusqu'à sa terminaison ou mise en sommeil. Les autres processus de même priorité ou de priorité inférieure seront mis en attente.
 A titre d'exemple, supposons que nous disposions d'un objet compte bancaire référencé par la variable \verb!monCompte! utilisée dans les trois processus correspondant aux trois lignes suivantes~:
 
+\begin{code}{}
+[Transcript show: 'First at 30' ;cr ] forkAt: 30.
+[Transcript show: 'Second at 40' ;cr ] forkAt: 40.
+[Transcript show: 'Third at 40' ;cr ] forkAt: 40.
+\end{code}
+
+\begin{code}{}
+Second at 40
+Third at 40
+First at 30
+\end{code}
 
 [monCompte depot: 50] forkAt: 30.
 [monCompte solde] forkAt: 40.
