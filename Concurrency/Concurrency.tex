@@ -96,13 +96,13 @@ A process can be 5 different states:
 \begin{description}
 \item [Runnable] A process has been created but not run. 
 
-\item [Running] A process is run
+\item [Running] A process is running 
 
 \item [Terminated] When a process receives the message \ct{terminate}, it stops running and cannot be run anymore. 
 
-\item [Suspended] A running 
+\item [Suspended] A running is stopped to run and \sd{does suspend schedule a process?}
 
-\item [Waiting]
+\item [Waiting] A process is not in the scheduler list but waiting in a semaphore list. 
 
 \end{description}
 
