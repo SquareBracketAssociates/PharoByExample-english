@@ -109,7 +109,24 @@ To sum up, there are 3 messages sent to a Process which change its state: resume
 
 \section{Process Scheduler}
 
-La gestion des processus est à la charge de l'instance unique de la class ProcessorScheduler. Cet objet référencé par la variable globale Processor - donne accès à l'ensemble des processus et permet ainsi de les retrouver et de les manipuler. En particulier, il permet de définir le processus à activer en fonction des priorités et de l'ordre de réveil.
+Processes are scheduled, \ie prioritized by the unique instance of the class \ct{ProcessScheduler}. This instance can be accessed using the global variable
+\ct{Processor}. The process scheduler has the responsibilities to rank and schedule processes depending on their priority and their order.
+
+\begin{table}
+\begin{tabular}{l|c|c}
+	name& priority & Purpose\\ \hline
+	TimingPriority&80&\\ 
+	HighIOPriority&70&\\ 
+	LowIOPriority&60&\\ 
+	UserInterruptPriority&50&\\
+	UserSchedulingPriority&40\\
+	UserBackgroundPriority&30&\\ 
+	SystemBackgroundPriority&20&\\ 
+	SystemRockBottomPriority&10&\\ \hline
+\end{tabular}
+\end{table}
+
+\paragraph{Priority and Preemption}
 
 Priorités et préemption
 Comme les processus Smalltalk sont préemptifs, ceux à la priorité la plus importante (i.e. la plus proche de 100) sont ceux qui ont le plus de chance d'être exécutés. Le processus ayant la plus grande priorité est exécuté jusqu'à sa terminaison ou sa mise en sommeil.
@@ -118,7 +135,6 @@ Tous les autres processus sont mis en attente. Dans le cas où plusieurs process
 ont la même priorité, alors l'ordre de réveil est utilisé. Le premier à être réveillé sera exécuté jusqu'à sa terminaison ou mise en sommeil. Les autres processus de même priorité ou de priorité inférieure seront mis en attente.
 A titre d'exemple, supposons que nous disposions d'un objet compte bancaire référencé par la variable \verb!monCompte! utilisée dans les trois processus correspondant aux trois lignes suivantes~:
 
-@@change l'exemple@@
 
 [monCompte depot: 50] forkAt: 30.
 [monCompte solde] forkAt: 40.
