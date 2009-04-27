@@ -1,10 +1,6 @@
 % $Author$
 % $Date$
 % $Revision$
-
-% HISTORY:
-% 2007-05-12 - Stef started chapter
-
 %=================================================================
 \ifx\wholebook\relax\else
 % --------------------------------------------
@@ -33,32 +29,174 @@
 %=================================================================
 \chapter{Concurrency}\label{cha:basic}
 
-Squeak as any Smalltalk is a sequential language in the sense that at one point in time there is only 
-one computation is carried on. However, Smalltalk has the ability to run programs concurrently by interleaving their 
-executions. The idea behind Smalltalk was to propose a complete OS and as such a Smalltalk run-time offers the possibility to execute different threads that are scheduled by the Smalltalk thread scheduler. 
+\pharo as any Smalltalk is a sequential language since at one point in time there is only 
+one computation carried on. However, Smalltalk has the ability to run programs concurrently by interleaving their executions. The idea behind Smalltalk was to propose a complete OS and as such a Smalltalk run-time offers the possibility to execute different processes (or threads) that are scheduled by the Smalltalk process scheduler. 
 
-Smalltalk's concurrency is \emph{collaborative} and \emph{preemptive}. It is preemptive in the sense that a process with higher priority can interrupt the current thread running. It is collaborative in the sense that thread of same priority should collaborate, the current thread should explicit release the control to give a chance to the other processes of the same priority can get executed by the scheduler. 
+Smalltalk's concurrency is \emph{collaborative} and \emph{preemptive}. It is preemptive because a process with higher priority can interrupt the current running one. It is collaborative because the current process should explicitly release the control to give a chance to the other processes of the same priority can get executed by the scheduler. 
 
-In this chapter we present how processes are created and their lifetime. We will show how the process scheduler manages the system. We will present one basic abstraction proposed by Squeak:  Semaphore and the critical section. 
+In this chapter we present how processes are created and their lifetime. We will show how the process scheduler manages the system. We will present one basic abstraction proposed by:  Semaphore and the critical section. 
 
-The subsection chapter will present the other abstractions offered by Squeak: Monitor, Delay...
+The subsequent chapter will present the other abstractions offered by \pharo: Mutex, Monitor, Delay...
 
-Note in the current version of Squeak, the Transcript is not thread-safe. 
-
-Need to have a thread safe transcript.
 
 %=================================================================
 \section{Processes}
+\pharo supports the concurrent execution of multiple programs using independent processes. These are lightweight processes as they share a common memory space. Such processes are instances of the class \ct{Process}.
+
+\paragraph{Launching a process. }
+To execute concurrently a program, we specify such program in a block and send it the message \ct{fork}.
+For example, the following example, 
+\begin{code}{}
+[Transcript show: 100 factorial printString] fork
+\end{code}
+
+La gestion des processus est à la charge de l'instance unique de la class ProcessorScheduler. Cet objet référencé par la variable globale Processor - donne accès à l'ensemble des processus et permet ainsi de les retrouver et de les manipuler. En particulier, il permet de définir le processus à activer en fonction des priorités et de l'ordre de réveil.
+
+Priorités et préemption
+Comme les processus Smalltalk sont préemptifs, ceux à la priorité la plus importante (i.e. la plus proche de 100) sont ceux qui ont le plus de chance d'être exécutés. Le processus ayant la plus grande priorité est exécuté jusqu'à sa terminaison ou sa mise en sommeil.
+
+Tous les autres processus sont mis en attente. Dans le cas où plusieurs processus
+ont la même priorité, alors l'ordre de réveil est utilisé. Le premier à être réveillé sera exécuté jusqu'à sa terminaison ou mise en sommeil. Les autres processus de même priorité ou de priorité inférieure seront mis en attente.
+A titre d'exemple, supposons que nous disposions d'un objet compte bancaire référencé par la variable \verb!monCompte! utilisée dans les trois processus correspondant aux trois lignes suivantes~:
+
+@@change l'exemple@@
+
+[monCompte depot: 50] forkAt: 30.
+[monCompte solde] forkAt: 40.
+[monCompte retrait: 200] forkAt: 40.
+
+
+Dans chacune de ces trois lignes de code, un bloc donne les traitements réalisés par le processus. Le processus est ensuite créé et réveillé en envoyant le message forkAt: au bloc. L'argument de ce message correspond à la
+priorité du processus.
+
+Une fois la première ligne évaluée, le processus de dépôt est lancé. Cependant, il est rapidement mis en attente car la ligne suivante lance le processus de consultation de solde à une priorité plus élevée. La troisième ligne lance un processus de retrait à la même priorité que pour la consultation. De ce fait, il reste en attente. Lorsque la
+consultation est complètement terminée, le processus de retrait est activé car il a la priorité la plus forte. Ce n'est que lorsque tous les processus de priorité supérieure à 30 sont terminés que notre processus de dépôt est activé.
+
+En plus de ces règles, le programmeur Smalltalk peut créer des processus de même niveau de priorité qui ne se bloquent pas les uns les autres. Pour ce faire, chacun des processus doit régulièrement demander au gestionnaire de processus Processor d'activer les éventuels autres processus de même priorité mis en attente.
+Cette demande se fait à l'aide du message yield (Processor yield).
+
+Mise en sommeil
+Une autre solution consiste en une mise en sommeil. Pour ce faire, Smalltalk intègre la classe Delay qui permet de suspendre le processus actif pendant un laps de temps. Dans l'exemple suivant, le processus exécute une boucle de consultations de solde espacées de 30 secondes.
+
+[ | attente |
+    attente := Delay forSeconds: 30.
+    100 timesRepeat: [
+             attente wait.  "Mise en sommeil"
+             monCompte solde.]
+] forkAt: 40.
+
+
+Nous faisons l'hypothèse que monCompte est une variable qui référence un compte bancaire. Le processus commence par creer une instance de Delay qui correspond à l'intervalle d'attente entre deux consultations de solde. Il réalise ensuite 100 fois (message timesRepeat: envoyé à l'entier 100) une consultation précédée par une attente.
+
+
+\sd{how to I go from runnble to running? this is the scheduler job}
+\sd{how yield comes into play}
+
+A process can be 5 different states:
+\begin{description}
+\item [Runnable] A process has been created but not run. 
+
+\item [Running] A process is run
+
+\item [Terminated] When a process receives the message \ct{terminate}, it stops running and cannot be run anymore. 
+
+\item [Suspended] A running 
+
+\item [Waiting]
+
+\end{description}
+
 
 
 \begin{figure}
+\begin{center}
 \includegraphics[width=10cm]{ProcessState}
+\caption{Process possible states.\label{fig:processState}}
+\end{center}
 \end{figure}
 
 
-In Smalltalk, threads are called process, instance of the class \clsindmain{Process}.
+
+\section{Semaphore Basic Principle}
+A semaphore is a basic mechanism for synchronizing processes.  A semaphore will either suspend or resume processes depending on its internal state. It has a list of waiting processes. 
+When a process sends the message \ct{wait} to a semaphore, depending on the internal state of the semaphore, the calling process is put on wait (the process is added to the process waiting list of the semaphore). When a process has finished --- to use the resource for example, it signals it to the semaphore, which resumes one of its waiting processes. 
+
+Figure~\ref{fig:sema} shows a semaphore which is associated with a resource. The process \ct{P0} is currently using the resource. The process \ct{P2} and  \ct{P3}  are suspended and waiting in the list of suspended processes of the semaphore. 
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=6cm]{ASemaphoreAndProcesses}
+\caption{ A process is using a resource, the other processes are waiting in a semaphore list of suspended processes. \label{fig:sema}}
+\end{center}
+\end{figure}
+
+A semaphore is often used to control the access  to a resource by multiple processes. For example, using a semaphore we can ensure that only one process accesses the semaphore at a time. 
+When we want to create a protected resource, the method of the resource should send the messages \ct{wait} or  when the resource is invoked or \ct{signal} when the resource use is terminated. 
+This way a process wanting to use a resource will call one of the protected methods and the semaphore
+will control its access by suspending the calling process. In addition the semaphore will resume the suspended 
+process by rescheduling it when necessary -- and this without the need for the process to poll the semaphore.
 
 
+We can also see a semaphore is a kind of clever counter that manages processes. 
+This counter can be initialized with a value;  you cannot read the current value but you can only increment or decrement by one such a value. When a process decrements a semaphore, if the result is negative, the 
+semaphore suspends the process and this process cannot continue until another process increments 
+the semaphore. When a process increments the semaphore, if there are other processes waiting, one of them gets resumed.
+
+
+
+\paragraph{Illustrating Semaphore.}
+Image that we want to make sure that a given resource cannot be used by two processes at the same time.
+We will attach a semaphore to the resource. Figure~\ref{fig:sema} shows that the process \ct{P0} is using the resource and that other processes needed it so they are waiting. When a new process \ct{P4} requires the resource, it notifies it, which leads to send the message \ct{wait} to the semaphore. The process is then suspended and added to the list of the waiting processed of the semaphore (Figure~\ref{fig:SemaphoreSendingWait}) left. 
+
+
+When \ct{P0} has finished to work with the resource, it notifies the resource which has for effect to notify the semaphore with the message wait.
+
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=6cm]{SemaphoreSendingWait2}\includegraphics[width=6cm]{SemaphoreSendingSignal}
+\caption{. \label{fig:SemaphoreSendingWait}}
+\end{center}
+\end{figure}
+
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=6cm]{ProcessToInSchedulerQueue}
+\caption{. \label{fig:ProcessToInSchedulerQueue}}
+\end{center}
+\end{figure}
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=6cm]{SemaphoreResuming}
+\caption{. \label{fig:SemaphoreResuming}}
+\end{center}
+\end{figure}
+
+
+\paragraph{Semaphore creation.}
+A semaphore is created using the message \ct{new}
+
+
+
+
+\paragraph{Some implementation aspects.} The implementation of the method \ct{wait} of the Semaphore class,
+implements the counter behavior we mentioned early. When the number of signals is negative, then the current process (ie the one that sends the message wait) is suspended. 
+
+\begin{code}{}
+Semaphore>>>wait
+	"Primitive. The active Process must receive a signal through the receiver 
+	before proceeding. If no signal has been sent, the active Process will be 
+	suspended until one is sent. Essential. See Object documentation 
+	whatIsAPrimitive."
+		<primitive: 86>
+	self primitiveFailed
+
+	"excessSignals>0  
+		ifTrue: [excessSignals := excessSignals-1]  
+		ifFalse: [self addLastLink: Processor activeProcess suspend]
+\end{code}
 % For all intents and purposes, \clsindmain{Object} is the root of the inheritance hierarchy. Actually, in Squeak the true root of the hierarchy is \clsind{ProtoObject}, which is used to define minimal entities that masquerade as objects, but we can ignore this point for the time being.
 % % (more on this later in the chapter on reflection).
 % 
@@ -99,6 +237,12 @@ In Smalltalk, threads are called process, instance of the class \clsindmain{Proc
 %     ^ real hash bitXor: imaginary hash.
 % \end{method}
 
+\ifx\wholebook\relax\else
+   \bibliographystyle{jurabib}
+   \nobibliography{scg}
+   \end{document}
+\fi
+
 \section{Protocol}
 
 
@@ -109,43 +253,6 @@ prennent précédence sur ceux de priorité inferieure. Collaborative car pourqu
 Les processus
 Pour les besoins de la programmation concurrente, Smalltalk offre une panoplie de classes qui permettent la manipulation de processus légers (threads) instances de la classe Process [sharp97]. Un processus est caractérisé par un bloc (instance de BlockContext) qui décrit les opérations qu'il doit exécuter et une priorité d'exécution.
 
-La gestion des processus est à la charge de l'instance unique de la class ProcessorScheduler. Cet objet référencé par la variable globale Processor - donne accès à l'ensemble des processus et permet ainsi de les retrouver et de les manipuler. En particulier, il permet de définir le processus à activer en fonction des priorités et de l'ordre de réveil.
-
-Priorités et préemption
-Comme les processus Smalltalk sont préemptifs, ceux à la priorité la plus importante (i.e. la plus proche de 100) sont ceux qui ont le plus de chance d'être exécutés. Le processus ayant la plus grande priorité est exécuté jusqu'à sa terminaison ou sa mise en sommeil.
-
-Tous les autres processus sont mis en attente. Dans le cas où plusieurs processus
-ont la même priorité, alors l'ordre de réveil est utilisé. Le premier à être réveillé sera exécuté jusqu'à sa terminaison ou mise en sommeil. Les autres processus de même priorité ou de priorité inférieure seront mis en attente.
-A titre d'exemple, supposons que nous disposions d'un objet compte bancaire référencé par la variable \verb!monCompte! utilisée dans les trois processus correspondant aux trois lignes suivantes~:
-
-@@change l'exemple@@
-
-[monCompte depot: 50] forkAt: 30.
-[monCompte solde] forkAt: 40.
-[monCompte retrait: 200] forkAt: 40.
-
-
-Dans chacune de ces trois lignes de code, un bloc donne les traitements réalisés par le processus. Le processus est ensuite créé et réveillé en envoyant le message forkAt: au bloc. L'argument de ce message correspond à la
-priorité du processus.
-
-Une fois la première ligne évaluée, le processus de dépôt est lancé. Cependant, il est rapidement mis en attente car la ligne suivante lance le processus de consultation de solde à une priorité plus élevée. La troisième ligne lance un processus de retrait à la même priorité que pour la consultation. De ce fait, il reste en attente. Lorsque la
-consultation est complètement terminée, le processus de retrait est activé car il a la priorité la plus forte. Ce n'est que lorsque tous les processus de priorité supérieure à 30 sont terminés que notre processus de dépôt est activé.
-
-En plus de ces règles, le programmeur Smalltalk peut créer des processus de même niveau de priorité qui ne se bloquent pas les uns les autres. Pour ce faire, chacun des processus doit régulièrement demander au gestionnaire de processus Processor d'activer les éventuels autres processus de même priorité mis en attente.
-Cette demande se fait à l'aide du message yield (Processor yield).
-
-Mise en sommeil
-Une autre solution consiste en une mise en sommeil. Pour ce faire, Smalltalk intègre la classe Delay qui permet de suspendre le processus actif pendant un laps de temps. Dans l'exemple suivant, le processus exécute une boucle de consultations de solde espacées de 30 secondes.
-
-[ | attente |
-    attente := Delay forSeconds: 30.
-    100 timesRepeat: [
-             attente wait.  "Mise en sommeil"
-             monCompte solde.]
-] forkAt: 40.
-
-
-Nous faisons l'hypothèse que monCompte est une variable qui référence un compte bancaire. Le processus commence par creer une instance de Delay qui correspond à l'intervalle d'attente entre deux consultations de solde. Il réalise ensuite 100 fois (message timesRepeat: envoyé à l'entier 100) une consultation précédée par une attente.
 
 \section{Synchronisation}
 Afin de gérer les accès concurrents aux ressources, Smalltalk dispose d'objets verrous. Ce sont des instances de la classe Semaphore qui permettent la synchronisation des sections critiques du code. Pour ce faire, tous les processus qui partagent une même ressource doivent envoyer au sémaphore le message wait avant l'accès et le message signal après l'accès. En effet, l'exécution du processus qui envoie un wait est suspendue. Lorsque le sémaphore reçoit un signal, il réveille le plus ancien processus (i.e. le premier à avoir envoyé wait).
