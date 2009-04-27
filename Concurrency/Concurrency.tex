@@ -41,14 +41,73 @@ The subsequent chapter will present the other abstractions offered by \pharo: Mu
 
 %=================================================================
 \section{Processes}
-\pharo supports the concurrent execution of multiple programs using independent processes. These are lightweight processes as they share a common memory space. Such processes are instances of the class \ct{Process}.
+\pharo supports the concurrent execution of multiple programs using independent processes. These processes are lightweight processes as they share a common memory space. Such processes are instances of the class \ct{Process}. In other languages there are often called \ct{threads} or green threads.
 
 \paragraph{Launching a process. }
-To execute concurrently a program, we specify such program in a block and send it the message \ct{fork}.
-For example, the following example, 
+To execute concurrently a program, we specify such a program in a block and send it the message \ct{fork}.
+
 \begin{code}{}
-[Transcript show: 100 factorial printString] fork
+[1 to: 10 do: [:i | Transcript show: i  printString ; cr]] fork
 \end{code}
+
+This expression creates an instance of the class \ct{Process}. It is added to the list of scheduled processes of the process scheduler. We say that this process is \emph{runnable}, it can be potentially executed. It will be executed when the process scheduler will schedule it as the current running process. At this moment the block of this process will be executed. 
+
+
+We can also create a process which is not scheduled using the message \ct{newProcess}. 
+
+\begin{code}{}
+| pr | 
+pr := [1 to: 10 do: [:i | Transcript show: i  printString ; cr]] newProcess
+pr resume
+\end{code}
+
+This process is not \emph{runnable}, it is not added to the list of the scheduled processes of the process scheduler. It can be scheduled sending it the message \ct{resume}. 
+
+You can also pass arguments to a process with the message \ct{newProcessWith:} as follows: 
+
+\begin{code}{}
+| pr | 
+pr := [ :max |
+		1 to: max do: [:i | Transcript show: i  printString ; cr]] newProcessWith: #(20).
+pr resume
+\end{code}
+
+
+
+A process can also be temporarily suspended (\ie stopped) using the message \ct{suspend}. A suspended processed can be rescheduled using the message \ct{resume}. Now we can also terminate a process using the message terminate. 
+A terminated process cannot be scheduled any more. 
+
+\paragraph{Process possible states.}
+From the description above we can see that a process can be in four different states: running, runnable, suspended, and terminated. As we will see in the following of this chapter, a process can also be waiting when a semaphore does not allow it to proceed. 
+
+A process can be 5 different states (See Figure~\ref{fig:processState}):
+\begin{description}
+\item [Runnable] A process has been created but not run. 
+
+\item [Running] A process has been created and  scheduled, now it is running and executing a program. At the end of its execution it will be terminated.
+
+\item [Terminated] When a process receives the message \ct{terminate}, it stops running and cannot be run anymore. 
+
+\item [Suspended] A running is stopped to run and \sd{does suspend schedule a process?}
+
+\item [Waiting] A process is not in the scheduler list but waiting in a semaphore list. 
+
+\end{description}
+
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=10cm]{ProcessState}
+\caption{Process possible states.\label{fig:processState}}
+\end{center}
+\end{figure}
+
+Suspended and waiting are similar: the main difference is that a suspended process may be rescheduled using the message \ct{resume}, while a waiting process is only rescheduled when the semaphore that put it on wait, reschedule it (see Section~\ref{}).
+
+To sum up, there are 3 messages sent to a Process which change its state: resume, suspend and terminate. In addition, the messages wait and signal sent to a semaphore have effect on processes. The message \ct{wait} affects the currently running process and the message \ct{signal} sent to a semaphore will resume of the waiting semaphore processes. 
+
+
+\section{Process Scheduler}
 
 La gestion des processus est à la charge de l'instance unique de la class ProcessorScheduler. Cet objet référencé par la variable globale Processor - donne accès à l'ensemble des processus et permet ainsi de les retrouver et de les manipuler. En particulier, il permet de définir le processus à activer en fonction des priorités et de l'ordre de réveil.
 
@@ -89,31 +148,10 @@ Une autre solution consiste en une mise en sommeil. Pour ce faire, Smalltalk int
 Nous faisons l'hypothèse que monCompte est une variable qui référence un compte bancaire. Le processus commence par creer une instance de Delay qui correspond à l'intervalle d'attente entre deux consultations de solde. Il réalise ensuite 100 fois (message timesRepeat: envoyé à l'entier 100) une consultation précédée par une attente.
 
 
-\sd{how to I go from runnble to running? this is the scheduler job}
-\sd{how yield comes into play}
-
-A process can be 5 different states:
-\begin{description}
-\item [Runnable] A process has been created but not run. 
-
-\item [Running] A process is running 
-
-\item [Terminated] When a process receives the message \ct{terminate}, it stops running and cannot be run anymore. 
-
-\item [Suspended] A running is stopped to run and \sd{does suspend schedule a process?}
-
-\item [Waiting] A process is not in the scheduler list but waiting in a semaphore list. 
-
-\end{description}
 
 
 
-\begin{figure}
-\begin{center}
-\includegraphics[width=10cm]{ProcessState}
-\caption{Process possible states.\label{fig:processState}}
-\end{center}
-\end{figure}
+
 
 
 
