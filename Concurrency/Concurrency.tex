@@ -119,7 +119,7 @@ A process can be 5 different states:
 
 \section{Semaphore Basic Principle}
 A semaphore is a basic mechanism for synchronizing processes.  A semaphore will either suspend or resume processes depending on its internal state. It has a list of waiting processes. 
-When a process sends the message \ct{wait} to a semaphore, depending on the internal state of the semaphore, the calling process is put on wait (the process is added to the process waiting list of the semaphore). When a process has finished --- to use the resource for example, it signals it to the semaphore, which resumes one of its waiting processes. 
+When a process sends the message \ct{wait} to a semaphore, depending on the internal state of the semaphore, the calling process is put on wait (the process is added to the process waiting list of the semaphore). When a process has finished --- to use the resource for example, it signals it to the semaphore, which resumes one of its waiting processes. \sd{check the phrasing of xavier for this part}
 
 Figure~\ref{fig:sema} shows a semaphore which is associated with a resource. The process \ct{P0} is currently using the resource. The process \ct{P2} and  \ct{P3}  are suspended and waiting in the list of suspended processes of the semaphore. 
 
@@ -146,33 +146,28 @@ the semaphore. When a process increments the semaphore, if there are other proce
 
 \paragraph{Illustrating Semaphore.}
 Image that we want to make sure that a given resource cannot be used by two processes at the same time.
-We will attach a semaphore to the resource. Figure~\ref{fig:sema} shows that the process \ct{P0} is using the resource and that other processes needed it so they are waiting. When a new process \ct{P4} requires the resource, it notifies it, which leads to send the message \ct{wait} to the semaphore. The process is then suspended and added to the list of the waiting processed of the semaphore (Figure~\ref{fig:SemaphoreSendingWait}) left. 
+We will attach a semaphore to the resource. Figure~\ref{fig:sema} shows that the process \ct{P0} is using the resource and that other processes needed it so they are waiting. When a new process \ct{P4} requires the resource, it notifies it, which leads to send the message \ct{wait} to the semaphore. The process is then suspended and added to the list of the waiting processed of the semaphore (Figure~\ref{fig:SemaphoreSendingWait}). 
 
 
-When \ct{P0} has finished to work with the resource, it notifies the resource which has for effect to notify the semaphore with the message wait.
+When \ct{P0} has finished to work with the resource, it notifies the resource which has for effect to notify the semaphore with the message \ct{signal}. The next waiting process is resumed, it is added to the scheduler processes list and will be executed 
 
 
 \begin{figure}
 \begin{center}
-\includegraphics[width=6cm]{SemaphoreSendingWait2}\includegraphics[width=6cm]{SemaphoreSendingSignal}
-\caption{. \label{fig:SemaphoreSendingWait}}
+\includegraphics[width=6cm]{SemaphoreSendingWait2}
+\caption{A new process wants to access the resources, it is suspended and added to the wait list of the semaphore. \label{fig:SemaphoreSendingWait}}
 \end{center}
 \end{figure}
 
 
 \begin{figure}
 \begin{center}
-\includegraphics[width=6cm]{ProcessToInSchedulerQueue}
-\caption{. \label{fig:ProcessToInSchedulerQueue}}
+\includegraphics[width=5.5cm]{SemaphoreSendingSignal}\includegraphics[width=3.5cm]{ProcessToInSchedulerQueue}\includegraphics[width=3.5cm]{SemaphoreResuming}
+\caption{  process terminates, a suspended process is resumed (added to the scheduler list).\label{fig:ProcessToInSchedulerQueue}}
 \end{center}
 \end{figure}
 
-\begin{figure}
-\begin{center}
-\includegraphics[width=6cm]{SemaphoreResuming}
-\caption{. \label{fig:SemaphoreResuming}}
-\end{center}
-\end{figure}
+
 
 
 \paragraph{Semaphore creation.}
