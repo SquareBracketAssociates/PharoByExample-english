@@ -52,7 +52,7 @@ In addition, CVS-like tools only version plain text files and not individual pac
 
 %\ab{It would be better to say concretely why this would be a bad idea, rather than resorting to name-calling.  Many people think that files are good.  Let's tell the reader about the disadvantages!}
 
-\emph{\MC{}} is  a versioning system for Squeak in which classes and methods, rather than lines of text,
+\emph{\MC{}} is  a versioning system for Squeak\sd{pharo?} in which classes and methods, rather than lines of text,
 are the units of change. \emph{SqueakSource} is an online central repository in which you can store versions of your applications using \MC. SqueakSource is the equivalent of GForge, and \MC the equivalent of CVS. 
 
 In this chapter, you will learn how to use use \MC and SqueakSource to manage your software. We have already seen \MC briefly in the chapters ``A First Application'' and ``The Squeak Programming Environment'' in \emph{Squeak by Example}. This chapter delves into the details of additional features of \MC that are useful for versioning large applications.
@@ -84,7 +84,7 @@ Of course these tests will fail as we have not yet implemented the \ct{isPerfect
 %-----------------------------------------------------------------
 \subsection{Launching \MC}
 
-\MC is included in the standard Squeak distribution\footnote{\url{http://www.squeak.org}} and in the image for developers\footnote{\url{http://damiencassou.seasidehosting.st/Smalltalk/squeak-dev}}\alex{The distributed Pharo will be the image for developpers}. 
+\MC is included in the standard Squeak \sd{and Pharo} distribution\footnote{\url{http://www.squeak.org}} and in the image for developers\footnote{\url{http://damiencassou.seasidehosting.st/Smalltalk/squeak-dev}}\alex{The distributed Pharo will be the image for developpers}. \sd{as alex said in pharo this will be by default.}
 We will assume that \MC is already installed in your image.
 %\on{We should state explicitly which version of Squeak we are using for the screen shots for the entire book. This should be explained in the Foreword. I am redoing the figures using the SBE download image. (For some reason the snapshots in this chapter were of very poor quality, so I have to redo them anyway.)}
 %If you use another image that does not have \MC pre-installed, you can install yourself it using application deployment tools such as \emph{SqueakMap} and \emph{Universe} (normally accessible via \menu{open ...} then \menu{SqueakMap Package Loader} and \menu{Package Universe Browser}). A universe is a distribution of packages: all the packages within a universe have be validated to work for a specific version of Squeak. 
@@ -121,7 +121,7 @@ Our new package named \pkg{Perfect} contains:
 
 \begin{itemize}
 
-\item All classes in the system category \scat{Perfect}, or in system categories whose names start with \scat{Perfect-}. For now this includes only our \ct{PerfectTest} class.
+\item All classes in the system category \scat{Perfect}, or in system categories whose names start with \scat{Perfect-}. For now this includes only our \ct{PerfectTest} class. \sd{Ask lukas because I do not see why Perfect- would be any different from PerfectZork - is not a special character.}
 
 \item All methods for any class in \emph{any} system category defined in protocols named \prot{*perfect} or \prot{*Perfect}, or in protocols whose names start with \prot{*perfect-} or \prot{*Perfect-}. Such methods are known as \emph{extensions}. We don't have any yet, but we will define some very soon.
 
@@ -157,7 +157,7 @@ The \ct{Perfect} package is now saved in \ct{package-cache} contained in the sam
 %\ab{Experience with my students is that changing the version name is a really bad idea, since it can easily break \MC.}
 %\alex{I was not able to find a satisfying explanation, So I prefer to leave this point out}
 
-A version is an immutable snapshot of a package that has been written to a repository. Each version has a unique version number to identify it in a repository. When saving a version into a repository, the next available number is automatically assigned to the version. Note that version branches do not interfere with this numbering scheme (as with CVS or Subversion). As we shall see later, versions are ordered by their version number by default when opening a repository.
+A version is an immutable snapshot of a package that has been written to a repository. Each version has a unique version number to identify it in a repository. \sd{but pay attention this number is not globally unique in another repository you may have the same file identifier for a different snapshot. \MC is a distributed source code versioning system.} When saving a version into a repository, the next available number is automatically assigned to the version. Note that version branches do not interfere with this numbering scheme (as with CVS or Subversion). As we shall see later, versions are ordered by their version number by default when opening a repository.
 
 %-----------------------------------------------------------------
 \subsection{Class extensions}
@@ -320,7 +320,7 @@ Congratulations! You have now created a new branch of the \ct{Perfect} package.
 %-----------------------------------------------------------------
 \subsection{Merging}
 
-\alex{This subsection will need a major overhaul when turning the chapter for Pharo. The merging tool is radically different}
+\alex{This subsection will need a major overhaul when turning the chapter for Pharo. The merging tool is radically different}\sd{Is it not. There is a preference to get the one shown in this section. We should just say useDiff....}
 You can merge one version of a package with another using the \button{Merge} button in the \MCB. Typically you will want to do this when (i) you discover that you have been working on a out-of-date version, or (ii) branches that were supposed to be independent have to be re-integrated. Both scenarios are common when multiple developers are working on the same package.
 
 Consider the current situation with our \ct{Perfect} package, as illustrated at the left of \figref{branching-merging}. We have published a new version 3 that is based on version 1.
@@ -418,6 +418,8 @@ It is a good practice to always browse the code of your package before publishin
 
 \alex{David's browser shows class extensions, although it does not supersede the snapshot browser, it should be mention here}
 
+
+\sd{could we get rid of this yellow and red clicking. it makes no sense. I remember that I propose a good naming convention for the mouse button -- it was also in one of the freebooks - select = left = you select a window to move it around, operate you want to get the menus and act on something and  meta is for the rest}
 %-----------------------------------------------------------------
 \subsection{History} 
 
@@ -565,10 +567,12 @@ Here is the reason why:
 \item If instead you save \ct{Perfect-Tests}, this will \emph{not} cause \ct{Perfect-All} to be saved.  This is bad because you effectively break the dependency.  If you then load the latest version of \ct{Perfect-All} you will not get the latest versions of the required packages. Don't do it!
 \end{itemize}
 
+
+\sd{watch out: do not name your top level package with a suffix (perfect) that could match your subpackages. Do not put Perfect as dependent of Perfect-Extensions and PerfectTest. You would get in trouble since MC would save all the classes for three package while you only want two packages and an empty one the top level.}
 %-----------------------------------------------------------------
 \subsection{Class initialization}
 
-When \MC loads a package into the image, any class that defines an \ct{initialize} method on the class side will be be sent the \ct{initialize} message. The message is sent \emph{only} to classes that define this method on the class side. A class that does not define this method will not be initialized, even if \ct{initialize} is defined by one of its superclasses.
+When \MC loads a package into the image, any class that defines an \ct{initialize} method on the class side will be be sent the \ct{initialize} message. The message is sent \emph{only} to classes that define this method on the class side. A class that does not define this method will not be initialized, even if \ct{initialize} is defined by one of its superclasses. \sd{watch out the initialize method is not invoked when you reload a package.}
 
 %\on{OK, I confirmed this with a simple test}
 
@@ -736,7 +740,7 @@ Versions are stored in repositories as binary files.
 These files are commonly call ``mcz files'' as they carry the extension .mcz.
 This stands for ``\MC zip'' since an mcz file is simply a zipped file containing the course code and other meta-data.
 
-\important{An mcz file can be dragged and dropped onto an open image file, just like a change set. \Squeak will then prompt you to ask if you want to load the package it contains.}
+\important{An mcz file can be dragged and dropped onto an open image file, just like a change set. \Squeak will then prompt you to ask if you want to load the package it contains. \sd{but you lose the fact that this is a package so don't do that.}}
 
 You may try to unzip such a file, for example to view the source code directly, but normally end users should not need to unzip these files themselves.
 If you unzip it, you will find the following members of the mcz file.
