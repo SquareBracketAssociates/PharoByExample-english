@@ -43,22 +43,17 @@
 
 %=================================================================
 
-% \on{Fixed FP's comments}
-% \fp{% - Syntax error: "Instead it generates XTHML programmatically." pag 11\\
-% - At the end of page 16: "The Form Elements example illustrates most of the features of forms." Which Form elements? An example that contains a classic form with different elements is WAInputTest. Also other pages contain different form elements. Probably is better a phrase like: " Have a look at the system category Seaside-Tests-Functional , or just point your browser to http://localhost:8080/seaside/tests/alltests where there are different examples illustrating most of the features of forms."\\
-% - pag. 25: "Go to http:// localhost:8080/ seaside/ tests/ alltests and select Convenience and select Transaction. Try to navigate back and forth within the parent and child transaction. Note that as soon as a transaction is complete, you can no longer go back inside the transaction without generating an error." The error is generated just when I go back with browser and I click "Ok" button in the form. Is that one the error that you want highlight? Or an error should be generated going back and forth with the browser buttons. It is not clear.\\
-% - In the footnote 9 pag. 26: "The relevant category is SBE-SeasideRPN". There are no project called like that here http://www.squeaksource.com/SqueakByExample. Instead there is "SBE2-SeasideRPN-on.1.mcz" that, anyway is a little bit different form the code show in the example. For instance there isn't a method called "renderStackButtonOn: html with: text callback: aBlock colSpan: anInteger ". I think that the code online have to be the same of the example.\\
-% - the rest of the chapter seems ok. The most difficult part of code are written in the book and anyway to have an example you can check the code online. (I'm talking about the calculator implementation in particular).
-% }
 
-\ind{Seaside} is a framework for building web applications in Smalltalk.  It was originally developed by Avi Bryant \index{Bryant, Avi} in 2002; once mastered, Seaside makes web applications almost as easy to write as desktop application.
+\on{Doing another pass; updating to pharo}
+
+\ind{Seaside} is a framework for building web applications in Smalltalk.  It was originally developed by Avi Bryant \index{Bryant, Avi} in 2002; once mastered, Seaside makes web applications almost as easy to write as desktop applications.
 
 Two of the better known applications built with Seaside are \ind{SqueakSource}\footnote{\url{http://SqueakSource.com}} and \ind{Dabble DB}\footnote{\url{http://DabbleDB.com}}.
 Seaside is unusual in that it is thoroughly object-oriented: there are no XHTML templates, no complicated control flows through web pages, and no encoding of state in URLs. Instead, you just send messages to objects.  What a nice idea!
 
 \section{Why do we need Seaside?}
 
-Modern web applications try to interact with the user in the same way as desktop applications: they ask the user questions, and the user responds, usually by filling in a form or clicking a button.
+Modern web applications try to interact with the user in the same way as desktop applications: they ask the user questions and the user responds, usually by filling in a form or clicking a button.
 But the web works the other way around: the user's browser makes a request of the server, and the server responds with a new web page.
 So \ind{web application development} frameworks have to cope with a host of problems, chief among them being the management of this ``inverted'' control flow. 
 Because of this, many web applications try to forbid the use of the browser's ``back'' button due to the difficulty of keeping track of the state of a session. 
@@ -95,7 +90,7 @@ This is a prepackaged version of Seaside 2.8 for \ind{Mac OSX}, \ind{Linux} and 
 The same web site lists many pointers to additional resources, including documentation and tutorials.
 Be warned, however, that Seaside has evolved considerably over the years, and not all available material refers to the latest version of Seaside.
 
-If you are feeling more adventurous, an alternative to the ``one-click'' image is to start with the latest \ind{Squeak Developers' Web image}\footnote{\url{http://damien.cassou.free.fr/squeak-dev.html}}, and install Seaside yourself by following the manual \subind{Seaside}{installation} instructions on the Seaside web site.
+% If you are feeling more adventurous, an alternative to the ``one-click'' image is to start with the latest \ind{\pharo web image}\footnote{\url{http://pharo-project.org/download}}, and install Seaside yourself by following the manual \subind{Seaside}{installation} instructions on the Seaside web site.
 
 Seaside includes a web server; you can turn the server on, telling it to listen on port 8080, by evaluating \clsind{WAKom} \ct{startOn: 8080},
 and you can turn it off again by evaluating \ct{WAKom stop}.
@@ -140,18 +135,18 @@ Notice how the counter is correctly incremented with respect to the currently di
 
 Notice the \subind{Seaside}{toolbar} at the bottom of the web page in \figref{seasideStartup}.
 Seaside supports a notion of ``sessions'' to keep track of the state of the application for different users.
-\link{New Session} will start a new session on the counter application.
-\link{Configure} allows you to configure the settings of your application through a convenient web-interface.
-(To close the \link{Configure} view, click on the \link{x} in the top right corner.)
-\link{Toggle Halos} provides a way to explore the state of the application running on the Seaside server.
-\link{Profiler} and \link{Memory} provide detailed information about the run-time performance of the application.
-\link{XHTML} can be used to validate the generated web page, but works only  when the web page is publicly accessible from the Internet, because it uses the W3C validation service.
+\button{New Session} will start a new session on the counter application.
+\button{Configure} allows you to configure the settings of your application through a convenient web-interface.
+(To close the \button{Configure} view, click on the \link{x} in the top right corner.)
+\button{Toggle Halos} provides a way to explore the state of the application running on the Seaside server.
+\button{Profiler} and \button{Memory} provide detailed information about the run-time performance of the application.
+\button{XHTML} can be used to validate the generated web page, but works only  when the web page is publicly accessible from the Internet, because it uses the W3C validation service.
 \index{Seaside!halos}
 
 Seaside applications are built up from pluggable ``components''.
 In fact, components are ordinary Smalltalk objects.
 The only thing that is special about them is that they should be instances of classes that inherit from the Seaside framework class \ct{WAComponent}.
-We can explore components and their classes from the Squeak image, or directly from the web interface using halos.
+We can explore components and their classes from the \pharo image, or directly from the web interface using halos.
 
 %:FIG counterHalos
 \begin{figure}[ht]
@@ -162,7 +157,7 @@ We can explore components and their classes from the Squeak image, or directly f
 \end{center}
 \end{figure}
 
-\dothis{Select \link{Toggle Halos}. You should see a web page like \figref{counterHalos}.
+\dothis{Select \button{Toggle Halos}. You should see a web page like \figref{counterHalos}.
 At the top left the text \ct{WACounter} tells us the class of the Seaside component that implements the behavior of this web page. 
 Next to this are three clickable icons. 
 The first, with the pencil, activates a Seaside class browser on this class.
@@ -174,7 +169,7 @@ Note that the \link{++} and \link{--} links are also active in the source view.
 Contrast the nicely-formatted source view provided by the Halos with the unformatted source view offered by your browser.}
 
 The Seaside class browser and object inspector can be very convenient when the server is running on another computer, especially when the server does not have a display, or if it is in remote place. 
-However, when you are first developing a Seaside application, the server will be running locally, and it is easy to use the ordinary \squeak development tools in the server image.
+However, when you are first developing a Seaside application, the server will be running locally, and it is easy to use the ordinary \pharo development tools in the server image.
 
 %:FIG haltingCounter
 \begin{figure}[ht]
@@ -400,7 +395,7 @@ html render: 1.              "render any object"
 \end{code}
 
 The message \ct{render: anyObject} can be sent to an html canvas to render \ct{anyObject}; it is normally used to render subcomponents.  \lct{anyObject} will itself be sent the message \ct{renderContentOn:}
-this is what happens in multi-counter (see \figref{WAMultiCounter}).
+this is what happens in the multi-counter (see \figref{WAMultiCounter}).
 
 \subsection{Using Brushes}
 \label{sec:brushes}
@@ -425,7 +420,7 @@ html horizontalRule.
 \end{center}
 \end{figure}
 
-In \figref{RenderingDemo} we can see the output of many of the basic brushes offered by Seaside.\footnote{The source code for \mthref{renderdemo} is in the package \ct{SBE-SeasideDemo} in the project \url{http://www.squeaksource.com/SqueakByExample}.}
+In \figref{RenderingDemo} we can see the output of many of the basic brushes offered by Seaside.\footnote{The source code for \mthref{renderdemo} is in the package \ct{PBE-SeasideDemo} in the project \url{http://www.squeaksource.com/PharoByExample}.}
 The root component \ct{SeasideDemo} simply renders its subcomponents, which are instances of \ct{SeasideHtmlDemo}, \ct{SeasideFormDemo}, \ct{SeasideEditCallDemo} and \ct{SeasideDialogDemo}, as shown in \mthref{renderdemo}.
 
 \needspace{7ex}
@@ -434,7 +429,7 @@ SeasideDemo>>>renderContentOn: html
 	html heading: 'Rendering Demo'.
 	html heading
 		level: 2;
-		with: 'Rendering basic XHTML: '.
+		with: 'Rendering basic HTML: '.
 	html div
 		class: 'subcomponent';
 		with: htmlDemo.
@@ -597,9 +592,9 @@ Using \ct{on: #heading of: self}, the \ct{heading} variable is updated automatic
 The same message is used twice more in this example, to cause the selection of a colour on the html form to update the \ct{color} variable, and to bind the result of the checkbox to the \ct{checked} variable.
 Many other examples can be found in the functional tests for Seaside.
 Have a look at the system category \scat{Seaside-Tests-Functional}, or just point your browser to \url{http://localhost:8080/seaside/tests/alltests}.
-The \link{Form Elements} example on that page illustrates most of the features of forms.
+Select \menu{WAInputTest} and click on the \button{Restart} button to see most of the features of forms.
 
-Don't forget, if you \link{Toggle Halos}, you can browse the source code of the examples directly using the Seaside class browser.
+Don't forget, if you \button{Toggle Halos}, you can browse the source code of the examples directly using the Seaside class browser.
 
 %-----------------------------------------------------------------
 \section{CSS: Cascading style sheets}
@@ -818,7 +813,7 @@ A \subind{Seaside}{task} is a component that subclasses \clsind{WATask}.
 It does not render anything itself, but simply calls other components in a control flow defined by implementing the method \mthind{WATask}{go}.
 
 \clsind{WAConvenienceTest} is a simple example of a task defined in the system category \scat{Seaside-Tests-Functional}.
-To see its effect, just point your browser to \url{http://localhost:8080/seaside/tests/alltests} and select \link{Convenience}.
+To see its effect, just point your browser to \url{http://localhost:8080/seaside/tests/alltests}, select \menu{WAConvenienceTest} and click \button{Restart}.
 
 \begin{code}{}
 WAConvenienceTest>>>go
@@ -871,7 +866,7 @@ The generated dialogues are shown in \figref{chooseCheese}.
 We saw in \secref{backtracking} that Seaside can keep track of the correspondence between the state of components and individual web pages by having components register their state for backtracking:
 all that a component need do is implement the method \ct{states} to answer an array of all the objects whose state must be tracked.
 
-However, sometimes, we do not want to backtrack state: instead we want to \emph{prevent} the user from accidentally undoing effects that should be permanent.
+Sometimes, however, we do not want to backtrack state: instead we want to \emph{prevent} the user from accidentally undoing effects that should be permanent.
 This is often referred to as ``the shopping cart problem''.
 Once you have checked-out your shopping cart and paid for the items you have purchased, it should not be possible to go ``back'' with the browser and add more items to the shopping cart!
 
@@ -965,7 +960,7 @@ WANestedTransaction>>>go
 	self inform: 'Outside parent txn'
 \end{code}
 
-\dothis{Go to \url{http://localhost:8080/seaside/tests/alltests} and select \link{Transaction}.
+\dothis{Go to \url{http://localhost:8080/seaside/tests/alltests}, select \menu{WATransactionTest} and click on \button{Restart}.
 Try to navigate back and forth within the parent and child transaction by clicking the \button{back} button and then clicking \button{ok}.
 Note that as soon as a transaction is complete, you can no longer go back inside the transaction without generating an error upon clicking \button{ok}.}
 
@@ -974,8 +969,8 @@ Note that as soon as a transaction is complete, you can no longer go back inside
 
 % ON: Should take about two hours
 
-Let's see how we can build a complete Seaside application from scratch.\footnote{The exercise should take at most a couple of hours. If you prefer to just look at the completed source code, you can grab it from the SqueakSource project \url{http://www.squeaksource.com/SqueakByExample}.
-The relevant package is \scat{SBE2-SeasideRPN}. The tutorial that follows uses slightly different class names so that you can compare your implementation with ours.}
+Let's see how we can build a complete Seaside application from scratch.\footnote{The exercise should take at most a couple of hours. If you prefer to just look at the completed source code, you can grab it from the SqueakSource project \url{http://www.squeaksource.com/PharoByExample}.
+The package to load is \scat{PBE-SeasideRPN}. The tutorial that follows uses slightly different class names so that you can compare your implementation with ours.}
 We will build a RPN (Reverse Polish Notation) calculator as a Seaside application that uses a simple stack machine as its underlying model.
 Furthermore, the Seaside interface will let us toggle between two displays\,---\,one which just shows us the current value on top of the stack, and the other which shows us the complete state of the stack.
 The calculator with the two display options is shown in \figref{stackMachine}.
@@ -1001,7 +996,7 @@ MyStackMachine>>>initialize
 
 The stack machine should provide operations to \ct{push:} and \ct{pop} values, view the \ct{top} of the stack, and perform various arithmetic operations to add, subtract, multiply and divide the top values on the stack.
 
-\dothis{Write some tests for the stack operations, and then implement these operations.
+\dothis{Write some tests for the stack operations and then implement these operations.
 Here is a sample test:}
 
 \needlines{4}
@@ -1116,24 +1111,12 @@ First define the following helper methods, which will make it easier to script t
 
 \needlines{3}
 \begin{code}{}
-MyKeypad>>>renderStackButtonOn: html with: text callback: aBlock colSpan: anInteger 
-	html tableData
-		class: 'key';
-		colSpan: anInteger;
-		with: 
-			[html anchor
-				callback: aBlock;
-				with: [html html: text]]
+MyKeypad>>>renderStackButton: text callback: aBlock colSpan: anInteger on: html 	html tableData		class: 'key';		colSpan: anInteger;		with: 				[html anchor					callback: aBlock;					with: [html html: text]]
 \end{code}
 
 
 \begin{code}{}
-MyKeypad>>>renderStackButtonOn: html with: text callback: aBlock 
-	self 
-		renderStackButtonOn: html
-		with: text
-		callback: aBlock
-		colSpan: 1
+MyKeypad>>>renderStackButton: text callback: aBlock on: html 	self 		renderStackButton: text		callback: aBlock		colSpan: 1		on: html
 \end{code}
 
 We will use these two methods to define the buttons on the keypad with appropriate callbacks.
@@ -1301,7 +1284,7 @@ MyCalculator>>>renderContentOn: html
 				
 \dothis{To be able to re-render the display when a keyboard button is pressed, the keyboard needs to know the display component.
 Add a \ct{display} instance variable to \ct{MyKeypad}, an initializer method \ct{MyKeypad>>>setDisplay:}, and call this from \ct{MyCalculator>>initialize}.
-Now we are able to assign some JavaScript code to the buttons by updating \ct{MyKeypad>>>renderStackButtonOn:} as follows:}
+Now we are able to assign some JavaScript code to the buttons by updating \ct{MyKeypad>>>renderStackButton:callback:colSpan:on:} as follows:}
 
 \begin{code}{}
 MyKeypad>>>renderStackButton: text callback: aBlock colSpan: anInteger on: html 
