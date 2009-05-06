@@ -30,7 +30,7 @@
 \chapter{The Squeak programming environment}
 \label{cha:env}
 
-The goal of this chapter is to show you how to develop programs in the \Squeak programming environment.
+The goal of this chapter is to show you how to develop programs in the \squeak programming environment.
 You have already seen how to define methods and classes using the system browser; this chapter will show you more of the features of the system browser, and introduce you to some of the other browsers.
 
 Of course, very occasionally you may find that your program does not work as you expect. Squeak has an excellent debugger, but like most powerful tools, it can be confusing on first use.  We will walk you through a debugging session and demonstrate some of the features of the debugger. 
@@ -39,7 +39,7 @@ One of the unique features of Smalltalk is that while you are programming, you a
 
 The consequence of programming in a world of live objects rather than with files and a text editor is that you have to do something explicit to export your program from your Smalltalk image.  
 The old way of doing this, also supported by all Smalltalk dialects, is by creating a \emph{fileout} or a \emph{change set}, which are essentially encoded text files that can be imported into another system.  
-The new way of doing this in \Squeak is to upload your code to a versioned repository on a server.  This is done using a tool called \ind{Monticello}, and is a much more powerful and effective way to work, especially when working in a team.
+The new way of doing this in \squeak is to upload your code to a versioned repository on a server.  This is done using a tool called \ind{Monticello}, and is a much more powerful and effective way to work, especially when working in a team.
 \seeindex{change set}{file, filing out}
 \index{file!filing out}
 
@@ -52,8 +52,8 @@ Finally, you may find a bug in Squeak as you work; we explain how to report bugs
 
 Smalltalk and modern graphical interfaces were developed together.
 Even before the first public release of Smalltalk in 1983, Smalltalk had a self-hosting graphical development environment, and all Smalltalk development was taking place in it.
-Lets start by looking at the main tools in \Squeak, all of which can be dragged out of the \toolsflapind in the \sbe image (see \secref{sbeImage}).
-Depending on your personal settings, the \toolsflap{} can be opened by mousing over or clicking on the orange tab on the right-hand edge of \Squeak's main window.
+Lets start by looking at the main tools in \squeak, all of which can be dragged out of the \toolsflapind in the \sbe image (see \secref{sbeImage}).
+Depending on your personal settings, the \toolsflap{} can be opened by mousing over or clicking on the orange tab on the right-hand edge of \squeak's main window.
 
 \begin{itemize}
 	\item {The \menu{Browser}} is the central development tool. You will use it to create, define, and organize your classes and methods. Using it you can also navigate through all the library classes: unlike other environments where the source code is stored in separate files, in Smalltalk all classes and methods are contained in the image.
@@ -106,7 +106,7 @@ The \menu{Debugger} has an obvious role, but you will discover that it has a mor
 \label{sec:browser} % (fold)
 %apb: what does the fold comment mean?
 
-There are actually several browsers in \sq: the standard system browser, the package browser, the Omnibrowser, and the Refactoring Browser. 
+There are actually several browsers in \squeak: the standard system browser, the package browser, the Omnibrowser, and the Refactoring Browser. 
 We will take a look at the standard \ind{system browser} first, since the others are variations on it.
 \figref{SystemBrowser0} shows the browser as it appears when you first drag it out of the \toolsflapind.\footnote{If the browser you see looks different from the one we describe, then you might be using an image with a different default browser installed. See \faqref{omnibrowser}.}
 
@@ -269,7 +269,7 @@ Since all of the methods with the same selector ought to be used in the same way
 \subsubsection{Versions of a method}
 \label{sec:versions}
 
-When you save a new \subind{method}{version} of a method, the old one is not lost.  \sq keeps all of the old versions, and allows you to compare different versions and to go back (``revert'') to an old version.
+When you save a new \subind{method}{version} of a method, the old one is not lost.  \squeak keeps all of the old versions, and allows you to compare different versions and to go back (``revert'') to an old version.
 \begin{figure}[btp]
    \centering
    \ifluluelse
@@ -484,7 +484,7 @@ Further navigation examples can be found in the FAQ (\appref{faq}).
 
 As you have seen, there are many ways to navigate around Smalltalk code. 
 You may find this confusing at first, in which case you can always fall back to the traditional system browser.
-However, we usually find that once beginners gain more experience with \sq, the availability of different browsers becomes one of its most valued features, because they provide many ways to help you to understand and organize your code.
+However, we usually find that once beginners gain more experience with \squeak, the availability of different browsers becomes one of its most valued features, because they provide many ways to help you to understand and organize your code.
 The problem of understanding code is one of the greatest challenges of large-scale software development. 
 % section browser (end)
 
@@ -877,7 +877,7 @@ What a surprise!  Instead of getting the expected answer \ct{'txt'}, a \clsind{P
 \end{figure}
 
 The \ct{PreDebugWindow} has a title-bar that tells us what error occurred, and shows us a \emphind{stack trace} of the messages that led up to the error. 
-Starting from the bottom of the trace, \ct{UndefinedObject>>>DoIt} represents the code that was compiled and run when we selected \ct{'readme.txt' suffix} in the workspace and asked \sq to \menu{print it}.
+Starting from the bottom of the trace, \ct{UndefinedObject>>>DoIt} represents the code that was compiled and run when we selected \ct{'readme.txt' suffix} in the workspace and asked \squeak to \menu{print it}.
 This code, of course, sent the message \ct{suffix} to a \clsind{ByteString} object (\ct{'readme.txt'}). 
 This caused the inherited \ct{suffix} method in class \ct{String} to execute; all this information is encoded in the next line of the stack trace, \ct{ByteString(String)>>>suffix}.  
 Working up the stack, we can see that \ct{suffix} sent \ct{detect:}\ldots and eventually \ct{detect:ifNone} sent \ct{errorNotFound}.
@@ -930,7 +930,7 @@ This can be useful if you want to watch how a variable changes while you execute
 \index{keyboard shortcut!explore it}
 
 Looking back at the method window, we see that we expected the penultimate line of the method to find \ct{dot} in the string \ct{'readme.txt'}, and that execution should never have reached the final line.
-\sq does not let us run an execution backwards, but it does let us start a method again, which works very well in code such as this that does not mutate objects, but instead creates new ones.  
+\squeak does not let us run an execution backwards, but it does let us start a method again, which works very well in code such as this that does not mutate objects, but instead creates new ones.  
 
 \dothis{Click \button{Restart}, and you will see that the locus of execution returns to the first statement of the current method.  
 The blue highlight shows that the next message to be sent will be {\ct{do:}} (see \figref{RestartDetectIfNone}).}
@@ -945,15 +945,15 @@ The blue highlight shows that the next message to be sent will be {\ct{do:}} (se
 	\label{fig:RestartDetectIfNone}
 \end{figure}
 
-The \button{Into} and \button{Over} buttons give us two different ways to step through the execution.  If you click \button{Over}, \sq executes the current message-send (in this case the \ct{do:}) in one step, unless there is an error.  
+The \button{Into} and \button{Over} buttons give us two different ways to step through the execution.  If you click \button{Over}, \squeak executes the current message-send (in this case the \ct{do:}) in one step, unless there is an error.  
 So \button{Over} will take us to the next message-send in the current method, which is \ct{value}: this is exactly where we started, and not much help. 
 What we need to do is to find out why the \ct{do:} is not finding the character that we are looking for.
 
 \dothis{Click \button{Over}, and then click \button{Restart} to get back to the situation shown in \figref{RestartDetectIfNone}.}
 
-\dothis{Click \button{Into}; \sq will go into the method corresponding to the highlighted message-send, in this case, \ct{Collection>>>do:}.}
+\dothis{Click \button{Into}; \squeak will go into the method corresponding to the highlighted message-send, in this case, \ct{Collection>>>do:}.}
 
-However, it turns out that this is not much help either: we can be fairly confident that \ct{Collection>>>do:} is not broken.  The bug is much more likely to be in \emph{what} we asked \sq to do.
+However, it turns out that this is not much help either: we can be fairly confident that \ct{Collection>>>do:} is not broken.  The bug is much more likely to be in \emph{what} we asked \squeak to do.
 \button{Through} is the appropriate button to use in this case: we want to ignore the details of the \ct{do:} itself and focus on the execution of the argument block. 
 
 \dothis{Click on \button{Through} a few times.  Select \ct{each} in the context window as you do so.
@@ -1003,7 +1003,7 @@ Now that we see the bug, the fix is obvious: we have to convert \ct{dot} to a ch
 \end{figure}
 
 \dothis{Change the code right in the debugger so that the assignment reads \ct{dot := FileDirectory dot asCharacter} and \menu{accept} the change.}
-Because we are executing code inside a block that is inside a \lct{detect:}, several stack frames will have to be abandoned in order to make this change.  \sq asks us if this is what we want (see \figref{revertDialog}), and, assuming that we click \menu{yes}, will save (and compile) the new method.
+Because we are executing code inside a block that is inside a \lct{detect:}, several stack frames will have to be abandoned in order to make this change.  \squeak asks us if this is what we want (see \figref{revertDialog}), and, assuming that we click \menu{yes}, will save (and compile) the new method.
 
 \dothis{Click \button{Restart} and then \button{Proceed}; the debugger window will vanish, and the evaluation of the expression \ct{'readme.txt' suffix} will complete, and print the answer \ct{'.txt'}}
 
@@ -1083,7 +1083,7 @@ We will learn more about SUnit in \charef{SUnit}.
 \section{The Process Browser}
 
 \st is a multi-threaded system: there are many lightweight processes (also known as threads) running concurrently in your image. 
-In the future the \sq virtual machine may take advantage of multiprocessors when they are available, but at present concurrency is implemented by time-slicing.
+In the future the \squeak virtual machine may take advantage of multiprocessors when they are available, but at present concurrency is implemented by time-slicing.
 
 \begin{figure}[btp]
 	\begin{center}
@@ -1095,9 +1095,9 @@ In the future the \sq virtual machine may take advantage of multiprocessors when
 	\label{fig:processBrowser}
 \end{figure}
 
-The process \subind{process}{browser} is a cousin of the debugger that lets you look at the various processes running inside \sq.
+The process \subind{process}{browser} is a cousin of the debugger that lets you look at the various processes running inside \squeak.
 \figref{processBrowser} shows a screenshot.
-The top-left pane lists all of the processes in \sq, in priority order, from the timer interrupt watcher at priority 80 to the idle process at priority 10.
+The top-left pane lists all of the processes in \squeak, in priority order, from the timer interrupt watcher at priority 80 to the idle process at priority 10.
 Of course, on a uniprocessor, the only process that can be running when you look is the UI process; all of the other will be waiting for some kind of event. 
 By default, the display of processes is static; it can be updated using the \ind{yellow button} menu, which also provides an option to \menu{turn on auto-update (a)}
 
@@ -1113,7 +1113,7 @@ The process browser is not equipped with mini-inspectors for \self and \lct{this
 \section{Finding methods}
 \label{sec:methodFinder} 
 
-There are two tools in \sq to help you find messages; both can be dragged out of the \toolsflapind.
+There are two tools in \squeak to help you find messages; both can be dragged out of the \toolsflapind.
 They differ in both interface and functionality.
 
 The \emph{method finder} was described at some length in \secref{quick:methodFinder}; you can use it to find methods by name or by functionality. 
@@ -1143,7 +1143,7 @@ As with the class browser, the message names browser has a button bar that can b
 \section{Change sets and the Change Sorter}
 \label{sec:env:changeSet} % (fold)
 
-Whenever you are working in \sq, any changes that you make to methods and classes are recorded in a \ct{change set}.
+Whenever you are working in \squeak, any changes that you make to methods and classes are recorded in a \ct{change set}.
 This includes creating new classes, re-naming classes, changing categories, adding methods to existing classes\,---\,just about everything of significance.  
 However, arbitrary \emph{doits} are not included, so if, for example, you create a new global variable by assigning to it in a workspace, the variable creation will not make it into a \subind{file}{change set}.
 \index{change set browser}
@@ -1183,13 +1183,13 @@ This layout supports the change sorter's main feature, which is the ability to m
 It is also possible to copy individual methods from one side to the other.
 
 You may be wondering why you should care about the composition of a change set.
-the answer is that change sets provide a simple mechanism for exporting code from \sq to the file system, from where it can be imported into another \sq image, or into another non-\sq \st.
+the answer is that change sets provide a simple mechanism for exporting code from \squeak to the file system, from where it can be imported into another \squeak image, or into another non-\squeak \st.
 Change set export is known as ``filing-out'', and can be accomplished using the yellow button menu on any change set, class or method in either browser.
 Repeated file outs create new versions of the file, but change sets are not a versioning tool like Monticello:
 they do not keep track of dependencies.
 \index{file!filing out}
 
-Before the advent of Monticello, change sets were the main means for exchanging code between \sq{}ers.
+Before the advent of Monticello, change sets were the main means for exchanging code between \squeak{}ers.
 They have the advantage of simplicity (the file out is just a text file, although we \emph{don't} recommend that you try to edit with a text editor), and a degree of portability.  
 It's also quite easy to create a change set that makes changes to many different, unrelated parts of the system\,---\,something that Monticello is not yet equipped to do.
 \ab{Or is it?}
@@ -1226,12 +1226,12 @@ This requires the use of another tool, the file list browser.
 	\label{fig:fileList}
 \end{figure}
 
-The \ind{file list browser} is in fact a general-purpose tool for browsing the file system (and also FTP servers) from \sq. 
+The \ind{file list browser} is in fact a general-purpose tool for browsing the file system (and also FTP servers) from \squeak. 
 You can open it from the \menu{World\go{}open...\go{}file list} menu, or drag it from the \toolsflapind.
 What you see of course depends on the contents of your local file system, but a typical view is shown in \figref{fileList}.
 \seeindex{file!browsing}{file list browser}
 
-When you first open a file list browser it will be focussed on the current directory, that is, the one from which you started \sq. The title bar shows the path to this directory.
+When you first open a file list browser it will be focussed on the current directory, that is, the one from which you started \squeak. The title bar shows the path to this directory.
 The larger pane on the left-hand side can be used to navigate the file system in the conventional way.
 When a directory is selected, the files that it contains (but not the directories) are displayed on the right.
 This list of files can be filtered by entering a Unix-style pattern in the small box at the top-left of the window.  
@@ -1269,9 +1269,9 @@ Yellow-button menu items in each of the top four panes will also let you file in
 \section{In Smalltalk, you can't lose code}
 \label{sec:cantLoseCode} % (fold)
 
-It is quite possible to crash \sq: as an experimental system, \sq lets you change anything, including things that are vital to make \sq work! 
+It is quite possible to crash \squeak: as an experimental system, \squeak lets you change anything, including things that are vital to make \squeak work! 
 
-\dothis{To maliciously crash \sq, try \ct{Object become: nil}.}
+\dothis{To maliciously crash \squeak, try \ct{Object become: nil}.}
 
 The good news is that you need never lose any work, even if you crash and go back to the last saved version of your image, which might be hours old.
 This is because all of the code that you executed is saved in the \emph{.changes} file.
@@ -1284,11 +1284,11 @@ There is no need to read this until you need it.
 However, when you do need it, you'll find it here waiting for you.
 
 In the worst case, you can use a text editor on the \emph{.changes} file, but since it is many megabytes in size, this can be slow and is not recommended. 
-\sq offers you better ways.
+\squeak offers you better ways.
 
 %---------------------------------------------------------
 \subsection{How to get your code back}
-Restart \sq from the most recent snapshot, and select \menu{World\go{}help\go{}useful expressions}. 
+Restart \squeak from the most recent snapshot, and select \menu{World\go{}help\go{}useful expressions}. 
 This will open a workspace full of useful expressions. The first three,
 
 \begin{code}{}
@@ -1303,7 +1303,7 @@ are most useful for recovery.
 If you execute \ct{ChangeList browseRecentLog}, you will be given the opportunity to decide how far back in history you wish to browse. 
 Normally, it's sufficient to browse changes as far back as the last snapshot. (You can get much the same effect by editing \ct{ChangeList browseRecent: 2000} so that the number \ct{2000} becomes something else, using trial and error.)
 
-One you have a \emph{recent changes} browser, showing, say, changes back as far as your last snapshot, you will have a list of everything that you have done to \sq during that time. 
+One you have a \emph{recent changes} browser, showing, say, changes back as far as your last snapshot, you will have a list of everything that you have done to \squeak during that time. 
 You can delete items from this list using the \ind{yellow button} menu.
 When you are satisfied, you can file-in what is left, thus incorporating the changes into your new image.
 It's a good idea to start a new change set, using the ordinary change set browser, before you do the file in, so that all of your recovered code will be in a new change set. 
@@ -1317,7 +1317,7 @@ Creating a class shows up as a \menu{doIt}.
 So, if you have created any new classes, \emph{first} file-in the class creation doIts, then \menu{remove doIts} and file in the methods.
 \lr{Maybe mention that class renames are not logged and completely screw up the change-set mechanism. (p. 174)}
 
-When I am finished with the recovery, I like to file out my new change set, quit \sq without saving the image, restart, and make sure that the new change set files back in cleanly.
+When I am finished with the recovery, I like to file out my new change set, quit \squeak without saving the image, restart, and make sure that the new change set files back in cleanly.
 % section cantLoseCode (end)
 
 %=========================================================

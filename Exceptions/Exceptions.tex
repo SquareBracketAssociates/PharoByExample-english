@@ -48,15 +48,15 @@ All applications have to deal with exceptional situations.
 Arithmetic errors may occur (division by zero), unexpected situations may arise (file not found), or resources may be exhausted (network down, disk full, \etc).
 The old-fashioned solution is to have operations that fail return a special \emph{error code}\,---\,client code must then check the return value of each operation, and take special action to handle errors.
 
-Modern programming languages, including \Squeak, instead offer a dedicated exception-handling mechanism that greatly simplifies the way in which exceptional situations are signaled and handled.
-Before ANSI Smalltalk (1996), several  exception handling mechanisms existed, often incompatible each other. \Squeak essentially uses the ANSI standard, which we present in this chapter from a user perspective.
+Modern programming languages, including \squeak, instead offer a dedicated exception-handling mechanism that greatly simplifies the way in which exceptional situations are signaled and handled.
+Before ANSI Smalltalk (1996), several  exception handling mechanisms existed, often incompatible each other. \squeak essentially uses the ANSI standard, which we present in this chapter from a user perspective.
 
 In a nutshell, different classes of \emph{exceptions} are specified to cover the unusual situations that may arise.
 Normal code does not clutter the main logic flow with checks for error codes, but specifies instead an \emph{exception handler} to ``catch'' exceptions.
 When something goes wrong, the corresponding exception is \emph{signaled}, capturing essential information about the offending context.
 This interrupts the main flow of execution, and allows the exception handler to decide what to do next.
 
-\Squeak's exception-handling mechanism is particularly expressive and flexible, covering a wide range of possibilities. Exception handlers can be used to \emph{ensure} that certain actions take place even if something goes wrong, or to take action only if something goes wrong.
+\squeak's exception-handling mechanism is particularly expressive and flexible, covering a wide range of possibilities. Exception handlers can be used to \emph{ensure} that certain actions take place even if something goes wrong, or to take action only if something goes wrong.
 Like everything in \st, exceptions are objects, and respond to a number of different messages.
 A handler not only has the possibility to specify an alternative action to perform, but it may also ask the exception object \emph{resume} the interrupted operation, to \emph{retry} the operation, to \emph{pass} the exception on to another handler, or even to \emph{reraise} a completely different exception.
 
@@ -207,7 +207,7 @@ It is important to understand  that the message \ct{on:do:} defines the scope wh
 Without exceptions, the only way to handle the case that a method may fail to produce an expected result is to introduce explicit error codes as possible return values. In fact, in languages like C, code is littered with checks for such error codes, thus obscuring the main application logic.
 Error codes are also fragile in the face of evolution: if error codes change, then all clients must be adapted to take the new codes into account. By using exceptions instead of error codes, the programmer is freed from the task of explicitly checking each return value, and the program logic stays uncluttered.
 
-If \Squeak would not provide exception-handling support, then the tiny example we saw in the previous section would look something like this:
+If \squeak would not provide exception-handling support, then the tiny example we saw in the previous section would look something like this:
 
 \begin{code}{| source destination fromStream toStream contents result success failure |}
 "Pseudo-code -- luckily Squeak does not work like this. Without the 
@@ -628,7 +628,7 @@ When the message \ct{upTo:} is sent, if the \ct{showDeprecationWarnings} prefere
         \caption{Sending a deprecated message.\figlabel{deprecation}}
 \end{figure}
 
-Deprecation is easily implemented in \Squeak in just a few steps.
+Deprecation is easily implemented in \squeak in just a few steps.
 First, we define \ct{Deprecation} as a subclass of \ct{Warning}.
 We should normally consider overriding \ct{isResumable}, \ct{description}, and \ct{defaultAction}. In this case the default implementations are fine:
 

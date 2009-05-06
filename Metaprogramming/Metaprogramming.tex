@@ -45,7 +45,7 @@
 - trap msgs sent to an object (with Proxy and with msgNotUnderstood)
 }
 
-Like all Smalltalk dialects, \sq is a reflective programming language.
+Like all Smalltalk dialects, \squeak is a reflective programming language.
 \on{Needs a gentler explanation.}
 For a programming language, being reflective means that it supports both \emph{introspection} and \emph{intercession}.
 Introspection is the ability to \emph{look} at the data structures that define the language itself, like objects, classes, the execution stack.
@@ -93,7 +93,7 @@ For instance, you can change the value of the \ct!w! instance variable of the fi
 
 Please note that these methods are useful to build development or debugging tools, but using them to develop conventional applications is a bad idea: these reflective methods break the encapsulation principles of object-oriented programming.
 
-Both \ct!instVarAt:! and \ct!instVarAt:put:! are primitive methods, meaning that they invoke a primitive operation of the \sq virtual machine.
+Both \ct!instVarAt:! and \ct!instVarAt:put:! are primitive methods, meaning that they invoke a primitive operation of the \squeak virtual machine.
 If you consult the code of these methods, you will see the special syntax \ct!<primitive: xx>! where \ct!xx! is an integer.
 
 \needlines{5}
@@ -108,9 +108,9 @@ Object>>>instVarAt: index
 Typically, the code after the primitive invocation is not executed.
 It is executed only when the primitive fails. In this specific case, if we try to access a variable that does not exist, then the code following the primitive will be tried.
 This also allows the debugger to be started on primitive methods.
-Although it is possible to modify the code of primitive methods, beware that this is a quite risky business for the stability of your \sq system.
+Although it is possible to modify the code of primitive methods, beware that this is a quite risky business for the stability of your \squeak system.
 
-There is a limited number of primitive operations in \sq. They constitute the basic actions in \st: basic operations on integers, accessing input/output peripherals (disk, screen, network...).
+There is a limited number of primitive operations in \squeak. They constitute the basic actions in \st: basic operations on integers, accessing input/output peripherals (disk, screen, network...).
 Some of these primitives also accelerate system functions.
 It is also possible to define custom primitives and to link them to plugins written in C to benefit from external libraries or from the speed of a native implementation.
 
@@ -157,7 +157,7 @@ This method iterates over the indexes of instance variables that the class defin
 %-----------------------------------------------------------------
 \subsection{Querying classes and interfaces}
 
-The development tools in \sq (code browser, debugger, inspector...) all use the reflective features we have seen so far.
+The development tools in \squeak (code browser, debugger, inspector...) all use the reflective features we have seen so far.
 
 Here are a few other messages that might be useful to build development tools:
 
@@ -185,7 +185,7 @@ Please note that these features are especially useful for defining development t
 Asking an object for its class, or querying it to discover which messages it understands, are typical signs of design problems, since they violate the principle of encapsulation.
 Development tools, however, are not normal applications, since their domain is that of software itself. As such these tools have a right to dig deep into the internal details of code.
 
-%Once again, the reflective features of \sq are only useful to define development tools, and it is risky to use them to develop applications.
+%Once again, the reflective features of \squeak are only useful to define development tools, and it is risky to use them to develop applications.
 %Indeed, using the type of an object to drive execution of a method or another often reveals a design problem.
 
 %\st offers other introspection possibilities for methods or the execution stack, the process scheduler, the memory manager... but we can't detail everything here; try to read the code and experiment by yourselves.
@@ -281,7 +281,7 @@ They may be a sign of unfinished implementation, obsolete APIs, or missing libra
 
 
 
-All these features are integrated in the programming environment of \sq, in particular in the code browsers.
+All these features are integrated in the programming environment of \squeak, in particular in the code browsers.
 As shown in \secref{cha:env}, you can list all methods that have the same name (implementors) or all methods that send a message (senders).
 This is quite handy: for instance, when you want to change the name of a method, to check that you didn't miss one message send that could invoke this method (\figref{implementors}). \damien{is "invoke a method" OK here?}
 
@@ -304,7 +304,7 @@ The frontmost inspector shows the decompiled bytecode of \ct!Point!'s method \ct
 \st is really a completely open and transparent system, where all the code is available for reading.
 You can study the whole system as you wish, because there is no hidden code.
 The primitive part of the system, \ie which is not written in \st, is reduced to its simplest expression.
-Among \st dialects, \sq has the peculiarity that even its virtual machine is written in \st, so it is possible to run and debug it inside a \sq image!
+Among \st dialects, \squeak has the peculiarity that even its virtual machine is written in \st, so it is possible to run and debug it inside a \squeak image!
 Though this actually works, it is quite slow, and for actual use the virtual machine is translated to C and compiled to a native executable.
 
 % section browsing_the_code (end)
@@ -319,7 +319,7 @@ Let's see how we can use \st's introspection features to quickly define code met
 A code metric is a measure of program code like depth in the inheritance hierarchy, the number of direct or indeirect subclasses, the number of methods or of instance variables in each class, or the number of locally defined methods or instance variables.
 When discovering the code of a new application, you can evaluate a metric to get a rough idea of what the code looks like.
 \scrref{metrics} computes a few code metrics for Morphic; these numbers can vary depending on the image you are using.
-Results for class \ct!Morph!, which is the superclass of all graphical objects in \sq, reveal that it is a huge class, and that it is at the root of a huge hierarchy. Maybe it needs some refactoring!
+Results for class \ct!Morph!, which is the superclass of all graphical objects in \squeak, reveal that it is a huge class, and that it is at the root of a huge hierarchy. Maybe it needs some refactoring!
 
 \begin{script}[metrics]{A few code metrics}
 	inheritanceDepth := Morph allSuperclasses size. "2"
@@ -396,7 +396,7 @@ Collection>>>printOn: aStream
 	self printElementsOn: aStream
 \end{method}
 
-Now \ct!#printNameOn:! (\mthref{printNameOn}) is not needed anymore. Well, in this case... is it used in other classes? Let's ask \sq:
+Now \ct!#printNameOn:! (\mthref{printNameOn}) is not needed anymore. Well, in this case... is it used in other classes? Let's ask \squeak:
 \begin{example}[sendersofprintnameon]{Asking for the senders of \lct{\#printNameOn:}}{}
 SystemNavigator default allCallsOn: #printNameOn:
 --> an OrderedCollection(A MethodReference RunArray >> printOn: aMethodReference Bitmap >> printOn: aMethodReference Text >> printOn: aMethodReference CompiledMethod >> printOn:)
@@ -407,7 +407,7 @@ So we should also refactor classes \clsind{RunArray}, \clsind{BitMap}, \clsind{T
 %-----------------------------------------------------------------
 \subsection{Intelligent breakpoints}
 
-In the 3.8 version of \sq introduced a new kind of breakpoints.
+In the 3.8 version of \squeak introduced a new kind of breakpoints.
 Those are quite useful and are implemented by the \ct!Object>>>haltIf:! method.
 This breakpoint only halts program execution if the method it's placed in was called by the one whose name was passed as an argument.
 This is very useful to halt a method only during the execution of a test and not every time it is called.
@@ -430,15 +430,15 @@ Starting from \ct!thisContext!, \ct!haltIf:! goes up through the execution stack
 If this is the case, then it raises an exception which, by default, summons the debugger.
 This example shows the power of Smalltalk, which allows to define powerful features and tools from within the language itself.
 
-The pseudo-variable \ct!thisContext! is especially used in the \sq debugger.
+The pseudo-variable \ct!thisContext! is especially used in the \squeak debugger.
 It contains an instance of the \clsind{MethodContext} class.
 This instance contains information about the method that is being executed, the stack pointer (\ct!stackpc!), and the program pointer (\ct!pc!).
 
-In the following example, we halted \sq's evaluation loop by pressing \short{.} and inspecting the current context.
+In the following example, we halted \squeak's evaluation loop by pressing \short{.} and inspecting the current context.
 
 \begin{figure}[ht]\centering
 	\includegraphics[width=\linewidth]{MethodContext}
-	\caption{Inspecting the execution context of the evaluation loop in \sq.\label{fig:MethodContext}}
+	\caption{Inspecting the execution context of the evaluation loop in \squeak.\label{fig:MethodContext}}
 \end{figure}
 
 Via \ct!thisContext!, the Seaside web framework also accesses the execution stack, but it modifies it on the fly to easily implement reusable components over HTTP.
@@ -448,7 +448,7 @@ Via \ct!thisContext!, the Seaside web framework also accesses the execution stac
 %:======================================
 \section{Methods as first class entities}
 
-Compared to other reflective programming languages, \sq is a Smalltalk implementation that brings reflection a step further. Whereas it handles \emph{methods as first class entities} that can be modified and replaced on the fly, it also allows for \emph{method execution reification}, exposing dynamic information related to method execution as objects.
+Compared to other reflective programming languages, \squeak is a Smalltalk implementation that brings reflection a step further. Whereas it handles \emph{methods as first class entities} that can be modified and replaced on the fly, it also allows for \emph{method execution reification}, exposing dynamic information related to method execution as objects.
 
 
 %-------------------------------------------------------------------------

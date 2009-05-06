@@ -8,7 +8,7 @@
 % 2007-11-30 - Oscar first draft
 % 2007-12-07 - Orla Greevy reviewed
 % 2007-12-09 - Lukas Renggli reviewed
-% 2008-01-11 - Andrew reviewed
+% 2008-01-11 - Andrew revised
 % 2009-04-17 - Fabrizio Perin reviewed
 % 2009-04-18 - Jorge Ressia reviewed
 
@@ -43,12 +43,13 @@
 
 %=================================================================
 
-\fp{% - Syntax error: "Instead it generates XTHML programmatically." pag 11\\
+% \on{Fixed FP's comments}
+% \fp{% - Syntax error: "Instead it generates XTHML programmatically." pag 11\\
 % - At the end of page 16: "The Form Elements example illustrates most of the features of forms." Which Form elements? An example that contains a classic form with different elements is WAInputTest. Also other pages contain different form elements. Probably is better a phrase like: " Have a look at the system category Seaside-Tests-Functional , or just point your browser to http://localhost:8080/seaside/tests/alltests where there are different examples illustrating most of the features of forms."\\
 % - pag. 25: "Go to http:// localhost:8080/ seaside/ tests/ alltests and select Convenience and select Transaction. Try to navigate back and forth within the parent and child transaction. Note that as soon as a transaction is complete, you can no longer go back inside the transaction without generating an error." The error is generated just when I go back with browser and I click "Ok" button in the form. Is that one the error that you want highlight? Or an error should be generated going back and forth with the browser buttons. It is not clear.\\
-- In the footnote 9 pag. 26: "The relevant category is SBE-SeasideRPN". There are no project called like that here http://www.squeaksource.com/SqueakByExample. Instead there is "SBE2-SeasideRPN-on.1.mcz" that, anyway is a little bit different form the code show in the example. For instance there isn't a method called "renderStackButtonOn: html with: text callback: aBlock colSpan: anInteger ". I think that the code online have to be the same of the example.\\
-- the rest of the chapter seems ok. The most difficult part of code are written in the book and anyway to have an example you can check the code online. (I'm talking about the calculator implementation in particular).
-}
+% - In the footnote 9 pag. 26: "The relevant category is SBE-SeasideRPN". There are no project called like that here http://www.squeaksource.com/SqueakByExample. Instead there is "SBE2-SeasideRPN-on.1.mcz" that, anyway is a little bit different form the code show in the example. For instance there isn't a method called "renderStackButtonOn: html with: text callback: aBlock colSpan: anInteger ". I think that the code online have to be the same of the example.\\
+% - the rest of the chapter seems ok. The most difficult part of code are written in the book and anyway to have an example you can check the code online. (I'm talking about the calculator implementation in particular).
+% }
 
 \ind{Seaside} is a framework for building web applications in Smalltalk.  It was originally developed by Avi Bryant \index{Bryant, Avi} in 2002; once mastered, Seaside makes web applications almost as easy to write as desktop application.
 
@@ -173,7 +174,7 @@ Note that the \link{++} and \link{--} links are also active in the source view.
 Contrast the nicely-formatted source view provided by the Halos with the unformatted source view offered by your browser.}
 
 The Seaside class browser and object inspector can be very convenient when the server is running on another computer, especially when the server does not have a display, or if it is in remote place. 
-However, when you are first developing a Seaside application, the server will be running locally, and it is easy to use the ordinary \sq development tools in the server image.
+However, when you are first developing a Seaside application, the server will be running locally, and it is easy to use the ordinary \squeak development tools in the server image.
 
 %:FIG haltingCounter
 \begin{figure}[ht]
@@ -191,7 +192,7 @@ You should see a pre-debugger window (\figref{haltingCounter}) showing a \ct{WAC
 Examine this execution in the debugger, and then \button{Proceed}.
 Go back to the web browser and notice that the counter application is running again.}
 
-Seaside components can be instantiated multiple times, and in different contexts. \jr{is the comma correct after times?}
+Seaside components can be instantiated multiple times and in different contexts.
 
 %:FIG multiCounterHalos
 \begin{figure}[ht]
@@ -238,7 +239,9 @@ Use the same configuration interface to remove this entry point.
 Seaside operates in two modes: \emph{development} mode, which is what we have seen so far, and \emph{deployment} mode, in which the toolbar is not available.
 \index{Seaside!deployment mode}
 \index{Seaside!development mode}
-You can put Seaside into deployment mode using either the configuration page \ab{How?  I couldn't find this} or the \link{Configure} button in the toolbar.
+You can put Seaside into deployment mode using either the configuration page (navigate to the entry for the application and click on the \link{Configure} link)
+% \ab{How?  I couldn't find this}
+or click the \button{Configure} button in the toolbar.
 In either case, set the deployment mode to \emph{true}.
 Note that this affects new sessions only.
 You can also set the mode globally by evaluating
@@ -256,7 +259,7 @@ If you remove the ``config'' application, you can get it back by evaluating
 \section{Seaside components}
 \label{sec:components}
 
-\ab{This section was too long\,---\,18 pages.  It also contained several self-references (``see section 1.3''). So I broke into smaller sections, by promoting some of the subsections and subsubsections.}
+%\ab{This section was too long\,---\,18 pages.  It also contained several self-references (``see section 1.3''). So I broke into smaller sections, by promoting some of the subsections and subsubsections.}
 
 As we mentioned in the previous section, Seaside applications are built out of \emph{\subind{Seaside}{components}.}
 Let's take a closer look at how Seaside works by implementing the \emph{Hello World} component.
@@ -972,7 +975,7 @@ Note that as soon as a transaction is complete, you can no longer go back inside
 % ON: Should take about two hours
 
 Let's see how we can build a complete Seaside application from scratch.\footnote{The exercise should take at most a couple of hours. If you prefer to just look at the completed source code, you can grab it from the SqueakSource project \url{http://www.squeaksource.com/SqueakByExample}.
-The relevant category is \scat{SBE-SeasideRPN}. The tutorial that follows uses slightly different class names so that you can compare your implementation with ours.}
+The relevant package is \scat{SBE2-SeasideRPN}. The tutorial that follows uses slightly different class names so that you can compare your implementation with ours.}
 We will build a RPN (Reverse Polish Notation) calculator as a Seaside application that uses a simple stack machine as its underlying model.
 Furthermore, the Seaside interface will let us toggle between two displays\,---\,one which just shows us the current value on top of the stack, and the other which shows us the complete state of the stack.
 The calculator with the two display options is shown in \figref{stackMachine}.

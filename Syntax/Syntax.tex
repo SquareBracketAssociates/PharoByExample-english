@@ -37,7 +37,7 @@
 % \sd{It would be good to add link to the chapter where the reader can learn about conditional, exceptions and loops.}
 % \on{There are links already.}
 
-\sq, like most modern \st dialects, adopts a syntax very close to that of \st-80.
+\squeak, like most modern \st dialects, adopts a syntax very close to that of \st-80.
 The \ind{syntax} is designed so that program text can be read aloud as though it were a kind of pidgin English:
 
 \begin{code}{}
@@ -45,7 +45,7 @@ The \ind{syntax} is designed so that program text can be read aloud as though it
 \end{code}
 
 \noindent
-\sq's syntax is minimal.
+\squeak's syntax is minimal.
 Essentially there is syntax only for \emph{sending messages} (\ie expressions) \damien{I don't think there is a syntax for declaring methods; in my opinion, this is just a feature of our browsers. That's why I'm commenting: and \emph{declaring methods}}.
 Expressions are built up from a very small number of  primitive elements.
 There are only 6 keywords, and there is no syntax for control structures or declaring new classes.
@@ -102,7 +102,7 @@ Expressions are composed of the following building blocks:
 		\lct{Transcript show: 'hello'; cr}					&	message cascade (\lct{;}) \\
 		\bottomrule
 	\end{tabular}
-	\caption{\sq Syntax in a Nutshell\label{tab:syntax}}
+	\caption{\squeak Syntax in a Nutshell\label{tab:syntax}}
 \end{table}
 
 We can see examples of the various syntactic elements in \tabref{syntax}.
@@ -121,7 +121,7 @@ We can see examples of the various syntactic elements in \tabref{syntax}.
 \item[The receiver.]	\pvind{self} is a keyword that refers to the object inside which the current method is executing. We call it ``the receiver'' because this object will normally have received the message that caused the method to execute.
 		\self is called a ``\subind{variable}{pseudo}-variable'' since we cannot assign to it.
 
-\item[Integers.] In addition to ordinary decimal integers like \ct{42}, \sq also provides a \ind{radix notation}.
+\item[Integers.] In addition to ordinary decimal integers like \ct{42}, \squeak also provides a \ind{radix notation}.
 	\ct{2r101} is \ct{101} in radix 2 (\ie binary), which is equal to decimal 5.
 	\index{literal}
 	\index{literal!number}
@@ -147,11 +147,11 @@ We can see examples of the various syntactic elements in \tabref{syntax}.
 \item[Run-time arrays.] Curly braces \ct|{ }| define a (\subind{Array}{dynamic}) array at run-time.
 		Elements are expressions separated by periods.
 		So \ct|{ 1. 2. 1+2 }| defines an array with elements 1, 2, and the result of evaluating 1+2.
-		(The curly-brace notation is peculiar to the \sq dialect of \st!
+		(The curly-brace notation is peculiar to the \squeak dialect of \st!
 		In other \st{}s you must build up dynamic arrays explicitly.)
 
 \item[Comments] are enclosed in double quotes.
-		\ct{"hello"} is a \ind{comment}, not a string, and is ignored by the \sq compiler.
+		\ct{"hello"} is a \ind{comment}, not a string, and is ignored by the \squeak compiler.
 		Comments may span multiple lines.
 		
 \item[Local variable definitions.]	Vertical bars \ct{| |} enclose the \subind{variable}{declaration} of one or more local variables in a method (and also in a block).
@@ -236,7 +236,7 @@ In other words, it represents the currently executing \clsind{MethodContext} or 
 %=================================================================
 \section{Message sends}
 
-There are three kinds of messages in \sq.
+There are three kinds of messages in \squeak.
 \begin{enumerate}
   \item \emph{Unary} messages take no argument.
   \ct{1 factorial} sends the message \ct{factorial} to the object \ct{1}.
@@ -304,8 +304,8 @@ This has precisely the same effect as the previous example.
 %=================================================================
 \section{Method syntax}
 
-Whereas expressions may be evaluated anywhere in \sq (for example, in a workspace, in a debugger, or in a browser), methods are normally defined in a browser window, or in the debugger.
-(Methods can also be filed in from an external medium, but this is not the usual way to program in \sq.)
+Whereas expressions may be evaluated anywhere in \squeak (for example, in a workspace, in a debugger, or in a browser), methods are normally defined in a browser window, or in the debugger.
+(Methods can also be filed in from an external medium, but this is not the usual way to program in \squeak.)
 
 Programs are developed one method at a time, in the context of a given class.
 (A class is defined by sending a message to an existing class, asking it to create a subclass, so there is no special syntax required for defining classes.)
@@ -391,9 +391,9 @@ This means that they are objects, so they can be assigned to variables and passe
 % However, the ability to refer (``capture'') non-local variables can be very powerful when it is needed. 
 
 \emph{Caveat:}
-In the current version (3.9), \sq does not actually support true block-closures, since block arguments are actually simulated as temporary variables of the enclosing method. There is a new compiler that supports full block closures, but it is still being worked on and is not used by default.
+In the current version (3.9), \squeak does not actually support true block-closures, since block arguments are actually simulated as temporary variables of the enclosing method. There is a new compiler that supports full block closures, but it is still being worked on and is not used by default.
 In somewhat obscure situations this problem can lead to naming conflicts.
-This situation arises because \sq is based on an early implementation of \st.
+This situation arises because \squeak is based on an early implementation of \st.
 If you encounter this problem, have a look at the senders of the method \mthind{BlockClosure}{fixTemps}, or load the \emphind{Closure Compiler}.
 
 %\paragraph{Really important.} \^\ acts as an escaping mechanism. 
@@ -576,7 +576,7 @@ If the primitive fails, the expression \ct{super + aNumber} will be evaluated an
 %\end{method}
 
 
-Since \sq 3.9, the angle bracket syntax is also used for method annotations called pragmas.
+Since \squeak 3.9, the angle bracket syntax is also used for method annotations called pragmas.
 \sd{we should give an example}\ab{Please do!  Is don't know about these.}\damien{it's the third time we talk about pragmas without saying what they are and how to use them.}
 
 %=================================================================
@@ -584,7 +584,7 @@ Since \sq 3.9, the angle bracket syntax is also used for method annotations call
 
 \begin{itemize}
 
-\item	\sq has (only) six reserved identifiers also called \textit{pseudo-variables}: \ct{true}, \ct{false}, \ct{nil}, \ct{self}, \ct{super},  and  \ct{thisContext}.
+\item	\squeak has (only) six reserved identifiers also called \textit{pseudo-variables}: \ct{true}, \ct{false}, \ct{nil}, \ct{self}, \ct{super},  and  \ct{thisContext}.
 
 \item	There are five kinds of literal objects: numbers (\ct{5}, \ct{2.5}, \ct{1.9e15}, \ct{2r111}), characters (\ct{$a}), strings (\ct{'hello'}), symbols (\ct{#hello}), and arrays (\ct{#('hello' #hello)})
 
@@ -608,7 +608,7 @@ Since \sq 3.9, the angle bracket syntax is also used for method annotations call
 \ct{OrderedCollection new add: #calvin; add: #hobbes; size --> 2}
 
 \item	Local variables are declared with vertical bars.
-		Use \ct{:=} for assignment; \ct{_} or \ct{UNDERSCORE} will work as well but are deprecated since \sq 3.9.
+		Use \ct{:=} for assignment; \ct{_} or \ct{UNDERSCORE} will work as well but are deprecated since \squeak 3.9.
 		\ct{|x| x:=1}
 
 \item	Expressions consist of message sends, cascades and assignments, possibly grouped with parentheses.

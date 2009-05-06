@@ -214,7 +214,7 @@ Consequently, the internal array can be replaced with a larger one if the collec
   \clsindex{Interval}
 \end{enumerate}
 In addition to these classes, there are also ``\subind{Collection}{weak}'' variants of \ct{Array}, \ct{Set} and of the various kinds of dictionary.  These collections hold onto their elements weakly, \ie in a way that does not prevent the elements from being garbage collected.
-The \sq virtual machine is aware of these classes and handles them specially.
+The \squeak virtual machine is aware of these classes and handles them specially.
 \index{weak collections}
 
 Readers interested in learning more about the \st collections are referred to LaLonde and Pugh's excellent book \cite{LaLo90a}.
@@ -854,12 +854,12 @@ Smalltalk allClasses detect: [:each | '*java*' match: each asString] ifNone: [ n
 %---------------------------------------------------------
 \subsection{Accumulating results with \lct{inject:into:}}
 Functional programming languages often provide a higher-order function called \emph{fold} or \emph{reduce} to accumulate a result by applying some binary operator iteratively over all elements of a collection.
-In \sq this is done by \cmind{Collection}{inject:into:}.
+In \squeak this is done by \cmind{Collection}{inject:into:}.
 
 The first argument is an initial value, and the second argument is a two-argument block which is applied to the result this far, and each element in turn.
 
 A trivial application of \ct{inject:into:} is to produce the sum of a collection of numbers.
-Following Gauss, in \sq we could write this expression to sum the first 100 integers:
+Following Gauss, in \squeak we could write this expression to sum the first 100 integers:
 \begin{code}{@TEST}
 (1 to: 100) inject: 0 into: [:sum :each | sum + each ] --> 5050
 \end{code}
