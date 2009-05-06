@@ -1,0 +1,51 @@
+% $Author$
+% $Date$
+% $Revision$
+% $Id$
+
+% HISTORY:
+% 2009-05-06 - Oscar started chapter
+
+%=================================================================
+\ifx\wholebook\relax\else
+% --------------------------------------------
+% Lulu:
+	\documentclass[a4paper,10pt,twoside]{book}
+	\usepackage[
+		papersize={6in,9in},
+		hmargin={.75in,.75in},
+		vmargin={.75in,1in},
+		ignoreheadfoot
+	]{geometry}
+	\input{../common.tex}
+	\pagestyle{headings}
+	\setboolean{lulu}{true}
+% --------------------------------------------
+% A4:
+%	\documentclass[a4paper,11pt,twoside]{book}
+%	\input{../co	mmon.tex}
+%	\usepackage{a4wide}
+% --------------------------------------------
+    \graphicspath{{figures/} {../figures/}}
+	\begin{document}
+	% \renewcommand{\nnbb}[2]{} % Disable editorial comments
+	\sloppy
+\fi
+%=================================================================
+\chapter{Programming Pier}
+\label{cha:pier}
+
+\on{I am collecting notes on how to program new components for Pier.
+Do not yet know whether it will turn into a chapter ...}
+
+%=================================================================
+
+%-----------------------------------------------------------------
+
+%=================================================================
+\ifx\wholebook\relax\else 
+   \bibliographystyle{jurabib}
+   \nobibliography{scg}
+   \end{document}
+\fi
+%=================================================================

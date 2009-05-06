@@ -43,9 +43,9 @@
 
 %=================================================================
 
-\fp{- Syntax error: "Instead it generates XTHML programmatically." pag 11\\
-- At the end of page 16: "The Form Elements example illustrates most of the features of forms." Which Form elements? An example that contains a classic form with different elements is WAInputTest. Also other pages contain different form elements. Probably is better a phrase like: " Have a look at the system category Seaside-Tests-Functional , or just point your browser to http://localhost:8080/seaside/tests/alltests where there are different examples illustrating most of the features of forms."\\
-- pag. 25: "Go to http:// localhost:8080/ seaside/ tests/ alltests and select Convenience and select Transaction. Try to navigate back and forth within the parent and child transaction. Note that as soon as a transaction is complete, you can no longer go back inside the transaction without generating an error." The error is generated just when I go back with browser and I click "Ok" button in the form. Is that one the error that you want highlight? Or an error should be generated going back and forth with the browser buttons. It is not clear.\\
+\fp{% - Syntax error: "Instead it generates XTHML programmatically." pag 11\\
+% - At the end of page 16: "The Form Elements example illustrates most of the features of forms." Which Form elements? An example that contains a classic form with different elements is WAInputTest. Also other pages contain different form elements. Probably is better a phrase like: " Have a look at the system category Seaside-Tests-Functional , or just point your browser to http://localhost:8080/seaside/tests/alltests where there are different examples illustrating most of the features of forms."\\
+% - pag. 25: "Go to http:// localhost:8080/ seaside/ tests/ alltests and select Convenience and select Transaction. Try to navigate back and forth within the parent and child transaction. Note that as soon as a transaction is complete, you can no longer go back inside the transaction without generating an error." The error is generated just when I go back with browser and I click "Ok" button in the form. Is that one the error that you want highlight? Or an error should be generated going back and forth with the browser buttons. It is not clear.\\
 - In the footnote 9 pag. 26: "The relevant category is SBE-SeasideRPN". There are no project called like that here http://www.squeaksource.com/SqueakByExample. Instead there is "SBE2-SeasideRPN-on.1.mcz" that, anyway is a little bit different form the code show in the example. For instance there isn't a method called "renderStackButtonOn: html with: text callback: aBlock colSpan: anInteger ". I think that the code online have to be the same of the example.\\
 - the rest of the chapter seems ok. The most difficult part of code are written in the book and anyway to have an example you can check the code online. (I'm talking about the calculator implementation in particular).
 }
@@ -258,8 +258,7 @@ If you remove the ``config'' application, you can get it back by evaluating
 
 \ab{This section was too long\,---\,18 pages.  It also contained several self-references (``see section 1.3''). So I broke into smaller sections, by promoting some of the subsections and subsubsections.}
 
-As we mentioned in the previous section, Seaside applications are built out of \emph{\subind{Seaside}{components}}.
-\ab{Is that \emph{xspace} again?}
+As we mentioned in the previous section, Seaside applications are built out of \emph{\subind{Seaside}{components}.}
 Let's take a closer look at how Seaside works by implementing the \emph{Hello World} component.
 
 Every Seaside component should inherit directly or indirectly from \clsind{WAComponent}, as shown in \figref{WACounter}.
@@ -595,7 +594,7 @@ Using \ct{on: #heading of: self}, the \ct{heading} variable is updated automatic
 The same message is used twice more in this example, to cause the selection of a colour on the html form to update the \ct{color} variable, and to bind the result of the checkbox to the \ct{checked} variable.
 Many other examples can be found in the functional tests for Seaside.
 Have a look at the system category \scat{Seaside-Tests-Functional}, or just point your browser to \url{http://localhost:8080/seaside/tests/alltests}.
-The \link{Form Elements} example illustrates most of the features of forms.
+The \link{Form Elements} example on that page illustrates most of the features of forms.
 
 Don't forget, if you \link{Toggle Halos}, you can browse the source code of the examples directly using the Seaside class browser.
 
@@ -963,9 +962,9 @@ WANestedTransaction>>>go
 	self inform: 'Outside parent txn'
 \end{code}
 
-\dothis{Go to \url{http://localhost:8080/seaside/tests/alltests} and select \link{Convenience} and select \link{Transaction}.
-Try to navigate back and forth within the parent and child transaction.
-Note that as soon as a transaction is complete, you can no longer go back inside the transaction without generating an error.}
+\dothis{Go to \url{http://localhost:8080/seaside/tests/alltests} and select \link{Transaction}.
+Try to navigate back and forth within the parent and child transaction by clicking the \button{back} button and then clicking \button{ok}.
+Note that as soon as a transaction is complete, you can no longer go back inside the transaction without generating an error upon clicking \button{ok}.}
 
 %=================================================================
 \section{A complete tutorial example}
