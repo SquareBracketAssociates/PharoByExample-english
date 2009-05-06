@@ -82,17 +82,18 @@ From the description above we can see that a process can be in four different st
 
 A process can be 5 different states (See Figure~\ref{fig:processState}):
 \begin{description}
-\item [Runnable] A process has been created but not run. 
+\item [Runnable.] A process has been created but not run. It is in the scheduler lists and could get the execution control. 
 
-\item [Running] A process has been created and  scheduled, now it is running and executing a program. At the end of its execution it will be terminated.
+\item [Running.] A process has been created and scheduled. Now it is running and executing a program. At the end of its execution it will be terminated. As we will see later it may release (message \ct{yield}) the control so that other processes may be scheduled and run, in such a case it will be runnable \sd{what is the difference between runnable and suspended?}. 
 
-\item [Terminated] When a process receives the message \ct{terminate}, it stops running and cannot be run anymore. 
+\item [Terminated.] When a process receives the message \ct{terminate}, it stops running and cannot be run anymore. 
 
-\item [Suspended] A running is stopped to run and \sd{does suspend schedule a process?}
+\item [Suspended] A running is stopped to run and it is not in the list of the scheduler nor in semaphore waiting list. It may be runnable again by sending it the message \ct{suspend}.
 
-\item [Waiting] A process is not in the scheduler list but waiting in a semaphore list. 
-
+\item [Waiting] A process is not in the scheduler list but waiting in a semaphore list of waiting process. It may be rescheduled once the semaphore will receive enough messages \ct{signal} to wake up it (see Section~\ref{}). 
 \end{description}
+
+
 
 
 \begin{figure}
@@ -102,7 +103,7 @@ A process can be 5 different states (See Figure~\ref{fig:processState}):
 \end{center}
 \end{figure}
 
-Suspended and waiting are similar: the main difference is that a suspended process may be rescheduled using the message \ct{resume}, while a waiting process is only rescheduled when the semaphore that put it on wait, reschedule it (see Section~\ref{}).
+Suspended and waiting are similar: the main difference is that a suspended process may be rescheduled using the message \ct{resume}, while a waiting process is only rescheduled when the semaphore that put it on wait, reschedule it (see Section~\ref{sec:semaphore}).
 
 To sum up, there are 3 messages sent to a Process which change its state: resume, suspend and terminate. In addition, the messages wait and signal sent to a semaphore have effect on processes. The message \ct{wait} affects the currently running process and the message \ct{signal} sent to a semaphore will resume of the waiting semaphore processes. 
 
@@ -183,7 +184,7 @@ Nous faisons l'hypothèse que monCompte est une variable qui référence un comp
 
 
 
-\section{Semaphore Basic Principle}
+\section{Semaphore Basic Principle}\label{sec:semaphore}
 A semaphore is a basic mechanism for synchronizing processes.  A semaphore will either suspend or resume processes depending on its internal state. It has a list of waiting processes. 
 When a process sends the message \ct{wait} to a semaphore, depending on the internal state of the semaphore, the calling process is put on wait (the process is added to the process waiting list of the semaphore). When a process has finished --- to use the resource for example, it signals it to the semaphore, which resumes one of its waiting processes. \sd{check the phrasing of xavier for this part}
 
