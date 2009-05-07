@@ -77,35 +77,42 @@ pr resume
 A process can also be temporarily suspended (\ie stopped) using the message \ct{suspend}. A suspended processed can be rescheduled using the message \ct{resume}. Now we can also terminate a process using the message terminate. 
 A terminated process cannot be scheduled any more. 
 
-\paragraph{Process possible states.}
-From the description above we can see that a process can be in four different states: running, runnable, suspended, and terminated. As we will see in the following of this chapter, a process can also be waiting when a semaphore does not allow it to proceed. 
-
-A process can be 5 different states (See Figure~\ref{fig:processState}):
-\begin{description}
-\item [Runnable.] A process has been created but not run. It is in the scheduler lists and could get the execution control. 
-
-\item [Running.] A process has been created and scheduled. Now it is running and executing a program. At the end of its execution it will be terminated. As we will see later it may release (message \ct{yield}) the control so that other processes may be scheduled and run, in such a case it will be runnable \sd{what is the difference between runnable and suspended?}. 
-
-\item [Terminated.] When a process receives the message \ct{terminate}, it stops running and cannot be run anymore. 
-
-\item [Suspended] A running is stopped to run and it is not in the list of the scheduler nor in semaphore waiting list. It may be runnable again by sending it the message \ct{suspend}.
-
-\item [Waiting] A process is not in the scheduler list but waiting in a semaphore list of waiting process. It may be rescheduled once the semaphore will receive enough messages \ct{signal} to wake up it (see Section~\ref{}). 
-\end{description}
-
-
-
+\section{Process possible states}
+From the description above we can see that a process can be in four different states: \emph{running}, \emph{runnable}, \emph{suspended}, and \emph{terminated}. As we will see in the following of this chapter, a process can also be \emph{waiting} when a semaphore does not allow it to proceed. A process can be 5 different states (See Figure~\ref{fig:processState}).
 
 \begin{figure}
 \begin{center}
-\includegraphics[width=10cm]{ProcessState}
+\includegraphics[width=6cm]{ProcessState}
 \caption{Process possible states.\label{fig:processState}}
 \end{center}
 \end{figure}
 
-Suspended and waiting are similar: the main difference is that a suspended process may be rescheduled using the message \ct{resume}, while a waiting process is only rescheduled when the semaphore that put it on wait, reschedule it (see Section~\ref{sec:semaphore}).
 
-To sum up, there are 3 messages sent to a Process which change its state: resume, suspend and terminate. In addition, the messages wait and signal sent to a semaphore have effect on processes. The message \ct{wait} affects the currently running process and the message \ct{signal} sent to a semaphore will resume of the waiting semaphore processes. 
+\begin{description}
+\item [Runnable.] A process has been created but not run. It is in the scheduler lists and could get the execution control. In Figure~\ref{fig:processStateInContext}, the processes \ct{P4} and \ct{P8} are runnable. The processor can select one of them as the current active process. 
+
+\item [Running.] A process has been created and scheduled. Now it is running and executing a program. At the end of its execution it will be terminated. As we will see later it may release  the control (by sending the message \ct{yield} to \ct{Processor} the process scheduler) so that other processes may be scheduled and run.  In such a case it will be runnable, \ie waiting to get again the control. 
+
+\item [Terminated.] When a process receives the message \ct{terminate}, it stops running and cannot be run anymore. 
+
+\item [Suspended.] A running is stopped to run and it is not in the list of the scheduler nor in semaphore waiting list. It may be runnable again by sending it the message \ct{resume}. In Figure~
+\ref{fig:processStateInContext}, the process \ct{P0} got suspended, it became a suspended process. Such suspended process can be resume, in such a case it will added to the runnable processes of the scheduler. 
+
+\item [Waiting.] A process is not in the scheduler list but waiting in a semaphore list of waiting process. It may be rescheduled once the semaphore will receive enough messages \ct{signal} to wake up it (see Section~\ref{sec:semaphore}). In Figure~
+\ref{fig:processStateInContext}, the process \ct{P3} wait for a resource controlled by a semaphore, the semaphore when signaled, resumes its waiting processes \ct{P1} and \ct{P2}. 
+\end{description}
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=10cm]{ProcessStateInContext}
+\caption{Process possible states in context.\label{fig:processStateInContext}}
+\end{center}
+\end{figure}
+
+
+Suspended and waiting state are similar: the main difference is that a suspended process may be rescheduled using the message \ct{resume}, while a waiting process is only rescheduled when the semaphore that puts it on wait, reschedule it (see Section~\ref{sec:semaphore}).
+
+To sum up, there are 3 messages sent to a Process which change its state: \ct{resume}, \ct{suspend} and \ct{terminate}. In addition, the messages \ct{wait} and \ct{signal} sent to a semaphore have effect on processes. The message \ct{wait} affects the currently running process and the message \ct{signal} sent to a semaphore will resume of the waiting semaphore processes. As we will see soon, a process may release its control to give a chance to other processes to run using \ct{Processor yield}.
 
 
 \section{Process Scheduler}
