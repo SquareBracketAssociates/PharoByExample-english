@@ -12,21 +12,36 @@
 # export TEXINPUTS:=.:local
 export TEXINPUTS:=./local//:../local//:
 
-C = Seaside
+EG1 = Preface QuickTour FirstApp Syntax Messages \
+	Model Environment SUnit BasicClasses Collections Streams Morphic \
+	Metaclasses
+
+EG2 = Seaside
 
 PDFLATEX = pdflatex -file-line-error
 
-# TO-DO: add rules for BOOK1 and OMNIBUS
+# TO-DO: add rules for BOOK1?
 
 # BOOK1=PBE1
 BOOK2=PBE2
-# OMNIBUS=PBE-Omnibus
+OMNIBUS=PBE-Omnibus
 
 # --------------------------------------------------------------------------------
-all : BOOK2
+all : OMNIBUS
 
 # NB: be sure to use texlive and to set the TEXINPUTS variable accordingly
 # See README.txt
+
+OMNIBUS : clean examples examples2
+	time ${PDFLATEX} ${OMNIBUS}
+	time ${PDFLATEX} ${OMNIBUS} | tee warnings.txt
+	# Filter out blank lines and bogus warnings
+	perl -pi \
+		-e '$$/ = "";' \
+		-e 's/[\n\r]+/\n/g;' \
+		-e 's/LaTeX Warning: Label `\w*:defaultlabel'\'' multiply defined.[\n\r]*//g;' \
+		-e 's/Package wrapfig Warning: wrapfigure used inside a conflicting environment[\n\r]*//g;' \
+		warnings.txt
 
 BOOK2 : clean examples2
 	time ${PDFLATEX} ${BOOK2}
@@ -39,15 +54,18 @@ BOOK2 : clean examples2
 		-e 's/Package wrapfig Warning: wrapfigure used inside a conflicting environment[\n\r]*//g;' \
 		warnings.txt
 
-# We need a makefile rule to generated the index as well ...
+# We need a makefile rule to generate the index as well ...
 index :
-	makeindex ${BOOK2}
+	makeindex ${OMNIBUS}
 
-complete : BOOK2 index
-	time ${PDFLATEX} ${BOOK2}
+complete : OMNIBUS index
+	time ${PDFLATEX} ${OMNIBUS}
+
+examples :
+	./examples.rb ${EG1} > ../$@.txt
 
 examples2 :
-	./examples.rb $C > ../$@.txt
+	./examples.rb ${EG2} > ../$@.txt
 
 fun :
 	time ./examples.rb $C > $@1.txt
