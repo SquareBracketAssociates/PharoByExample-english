@@ -36,17 +36,16 @@
 %\renewcommand{\nnbb}[2]{} % Disable editorial comments
 \sloppy
 %=================================================================
-\chapter{Regular Expressions in Squeak}\label{cha:regex}
+\chapter{Regular Expressions in \pharo}\label{cha:regex}
 
 Regular expressions are widely used in many scripting languages such as Perl, Python and Ruby.
 They are useful to identify strings that match a certain pattern, to check that input conforms to an expected format, and to rewrite strings to new formats.
-Squeak also supports regular expressions due to the Regex package kindly contributed by Vassili Bykov.
-Regex is normally installed in certain Squeak images, such as Damien Cassou's Squeak developers' image\footnote{\url{http://damiencassou.seasidehosting.st/seaside/pier/Smalltalk/squeak-dev}}.
-You can also obtain the Regex package from SqueakSource\footnote{\url{http://www.squeaksource.com/Regex.html}} and install it manually into an image of your choice.
+\pharo also supports regular expressions due to the Regex package contributed by Vassili Bykov.
+Regex is installed by default in \pharo. If you are using an older image that does not include Regex the Regex package, you can install it yourself from SqueakSource\footnote{\url{http://www.squeaksource.com/Regex.html}}.
 
 A regular expression\footnote{\url{http://en.wikipedia.org/wiki/Regular_expression}} is a template that matches a set of strings.
 For example, the regular expression \ct{'h.*o'} will match the the strings \ct{'ho'}, \ct{'hiho'} and \ct{'hello'}, but it will not match \ct{'hi'} or \ct{'yo'}.
-We can see this in Squeak as follows:
+We can see this in \pharo as follows:
 \begin{code}{@TEST}
 'ho' matchesRegex: 'h.*o'     --> true
 'hiho' matchesRegex: 'h.*o'  --> true
@@ -91,7 +90,7 @@ WebDir class>>onDir: dir
 	^ self new setDir: dir home: dir pathName
 
 WebDir class>>selectHome
-	^ self onDir: FileList2 modalFolderSelector
+	^ self onDir: FileList modalFolderSelector
 \end{code}
 
 The last method opens a browser to select the directory to open.
@@ -199,16 +198,15 @@ Accessing the details of individual web pages should be the responsibility of a 
 \dothis{Define a class \ct{WebPage} with instance variables \ct{path}, to identify the HTML file, and \ct{homePath}, to identify the root directory of the web site.  (We will need this to correctly generate links from the root of the web site to the files it contains.) Define an initialization method on the instance side and a creation method on the class side.}
 
 \begin{code}{}
-WebPage>>setPath: filePath homePath: dirPath 
+WebPage>>initializePath: filePath homePath: dirPath 
 	path := filePath.
 	homePath := dirPath
 
 WebPage class>>on: filePath forHome: homePath
-	^ self new setPath: filePath homePath: homePath
+	^ self new initializePath: filePath homePath: homePath
 \end{code}
 
 A \ct{WebDir} instance should be able to return a list of all the web pages it contains.
-\jr{I would rename the set method to initialize... in order to be more intention revealing and follow the smalltalk best practices patterns }
 \dothis{Add the following method to \ct{WebDir}, and inspect the return value to verify that it works correctly.}
 
 \begin{code}{}
@@ -289,14 +287,14 @@ You should now be able to see something like this:
 
 Now let's extract the title. In this case we are looking for the text that occurs \emph{between} the HTML tags \ct{<title>} and \ct{</title>}. 
 
-What we need is a way to extract \emph{part} of the match of a regular expression. Subexpressions of regexes are delimited by parentheses.  Consider the regex \ct{([CARETaeiou]+)([aeiou]+)}. It consists of two subexpressions, the first of which will match a sequence of one or more non-vowels, and the second of which will match one or more vowels. (The operator \ct{CARET} at the start of a bracketed set of characters negates the set.\footnote{NB: In Squeak the caret is also the return keyword, which we write as \ct{^}. To avoid confusion, we will write \ct{CARET} when we are using the caret within regular expressions to negate sets of characters, but you should not forget, they are actually the same thing.}) Now we will try to match a \emph{prefix} of the string \ct{'squeak'} and extract the submatches:
+What we need is a way to extract \emph{part} of the match of a regular expression. Subexpressions of regexes are delimited by parentheses.  Consider the regex \ct{([CARETaeiou]+)([aeiou]+)}. It consists of two subexpressions, the first of which will match a sequence of one or more non-vowels, and the second of which will match one or more vowels. (The operator \ct{CARET} at the start of a bracketed set of characters negates the set.\footnote{NB: In \pharo the caret is also the return keyword, which we write as \ct{^}. To avoid confusion, we will write \ct{CARET} when we are using the caret within regular expressions to negate sets of characters, but you should not forget, they are actually the same thing.}) Now we will try to match a \emph{prefix} of the string \ct{'pharo'} and extract the submatches:
 
 \begin{code}{| re |}
 re := '([CARETaeiou]+)([aeiou]+)' asRegex.
-re matchesPrefix: 'squeak' --> true
-re subexpression: 1            --> 'squea'
-re subexpression: 2            --> 'sq'
-re subexpression: 3            --> 'uea'
+re matchesPrefix: 'pharo' --> true
+re subexpression: 1         --> 'pha'
+re subexpression: 2         --> 'ph'
+re subexpression: 3         --> 'a'
 \end{code}
 
 After successfully matching a regex against a string, you can always send it the message \ct{subexpression: 1} to extract the entire match.  You can also send \lct{subexpression: $n$} where $n-1$ is the number of subexpressions in the regex. The regex above has two subexpressions, numbered $2$ and $3$.
@@ -980,7 +978,7 @@ Since the first release of the matcher, thanks to the input from several fellow 
 
 Regular expressions are an essential tool for manipulating strings in a trivial way.
 % whenever one has to deal with strings in a non-trivial way.
-This chapter presented the Regex package for Squeak. The essential points of this chapter are:
+This chapter presented the Regex package for \pharo. The essential points of this chapter are:
 
 \begin{itemize}
 \item For simple matching, just send \ct{matchesRegex:} to a string
