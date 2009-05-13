@@ -11,6 +11,7 @@
 % 2008-01-11 - Andrew revised
 % 2009-04-17 - Fabrizio Perin reviewed
 % 2009-04-18 - Jorge Ressia reviewed
+% 2009-05-06 - Oscar converted to Pharo; fixed review comments
 
 %=================================================================
 \ifx\wholebook\relax\else
@@ -42,9 +43,6 @@
 \label{cha:seaside}
 
 %=================================================================
-
-
-\on{Doing another pass; updating to pharo}
 
 \ind{Seaside} is a framework for building web applications in Smalltalk.  It was originally developed by Avi Bryant \index{Bryant, Avi} in 2002; once mastered, Seaside makes web applications almost as easy to write as desktop applications.
 
@@ -1111,12 +1109,24 @@ First define the following helper methods, which will make it easier to script t
 
 \needlines{3}
 \begin{code}{}
-MyKeypad>>>renderStackButton: text callback: aBlock colSpan: anInteger on: html 	html tableData		class: 'key';		colSpan: anInteger;		with: 				[html anchor					callback: aBlock;					with: [html html: text]]
+MyKeypad>>>renderStackButton: text callback: aBlock colSpan: anInteger on: html 
+	html tableData
+		class: 'key';
+		colSpan: anInteger;
+		with: 
+				[html anchor
+					callback: aBlock;
+					with: [html html: text]]
 \end{code}
 
 
 \begin{code}{}
-MyKeypad>>>renderStackButton: text callback: aBlock on: html 	self 		renderStackButton: text		callback: aBlock		colSpan: 1		on: html
+MyKeypad>>>renderStackButton: text callback: aBlock on: html 
+	self 
+		renderStackButton: text
+		callback: aBlock
+		colSpan: 1
+		on: html
 \end{code}
 
 We will use these two methods to define the buttons on the keypad with appropriate callbacks.
@@ -1283,7 +1293,7 @@ MyCalculator>>>renderContentOn: html
 \end{code}
 				
 \dothis{To be able to re-render the display when a keyboard button is pressed, the keyboard needs to know the display component.
-Add a \ct{display} instance variable to \ct{MyKeypad}, an initializer method \ct{MyKeypad>>>setDisplay:}, and call this from \ct{MyCalculator>>initialize}.
+Add a \ct{display} instance variable to \ct{MyKeypad}, an initialize method \ct{MyKeypad>>>setDisplay:}, and call this from \ct{MyCalculator>>initialize}.
 Now we are able to assign some JavaScript code to the buttons by updating \ct{MyKeypad>>>renderStackButton:callback:colSpan:on:} as follows:}
 
 \begin{code}{}
