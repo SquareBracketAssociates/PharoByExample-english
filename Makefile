@@ -58,6 +58,11 @@ fun :
 # --------------------------------------------------------------------------------
 # MAINTENANCE
 
+# report tex files missing HISTORY
+history :
+	find . -name \*.tex | \
+	xargs fgrep -L HISTORY
+
 # Adapt this rule to find anything (such as duplicate labels)
 find :
 	find . -name \*.tex | \
