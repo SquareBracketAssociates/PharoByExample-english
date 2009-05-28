@@ -46,6 +46,23 @@
 - trap msgs sent to an object (with Proxy and with msgNotUnderstood)
 }
 
+\on{;""Q How do I check which methods of my package are not covered by tests?""
+;""A"" Load the *http://www.squeaksource.com/ObjectsAsMethodsWrap.html* SqueakSource project and run:
+=category := 'SCGPier'.
+=w := (ObjectAsOneTimeMethodWrapper installOnClassCategory: category).
+=
+=tr := TestRunner new.
+=ToolBuilder open: tr.
+=[tr
+=	categoryAt: (tr categoryList indexOf: 'SCGPier') put: true;
+=	selectAllClasses;
+=	runAll.]
+=ensure: [[w do: [:each| each uninstall ]] valueUnpreemptively].
+=
+=((w select: [:each | each executed not ])
+=	collect: [:each | each wrappedClass name, '>>', each selector name ]) explore.
+''Actually, the latest TestRunner integrated in Pharo now does this for you.''}
+
 Like all Smalltalk dialects, \squeak is a reflective programming language.
 \on{Needs a gentler explanation.}
 For a programming language, being reflective means that it supports both \emph{introspection} and \emph{intercession}.
