@@ -7,7 +7,7 @@
 % 2008-01-15 - Alex added text
 % 2008-12-15 - Oscar revised
 % 2009-03-24 - Stef started new chapter (acttalk ... see separate file)
-% 2009-06-01 - Oscar started to revise again
+% 2009-06-01 - Oscar started to revise again and add new material
 
 %=================================================================
 \ifx\wholebook\relax\else
@@ -39,25 +39,17 @@
 
 \on{I am revising this chapter}
 
-Like all Smalltalk dialects, \squeak is a reflective programming language.
-\on{Needs a gentler explanation.}
-For a programming language, being reflective means that it supports both \emph{introspection} and \emph{intercession}.
-Introspection is the ability to \emph{look} at the data structures that define the language itself, like objects, classes, the execution stack.
+\st is a reflective programming language.
+In a nutshell, this means that programs are able to reflect on their own execution.
+A program that manipulates other programs (or even itself) is a \emph{metaprogram}.
+For a programming language to be reflective, it should support both \emph{introspection} and \emph{intercession}.
+Introspection is the ability to \emph{examine} the data structures that define the language, such as objects, classes, methods and the execution stack.
 Intercession is the ability to \emph{modify} these structures, in other words to change the language semantics and the behavior of a program from within the program itself.
 
-For instance, this lets us add spy methods, or manipulate the execution stack from a debugger.
-
-In this chapter, you will read about uses of introspection that are useful for day-to-day programming.
+In this chapter we will explore many practical examples illustrating how \st supports introspection and metaprogramming.
 
 %:======================================
-\section{Under the hood: instances} % (fold)
-
-\on{
-- Instances; accessing ivars; querying classes\\
---- object meta-operations vs class meta-operations?\\
---- listing all iVars\\
---- PointerFinder (who points to me -- also see Inspector and Explorer)\\
-}
+\section{Introspection}
 
 Using the inspector, you can look at an object, change the values of its instance variables, and even send messages to it.
 
@@ -70,31 +62,35 @@ w inspect
 
 This will open a second workspace and an inspector.
 The inspector shows the internal state of this new workspace, listing its instance variables in the left part (\ct!dependents!, \ct!contents!, \ct!bindings!...) and the value of the selected instance variable in the right part.
-The \ct!contents! instance variable represents whatever the workspace is displaying in its text area, so i you select it, the right part will show an empty string.
+The \ct!contents! instance variable represents whatever the workspace is displaying in its text area, so if you select it, the right part will show an empty string.
 
-\on{I would first type some text in the workspace, accept it and see the inspector change.}
+\begin{figure}[ht]\centering
+	\includegraphics[width=\linewidth]{workspaceInspector}
+	\caption{Inspecting a \ct!Workspace!.\label{fig:workspaceInspector}}
+\end{figure}
 
-
-Now type \ct!'1+2'! in place of that empty string, then \emph{accept} it.
-The value of the \ct!contents! variable changed, but the workspace window didn't notice it, so it didn't redisplay itself.
-To trigger the window refresh, evaluate \ct!self contentsChanged! in the lower part of the inspector. \damien{the french version says that the refresh didn't happen because \ct!contents:! doesn't trigger it, but the inspector bypasses the accessor...}
-\on{Then we should also have an example where we send \ct{self contents: 'yahoo'}}
+\dothis{Now type \ct!'hello'! in place of that empty string, then \emph{accept} it.}
+The value of the \ct!contents! variable will change, but the workspace window will not notice it, so it does not redisplay itself.
+To trigger the window refresh, evaluate \ct!self contentsChanged! in the lower part of the inspector.
 
 %-----------------------------------------------------------------
 \subsection{Accessing instance variables}
 
 How does the inspector work?
-In Smalltalk, all instance variables are protected.
+In \st, all instance variables are protected.
 In theory, it is impossible to access them if the class doesn't define any accessor.
 In practice, the inspector can access instance variables without needing accessors, because it uses the reflective abilities of \st.
-In \st, classes define instance variables either by name or by numeric indexes.
+In \st, classes define instance variables either by name or by numeric indices.
 The inspector uses methods defined by the \ct!Object! class to access them: \lct{instVarAt: \emph{index}} and \lct{instVarNamed: \emph{aString}} can be used to get the value of the instance variable at position \lct{\emph{index}} or identified by \lct{\emph{aString}}, respectively; to assign new values to these instance variables, it uses \ct!instVarAt:put:! and \ct!instVarNamed:put:!.
 
-For instance, you can change the value of the \ct!w! instance variable of the first workspace with: \ct!w instVarNamed: 'contents' put: '3+4'; contentsChanged!.
+For instance, you can change the value of the \ct!w! instance variable of the first workspace by evaluating:
+\begin{code}{}
+w instVarNamed: 'contents' put: 'howdy!'; contentsChanged
+\end{code}
 
-Please note that these methods are useful to build development or debugging tools, but using them to develop conventional applications is a bad idea: these reflective methods break the encapsulation principles of object-oriented programming.
+\emph{Caveat:} Although these methods are useful for building development tools, using them to develop conventional applications is a bad idea: these reflective methods break the encapsulation boundary of your objects and can therefore make your code much harder to understand and maintain.
 
-Both \ct!instVarAt:! and \ct!instVarAt:put:! are primitive methods, meaning that they invoke a primitive operation of the \squeak virtual machine.
+Both \ct!instVarAt:! and \ct!instVarAt:put:! are primitive methods, meaning that they are implemented as primitive operations of the \pharo virtual machine.
 If you consult the code of these methods, you will see the special syntax \ct!<primitive: xx>! where \ct!xx! is an integer.
 
 \needlines{5}
@@ -107,27 +103,29 @@ Object>>>instVarAt: index
 \end{code}
 
 Typically, the code after the primitive invocation is not executed.
-It is executed only when the primitive fails. In this specific case, if we try to access a variable that does not exist, then the code following the primitive will be tried.
+It is executed only if the primitive fails. In this specific case, if we try to access a variable that does not exist, then the code following the primitive will be tried.
 This also allows the debugger to be started on primitive methods.
-Although it is possible to modify the code of primitive methods, beware that this is a quite risky business for the stability of your \squeak system.
+Although it is possible to modify the code of primitive methods, beware that this is a quite risky business for the stability of your \pharo system.
 
-There is a limited number of primitive operations in \squeak. They constitute the basic actions in \st: basic operations on integers, accessing input/output peripherals (disk, screen, network...).
-Some of these primitives also accelerate system functions.
-It is also possible to define custom primitives and to link them to plugins written in C to benefit from external libraries or from the speed of a native implementation.
+%There is a limited number of primitive operations in \pharo. They constitute the basic actions in \st: basic operations on integers, accessing input/output peripherals (disk, screen, network...).
+%Some of these primitives also accelerate system functions.
+%It is also possible to define custom primitives and to link them to plugins written in C to benefit from external libraries or from the speed of a native implementation.
 
 \begin{figure}[ht]\centering
-	\includegraphics[width=\linewidth]{allInstanceVariables}
-	\caption{Displaying all instance variables of a \ct!SystemWindow!.\label{fig:allInstanceVariables}}
+	\includegraphics[width=0.8\linewidth]{allInstanceVariables}
+	\caption{Displaying all instance variables of a \ct!Workspace!.\label{fig:allInstanceVariables}}
 \end{figure}
 
-\figref{allInstanceVariables} shows how to display in a \ct!Transcript! the contents of the instance variables of an arbitrary instance (\ct!someInstance!) of class \ct!SystemWindow!.
+\figref{allInstanceVariables} shows how to display the values of the instance variables of an arbitrary instance (\ct!w!) of class \ct!Workspace!.
 The method \ct!allInstVarNames! returns all the names of the instance variables of a given class.
 
 In the same spirit, it is possible to gather instances that have specific properties.
-For instance, to get all instances of class \ct!Browser! whose instance variable \ct!systemOrganizer! is not \ct!nil!, try this expression:
+%For instance, to get all instances of class \ct!Browser! whose instance variable \ct!systemOrganizer! is not \ct!nil!, try this expression:
+For instance, to get all instances of class \ct!SketchMorph! whose instance variable \ct!owner! is set to the world morph (\ie images currently displayed), try this expression:
 \begin{code}{}
-Browser allInstances select: [:c | (c instVarNamed: 'systemOrganizer') notNil]
+SketchMorph allInstances select: [:c | (c instVarNamed: 'owner') isWorldMorph]
 \end{code}
+% Browser allInstances select: [:c | (c instVarNamed: 'systemOrganizer') notNil]
 
 %-----------------------------------------------------------------
 \subsection{Iterating over instance variables}
@@ -151,17 +149,15 @@ Object>>>instanceVariableValues
 	^ c
 \end{code}
 
-% This example shows how useful it is to be able to access instance variables via their position \alex{maybe?: this example shows how index-based variable access is useful}
-This method iterates over the indexes of instance variables that the class defines, starting just after the last index used by the superclasses.
+This method iterates over the indices of instance variables that the class defines, starting just after the last index used by the superclasses.
 (The method \ct!instSize! returns the number of all named instance variables that a class defines.)
 
 %-----------------------------------------------------------------
 \subsection{Querying classes and interfaces}
 
-The development tools in \squeak (code browser, debugger, inspector...) all use the reflective features we have seen so far.
+The development tools in \pharo (code browser, debugger, inspector...) all use the reflective features we have seen so far.
 
 Here are a few other messages that might be useful to build development tools:
-
 
 \lct{isKindOf: \emph{aClass}} returns true if the receiver is instance of \lct{\emph{aClass}} or of one of its superclasses.
 
@@ -172,40 +168,32 @@ For instance:
 1.5 isKindOf: Integer   --> false
 \end{code}
 
-
 \lct{respondsTo: \emph{aSymbol}} returns true if the receiver has a method whose selector is \lct{\emph{aSymbol}}.
 
 For instance:
+\needlines{3}
 \begin{code}{@TEST}
 1.5 respondsTo: #floor      --> true    "since Number implements floor"
 1.5 floor                            --> 1
 Exception respondsTo: #, --> true    "exception classes can be grouped"
 \end{code}
 
-Please note that these features are especially useful for defining development tools, but are normally not appropriate for typical applications.
+\emph{Caveat:} Although these features are especially useful for defining development tools, they are normally not appropriate for typical applications.
 Asking an object for its class, or querying it to discover which messages it understands, are typical signs of design problems, since they violate the principle of encapsulation.
 Development tools, however, are not normal applications, since their domain is that of software itself. As such these tools have a right to dig deep into the internal details of code.
 
-%Once again, the reflective features of \squeak are only useful to define development tools, and it is risky to use them to develop applications.
-%Indeed, using the type of an object to drive execution of a method or another often reveals a design problem.
-
-%\st offers other introspection possibilities for methods or the execution stack, the process scheduler, the memory manager... but we can't detail everything here; try to read the code and experiment by yourselves.
-
-There also exist mechanisms for introspecting on various parts of the run-time system, such as compiled methods, the execution stack, the process scheduler, the memory manager and so on. For now we will focus on navigating through objects and classes, and we will look more closely at the runtime system in an other chapter.
-\on{to be planned ...}
-
-% section under_the_hood_instances (end)
+There also exist mechanisms for introspecting on various parts of the run-time system, such as  the process scheduler, the memory manager and so on. For now we will focus on navigating through objects, classes and methods, and we will look more closely at rest of the runtime system in an other chapter.
 
 %:======================================
-\section{Browsing code} % (fold)
+\section{Browsing code}
 
-In \st, classes are normal objects, and they provide interesting features to navigate over their instances.
+In \st, everything is an object. In particular, classes are objects that provide useful features for navigating through their instances.
 Most of the messages we will look at now are implemented in \ct{Behavior}, so they are understood by all classes.
 
 As we saw previously, you can obtain an instance of a given class by sending it the message \ct!#someInstance!.
 
-\begin{code}{} % Cannot test this
-ByteString someInstance --> 'collection'
+\begin{code}{@TEST} % Possibly fragile!
+Point someInstance --> 0@0
 \end{code}
 
 You can also gather all the instances with \ct!#allInstances!, or the number of alive instances in memory with \ct!#instanceCount!.
@@ -215,7 +203,7 @@ ByteString allInstances     --> #('collection' 'position'  ...)
 ByteString instanceCount --> 104565
 \end{code}
 
-These features can be very useful when debugging an application, because you can ask a class to enumerate those of its methods that have specific properties.
+These features can be very useful when debugging an application, because you can ask a class to enumerate those of its methods exhibiting specific properties.
 \begin{itemize}
 \item \ct!whichSelectorsAccess:! returns the list of all selectors of methods that read the instance variable named as the argument
 \item \ct!whichSelectorsStoreInto:! returns the selectors of methods that modify the value of an instance variable
@@ -251,7 +239,7 @@ Rectangle unreferencedInstanceVariables            --> #()
 For example:
 
 \begin{code}{@TEST}
-SystemNavigation default allClassesImplementing: #ifTrue: --> {Boolean. True. False}
+SystemNavigation default allClassesImplementing: #yourself --> {Object}
 \end{code}
 
 %\ct!SystemNavigation default allClassesImplementing: #+! returns all classes that implement the message \ct!#+!.
@@ -266,16 +254,18 @@ SystemNavigation default allUnsentMessages size      --> 6431
 SystemNavigation default allUnimplementedCalls size --> 270
 \end{code}
 
-Note that messages implemented but not sent are not necessarily useless, since they may be sent implicitly (\eg, using \ct{perform:}).
+Note that messages implemented but not sent are not necessarily useless, since they may be sent implicitly (\eg using \ct{perform:}).
 Messages sent but not implemented, however, are more problematic, because the methods sending these messages will fail at runtime.
 They may be a sign of unfinished implementation, obsolete APIs, or missing libraries.
-
 
 \ct!SystemNavigation default allCallsOn: #Point! returns all messages sent explicitly to \ct!Point! as a receiver.
 
 
+%:==>HERE<==
+\on{HERE}
 
-All these features are integrated in the programming environment of \squeak, in particular in the code browsers.
+
+All these features are integrated in the programming environment of \pharo, in particular in the code browsers.
 As shown in \secref{cha:env}, you can list all methods that have the same name (implementors) or all methods that send a message (senders).
 This is quite handy: for instance, when you want to change the name of a method, to check that you didn't miss one message send that could invoke this method (\figref{implementors}). \damien{is "invoke a method" OK here?}
 
@@ -298,7 +288,7 @@ The frontmost inspector shows the decompiled bytecode of \ct!Point!'s method \ct
 \st is really a completely open and transparent system, where all the code is available for reading.
 You can study the whole system as you wish, because there is no hidden code.
 The primitive part of the system, \ie which is not written in \st, is reduced to its simplest expression.
-Among \st dialects, \squeak has the peculiarity that even its virtual machine is written in \st, so it is possible to run and debug it inside a \squeak image!
+Among \st dialects, \pharo has the peculiarity that even its virtual machine is written in \st, so it is possible to run and debug it inside a \pharo image!
 Though this actually works, it is quite slow, and for actual use the virtual machine is translated to C and compiled to a native executable.
 
 % section browsing_the_code (end)
@@ -313,7 +303,7 @@ Let's see how we can use \st's introspection features to quickly define code met
 A code metric is a measure of program code like depth in the inheritance hierarchy, the number of direct or indeirect subclasses, the number of methods or of instance variables in each class, or the number of locally defined methods or instance variables.
 When discovering the code of a new application, you can evaluate a metric to get a rough idea of what the code looks like.
 \scrref{metrics} computes a few code metrics for Morphic; these numbers can vary depending on the image you are using.
-Results for class \ct!Morph!, which is the superclass of all graphical objects in \squeak, reveal that it is a huge class, and that it is at the root of a huge hierarchy. Maybe it needs some refactoring!
+Results for class \ct!Morph!, which is the superclass of all graphical objects in \pharo, reveal that it is a huge class, and that it is at the root of a huge hierarchy. Maybe it needs some refactoring!
 
 \begin{script}[metrics]{A few code metrics}
 	inheritanceDepth := Morph allSuperclasses size. "2"
@@ -390,7 +380,7 @@ Collection>>>printOn: aStream
 	self printElementsOn: aStream
 \end{method}
 
-Now \ct!#printNameOn:! (\mthref{printNameOn}) is not needed anymore. Well, in this case... is it used in other classes? Let's ask \squeak:
+Now \ct!#printNameOn:! (\mthref{printNameOn}) is not needed anymore. Well, in this case... is it used in other classes? Let's ask \pharo:
 \begin{example}[sendersofprintnameon]{Asking for the senders of \lct{\#printNameOn:}}{}
 SystemNavigator default allCallsOn: #printNameOn:
 --> an OrderedCollection(A MethodReference RunArray >> printOn: aMethodReference Bitmap >> printOn: aMethodReference Text >> printOn: aMethodReference CompiledMethod >> printOn:)
@@ -399,14 +389,19 @@ SystemNavigator default allCallsOn: #printNameOn:
 So we should also refactor classes \clsind{RunArray}, \clsind{BitMap}, \clsind{Text}, and \clsind{CompiledMethod} that are sending message \ct!#printNameOn:!.
 
 %-----------------------------------------------------------------
+\subsection{Chasing pointers}
+
+\on{PointerFinder (who points to me -- also see Inspector and Explorer)}
+
+%-----------------------------------------------------------------
 \subsection{Intelligent breakpoints}
 
-In the 3.8 version of \squeak introduced a new kind of breakpoints.
+\on{talk about squeak here?} In the 3.8 version of \squeak introduced a new kind of breakpoints.
 Those are quite useful and are implemented by the \ct!Object>>>haltIf:! method.
 This breakpoint only halts program execution if the method it's placed in was called by the one whose name was passed as an argument.
 This is very useful to halt a method only during the execution of a test and not every time it is called.
 For instance, the expression \ct!self haltIf: #testFoo! will only halt execution of its containing method if this method was called, directly or indirectly, from \ct!testFoo!.
-The definition of \ct!haltIf:! is quite simple and fits in five lines; it uses the pseudo-variable \ct!thisContext!, which refers to the execution stack, represented as an object (\ct!thisContext! is one of the six keywords in Smalltalk, with \self, \super, \nil, \ct!true!, and \ct!false!).
+The definition of \ct!haltIf:! is quite simple and fits in five lines; it uses the pseudo-variable \ct!thisContext!, which refers to the execution stack, represented as an object (\ct!thisContext! is one of the six keywords in \st, with \self, \super, \nil, \ct!true!, and \ct!false!).
 
 \begin{method}[objecthaltif]{Implementation of a conditional breakpoint}
 Object>>>haltIf: condition
@@ -422,17 +417,17 @@ Object>>>haltIf: condition
 
 Starting from \ct!thisContext!, \ct!haltIf:! goes up through the execution stack, checking if the name of the calling method is the same as the one passed as parameter.
 If this is the case, then it raises an exception which, by default, summons the debugger.
-This example shows the power of Smalltalk, which allows to define powerful features and tools from within the language itself.
+This example shows the power of \st, which allows to define powerful features and tools from within the language itself.
 
-The pseudo-variable \ct!thisContext! is especially used in the \squeak debugger.
+The pseudo-variable \ct!thisContext! is especially used in the \pharo debugger.
 It contains an instance of the \clsind{MethodContext} class.
 This instance contains information about the method that is being executed, the stack pointer (\ct!stackpc!), and the program pointer (\ct!pc!).
 
-In the following example, we halted \squeak's evaluation loop by pressing \short{.} and inspecting the current context.
+In the following example, we halted \pharo's evaluation loop by pressing \short{.} and inspecting the current context.
 
 \begin{figure}[ht]\centering
 	\includegraphics[width=\linewidth]{MethodContext}
-	\caption{Inspecting the execution context of the evaluation loop in \squeak.\label{fig:MethodContext}}
+	\caption{Inspecting the execution context of the evaluation loop in \pharo.\label{fig:MethodContext}}
 \end{figure}
 
 Via \ct!thisContext!, the Seaside web framework also accesses the execution stack, but it modifies it on the fly to easily implement reusable components over HTTP.
@@ -459,12 +454,10 @@ Via \ct!thisContext!, the Seaside web framework also accesses the execution stac
 
 \on{Object primitiveChangeClassTo: become: and becomeForward: (see slides with minimal object example)}
 
-\on{- thisContext -- used in haltIf:}
-
 %:======================================
 \section{Methods as first class entities}
 
-Compared to other reflective programming languages, \squeak is a Smalltalk implementation that brings reflection a step further. Whereas it handles \emph{methods as first class entities} that can be modified and replaced on the fly, it also allows for \emph{method execution reification}, exposing dynamic information related to method execution as objects.
+Compared to other reflective programming languages, \pharo is a \st implementation that brings reflection a step further. Whereas it handles \emph{methods as first class entities} that can be modified and replaced on the fly, it also allows for \emph{method execution reification}, exposing dynamic information related to method execution as objects.
 
 
 \on{
@@ -498,9 +491,9 @@ ensure: [[w do: [:each| each uninstall ]] valueUnpreemptively].
 %-------------------------------------------------------------------------
 \subsection{Reification of Methods} 
 
-In Squeak, both classes and methods are represented by first class objects that can be accessed and even changed at runtime. 
+In \pharo, both classes and methods are represented by first class objects that can be accessed and even changed at runtime. 
 
-\emph{Compiled methods} are objects in Squeak that describe the executable part of methods. A compiled method contains a pointer to the source code and the code executed by the virtual machine, the bytecode.
+\emph{Compiled methods} are objects in \pharo that describe the executable part of methods. A compiled method contains a pointer to the source code and the code executed by the virtual machine, the bytecode.
 
 Compiled methods are stored in a method dictionary, in which keys are method names and values corresponding compiled methods. A method dictionary may be accessed from a given class by sending the message \ct{methodDict} to this class. For instance, the expression \ct{ExampleClass methodDict} returns the dictionary of methods for the class \ct{ExampleClass}.
 
@@ -512,7 +505,7 @@ ExampleClass methodDict at: #myMethod put: aCompiledMethod
 
 A compiled method (\ct{aCompiledMethod}) is added to the method dictionary of the class \ct{ExampleClass} under the name \ct{myMethod}. The effect is the addition of a new method.
 
-Having compiled methods as plain objects is a characteristic shared by most Smalltalk implementations. As we shall see in the coming section, one particularity of Squeak is to not restrict values contained in a method dictionary to be instances of \ct{CompiledMethod}.
+Having compiled methods as plain objects is a characteristic shared by most \st implementations. As we shall see in the coming section, one particularity of \pharo is to not restrict values contained in a method dictionary to be instances of \ct{CompiledMethod}.
 
 %-------------------------------------------------------------------------
 \subsection{Reification of method execution}
@@ -637,7 +630,7 @@ Spy>>>run: methodName with: listOfArguments in: receiver
 
 The pseudo variable \ct{topContext} represents the top frame of the run-time stack. The frame below the top one is the result of \ct{thisContext sender}. The class of the receiver of this frame is obtained by sending the message \ct{receiver} and \ct{class}. This class is then inserted into \ct{callingClasses}. The compiled method is then evaluated on the receiver of the original message (and not the spy!) with the same arguments.
 
-The Squeak interpreter may have to remove all references to this method form its method look cache. The following has to be defined as well:
+The \pharo interpreter may have to remove all references to this method form its method look cache. The following has to be defined as well:
 
 \begin{code}{}
 Spy>>>flushCache
@@ -706,7 +699,7 @@ The Spy application is now fully defined. As an example of usage, a spy may be i
 %:======================================
 \section{Chapter summary}
 
-It is natural to use the reflective features in Smalltalk.
+It is natural to use the reflective features in \st.
 Indeed, the whole development environment and its code browsers are built using the introspective interfaces of objects and classes.
 We want to stress that it is really interesting to be able to access and modify the objects that represent the program; it makes it unneccessary to devise alternative representations such as abstract syntax trees to build development tools (like Eclipse).
 To fix Java~1.0's lack in this respect, Java~1.2 added the ``reflextive'' API ---which is actually only introspective.
@@ -721,3 +714,44 @@ It is thus not needed to keep these representations up-to-date anymore.
 
 %-----------------------------------------------------------------
 \subsection{XXX}
+
+\on{Topics:\\
+Introspection\\
+- inspecting objects\\
+- accessing instance variables\\
+- query all instances with given properties\\
+- iterating instance variables\\
+- querying classes; subclasses; methods understood\\
+- browsing code; querying method relationships\\
+Applications\\
+- code metrics\\
+- code smells\\
+* PointerFinder\\
+- intelligent breakpoints using thisContext\\
+* classes, method dictionaries and compiled methods\\
+* perform:; valueWithReceiver:\\
+* compile:\\
+* MethodContext\\
+Controlling messages\\
+- trap with Proxy and override doesNotUnderstand (uses become:) ???\\
+- instead use example with object that auto-creates accessors on demand (using a trait?)\\
+- anonymous classes (uses compile: and primitiveChangeClassTo:) ???\\
+- spy (form a method wrapper)\\
+- method wrappers (simplified interface)\\
+Method wrappers\\
+- run:with:in:\\
+- coverage\\
+- memoization\\
+- collect direct senders; class collaborations\\
+- pre and postconditions\\
+Other stuff:\\
+- Object primitiveChangeClassTo: become: and becomeForward: (see tests and slides with minimal object example)\\
+}
+
+
+
+\begin{figure}[ht]\centering
+	\includegraphics[width=\linewidth]{allInstanceVariables}
+	\caption{Displaying all instance variables of a \ct!SystemWindow!.\label{fig:allInstanceVariables}}
+\end{figure}
+
