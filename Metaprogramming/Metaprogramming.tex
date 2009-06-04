@@ -6,7 +6,8 @@
 % 2007-05-22 - Damien Pollet started (translation from French article by ...?)
 % 2008-01-15 - Alex added text
 % 2008-12-15 - Oscar revised
-% 2009-03-24 - Stef started new chapter (acttalk ...)
+% 2009-03-24 - Stef started new chapter (acttalk ... see separate file)
+% 2009-06-01 - Oscar started to revise again
 
 %=================================================================
 \ifx\wholebook\relax\else
@@ -38,45 +39,6 @@
 
 \on{I am revising this chapter}
 
-\on{Topics:\\
-- Instances; accessing ivars; querying classes\\
-- Browsing code; nice queries\\
-- Applications of Introspection: code metrics; code smells; smart breakpoints\\
-- Methods as Objects; compiled methods; wrappers; spy\\
-MORE\\
-- method wrappers: coverage; memoization\\
-- trap msgs sent to an object\\
-- pointer finder\\
-- object meta-operations vs class meta-operations?\\
-- method dictionaries and compiled methods -- compiling, invoking \& removing methods\\
-- thisContext -- used in haltIf:
-}
-
-\on{Ideas for metaprogramming examples:\\
-- pointer finder (who points to me)\\
-- listing all iVars\\
-- coverage checking of a class w. method wrappers\\
-- automatic memoization with method wrappers\\
-- trap msgs sent to an object (with Proxy and with msgNotUnderstood)
-}
-
-\on{;""Q How do I check which methods of my package are not covered by tests?""
-;""A"" Load the *http://www.squeaksource.com/ObjectsAsMethodsWrap.html* SqueakSource project and run:
-=category := 'SCGPier'.
-=w := (ObjectAsOneTimeMethodWrapper installOnClassCategory: category).
-=
-=tr := TestRunner new.
-=ToolBuilder open: tr.
-=[tr
-=	categoryAt: (tr categoryList indexOf: 'SCGPier') put: true;
-=	selectAllClasses;
-=	runAll.]
-=ensure: [[w do: [:each| each uninstall ]] valueUnpreemptively].
-=
-=((w select: [:each | each executed not ])
-=	collect: [:each | each wrappedClass name, '>>', each selector name ]) explore.
-''Actually, the latest TestRunner integrated in Pharo now does this for you.''}
-
 Like all Smalltalk dialects, \squeak is a reflective programming language.
 \on{Needs a gentler explanation.}
 For a programming language, being reflective means that it supports both \emph{introspection} and \emph{intercession}.
@@ -87,8 +49,15 @@ For instance, this lets us add spy methods, or manipulate the execution stack fr
 
 In this chapter, you will read about uses of introspection that are useful for day-to-day programming.
 
-%=================================================================
+%:======================================
 \section{Under the hood: instances} % (fold)
+
+\on{
+- Instances; accessing ivars; querying classes\\
+--- object meta-operations vs class meta-operations?\\
+--- listing all iVars\\
+--- PointerFinder (who points to me -- also see Inspector and Explorer)\\
+}
 
 Using the inspector, you can look at an object, change the values of its instance variables, and even send messages to it.
 
@@ -227,7 +196,7 @@ There also exist mechanisms for introspecting on various parts of the run-time s
 
 % section under_the_hood_instances (end)
 
-%=================================================================
+%:======================================
 \section{Browsing code} % (fold)
 
 In \st, classes are normal objects, and they provide interesting features to navigate over their instances.
@@ -300,13 +269,6 @@ SystemNavigation default allUnimplementedCalls size --> 270
 Note that messages implemented but not sent are not necessarily useless, since they may be sent implicitly (\eg, using \ct{perform:}).
 Messages sent but not implemented, however, are more problematic, because the methods sending these messages will fail at runtime.
 They may be a sign of unfinished implementation, obsolete APIs, or missing libraries.
-
-
-
-
-
-%:ON IS HERE <====
-\on{I am here now}
 
 
 \ct!SystemNavigation default allCallsOn: #Point! returns all messages sent explicitly to \ct!Point! as a receiver.
@@ -477,10 +439,60 @@ Via \ct!thisContext!, the Seaside web framework also accesses the execution stac
 
 % section practical_uses_for_introspection (end)
 
+
+%:======================================
+\section{Object and Class meta-operations}
+
+\on{uml}
+
+\on{Object perform:}
+
+%:======================================
+\section{Controlling messages}
+
+\on{
+- override doesNotUnderstand\\
+--- trap msgs sent to an object (with Proxy and with msgNotUnderstood)\\
+- anonymous classes (see slides)\\
+- method wrappers
+}
+
+\on{Object primitiveChangeClassTo: become: and becomeForward: (see slides with minimal object example)}
+
+\on{- thisContext -- used in haltIf:}
+
 %:======================================
 \section{Methods as first class entities}
 
 Compared to other reflective programming languages, \squeak is a Smalltalk implementation that brings reflection a step further. Whereas it handles \emph{methods as first class entities} that can be modified and replaced on the fly, it also allows for \emph{method execution reification}, exposing dynamic information related to method execution as objects.
+
+
+\on{
+- Methods as Objects; compiled methods; wrappers; spy\\
+--- method dictionaries and compiled methods -- compiling, invoking \& removing methods\\
+--- method wrappers: coverage; memoization\\
+--- coverage checking of a class w. method wrappers\\
+--- automatic memoization with method wrappers\\
+}
+
+\on{;""Q How do I check which methods of my package are not covered by tests?""
+;""A"" Load the *http://www.squeaksource.com/ObjectsAsMethodsWrap.html* SqueakSource project and run:}
+
+\begin{code}{}
+category := 'SCGPier'.
+w := (ObjectAsOneTimeMethodWrapper installOnClassCategory: category).
+
+tr := TestRunner new.
+ToolBuilder open: tr.
+[tr
+	categoryAt: (tr categoryList indexOf: 'SCGPier') put: true;
+	selectAllClasses;
+	runAll.]
+ensure: [[w do: [:each| each uninstall ]] valueUnpreemptively].
+
+((w select: [:each | each executed not ])
+	collect: [:each | each wrappedClass name, '>>', each selector name ]) explore.
+\end{code}
 
 
 %-------------------------------------------------------------------------
@@ -689,6 +701,8 @@ The Spy application is now fully defined. As an example of usage, a spy may be i
 \end{code}
 
 \ct{Stream} may be freed from its spy with \ct{Stream removeSpy}.
+
+
 %:======================================
 \section{Chapter summary}
 
