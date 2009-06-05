@@ -260,41 +260,31 @@ They may be a sign of unfinished implementation, obsolete APIs, or missing libra
 
 \ct!SystemNavigation default allCallsOn: #Point! returns all messages sent explicitly to \ct!Point! as a receiver.
 
+All these features are integrated in the programming environment of \pharo, in particular in the code browsers.
+As you should already be aware, there are convenient keyboard shortcuts for browsing all i\underline{m}plementors (\short{m}) and se\underline{n}ders (\short{n}) of a given message.
+What is perhaps not so well known is that there are many such pre-packaged queries implemented as methods of the \ct{SystemNavigation} class in the \prot{browsing} protocol.
+For example, you can programmatically browse all implementors of the message \ct{ifTrue:} by evaluating:
+\begin{code}{}
+SystemNavigation default browseAllImplementorsOf: #ifTrue:
+\end{code}
+
+\begin{figure}[ht]\centering
+	\includegraphics[width=\linewidth]{implementors}
+	\caption{Browse all implementations of \ct!\#ifTrue:!.\label{fig:implementors}}
+\end{figure}
+
+Particularly useful are the methods \ct{browseAllSelect:} and \ct{browseMethodsWithSourceString:}.  Here are two different ways to browse all methods in the system that perform super sends (the first way is rather brute force; the second way is better and eliminates some false positives):
+\begin{code}{}
+SystemNavigation default browseMethodsWithSourceString: 'super'.
+SystemNavigation default browseAllSelect: [:method | method sendsToSuper ].
+\end{code}
+
+%:======================================
+\section{Practical uses for introspection}
 
 %:==>HERE<==
 \on{HERE}
 
-
-All these features are integrated in the programming environment of \pharo, in particular in the code browsers.
-As shown in \secref{cha:env}, you can list all methods that have the same name (implementors) or all methods that send a message (senders).
-This is quite handy: for instance, when you want to change the name of a method, to check that you didn't miss one message send that could invoke this method (\figref{implementors}). \damien{is "invoke a method" OK here?}
-
-\begin{figure}[ht]\centering
-	\includegraphics[width=.75\linewidth]{implementors}
-	\caption{Displaying all classes that implement \ct!\#+!.\label{fig:implementors}}
-\end{figure}
-
-To see the internal structure of a class, you can inspect it like any object.
-In \figref{CompiledMethod}, the inspector at the back shows the structure of class \ct!Point!.
-You can see that the class stores its methods in a dictionary, indexing them by their selector.
-The frontmost inspector shows the decompiled bytecode of \ct!Point!'s method \ct!#*!.
-
-\begin{figure}[ht]\centering
-	\includegraphics[width=.75\linewidth]{CompiledMethod}
-	\caption{Inspecting class \ct!Point! and the bytecode of its \ct!\#*! method.\label{fig:CompiledMethod}}
-	\on{re-do with white background!}
-\end{figure}
-
-\st is really a completely open and transparent system, where all the code is available for reading.
-You can study the whole system as you wish, because there is no hidden code.
-The primitive part of the system, \ie which is not written in \st, is reduced to its simplest expression.
-Among \st dialects, \pharo has the peculiarity that even its virtual machine is written in \st, so it is possible to run and debug it inside a \pharo image!
-Though this actually works, it is quite slow, and for actual use the virtual machine is translated to C and compiled to a native executable.
-
-% section browsing_the_code (end)
-
-%=================================================================
-\section{Practical uses for introspection} % (fold)
 
 %-----------------------------------------------------------------
 \subsection{Code metrics}
@@ -436,9 +426,58 @@ Via \ct!thisContext!, the Seaside web framework also accesses the execution stac
 
 
 %:======================================
-\section{Object and Class meta-operations}
+\section{Classes, method dictionaries and methods}
 
 \on{uml}
+
+
+To see the internal structure of a class, you can inspect it like any object.
+In \figref{CompiledMethod}, the inspector at the back shows the structure of class \ct!Point!.
+You can see that the class stores its methods in a dictionary, indexing them by their selector.
+The frontmost inspector shows the decompiled bytecode of \ct!Point!'s method \ct!#*!.
+
+\begin{figure}[ht]\centering
+	\includegraphics[width=.75\linewidth]{CompiledMethod}
+	\caption{Inspecting class \ct!Point! and the bytecode of its \ct!\#*! method.\label{fig:CompiledMethod}}
+	\on{re-do with white background!}
+\end{figure}
+
+\st is really a completely open and transparent system, where all the code is available for reading.
+You can study the whole system as you wish, because there is no hidden code.
+The primitive part of the system, \ie which is not written in \st, is reduced to its simplest expression.
+Among \st dialects, \pharo has the peculiarity that even its virtual machine is written in \st, so it is possible to run and debug it inside a \pharo image!
+Though this actually works, it is quite slow, and for actual use the virtual machine is translated to C and compiled to a native executable.
+
+% section browsing_the_code (end)
+
+To browse the super-sends within a given hierarchy, for example within the Collections hierarchy, we can pose a more sophisticated query:
+\begin{code}{}
+class := Collection.
+SystemNavigation default
+  browseMessageList: (class withAllSubclasses gather: [ :each |
+    each methodDict associations
+      select: [ :assoc | assoc value sendsToSuper ]
+      thenCollect: [ :assoc | MethodReference class: each selector: assoc key ] ])
+  name: 'Supersends of ' , class name , ' and its subclasses'
+\end{code}
+
+New methods
+\begin{code}{}
+[:aClass| aClass methodDict keys select: [:aMethod |
+  (aClass superclass canUnderstand: aMethod) not ]] value: Integer
+\end{code}
+
+Abstract methods
+\begin{code}{}
+[:aClass| aClass methodDict keys select: [:aMethod |
+  (aClass>>aMethod) isAbstract ]] value: Number
+\end{code}
+
+\begin{code}{}
+\end{code}
+
+
+
 
 \on{Object perform:}
 
