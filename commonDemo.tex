@@ -1,0 +1,243 @@
+% $Author: oscar $
+% $Date: 2007-06-06 15:10:38 +0200 (Wed, 06 Jun 2007) $
+% $Revision: 23297 $
+%=============================================================
+% Demo and test the common macros
+%=================================================================
+\documentclass[a4paper,10pt,twoside]{book}
+%=============================================================
+\input{common.tex}
+\graphicspath{{figures/}} % for \dothis
+%=============================================================
+\begin{document}
+\sloppy
+\mainmatter
+%=============================================================
+\section*{Code environments using the listings package}
+%=============================================================
+\paragraph{Sample code environment}
+Use the script, method, classdef and example environments.
+Each takes a name and an optional label.
+With labels we can have cross references to
+\verb|\egref{history}| \egref{history},
+\verb|\scrref{helloworld}| \scrref{helloworld},
+\verb|\clsref{myclass}| \clsref{myclass},
+and \verb|\mthref{doit}| \mthref{doit}.
+
+\begin{verbatim}
+\begin{example}[history]{The first thing that Smalltalk could do}{}
+3 + 4 --> 7
+\end{example}
+\end{verbatim}
+\begin{example}[history]{The first thing that Smalltalk could do}{}
+3 + 4 --> 7
+\end{example}
+
+\begin{verbatim}
+\begin{script}[helloworld]{The first thing you should try}
+Transcript show: 'hello world'
+\end{script}
+\end{verbatim}
+\begin{script}[helloworld]{The first thing you should try}
+Transcript show: 'hello world'
+\end{script}
+
+\begin{verbatim}
+\begin{classdef}[myclass]{MyClass is defined}
+Object subclass: #MyClass
+	instancevariables: '...'
+	...
+\end{classdef}
+\end{verbatim}
+\begin{classdef}[myclass]{MyClass is defined}
+Object subclass: #MyClass
+	instancevariables: '...'
+	...
+\end{classdef}
+
+\begin{verbatim}
+\begin{method}[doit]{A doit method}
+MyClass>>>doit
+<tab>^ super doit
+\end{method}
+\end{verbatim}
+\begin{method}[doit]{A doit method}
+MyClass>>>doit
+	^ super doit
+\end{method}
+
+The plain code environment has no title, label or numbering:
+
+\begin{verbatim}
+\begin{code}{}
+just some plain code
+\end{code}
+\end{verbatim}
+\begin{code}{}
+just some plain code
+\end{code}
+
+%=============================================================
+\paragraph{Listings environments and macros}
+The code environments 
+
+\begin{verbatim}
+\begin{code}{}
+    ...
+\end{code}
+\end{verbatim}
+take plain, verbatim code,
+and translate some special characters like $\wedge$ to \ct{^}. Even tabs are handled, (which is not true for verbatim).
+\begin{code}{}
+"All handled correctly: ^ $ ' % \\ << >> _ { }"
+"NB: If you !{\bf really}! want an exclamation mark you must spell it BANG"
+"
+If you really want a caret to look like this: CARET instead of this: ^, you must spell it out."
+| y |
+true & false not & (nil isNil) ifFalse: [self halt].
+y _ self size + super size.
+#($a #a 'a' 1 1.0)
+	do: [:each | Transcript 
+			show: (each class name); 
+                     show: ' ';
+                     show: (each printString).
+{ 1 + 2 . 3 \\ 4 . 1 << 3. 2 >> 5 . 1 % 2 }.
+^ x < y 
+\end{code}
+
+QWERTY layout:
+\begin{code}{}
+BANG @ # $ % ^ & * ( ) UNDERSCORE +
+1 2 3 4 5 6 7 8 9 0 - =
+ Q W E R T Y U I O P { }
+ q w e r t y u i o p [ ]
+  A S D F G H J K L : "" |   		 (twice " to turn off italics")
+  a s d f g h j k l ; ' \
+   Z X C V B N M < > ?
+   z x c v b n m , . /
+\end{code}
+
+LaTeX escape:
+\begin{verbatim}
+\begin{code}{}
+plain code and !\textbf{bolded text}!
+\end{code}
+\end{verbatim}
+
+\begin{code}{}
+plain code and !\textbf{bolded text}!
+\end{code}
+
+% ^ $ \\ % # ' 
+
+In-line code with \verb|\ct| is typed like this \verb|\ct{1 + 2 --> 3}| and looks like this: \ct{1 + 2 --> 3}, text can follow immediately.  The ``brackets'' around \verb|\ct| can be any matching pair of characters, useful if you want \ct${ and }$ in the code.
+
+\subsection{Special chars with $\backslash$ct}
+\ct=^ ~ # $ ' % \\ << >> _ {  } ! -- --> =\\
+\verb|\ct=^ ~ # $ ' % \\ << >> _ {  } ! -- --> =|
+
+\subsection{Special conventions}
+
+\verb$\ct{Class>>>method}$ prints as \ct{Class>>>method}.\\
+\verb$\ct{3 + 4 - 5 --> 2}$ prints as \ct{3 + 4 - 5 --> 2}.
+
+Use \verb$@TEST$ to include the code in the automatic tests and use \verb$-->$ to represent the expected result
+\begin{verbatim}
+\begin{code}{@TEST}
+true       --> true
+3@4     --> 3@4
+$a         --> $a
+#(1 2 3) --> #(1 2 3)
+\end{code}
+\end{verbatim}
+
+%=============================================================
+%\paragraph{New code environment}
+
+%Experiment:
+
+%\begin{testenv}{testing}
+%self doit
+%\end{testenv}
+
+%=============================================================
+\section*{Other macros}
+%=============================================================
+\paragraph{url}
+\url{SqueakByExample.org}
+%=============================================================
+\paragraph{names}
+\SUnit
+\xUnit
+\st
+\squeak
+\pharo
+%=============================================================
+\paragraph{editorial}
+\ugh{please rephrase this}
+\ins{please insert this text}
+\del{delete this}
+and
+\chg{change this}{to this}
+\ab{...}
+%=============================================================
+\paragraph{abbreviation}
+\ie
+\eg
+\etc
+%=============================================================
+\paragraph{Smalltalk macros}
+sep: \sep
+%=============================================================
+\paragraph{scat and prot}
+System category \scat{Kernel-Objects} and protocol \prot{accessing}.
+%=============================================================
+\paragraph{menu}
+\menu{World menu \go open ...}
+%=============================================================
+\paragraph{button}
+\button{Create}
+%=============================================================
+\paragraph{do this}
+\verb|\dothis|
+\ct{-->}
+\dothis{Download and install \pharo.}
+%=============================================================
+\paragraph{Keyboard shortcut}
+\verb|\short{d}|
+\ct{-->}
+\short{d}
+%=============================================================
+\section*{Footnote citations}
+There is a great book on \squeak by Ducasse\cite{Duca05j}.
+%=============================================================
+\section*{Important stuff}
+\important{This is really important}
+%=============================================================
+% \bibliographystyle{plain}
+%\bibliographystyle{jurabib}
+%\nobibliography{scg}
+
+%
+% This bibliography was produced by using jurabib.bst
+%
+\begin{thebibliography}{}
+
+\bibitem[{Ducasse\jbdy {2005}}%
+         {}%
+         {{0}{}{book}{2005}{}{}{}{}%
+          {APress\bibbdsep {} 2005}}%
+         {{Squeak: Learn Programming with Robots}%
+          {}{}{2}{}{}{}{}{}}%
+        ]{Duca05j}
+ \jbbibargs {\bibnf {Ducasse} {St\'ephane} {S.} {} {}} {St\'ephane Ducasse}
+  {au} {\bibtfont {Squeak: Learn Programming with Robots}\bibatsep\  \apyformat
+  {APress\bibbdsep {} 2005} \jbnote {1} {ISBN: 1-59059-491-6} } {\bibhowcited}
+  \jbendnote {ISBN: 1-59059-491-6} \jbdoitem {{Ducasse}{St\'ephane}{S.}{}{}} {}
+  {} \bibAnnote {book}
+
+\end{thebibliography}
+
+%=============================================================
+\end{document}
+%=============================================================
