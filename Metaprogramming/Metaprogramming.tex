@@ -184,6 +184,26 @@ Development tools, however, are not normal applications, since their domain is t
 
 There also exist mechanisms for introspecting on various parts of the run-time system, such as  the process scheduler, the memory manager and so on. For now we will focus on navigating through objects, classes and methods, and we will look more closely at rest of the runtime system in an other chapter.
 
+%-----------------------------------------------------------------
+\subsection{Code metrics}
+
+Let's see how we can use \st's introspection features to quickly extract some code metrics.
+Code metrics measure some aspect of program code such as depth of the inheritance hierarchy, the number of direct or indeirect subclasses, the number of methods or of instance variables in each class, or the number of locally defined methods or instance variables.
+Here are a few metrics for the class \ct!Morph!, which is the superclass of all graphical objects in \pharo, revealing that it is a huge class, and that it is at the root of a huge hierarchy. Maybe it needs some refactoring!
+
+\begin{code}{}
+Morph allSuperclasses size.  -->       2 "inheritance depth"
+Morph allSelectors size.        --> 1378 "number of methods"
+Morph allInstVarNames size. -->      6 "number of instance variables"
+Morph selectors size.             -->  998 "number of new methods"
+Morph instVarNames size.     -->      6 "number of new variables"
+Morph subclasses size.          -->    45 "direct subclasses"
+Morph allSubclasses size.      -->  326 "total subclasses"
+\end{code}
+
+One of the most interesting metrics in the domain of object-oriented languages is the number of methods that extend methods inherited from the superclass.
+This informs us about the relation between the class and its superclasses.
+
 %:======================================
 \section{Browsing code}
 
@@ -280,108 +300,161 @@ SystemNavigation default browseAllSelect: [:method | method sendsToSuper ].
 \end{code}
 
 %:======================================
-\section{Practical uses for introspection}
+\section{Classes, method dictionaries and methods}
+
+Since classes are objects, we can inspect or explore them just like any other object.
+
+\dothis{Evaluate \ct{Point explore}.}
+
+In \figref{CompiledMethod}, the explorer shows the structure of class \ct!Point!.
+You can see that the class stores its methods in a dictionary, indexing them by their selector.
+The selector \ct{#*} points to the decompiled bytecode of \ct!Point>>>*!.
+
+\begin{figure}[ht]\centering
+	\includegraphics[width=.5\linewidth]{CompiledMethod}
+	\caption{Explorer class \ct!Point! and the bytecode of its \ct!\#*! method.\label{fig:CompiledMethod}}
+\end{figure}
+
+% ON: THIS DISCUSSION DOES NOT BELONG HERE
+%\st is really a completely open and transparent system, where all the code is available for reading.
+%You can study the whole system as you wish, because there is no hidden code.
+%The primitive part of the system, \ie which is not written in \st, is reduced to its simplest expression.
+%Among \st dialects, \pharo has the peculiarity that even its virtual machine is written in \st, so it is possible to run and debug it inside a \pharo image!
+%Though this actually works, it is quite slow, and for actual use the virtual machine is translated to C and compiled to a native executable.
+
+Let us consider the relationship between classes and methods.
+In \figref{MethodsAsObjects} we see that classes and metaclasses have the common superclass \ct{Behavior}. This is where \ct{new} is defined, amongst other key methods for classes.
+Every class has a method dictionary, which maps method selectors to compiled methods.
+Each compiled method knows the class in which it is installed.
+In \figref{CompiledMethod} we can even see that this is stored in an association in \ct{literal5}.
+
+\begin{figure}[ht]\centering
+	\includegraphics[width=0.8\linewidth]{MethodsAsObjects}
+	\caption{Classes, method dictionaries and compiled methods\label{fig:MethodsAsObjects}}
+\end{figure}
+
+We can exploit the relationships between classes and methods, to pose queries about the system.
+For example, to discover which methods are newly introduced in a given class, \ie do not override superclass methods, we can navigate from the class to the method dictionary as follows:
+\begin{code}{}
+[:aClass| aClass methodDict keys select: [:aMethod |
+  (aClass superclass canUnderstand: aMethod) not ]] value: SmallInteger
+  --> an IdentitySet(#threeDigitName #printStringBase:nDigits: ...)
+\end{code}
+
+A compiled method does not simply store the bytecode of a method.
+It is also an object the provides numerous useful methods for querying the system.
+One such method is \ct{isAbstract} (which tells if the method sends \ct{subclassResponsibility}).
+We can use it to identify all the abstract methods of an abstract class
+\begin{code}{}
+[:aClass| aClass methodDict keys select: [:aMethod |
+  (aClass>>aMethod) isAbstract ]] value: Number
+  --> an IdentitySet(#storeOn:base: #printOn:base: #+ #- #* #/ ...)
+\end{code}
+Note that this code sends the \ct{>>} message to a class to obtain the compiled method for a given selector.
+
+As a slightly more complex example, we can browse 
+
+To browse the super-sends within a given hierarchy, for example within the Collections hierarchy, we can pose a more sophisticated query:
+\begin{code}{}
+class := Collection.
+SystemNavigation default
+  browseMessageList: (class withAllSubclasses gather: [:each |
+    each methodDict associations
+      select: [:assoc | assoc value sendsToSuper]
+      thenCollect: [:assoc | MethodReference class: each selector: assoc key]])
+  name: 'Supersends of ' , class name , ' and its subclasses'
+\end{code}
+Note how we navigate from classes to method dictionaries to compiled methods to identify the methods we are interested in.
+A \ct{MethodReference} is a lightweight proxy for a compiled method that is used by many tools.
+
+%:======================================
+\section{Browsing environments}
+
+Although \ct{SystemNavigation} offers some useful ways to programmatically query and browse system code, there is a better way.  The Refactoring Browser, which is integrated into \pharo, provides both interactive and programmatic ways to pose complex queries.
+
+Suppose we are interested to discover which methods in the \ct{Collection} hierarchy send a message to \super which is different from the method's selector.
+This is normally considered to be a bad code smell, since such a \super-send should normally be replaced by a \self-send. (Think about it --- you only \emph{need} \super to extend a method you are overriding; all other inherited methods can be accessed by sending to \self!)
+
+The refactoring browser provides us with an elegant way to restrict our query to just the classes and methods we are interested in.
+
+\dothis{Open a system browser on the class \ct{Collection}.
+\actclick on the class name and select \menu{refactoring scope>subclasses with}.
+This will open a new Browser Environment on just the \ct{Collection} hierarchy.
+Within this restricted scope select \menu{refactoring scope>super-sends} to open a new environment with all methods that perform super-sends within the \ct{Collectuon} hierarchy.
+Now \click on any method and select \menu{refactor>code critics}.
+Navigate to \menu{Lint checks>Possible bugs>Sends different super message} and \actclick to select \menu{browse}.}
+
+In \figref{sendDifferentSuper} we can see that 19 such methods have been found within the \ct{Collection} hierarchy, including \ct{Collection>>>printNameOn:}, which sends \ct{super printOn:}.
+\begin{figure}[ht]\centering
+	\includegraphics[width=\linewidth]{sendDifferentSuper}
+	\caption{Finding methods that send a different super message.\label{fig:sendDifferentSuper}}
+\end{figure}
+
+Browser environments can also be created programmatically.
+Here, for example, we create a new \ct{BrowserEnvironment} for \ct{Collection} and its subclasses, select the super-sending methods, and open the resulting environment.
+\needlines{4}
+\begin{code}{}
+((BrowserEnvironment new forClasses: (Collection withAllSubclasses))
+	selectMethods: [:method | method sendsToSuper])
+	label: 'Collection methods sending super';
+	open.
+\end{code}{}
+
+Note how this is considerably more compact than the earlier, equivalent example using \ct{SystemNavigation}.
+
+Finally, we can find just those methods that send a different super message programmatically as follows:
+\begin{code}{}
+((BrowserEnvironment new forClasses: (Collection withAllSubclasses))
+	selectMethods: [:method | 
+		method sendsToSuper
+		and: [(method parseTree superMessages includes: method selector) not]])
+	label: 'Collection methods sending different super';
+	open
+\end{code}
+Here we ask each compiled method for its (Refactoring Browser) parse tree, in order to find out whether the super messages differ from the method's selector.
+Look at the \prot{querying} protocol of the class \ct{RBProgramNode} to see some the things we can ask of parse trees.
+
+%:======================================
+\section{Accessing the run-time context}
+
+We have seen how \st's reflective capabilities let us query and explore objects, classes and methods.  But what about the run-time environment?
+
+%-----------------------------------------------------------------
+\subsection{Method Contexts}
+
+In fact, the run-time context of an executing method is in the virtual machine --- it is not in the image at all.
+On the other hand, the debugger obviously has access to this information, and we can happily explore the run-time context, just like any other object.
+How is this possible?
+
+Actually, there is nothing magical about the debugger.
+The secret is the pseudo-variable \ct{thisContext}, which we have encountered only in passing before.
+Whenever \ct{thisContext} is referred to in a running method, the entire run-time context of that method is reified and made available as \ct{MethodContext} objects to the image.
+
+We can easily experiment with this mechanism ourselves.
+
+\dothis{Change the definition of \ct{Integer>>>factorial} by inserting the underlined expression as shown below:}
+
+\begin{code}{}
+Integer>>>factorial	"Answer the factorial of the receiver."	self = 0 ifTrue: [!\underline{thisContext explore. self halt.}! ^ 1].	self > 0 ifTrue: [^ self * (self - 1) factorial].	self error: 'Not valid for negative integers'
+\end{code}
+
+\dothis{Now evaluate \ct{4 factorial} in a workspace. You should see both a pre-debugger window and an explorer, as shown in \figref{exploringThisContext}.}
+
+\begin{figure}[ht]\centering
+	\includegraphics[width=\linewidth]{exploringThisContext}
+	\caption{Exploring \lct{thisContext}.\label{fig:exploringThisContext}}
+\end{figure}
+
+If you now browse the class of explore object (\ie by evaluating \ct{self browse} in the bottom pane of the explorer) you will discover that it is an instance of the class \ct{MethodContext}, as is each \ct{sender} in the chain. All of these objects have been created dynamically in the image by the \st virtual machine at the point where \ct{thisContext} was referred to in the \ct{factorial} method.
 
 %:==>HERE<==
 \on{HERE}
 
+\on{conclusion? what can you do with this? Most common use seems to be to get the sender.}
 
-%-----------------------------------------------------------------
-\subsection{Code metrics}
-
-Let's see how we can use \st's introspection features to quickly define code metrics.
-A code metric is a measure of program code like depth in the inheritance hierarchy, the number of direct or indeirect subclasses, the number of methods or of instance variables in each class, or the number of locally defined methods or instance variables.
-When discovering the code of a new application, you can evaluate a metric to get a rough idea of what the code looks like.
-\scrref{metrics} computes a few code metrics for Morphic; these numbers can vary depending on the image you are using.
-Results for class \ct!Morph!, which is the superclass of all graphical objects in \pharo, reveal that it is a huge class, and that it is at the root of a huge hierarchy. Maybe it needs some refactoring!
-
-\begin{script}[metrics]{A few code metrics}
-	inheritanceDepth := Morph allSuperclasses size. "2"
-	methods := Morph allSelectors size. "1593"
-	instVars := Morph allInstVarNames size. "6"
-	addedMethods := Morph selectors size. "1165"
-	addedInstVars := Morph instVarNames size. "6"
-	directSubclasses := Morph subclasses size. "45"
-	totalSubclasses := Morph allSubclasses size. "412"
-\end{script}
-
-One of the most interesting metrics in the domain of object-oriented languages is the number of methods that extend methods inherited from the superclass.
-This informs us about the relation between the class and its superclasses.
-
-Here is a script that identifies methods in class \ct!Browser! that call the method they redefine, like this:
 \begin{code}{}
-Browser >>> xx
-	"..."
-	super xx
+Object>>>subclassResponsibility	"This message sets up a framework for the behavior of the class' subclasses.	Announce that the subclass should have implemented this message."	self error: 'My subclass should have overridden ', thisContext sender selector printString
 \end{code}
-
-\begin{script}[browsersendstosuper]{Methods of \ct!Browser! redefining via \ct!super!}
-Browser selectors select: [ :eachSelector |
-	| method |
-	method := Browser compiledMethodAt: eachSelector.
-	method sendsToSuper ]
-\end{script}
-
-In this code, we ask to class \ct!Browser! all messages it understands (\ct!selectors!) then select those whose associated method makes a call to the superclass.
-This returns a collection of methods, containing for instance \ct!#veryDeepInner!.
-You can see that the \st bytecode itself is viewed as an object that we can query for information.
-We could even imagine methods that transform this bytecode.
-
-%-----------------------------------------------------------------
-\subsection{Detecting possible errors}
-
-Sending a message to \ct!super! is a bad idea when that message is different from the one the current method implements.
-This practice often causes bugs when adding subclasses, so good developers avoids that pattern of code.
-It's easy to automatically identify occurences of this pattern: we simply have to find methods that make super-sends with a different selector than their own.
-
-\begin{script}[findSuperSends]{Identifying bad super-sends}
-Collection selectors select: [ :eachSelector |
-	| method |
-	method := Collection compiledMethodAt: eachSelector.
-	method sendsToSuper and: [(method messages includes: eachSelector) not]]
-\end{script}
-
-Note that this script doesn't find everything we want... it doesn't detect methods containing loops or recursion like the following:
-\begin{code}{}
-xxx
-	super yyy. "send something else than xxx to super"
-	self zzz
-\end{code}
-
-When executing \scrref{findSuperSends} on class \ct!Collection!, you should obtain method \ct!printNameOn:! which does send \ct!printOn:! to \super:
-\begin{method}[printNameOn]{A method that sends a different message to super}
-Collection>>>printNameOn: aStream
-	super printOn: aStream
-\end{method}
-
-In fact this method is used by \ct!printOn:! (\mthref{oldPrintOn}), which could be refactored as in \mthref{newPrintOn}.
-
-\begin{method}[oldPrintOn]{The sender of \lct{\#printNameOn:}}
-Collection>>>printOn: aStream
-	"Append a sequence of characters that identify the receiver to aStream."
-	self printNameOn: aStream.
-	self printElementsOn: aStream
-\end{method}
-
-\begin{method}[newPrintOn]{New version of \mthref{oldPrintOn}, after inlining the \lct{\#printNameOn:} super-send}
-Collection>>>printOn: aStream
-	"Append a sequence of characters that identify the receiver to aStream."
-	super printOn: aStream.
-	self printElementsOn: aStream
-\end{method}
-
-Now \ct!#printNameOn:! (\mthref{printNameOn}) is not needed anymore. Well, in this case... is it used in other classes? Let's ask \pharo:
-\begin{example}[sendersofprintnameon]{Asking for the senders of \lct{\#printNameOn:}}{}
-SystemNavigator default allCallsOn: #printNameOn:
---> an OrderedCollection(A MethodReference RunArray >> printOn: aMethodReference Bitmap >> printOn: aMethodReference Text >> printOn: aMethodReference CompiledMethod >> printOn:)
-\end{example}
-
-So we should also refactor classes \clsind{RunArray}, \clsind{BitMap}, \clsind{Text}, and \clsind{CompiledMethod} that are sending message \ct!#printNameOn:!.
-
-%-----------------------------------------------------------------
-\subsection{Chasing pointers}
-
-\on{PointerFinder (who points to me -- also see Inspector and Explorer)}
 
 %-----------------------------------------------------------------
 \subsection{Intelligent breakpoints}
@@ -413,76 +486,42 @@ The pseudo-variable \ct!thisContext! is especially used in the \pharo debugger.
 It contains an instance of the \clsind{MethodContext} class.
 This instance contains information about the method that is being executed, the stack pointer (\ct!stackpc!), and the program pointer (\ct!pc!).
 
-In the following example, we halted \pharo's evaluation loop by pressing \short{.} and inspecting the current context.
-
-\begin{figure}[ht]\centering
-	\includegraphics[width=\linewidth]{MethodContext}
-	\caption{Inspecting the execution context of the evaluation loop in \pharo.\label{fig:MethodContext}}
-\end{figure}
-
-Via \ct!thisContext!, the Seaside web framework also accesses the execution stack, but it modifies it on the fly to easily implement reusable components over HTTP.
-
-% section practical_uses_for_introspection (end)
-
-
-%:======================================
-\section{Classes, method dictionaries and methods}
-
-\on{uml}
-
-
-To see the internal structure of a class, you can inspect it like any object.
-In \figref{CompiledMethod}, the inspector at the back shows the structure of class \ct!Point!.
-You can see that the class stores its methods in a dictionary, indexing them by their selector.
-The frontmost inspector shows the decompiled bytecode of \ct!Point!'s method \ct!#*!.
-
-\begin{figure}[ht]\centering
-	\includegraphics[width=.75\linewidth]{CompiledMethod}
-	\caption{Inspecting class \ct!Point! and the bytecode of its \ct!\#*! method.\label{fig:CompiledMethod}}
-	\on{re-do with white background!}
-\end{figure}
-
-\st is really a completely open and transparent system, where all the code is available for reading.
-You can study the whole system as you wish, because there is no hidden code.
-The primitive part of the system, \ie which is not written in \st, is reduced to its simplest expression.
-Among \st dialects, \pharo has the peculiarity that even its virtual machine is written in \st, so it is possible to run and debug it inside a \pharo image!
-Though this actually works, it is quite slow, and for actual use the virtual machine is translated to C and compiled to a native executable.
-
-% section browsing_the_code (end)
-
-To browse the super-sends within a given hierarchy, for example within the Collections hierarchy, we can pose a more sophisticated query:
+\on{Add example application -- self halt in add: method will freeze the system.}
 \begin{code}{}
-class := Collection.
-SystemNavigation default
-  browseMessageList: (class withAllSubclasses gather: [ :each |
-    each methodDict associations
-      select: [ :assoc | assoc value sendsToSuper ]
-      thenCollect: [ :assoc | MethodReference class: each selector: assoc key ] ])
-  name: 'Supersends of ' , class name , ' and its subclasses'
+OrderedCollection>>>add: newObject
+	self haltIf: #testAdd.
+	^self addLast: newObject
+
+OrderedCollectionTest>>>testAdd
+	...
+
 \end{code}
 
-New methods
-\begin{code}{}
-[:aClass| aClass methodDict keys select: [:aMethod |
-  (aClass superclass canUnderstand: aMethod) not ]] value: Integer
-\end{code}
+%In the following example, we halted \pharo's evaluation loop by pressing \short{.} and inspecting the current context.
 
-Abstract methods
-\begin{code}{}
-[:aClass| aClass methodDict keys select: [:aMethod |
-  (aClass>>aMethod) isAbstract ]] value: Number
-\end{code}
+%\begin{figure}[ht]\centering
+%	\includegraphics[width=\linewidth]{MethodContext}
+%	\caption{Inspecting the execution context of the evaluation loop in \pharo.\label{fig:MethodContext}}
+%\end{figure}
 
-\begin{code}{}
-\end{code}
-
-
-
-
-\on{Object perform:}
+%Via \ct!thisContext!, the Seaside web framework also accesses the execution stack, but it modifies it on the fly to easily implement reusable components over HTTP.
 
 %:======================================
 \section{Controlling messages}
+
+
+\on{should be a trait}
+\begin{code}{}
+doesNotUnderstand: aMessage
+	| messageName |
+	messageName := aMessage selector asString.
+	(self class instVarNames includes: messageName)
+		ifTrue: [
+			self class compile: messageName, String cr, ' ^ ', messageName.
+			^ aMessage sendTo: self "uses perform"
+			].
+	super doesNotUnderstand: aMessage
+\end{code}
 
 \on{
 - override doesNotUnderstand\\
@@ -490,6 +529,10 @@ Abstract methods
 - anonymous classes (see slides)\\
 - method wrappers
 }
+
+\on{Using doesNotUnderstand to automatically create accessors for instance variables; package as a reusable trait!}
+
+\on{Object perform:}
 
 \on{Object primitiveChangeClassTo: become: and becomeForward: (see slides with minimal object example)}
 
@@ -762,12 +805,18 @@ Introspection\\
 - iterating instance variables\\
 - querying classes; subclasses; methods understood\\
 - browsing code; querying method relationships\\
-Applications\\
 - code metrics\\
+Browsing Code\\
+- SystemNavigation\\
+Classes, method Dictionaries and methods\\
+- classes, method dictionaries and compiled methods\\
+- inspecting classes
+Browsing Environments\\
+- refactoring browser scoped environments\\
 - code smells\\
-* PointerFinder\\
+---
+Applications\\
 - intelligent breakpoints using thisContext\\
-* classes, method dictionaries and compiled methods\\
 * perform:; valueWithReceiver:\\
 * compile:\\
 * MethodContext\\
@@ -787,10 +836,13 @@ Other stuff:\\
 - Object primitiveChangeClassTo: become: and becomeForward: (see tests and slides with minimal object example)\\
 }
 
-
-
 \begin{figure}[ht]\centering
 	\includegraphics[width=\linewidth]{allInstanceVariables}
 	\caption{Displaying all instance variables of a \ct!SystemWindow!.\label{fig:allInstanceVariables}}
 \end{figure}
 
+
+%-----------------------------------------------------------------
+\subsection{Chasing pointers}
+
+\on{PointerFinder (who points to me -- also see Inspector and Explorer)}
