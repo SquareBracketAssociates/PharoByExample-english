@@ -39,6 +39,28 @@
 
 \on{I am revising this chapter}
 
+\lr{Hi Oscar,
+I think that would be valuable information to add to the meta-programming chapter. Otherwise beginners will run into troubles when they try to do some reflective tricks on these messages.
+Selectors that are never sent:\\
+	class yourself \\
+Selectors that have a special shortcut behavior. Depending on the receiver they are sometimes not looked up but directly invoke the primitive:\\
+	+ - < > <= >= = ~= * / $\backslash$ ==
+	@ bitShift: // bitAnd: bitOr:
+	at: at:put: size
+	next nextPut: atEnd
+	blockCopy: value value: do: new new: x y \\
+Selectors that are never send, because inlined by the compiler and transformed to comparison and jump bytecodes:\\
+	ifTrue: ifFalse: ifTrue:ifFalse: ifFalse:ifTrue:
+	and: or:
+	whileFalse: whileTrue: whileFalse whileTrue
+	to:do: to:by:do:
+	caseOf: caseOf:otherwise:
+	ifNil: ifNotNil:  ifNil:ifNotNil: ifNotNil:ifNil:\\
+Interesting is that attempts to send these messages to non boolean objects can be intercepted and execution can be resumed with a valid boolean value by overriding \#mustBeBoolean in the receiver or by catching the NonBooleanReceiver exception.\\
+Cheers,
+Lukas
+}
+
 \st is a reflective programming language.
 In a nutshell, this means that programs are able to reflect on their own execution.
 A program that manipulates other programs (or even itself) is a \emph{metaprogram}.
@@ -435,67 +457,109 @@ We can easily experiment with this mechanism ourselves.
 \dothis{Change the definition of \ct{Integer>>>factorial} by inserting the underlined expression as shown below:}
 
 \begin{code}{}
-Integer>>>factorial	"Answer the factorial of the receiver."	self = 0 ifTrue: [!\underline{thisContext explore. self halt.}! ^ 1].	self > 0 ifTrue: [^ self * (self - 1) factorial].	self error: 'Not valid for negative integers'
+Integer>>>factorial
+	"Answer the factorial of the receiver."
+	self = 0 ifTrue: [!\underline{thisContext explore. self halt.}! ^ 1].
+	self > 0 ifTrue: [^ self * (self - 1) factorial].
+	self error: 'Not valid for negative integers'
 \end{code}
 
-\dothis{Now evaluate \ct{4 factorial} in a workspace. You should see both a pre-debugger window and an explorer, as shown in \figref{exploringThisContext}.}
+\dothis{Now evaluate \ct{3 factorial} in a workspace. You should see both a pre-debugger window and an explorer, as shown in \figref{exploringThisContext}.}
 
 \begin{figure}[ht]\centering
 	\includegraphics[width=\linewidth]{exploringThisContext}
 	\caption{Exploring \lct{thisContext}.\label{fig:exploringThisContext}}
 \end{figure}
 
-If you now browse the class of explore object (\ie by evaluating \ct{self browse} in the bottom pane of the explorer) you will discover that it is an instance of the class \ct{MethodContext}, as is each \ct{sender} in the chain. All of these objects have been created dynamically in the image by the \st virtual machine at the point where \ct{thisContext} was referred to in the \ct{factorial} method.
+If you now browse the class of the explored object (\ie by evaluating \ct{self browse} in the bottom pane of the explorer) you will discover that it is an instance of the class \ct{MethodContext}, as is each \ct{sender} in the chain. All of these objects have been created dynamically in the image by the \st virtual machine at the point where \ct{thisContext} was referred to in the \ct{factorial} method.
 
-%:==>HERE<==
-\on{HERE}
-
-\on{conclusion? what can you do with this? Most common use seems to be to get the sender.}
+\ct{thisContext} is not intended to be used for day-to-day programming, but it is essential for implementing tools like debuggers, and for accessing information about the call stack.
+You can evaluate the following expression to discover which methods make use of \ct{thisContext}:
 
 \begin{code}{}
-Object>>>subclassResponsibility	"This message sets up a framework for the behavior of the class' subclasses.	Announce that the subclass should have implemented this message."	self error: 'My subclass should have overridden ', thisContext sender selector printString
+SystemNavigation default browseMethodsWithSourceString: 'thisContext'
 \end{code}
+
+As it turns out, one of the most common applications is to discover the sender of a message.
+Here is a typical application:
+
+\begin{code}{}
+Object>>>subclassResponsibility
+	"This message sets up a framework for the behavior of the class' subclasses.
+	Announce that the subclass should have implemented this message."
+
+	self error: 'My subclass should have overridden ', thisContext sender selector printString
+\end{code}
+
+By convention, methods in \st that send \ct{self subclassResponsibility} are considered to be abstract.  But how does \ct{Object>>>subclassResponsibility} provide a useful error message indicating which abstract method has been invoked?  Very simply, by asking \ct{thisContext} for the sender.
 
 %-----------------------------------------------------------------
 \subsection{Intelligent breakpoints}
 
-\on{talk about squeak here?} In the 3.8 version of \squeak introduced a new kind of breakpoints.
-Those are quite useful and are implemented by the \ct!Object>>>haltIf:! method.
-This breakpoint only halts program execution if the method it's placed in was called by the one whose name was passed as an argument.
-This is very useful to halt a method only during the execution of a test and not every time it is called.
-For instance, the expression \ct!self haltIf: #testFoo! will only halt execution of its containing method if this method was called, directly or indirectly, from \ct!testFoo!.
-The definition of \ct!haltIf:! is quite simple and fits in five lines; it uses the pseudo-variable \ct!thisContext!, which refers to the execution stack, represented as an object (\ct!thisContext! is one of the six keywords in \st, with \self, \super, \nil, \ct!true!, and \ct!false!).
+The \st way to set a breakpoint is to evaluate \ct{self halt} at an interesting point in a method.  This will cause \ct{thisContext} to be reified, and a debugger window will open at the breakpoint.
+Unfortunately this poses problems for methods that are intensively used in the system.
 
-\begin{method}[objecthaltif]{Implementation of a conditional breakpoint}
+Suppose, for instance, that we want to explore the execution of \ct{OrderedCollection>>>add:}.
+Setting a breakpoint in this method is problematic.
+
+\dothis{Take a \emph{fresh} image and set the following breakpoint:}
+\needlines{3}
+\begin{code}{}
+OrderedCollection>>>add: newObject
+	!\underline{self halt.}!
+	^self addLast: newObject
+\end{code}
+
+Notice how your image immediately freezes!  We do not even get a debugger window.
+The problem is clear once we understand that (i) \ct{OrderedCollection>>>add:} is used by many parts of the system, so the breakpoint is triggered very soon after we accept the change, but (ii) the debugger itself sends \ct{add:} to an instance of \ct{OrderedCollection}, preventing the debugger from opening.
+What we need is a way to \emph{conditionally halt} only if we are in a context of interest.
+This is exactly what \ct{Object>>haltIf:} offers.
+
+Suppose now that we only want to halt if \ct{add:} is sent from, say, the context of \ct{OrderedCollectionTest>>>testAdd}.
+
+\dothis{Fire up a fresh image again, and set the following breakpoint:}
+\begin{code}{}
+OrderedCollection>>>add: newObject
+	!\underline{self haltIf: \#testAdd.}!
+	^self addLast: newObject
+\end{code}
+
+This time the image does not freeze. Try running the \ct{OrderedCollectionTest}.
+(You can find it in the \cat{CollectionsTests-Sequenceable} category.)
+
+How does this work?  Let's have a look at \ct{Object>>>haltIf:}:
+
+%\on{talk about squeak here?} In the 3.8 version of \squeak introduced a new kind of breakpoints.
+%Those are quite useful and are implemented by the \ct!Object>>>haltIf:! method.
+%This breakpoint only halts program execution if the method it's placed in was called by the one whose name was passed as an argument.
+%This is very useful to halt a method only during the execution of a test and not every time it is called.
+%For instance, the expression \ct!self haltIf: #testFoo! will only halt execution of its containing method if this method was called, directly or indirectly, from \ct!testFoo!.
+%The definition of \ct!haltIf:! is quite simple and fits in five lines; it uses the pseudo-variable \ct!thisContext!, which refers to the execution stack, represented as an object (\ct!thisContext! is one of the six keywords in \st, with \self, \super, \nil, \ct!true!, and \ct!false!).
+
+\begin{code}{}
 Object>>>haltIf: condition
-	"This is the typical message to use for inserting breakpoints during debugging. Param can be a block or expression, halt if true.
-	If the condition is a selector, we look up in the callchain. Halt if any method's selector equals selector."
 	| cntxt |
-	cntxt := thisContext.
-	[cntxt sender isNil] whileFalse: [
-		cntxt := cntxt sender.
-		(cntxt selector = condition) ifTrue: [Halt signal]].
-	^self.
-\end{method}
+	condition isSymbol ifTrue: [
+		"only halt if a method with selector symbol is in callchain"
+		cntxt := thisContext.
+		[cntxt sender isNil] whileFalse: [
+			cntxt := cntxt sender. 
+			(cntxt selector = condition) ifTrue: [Halt signal]. ].
+		^self.
+	].
+	...
+\end{code}
 
 Starting from \ct!thisContext!, \ct!haltIf:! goes up through the execution stack, checking if the name of the calling method is the same as the one passed as parameter.
 If this is the case, then it raises an exception which, by default, summons the debugger.
-This example shows the power of \st, which allows to define powerful features and tools from within the language itself.
 
-The pseudo-variable \ct!thisContext! is especially used in the \pharo debugger.
-It contains an instance of the \clsind{MethodContext} class.
-This instance contains information about the method that is being executed, the stack pointer (\ct!stackpc!), and the program pointer (\ct!pc!).
+It is also possible to supply a boolean or a boolean block as an argument to \ct{haltIf:}, but these cases are straightforward and do not make use of \ct{thisContext}.
 
-\on{Add example application -- self halt in add: method will freeze the system.}
-\begin{code}{}
-OrderedCollection>>>add: newObject
-	self haltIf: #testAdd.
-	^self addLast: newObject
+%This example shows the power of \st, which allows to define powerful features and tools from within the language itself.
 
-OrderedCollectionTest>>>testAdd
-	...
-
-\end{code}
+%The pseudo-variable \ct!thisContext! is especially used in the \pharo debugger.
+%It contains an instance of the \clsind{MethodContext} class.
+%This instance contains information about the method that is being executed, the stack pointer (\ct!stackpc!), and the program pointer (\ct!pc!).
 
 %In the following example, we halted \pharo's evaluation loop by pressing \short{.} and inspecting the current context.
 
@@ -507,7 +571,24 @@ OrderedCollectionTest>>>testAdd
 %Via \ct!thisContext!, the Seaside web framework also accesses the execution stack, but it modifies it on the fly to easily implement reusable components over HTTP.
 
 %:======================================
-\section{Controlling messages}
+\section{Intercepting doesNotUnderstand}
+
+So far we have used the reflective features of \st mainly to query and explore objects, classes, methods and the run-time stack. Now we will look at how to use our knowledge of the \st system structure to modify behaviour at run-time.
+
+As we have seen in \charef{model}, when an object receives a message, it first looks in the method dictionary of its class for a corresponding method to respond to the message.
+If no such method exists, it will continue looking up the class hierarchy, until it reaches \ct{Object}. If still no method is found for that message, the object will send itself the message \ct{doesNotUnderstand:} with the message selector as its argument.
+The process then starts all over again, until \ct{Object>>>doesNotUnderstand:} is found, and the debugger is launched.
+
+But what if \ct{doesNotUnderstand:} is overridden by one of the subclasses of \ct{Object} in the lookup path?
+As it turns out, this is a convenient way of realizing certain kinds of very dynamic behaviour. An object that does not understand a message can, by overriding \ct{doesNotUnderstand:}, fall back to an alternative strategy for responding to that message.
+
+Two very common applications of this technique are (1) to implement lightweight proxies for objects, and (2) to dynamically compile or load missing code.
+In the first case, an 
+
+
+
+%:==>HERE<==
+\on{HERE}
 
 
 \on{should be a trait}
@@ -518,10 +599,20 @@ doesNotUnderstand: aMessage
 	(self class instVarNames includes: messageName)
 		ifTrue: [
 			self class compile: messageName, String cr, ' ^ ', messageName.
-			^ aMessage sendTo: self "uses perform"
-			].
+			^ aMessage sendTo: self ].
 	super doesNotUnderstand: aMessage
 \end{code}
+
+
+
+\begin{figure}[ht]\centering
+	\includegraphics[width=\linewidth]{DynamicAccessors}
+	\caption{Dynamically creating accessors.\label{fig:DynamicAccessors}}
+\end{figure}
+
+
+%:======================================
+\section{Controlling messages}
 
 \on{
 - override doesNotUnderstand\\
@@ -794,55 +885,55 @@ It is thus not needed to keep these representations up-to-date anymore.
 \ifx\wholebook\relax\else\end{document}\fi
 %=================================================================
 
-%-----------------------------------------------------------------
-\subsection{XXX}
 
-\on{Topics:\\
-Introspection\\
-- inspecting objects\\
-- accessing instance variables\\
-- query all instances with given properties\\
-- iterating instance variables\\
-- querying classes; subclasses; methods understood\\
-- browsing code; querying method relationships\\
-- code metrics\\
-Browsing Code\\
-- SystemNavigation\\
-Classes, method Dictionaries and methods\\
-- classes, method dictionaries and compiled methods\\
+
+1.1 Introspection
+- inspecting objects
+- accessing instance variables
+- query all instances with given properties
+- iterating instance variables
+- querying classes; subclasses; methods understood
+- browsing code; querying method relationships
+- code metrics
+
+1.2 Browsing Code
+- SystemNavigation
+
+1.3 Classes, method Dictionaries and methods
+- classes, method dictionaries and compiled methods
 - inspecting classes
-Browsing Environments\\
-- refactoring browser scoped environments\\
-- code smells\\
+
+1.4 Browsing Environments
+- refactoring browser scoped environments
+- code smells
+
+1.5 Accessing the run-time context
+- thisContext and Method Contexts
+- haltIf:
+
+
+
 ---
-Applications\\
-- intelligent breakpoints using thisContext\\
-* perform:; valueWithReceiver:\\
-* compile:\\
-* MethodContext\\
-Controlling messages\\
-- trap with Proxy and override doesNotUnderstand (uses become:) ???\\
-- instead use example with object that auto-creates accessors on demand (using a trait?)\\
-- anonymous classes (uses compile: and primitiveChangeClassTo:) ???\\
-- spy (form a method wrapper)\\
-- method wrappers (simplified interface)\\
-Method wrappers\\
-- run:with:in:\\
-- coverage\\
-- memoization\\
-- collect direct senders; class collaborations\\
-- pre and postconditions\\
-Other stuff:\\
-- Object primitiveChangeClassTo: become: and becomeForward: (see tests and slides with minimal object example)\\
-}
 
-\begin{figure}[ht]\centering
-	\includegraphics[width=\linewidth]{allInstanceVariables}
-	\caption{Displaying all instance variables of a \ct!SystemWindow!.\label{fig:allInstanceVariables}}
-\end{figure}
+* perform:; valueWithReceiver:
+* compile:
+* MethodContext
 
 
-%-----------------------------------------------------------------
-\subsection{Chasing pointers}
+Controlling messages
+- trap with Proxy and override doesNotUnderstand (uses become:) ???
+- instead use example with object that auto-creates accessors on demand (using a trait?)
+- anonymous classes (uses compile: and primitiveChangeClassTo:) ???
+- spy (form a method wrapper)
+- method wrappers (simplified interface)
 
-\on{PointerFinder (who points to me -- also see Inspector and Explorer)}
+Method wrappers
+- run:with:in:
+- coverage
+- memoization
+- collect direct senders; class collaborations
+- pre and postconditions
+Other stuff:
+- Object primitiveChangeClassTo: become: and becomeForward: (see tests and slides with minimal object example)
+
+- PointerFinder?
