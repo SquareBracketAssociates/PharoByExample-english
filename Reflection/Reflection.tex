@@ -35,9 +35,7 @@
 	\sloppy
 \fi
 %=================================================================
-\chapter{Introspection and metaprogramming}\label{cha:metaprog}
-
-\on{We should rename this chapter "Reflection" --- there is almost no metaprogramming}
+\chapter{Reflection}\label{cha:reflection}
 
 \on{I am revising this chapter}
 
@@ -573,31 +571,108 @@ It is also possible to supply a boolean or a boolean block as an argument to \ct
 %Via \ct!thisContext!, the Seaside web framework also accesses the execution stack, but it modifies it on the fly to easily implement reusable components over HTTP.
 
 %:======================================
-\section{Intercepting doesNotUnderstand}
+\section{Intercepting messages not understood}
+\label{sec:msgnotunderstood}
 
-\on{better heading?}
-
-So far we have used the reflective features of \st mainly to query and explore objects, classes, methods and the run-time stack. Now we will look at how to use our knowledge of the \st system structure to modify behaviour at run-time.
+So far we have used the reflective features of \st mainly to query and explore objects, classes, methods and the run-time stack. Now we will look at how to use our knowledge of the \st system structure to intercept messages and modify behaviour at run-time.
 
 As we have seen in \charef{model}, when an object receives a message, it first looks in the method dictionary of its class for a corresponding method to respond to the message.
-If no such method exists, it will continue looking up the class hierarchy, until it reaches \ct{Object}. If still no method is found for that message, the object will send itself the message \ct{doesNotUnderstand:} with the message selector as its argument.
+If no such method exists, it will continue looking up the class hierarchy, until it reaches \ct{Object}. If still no method is found for that message, the object will \emph{send itself} the message \ct{doesNotUnderstand:} with the message selector as its argument.
 The process then starts all over again, until \ct{Object>>>doesNotUnderstand:} is found, and the debugger is launched.
 
 But what if \ct{doesNotUnderstand:} is overridden by one of the subclasses of \ct{Object} in the lookup path?
 As it turns out, this is a convenient way of realizing certain kinds of very dynamic behaviour. An object that does not understand a message can, by overriding \ct{doesNotUnderstand:}, fall back to an alternative strategy for responding to that message.
 
 Two very common applications of this technique are (1) to implement lightweight proxies for objects, and (2) to dynamically compile or load missing code.
-In the first case, an 
 
+%-----------------------------------------------------------------
+\subsection{Lightweight proxies}
 
+In the first case, we introduce a ``minimal object'' to act as a proxy for an existing object.
+Since the proxy will implement virtually no methods of its own, any message sent to it will be trapped by \ct{doesNotUnderstand:}. By implementing this message, the proxy can then take special action before delegating the message to the real subject it is the proxy for.
 
-%:==>HERE<==
-\on{HERE}
+Let us have a look at how this may be implemented\footnote{You can also load \pkg{PBE-Reflection} from \url{http://www.squeaksource.com/PharoByExample/}}.
 
+We define a \ct{LoggingProxy} as follows:
+\begin{code}
+ProtoObject subclass: #LoggingProxy	instanceVariableNames: 'subject count'	classVariableNames: ''	poolDictionaries: ''	category: 'PBE-Reflection'
+\end{code}
+Note that we subclass \ct{ProtoObject} rather than \ct{Object} because we do not want our proxy to inherit over 400 methods from \ct{Object}.
 
-\on{should be a trait}
 \begin{code}{}
-doesNotUnderstand: aMessage
+Object methodDict size --> 408
+\end{code}
+
+Our proxy has two instance variables: the \ct{subject} it is a proxy for, and a \ct{count} of the number of messages it has intercepted.
+We initialize the proxy in the obvious way, and provide an access for the message count:
+\begin{code}{}
+LoggingProxy class>>>for: anObject
+	^ self new initializeSubject: anObject
+
+LoggingProxy>>>initializeSubject: anObject
+	subject := anObject
+
+LoggingProxy>>>count
+	^ count
+
+LoggingProxy>>>initialize
+	count := 0
+\end{code}
+
+Now comes the magic:
+\begin{code}{}
+LoggingProxy>>>doesNotUnderstand: aMessage 
+	Transcript show: 'performing ', aMessage printString; cr.
+	count := count + 1.
+	^ aMessage sendTo: subject
+\end{code}
+We simply intercept all not understood messages, print them to the Transcript, update the message count, and forward the message to the real subject.
+
+\begin{code}{}
+proxy := LoggingProxy for: 1@2.proxy count     --> 0proxy + (3@4) --> 4@6proxy count     --> 1
+\end{code}
+
+This works nicely in most cases, but there are some shortcomings:
+\begin{code}{}
+(LoggingProxy for: nil) isNil --> false
+\end{code}
+It turns out that \ct{ProtoObject} understands \ct{isNil}, so this message is inherited by \ct{LoggingProxy} and not intercepted.  We may implement it in the obvious way:
+\begin{code}{}
+LoggingProxy>>>isNil	^ self doesNotUnderstand: (Message selector: #isNil)
+\end{code}
+\noindent
+but then we must do this for all methods inherited from ProtoObject.
+
+There is another problem:
+\begin{code}{}
+(LoggingProxy for: nil) class --> LoggingProxy
+\end{code}
+
+The same trick will not work. Curiously, the method \ct{class} is not even implemented in \ct{ProtoObject} but in \ct{Object}, which \ct{LoggingProxy} does not inherit from!
+The answer to this riddle is that \ct{class} is never sent as a message but is directly answered by the virtual machine.
+
+Even if we can ignore such special message sends, there is another fundamental problem which cannot be overcome by this approach: \self-sends cannot be intercepted:
+\begin{code}{}
+proxy := LoggingProxy for: 1@2.proxy rect: (3@4) --> 1@2 corner: 3@4proxy count     -> 1
+\end{code}
+
+Our proxy has been cheated out of two \self-sends in the \ct{rect:} method:
+\begin{code}{}
+Point>>>rect: aPoint 	^ Rectangle  origin: (self min: aPoint) corner: (self max: aPoint)
+\end{code}
+
+Although messages can be intercepted by proxies using this technique, one should be aware of the inherent limitations of using a proxy.  In \secref{XXX} \on{to be fixed} we will see another, more general approaches for intercepting messages.
+
+%-----------------------------------------------------------------
+\subsection{Generating missing methods}
+
+The second most common application of intercepting not understood messages is to dynamically load or generate the missing methods.
+Consider a very large library of classes with many methods.  Instead of loading the entire library, we could load a stub for each class in the library. The stubs know where to find the source code of all their methods.  The stubs simply trap all messages not understood, and dynamically load the missing methods on-demand.  At some point, this behaviour can be deactivated, and the loaded code can be saved as the minimal necessary subset for the client application.
+\on{Is there a nice anecdote about this?}
+
+Let us look at a simple variant of this technique where we have a class that automatically adds accessors for its instance variables on-demand:
+\begin{code}{}
+DynamicAcccessors>>>doesNotUnderstand: aMessage
 	| messageName |
 	messageName := aMessage selector asString.
 	(self class instVarNames includes: messageName)
@@ -606,28 +681,41 @@ doesNotUnderstand: aMessage
 			^ aMessage sendTo: self ].
 	super doesNotUnderstand: aMessage
 \end{code}
+Any message not understood is trapped here. If an instance variable with the same name as the message sent exists, then we ask our class to compile an accessor for that instance variablesm and we re-send the message.
 
+Suppose the class \ct{DynamicAcccessors} has an (uninitialized) instance variable \ct{x} but no pre-defined accessor. Then the following will generate the accessor dynamically and retrieve the value:
+\begin{code}{}
+myDA := DynamicAccessors new.myDA x --> nil
+\end{code}
 
+Let us step through what happens the first time the message \ct{x} is sent to our object (see \figref{DynamicAccessors}).
 
 \begin{figure}[ht]\centering
 	\includegraphics[width=\linewidth]{DynamicAccessors}
 	\caption{Dynamically creating accessors.\label{fig:DynamicAccessors}}
 \end{figure}
 
+(1) We send \ct{x} to \ct{myDA}, (2) the message is looked up in the class, and (3) not found in the class hierarchy. (4) This causes \ct{self doesNotUnderstand: #x} to be sent back to the object, (5) triggering a new lookup. This time \ct{doesNotUnderstand:} is found immediately in \ct{DynamicAccessors}, (6) which asks its class to compile the string \ct{'x ^ x'}. The \ct{compile} method is looked up (7-11), and finally found in \ct{Behavior}, which adds the new compiled method to the method dictionary of \ct{DynamicAccessors} (not shown). Finally, (12-14) the message is resent, and this time it is found.
+
+The same technique can be used to generate setters for instance variables, or other kinds of boilerplate code, such as visiting methods for a Visitor.
+
+Note the use of \ct{Object>>>perform:} in step (13) which can be used to send messages that are composed at run-time:
+
+\begin{code}{@TEST}
+5 perform: #factorial                                             --> 1206 perform: ('fac', 'torial') asSymbol                       --> 720
+4 perform: #max: withArguments: (Array with: 6) --> 6
+\end{code}
 
 %:======================================
 \section{Controlling messages}
 
+%:==>HERE<==
+\on{HERE}
+
 \on{
-- override doesNotUnderstand\\
---- trap msgs sent to an object (with Proxy and with msgNotUnderstood)\\
 - anonymous classes (see slides)\\
 - method wrappers
 }
-
-\on{Using doesNotUnderstand to automatically create accessors for instance variables; package as a reusable trait!}
-
-\on{Object perform:}
 
 \on{Object primitiveChangeClassTo: become: and becomeForward: (see slides with minimal object example)}
 
