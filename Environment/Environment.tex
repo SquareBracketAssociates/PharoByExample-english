@@ -32,7 +32,7 @@
 % --------------------------------------------
     \graphicspath{{figures/} {../figures/}}
 	\begin{document}
-	\renewcommand{\nnbb}[2]{} % Disable editorial comments
+	% \renewcommand{\nnbb}[2]{} % Disable editorial comments
 	\sloppy
 \fi
 %=================================================================
@@ -1011,7 +1011,8 @@ Now that we see the bug, the fix is obvious: we have to convert \ct{dot} to a ch
 	\label{fig:revertDialog}
 \end{figure}
 
-\dothis{Change the code right in the debugger so that the assignment reads \ct{dot := FileDirectory dot asCharacter} and \menu{accept} the change.}
+\dothis{Change the code right in the debugger so that the assignment reads \ct{dot := FileDirectory dot first} and \menu{accept} the change.}
+\on{NB: String>>asCharacter is now deprecated! use first instead}
 Because we are executing code inside a block that is inside a \lct{detect:}, several stack frames will have to be abandoned in order to make this change.  \squeak asks us if this is what we want (see \figref{revertDialog}), and, assuming that we click \menu{yes}, will save (and compile) the new method.
 
 \dothis{Click \button{Restart} and then \button{Proceed}; the debugger window will vanish, and the evaluation of the expression \ct{'readme.txt' suffix} will complete, and print the answer \ct{'.txt'}}
@@ -1060,7 +1061,7 @@ So, for example, we might edit the \ct{suffix} method to read as follows:
 suffix
 	"assumes that I'm a file name, and answers my suffix, the part after the last dot"
 	| dot dotPosition |
-	dot := FileDirectory dot asCharacter.
+	dot := FileDirectory dot first.
 	dotPosition := (self size to: 1 by: -1) detect: [ :i | (self at: i) = dot ].
 	self halt.
 	^ self copyFrom: dotPosition to: self size 

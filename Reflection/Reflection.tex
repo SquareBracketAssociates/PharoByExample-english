@@ -61,6 +61,9 @@ Cheers,
 Lukas
 }
 
+\on{Add diagram illustrating Reflection and Reification. Distinguish structural and behavioural reflection. Not just introspection and intercession.
+Metaobjects and MO Protocol. Class,  CompiledMethod and MethodDictionary are metaobjects}
+
 \st is a reflective programming language.
 In a nutshell, this means that programs are able to reflect on their own execution.
 A program that manipulates other programs (or even itself) is a \emph{metaprogram}.
@@ -388,6 +391,10 @@ SystemNavigation default
 \end{code}
 Note how we navigate from classes to method dictionaries to compiled methods to identify the methods we are interested in.
 A \ct{MethodReference} is a lightweight proxy for a compiled method that is used by many tools.
+There is a convenience method \ct{CompiledMethod>>methodReference} to return the method reference for a compiled method.
+\begin{code}{@TEST}
+(Object>>#=) methodReference methodSymbol --> #=
+\end{code}
 
 %:======================================
 \section{Browsing environments}
@@ -595,7 +602,11 @@ Let us have a look at how this may be implemented\footnote{You can also load \pk
 
 We define a \ct{LoggingProxy} as follows:
 \begin{code}
-ProtoObject subclass: #LoggingProxy	instanceVariableNames: 'subject count'	classVariableNames: ''	poolDictionaries: ''	category: 'PBE-Reflection'
+ProtoObject subclass: #LoggingProxy
+	instanceVariableNames: 'subject invocationCount'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'PBE-Reflection'
 \end{code}
 Note that we subclass \ct{ProtoObject} rather than \ct{Object} because we do not want our proxy to inherit over 400 methods from \ct{Object}.
 
@@ -604,71 +615,72 @@ Object methodDict size --> 408
 \end{code}
 
 Our proxy has two instance variables: the \ct{subject} it is a proxy for, and a \ct{count} of the number of messages it has intercepted.
-We initialize the proxy in the obvious way, and provide an access for the message count:
+We initialize the two instance variables and we provide an accessor for the message count
+Initially the \ct{subject} variable points to the proxy object itself.
 \begin{code}{}
-LoggingProxy class>>>for: anObject
-	^ self new initializeSubject: anObject
-
-LoggingProxy>>>initializeSubject: anObject
-	subject := anObject
-
-LoggingProxy>>>count
-	^ count
-
 LoggingProxy>>>initialize
-	count := 0
+	invocationCount := 0.
+	subject := self.
+
+LoggingProxy>>>invocationCount
+	^ invocationCount
 \end{code}
 
-Now comes the magic:
+We simply intercept all not understood messages, print them to the Transcript, update the message count, and forward the message to the real subject.
 \begin{code}{}
 LoggingProxy>>>doesNotUnderstand: aMessage 
 	Transcript show: 'performing ', aMessage printString; cr.
-	count := count + 1.
+	invocationCount := invocationCount + 1.
 	^ aMessage sendTo: subject
 \end{code}
-We simply intercept all not understood messages, print them to the Transcript, update the message count, and forward the message to the real subject.
+
+Here comes a bit of magic.
+We create a new \ct{Point} object and a new \ct{LoggingProxy} object, and then we tell the proxy to \ct{become:} the point object:
+\begin{code}{}
+point := 1@2.
+LoggingProxy new !\underline{become:}! point.
+\end{code}
+
+This has the effect of swapping all references in the image to the point to now refer to the proxy, and vice versa. Most importantly, the proxy's \ct{subject} instance variable will now refer to the point!
 
 \begin{code}{}
-proxy := LoggingProxy for: 1@2.proxy count     --> 0proxy + (3@4) --> 4@6proxy count     --> 1
+point invocationCount --> 0
+point + (3@4)             --> 4@6
+point invocationCount --> 1
 \end{code}
 
 This works nicely in most cases, but there are some shortcomings:
 \begin{code}{}
-(LoggingProxy for: nil) isNil --> false
+point class --> LoggingProxy
 \end{code}
-It turns out that \ct{ProtoObject} understands \ct{isNil}, so this message is inherited by \ct{LoggingProxy} and not intercepted.  We may implement it in the obvious way:
-\begin{code}{}
-LoggingProxy>>>isNil	^ self doesNotUnderstand: (Message selector: #isNil)
-\end{code}
-\noindent
-but then we must do this for all methods inherited from ProtoObject.
-
-There is another problem:
-\begin{code}{}
-(LoggingProxy for: nil) class --> LoggingProxy
-\end{code}
-
-The same trick will not work. Curiously, the method \ct{class} is not even implemented in \ct{ProtoObject} but in \ct{Object}, which \ct{LoggingProxy} does not inherit from!
+Curiously, the method \ct{class} is not even implemented in \ct{ProtoObject} but in \ct{Object}, which \ct{LoggingProxy} does not inherit from!
 The answer to this riddle is that \ct{class} is never sent as a message but is directly answered by the virtual machine.
 
 Even if we can ignore such special message sends, there is another fundamental problem which cannot be overcome by this approach: \self-sends cannot be intercepted:
 \begin{code}{}
-proxy := LoggingProxy for: 1@2.proxy rect: (3@4) --> 1@2 corner: 3@4proxy count     -> 1
+point := 1@2.
+LoggingProxy new become: point.
+point invocationCount --> 0
+point rect: (3@4)        --> 1@2 corner: 3@4
+point invocationCount --> 1
 \end{code}
 
 Our proxy has been cheated out of two \self-sends in the \ct{rect:} method:
 \begin{code}{}
-Point>>>rect: aPoint 	^ Rectangle  origin: (self min: aPoint) corner: (self max: aPoint)
+Point>>>rect: aPoint 
+	^ Rectangle  origin: (self min: aPoint) corner: (self max: aPoint)
 \end{code}
 
-Although messages can be intercepted by proxies using this technique, one should be aware of the inherent limitations of using a proxy.  In \secref{XXX} \on{to be fixed} we will see another, more general approaches for intercepting messages.
+Although messages can be intercepted by proxies using this technique, one should be aware of the inherent limitations of using a proxy.  In \secref{XXX} we will see another, more general approaches for intercepting messages.
+\on{sec ref to be fixed}
 
 %-----------------------------------------------------------------
 \subsection{Generating missing methods}
 
 The second most common application of intercepting not understood messages is to dynamically load or generate the missing methods.
 Consider a very large library of classes with many methods.  Instead of loading the entire library, we could load a stub for each class in the library. The stubs know where to find the source code of all their methods.  The stubs simply trap all messages not understood, and dynamically load the missing methods on-demand.  At some point, this behaviour can be deactivated, and the loaded code can be saved as the minimal necessary subset for the client application.
-\on{Is there a nice anecdote about this?}
+
+%\on{Stef sez: check ObjectOut -- I looked, but this seems to be very old. Depends on SqueakPage.}
 
 Let us look at a simple variant of this technique where we have a class that automatically adds accessors for its instance variables on-demand:
 \begin{code}{}
@@ -685,7 +697,8 @@ Any message not understood is trapped here. If an instance variable with the sam
 
 Suppose the class \ct{DynamicAcccessors} has an (uninitialized) instance variable \ct{x} but no pre-defined accessor. Then the following will generate the accessor dynamically and retrieve the value:
 \begin{code}{}
-myDA := DynamicAccessors new.myDA x --> nil
+myDA := DynamicAccessors new.
+myDA x --> nil
 \end{code}
 
 Let us step through what happens the first time the message \ct{x} is sent to our object (see \figref{DynamicAccessors}).
@@ -695,35 +708,31 @@ Let us step through what happens the first time the message \ct{x} is sent to ou
 	\caption{Dynamically creating accessors.\label{fig:DynamicAccessors}}
 \end{figure}
 
-(1) We send \ct{x} to \ct{myDA}, (2) the message is looked up in the class, and (3) not found in the class hierarchy. (4) This causes \ct{self doesNotUnderstand: #x} to be sent back to the object, (5) triggering a new lookup. This time \ct{doesNotUnderstand:} is found immediately in \ct{DynamicAccessors}, (6) which asks its class to compile the string \ct{'x ^ x'}. The \ct{compile} method is looked up (7-11), and finally found in \ct{Behavior}, which adds the new compiled method to the method dictionary of \ct{DynamicAccessors} (not shown). Finally, (12-14) the message is resent, and this time it is found.
+(1) We send \ct{x} to \ct{myDA}, (2) the message is looked up in the class, and (3) not found in the class hierarchy. (4) This causes \ct{self doesNotUnderstand: #x} to be sent back to the object, (5) triggering a new lookup. This time \ct{doesNotUnderstand:} is found immediately in \ct{DynamicAccessors}, (6) which asks its class to compile the string \ct{'x ^ x'}. The \ct{compile} method is looked up (7), and (8) finally found in \ct{Behavior}, which (9-10) adds the new compiled method to the method dictionary of \ct{DynamicAccessors}. Finally, (11-13) the message is resent, and this time it is found.
 
 The same technique can be used to generate setters for instance variables, or other kinds of boilerplate code, such as visiting methods for a Visitor.
 
 Note the use of \ct{Object>>>perform:} in step (13) which can be used to send messages that are composed at run-time:
 
 \begin{code}{@TEST}
-5 perform: #factorial                                             --> 1206 perform: ('fac', 'torial') asSymbol                       --> 720
+5 perform: #factorial                                             --> 120
+6 perform: ('fac', 'torial') asSymbol                       --> 720
 4 perform: #max: withArguments: (Array with: 6) --> 6
 \end{code}
 
 %:======================================
-\section{Controlling messages}
+\section{Methods as first class entities}
+
+% Compared to other reflective programming languages, \pharo is a \st implementation that brings reflection a step further. Whereas it handles \emph{methods as first class entities} that can be modified and replaced on the fly, it also allows for \emph{method execution reification}, exposing dynamic information related to method execution as objects.
 
 %:==>HERE<==
 \on{HERE}
 
-\on{
-- anonymous classes (see slides)\\
-- method wrappers
-}
 
-\on{Object primitiveChangeClassTo: become: and becomeForward: (see slides with minimal object example)}
+\on{TestCoverage make a better example -- already in Pharo.
+Then mention http://www.squeaksource.com/ObjectsAsMethodsWrap.html as an alternative to MethodWrappers}
 
-%:======================================
-\section{Methods as first class entities}
-
-Compared to other reflective programming languages, \pharo is a \st implementation that brings reflection a step further. Whereas it handles \emph{methods as first class entities} that can be modified and replaced on the fly, it also allows for \emph{method execution reification}, exposing dynamic information related to method execution as objects.
-
+\on{MethodWrappers do not use run:with:in: --- much older code. See TestCoverage which uses the newer approach.  MW should be reimplemented.}
 
 \on{
 - Methods as Objects; compiled methods; wrappers; spy\\
@@ -1029,3 +1038,6 @@ Other stuff:
 - Object primitiveChangeClassTo: become: and becomeForward: (see tests and slides with minimal object example)
 
 - PointerFinder?
+- anonymous classes (see slides) ?
+- Object primitiveChangeClassTo: become: and becomeForward: (see slides with minimal object example)
+
