@@ -39,15 +39,17 @@
 %=================================================================
 \chapter{Reflection}\label{cha:reflection}
 
+\lr{A section on pragmas/method annotations is missing. This is a very common and very practical application of reflection.}
+
 \st is a reflective programming language.
-In a nutshell, this means that programs are able to ``reflect'' on their own execution.
+In a nutshell, this means that programs are able to ``reflect'' on their own execution. \lr{not only on execution, also on the static model}
 More technically, this means that the \emph{metaobjects} of the runtime system can be \emph{reified} as ordinary objects, which can be queried and inspected.
 The metaobjects in \st are classes, metaclasses, method dictionaries, compiled methods, the run-time stack, and so on.
 This form of reflection is also called \emph{introspection}, and is supported by many modern programming languages.
 
 \begin{figure}[ht]\centering
 	\includegraphics[width=0.8\linewidth]{reflect}
-	\caption{Reification and reflection.\label{fig:reflect}}
+	\caption{Reification and reflection.\label{fig:reflect}\lr{not referenced, not sure if I understand it}}
 \end{figure}
 
 Conversely, it is possible in \st to modify reified metaobjects and \emph{reflect} these changes back to the runtime system.
@@ -97,15 +99,15 @@ In practice, the inspector can access instance variables without needing accesso
 In \st, classes define instance variables either by name or by numeric indices.
 The inspector uses methods defined by the \ct!Object! class to access them: \lct{instVarAt: \emph{index}} and \lct{instVarNamed: \emph{aString}} can be used to get the value of the instance variable at position \lct{\emph{index}} or identified by \lct{\emph{aString}}, respectively; to assign new values to these instance variables, it uses \ct!instVarAt:put:! and \ct!instVarNamed:put:!.
 
-For instance, you can change the value of the \ct!w! instance variable of the first workspace by evaluating:
+For instance, you can change the value of the \ct!w! instance variable \lr{that's not an instance variable, it is a binding (association) defined in the workspace instance} of the first workspace by evaluating:
 \begin{code}{}
 w instVarNamed: 'contents' put: 'howdy!'; contentsChanged
 \end{code}
 
-\important{\emph{Caveat:} Although these methods are useful for building development tools, using them to develop conventional applications is a bad idea: these reflective methods break the encapsulation boundary of your objects and can therefore make your code much harder to understand and maintain.}
+\important{\emph{Caveat:} Although these methods are useful for building development tools, using them to develop conventional applications is a bad idea: these reflective methods break the encapsulation boundary of your objects and can therefore make your code much harder to understand and maintain. \lr{Why? The access does not show up when looking for all readers/writers in the code browser.}}
 
 Both \ct!instVarAt:! and \ct!instVarAt:put:! are primitive methods, meaning that they are implemented as primitive operations of the \pharo virtual machine.
-If you consult the code of these methods, you will see the special syntax \ct!<primitive: N>! where \ct!N! is an integer.
+If you consult the code of these methods, you will see the special syntax \ct!<primitive: N>! where \ct!N! is an integer. \lr{actually this is the syntax of pragmas (method annotations), \ct!primitive:! is just a special kind of pragma}
 
 \needlines{5}
 \begin{code}{}
@@ -195,8 +197,8 @@ Development tools, however, are not normal applications, since their domain is t
 \subsection{Code metrics}
 
 Let's see how we can use \st's introspection features to quickly extract some code metrics.
-Code metrics measure such aspects as the depth of the inheritance hierarchy, the number of direct or indeirect subclasses, the number of methods or of instance variables in each class, or the number of locally defined methods or instance variables.
-Here are a few metrics for the class \ct!Morph!, which is the superclass of all graphical objects in \pharo, revealing that it is a huge class, and that it is at the root of a huge hierarchy. Maybe it needs some refactoring!
+Code metrics measure such aspects as the depth of the inheritance hierarchy, the number of direct or indirect subclasses, the number of methods or of instance variables in each class, or the number of locally defined methods or instance variables.
+Here are a few metrics for the class \ct!Morph!, which is the superclass of all graphical objects in \pharo, revealing that it is a huge class, and that it is at the root of a huge hierarchy. Maybe it needs some refactoring! 
 
 \begin{code}{}
 Morph allSuperclasses size.  -->       2 "inheritance depth"
@@ -212,6 +214,8 @@ One of the most interesting metrics in the domain of object-oriented languages i
 This informs us about the relation between the class and its superclasses.
 In the next sections we will see how to exploit our knowledge of the runtime structure to answer such questions.
 
+\lr{\ct!Morph linesOfCode! would be an interesting metric.}
+
 %:======================================
 \section{Browsing code}
 
@@ -224,7 +228,7 @@ As we saw previously, you can obtain an instance of a given class by sending it 
 Point someInstance --> 0@0
 \end{code}
 
-You can also gather all the instances with \ct!#allInstances!, or the number of alive instances in memory with \ct!#instanceCount!.
+You can also gather all the instances with \ct!#allInstances!, or the number of alive instances in memory with \ct!#instanceCount!. \lr{\ct!String allSubInstances! would be interesting too, to get Symbols and Strings.}
 
 \begin{code}{} % Cannot test this
 ByteString allInstances     --> #('collection' 'position'  ...)
@@ -233,7 +237,7 @@ ByteString instanceCount --> 104565
 
 These features can be very useful when debugging an application, because you can ask a class to enumerate those of its methods exhibiting specific properties.
 \begin{itemize}
-\item \ct!whichSelectorsAccess:! returns the list of all selectors of methods that read the instance variable named as the argument
+\item \ct!whichSelectorsAccess:! returns the list of all selectors of methods that read the instance variable named as the argument \lr{it also returns the methods that write the given field}
 \item \ct!whichSelectorsStoreInto:! returns the selectors of methods that modify the value of an instance variable
 \item \ct!whichSelectorsReferTo:! returns the selectors of methods that send a given message
 \item \ct!crossReference! associates each message with the set of methods that send it.
@@ -289,6 +293,8 @@ For example, you can programmatically browse all implementors of the message \ct
 \begin{code}{}
 SystemNavigation default browseAllImplementorsOf: #ifTrue:
 \end{code}
+
+\lr{Maybe mention that browsing all senders of \ct!ifTrue:! does not work as one would expect?}
 
 \begin{figure}[ht]\centering
 	\includegraphics[width=\linewidth]{implementors}
@@ -451,7 +457,7 @@ Integer>>>factorial
 \end{figure}
 
 Welcome to the poor-man's debugger!
-If you now browse the class of the explored object (\ie by evaluating \ct{self browse} in the bottom pane of the explorer) you will discover that it is an instance of the class \lct{MethodContext}, as is each \ct{sender} in the chain. All of these objects have been created dynamically in the image by the \st virtual machine at the point where \ct{thisContext} was referred to in the \ct{factorial} method.
+If you now browse the class of the explored object (\ie by evaluating \ct{self browse} in the bottom pane of the explorer) you will discover that it is an instance of the class \lct{MethodContext}, as is each \ct{sender} in the chain. All of these objects have been created dynamically in the image by the \st virtual machine at the point where \ct{thisContext} was referred to in the \ct{factorial} method. \lr{Not actually. In all the currently available VMs the context objects are created with every method activation, no matter if they are accessed using \ct{thisContext} or not.}
 
 \ct{thisContext} is not intended to be used for day-to-day programming, but it is essential for implementing tools like debuggers, and for accessing information about the call stack.
 You can evaluate the following expression to discover which methods make use of \ct{thisContext}:
@@ -472,6 +478,8 @@ Object>>>subclassResponsibility
 \end{code}
 
 By convention, methods in \st that send \ct{self subclassResponsibility} are considered to be abstract.  But how does \ct{Object>>>subclassResponsibility} provide a useful error message indicating which abstract method has been invoked?  Very simply, by asking \ct{thisContext} for the sender.
+
+\lr{I think co-routines and continuations should at least mentioned here. Another very practical application that is simple and could be shown here is the ``escaper''. Store the current context into a temp or inst-var \ct{target := thisContext} and jump back to that stack frame at a later point in time using \ct{target return: 123}.}
 
 %-----------------------------------------------------------------
 \subsection{Intelligent breakpoints}
@@ -648,7 +656,7 @@ Consider a very large library of classes with many methods.  Instead of loading 
 
 %\on{Stef sez: check ObjectOut -- I looked, but this seems to be very old. Depends on SqueakPage.}
 
-Let us look at a simple variant of this technique where we have a class that automatically adds accessors for its instance variables on-demand:
+Let us look at a simple variant of this technique where we have a class that automatically adds accessors for its instance variables on-demand: \lr{the last statement should return the result of the message, otherwise you cannot proceed with the debugger}
 \begin{code}{}
 DynamicAcccessors>>>doesNotUnderstand: aMessage
 	| messageName |
