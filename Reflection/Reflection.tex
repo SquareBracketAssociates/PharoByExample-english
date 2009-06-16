@@ -215,6 +215,7 @@ This informs us about the relation between the class and its superclasses.
 In the next sections we will see how to exploit our knowledge of the runtime structure to answer such questions.
 
 \lr{\ct!Morph linesOfCode! would be an interesting metric.}
+\sd{you want to scare people :)}
 
 %:======================================
 \section{Browsing code}
@@ -480,7 +481,9 @@ Object>>>subclassResponsibility
 By convention, methods in \st that send \ct{self subclassResponsibility} are considered to be abstract.  But how does \ct{Object>>>subclassResponsibility} provide a useful error message indicating which abstract method has been invoked?  Very simply, by asking \ct{thisContext} for the sender.
 
 \lr{I think co-routines and continuations should at least mentioned here. Another very practical application that is simple and could be shown here is the ``escaper''. Store the current context into a temp or inst-var \ct{target := thisContext} and jump back to that stack frame at a later point in time using \ct{target return: 123}.}
-
+\sd{lukas may be we should have another chapter showing such kind of beasts. I would love to read it.
+Showing how to use block to build exception and such a kind of point. I think that this chapter should be an introduction may be
+we should have a Reflection applied chapter}
 %-----------------------------------------------------------------
 \subsection{Intelligent breakpoints}
 
@@ -558,6 +561,7 @@ Since the proxy will implement virtually no methods of its own, any message sent
 
 Let us have a look at how this may be implemented\footnote{You can also load \pkg{PBE-Reflection} from \url{http://www.squeaksource.com/PharoByExample/}}.
 
+\sd{strange I do not see the class definition first line in the pdf}
 We define a \ct{LoggingProxy} as follows:
 \begin{code}
 ProtoObject subclass: #LoggingProxy
