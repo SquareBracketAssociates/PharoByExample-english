@@ -55,160 +55,48 @@
 	\sloppy
 \fi
 
-%\newcommand{\figlabel}[1]{\label{fig:#1}}
-%\newcommand{\seclabel}[1]{\label{sec:#1}}
-
-
-%\usepackage{graphicx}
-%\usepackage{alltt}
-%\usepackage{xspace}
-%\usepackage{moreverb}
-%\usepackage[pdftex,colorlinks=true,pdfstartview=FitV,linkcolor=black,citecolor= black,urlcolor=blue]{hyperref}
-%\usepackage{stmaryrd}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%Related to the formalization
-%\usepackage{amssymb}
-%\usepackage{amsmath}
-
-
-%\newcommand{\paragraph}[1]{\noindent\textbf{#1.}}
-%\newcommand{\etal}{\emph{et al.}}
-
-
-
-%\inputs{macros}
-
-%\usepackage{theorem}
-%\theoremstyle{plain}\theorembodyfont{\rmfamily}
-%\newtheorem{definition}{Definition}
-%\newtheorem{proposition}{Proposition}
-%\newtheorem{theorem}{Theorem}
-%\newtheorem{lemme}{Lemme}
-%\newenvironment{proof}{{\bf Proof.}}{$\square$}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%\newif\ifpdf
-%\ifx\pdfoutput\undefined
-%\pdffalse
-%\else
-%\pdfoutput=1
-%\pdftrue
-%\fi
-%\ifpdf
-%\DeclareGraphicsExtensions{.pdf, .jpg, .tif}
-%\else
-%\DeclareGraphicsExtensions{.eps, .jpg}
-%\fi
-%\graphicspath{{figures/}}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%Useful Comment
-%\newcommand{\co}[1]{\textsf{#1}\xspace}
-%\newcommand{\infe}{$<$}
-%\newcommand{\supe}{$\rightarrow$\xspace}
-%\newcommand{\ret}{$\uparrow$\xspace}
-%\newcommand{\sep}{$\gg$\xspace}
-\newcommand{\pipe}{$\mid$}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%Comments
-\newcommand\fix[1]{\nb{FIX}{#1}}
-\newcommand\cp[1]{\nb{CP}{#1}}
-\newcommand\rw[1]{\nb{RW}{#1}}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%\def\figref#1{Figure \cite{#1}
-%\newcommand{\secref}[1]{Section~\ref{sec:#1}}
-%\newcommand{\seclabel}[1]{\label{sec:#1}}
-%\newcommand{\figlabel}[1]{\label{fig:#1}}
-%\newcommand{\figref}[1]{Figure~\ref{fig:#1}}
-%% \newcommand{\tabref}[1]{Table~\ref{#1}}
-%\newcommand{\defref}[1]{Definition~\ref{def:#1}}
-%\renewcommand{\paragraph}[1]{\par\noindent{\textbf{#1.}}}
-%\newcommand{\figScale}{0.4}
-%\newcommand{\colWidth}{8.5cm}
-%\newcommand{\ie}{\emph{i.e.},\xspace}
-%\newcommand{\eg}{\emph{e.g.},\xspace}
-%\newcommand{\cf}{cf.\xspace}
-%\newcommand{\ct}[1]{\textsf{#1}}
-
-%\newenvironment{code}
-%        {\begin{alltt}\sffamily}
-%        {\end{alltt}}
-
-%\newenvironment{tcode}
-%{\footnotesize\sf\begin{tabbing}
-%xxxx\=xxxx\=xxxx\=xxxx\=xxxx\=xxxx\=xxxx\=xxxx\=xxxx\=xxxx\=xxxx\=xxxx\=\kill}
-%{\end{tabbing}\sf\normalsize}       
-    
-%\newcommand{\twocolumnpic}[3]{
-%   \begin{figure*}[!ht]
-%   \begin{center}
-%   \includegraphics[scale=\defaultScale]{#1}
-%   \caption{#2}
-%   \label{#3}
-%   \end{center}
-%   \end{figure*}}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%\usepackage{ifthen}
-%\usepackage{amssymb}
-%\newboolean{showcomments}
-%\setboolean{showcomments}{true}
-%\ifthenelse{\boolean{showcomments}}
-%  {\newcommand{\nb}[2]{
-%% \fbox{\bfseries\sffamily#1}
-%        \fbox{\bfseries\sffamily\scriptsize#1}
-%    {\sf\small$\blacktriangleright$\emph{#2}$\blacktriangleleft$}
-%    % \marginpar{\fbox{\bfseries\sffamily#1}}
-%   }
-%   \newcommand{\cvsversion}{\emph{\scriptsize$-$Id$-$}}
-%  }
-%  {\newcommand{\nb}[2]{}
-%   \newcommand{\cvsversion}{}
-%  }
-%\newcommand{\here}{\nb{***}{CONTINUE HERE}}
-%% \newcommand{\st}[1]{\textsf{\small #1}}
-%\newcommand{\st}[1]{\textsf{#1}}
-%\newcommand{\sitem}{\vspace{-5 pt}\item}
-
-%
 \newcommand{\ob}{OmniBrowser\xspace}
 \newcommand{\obf}{OmniBrowser framework\xspace}
 \newcommand{\applflab}{ApplFLab\xspace}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+%:===> TO BE INDEXED! <===
+
 \chapter{Creating Browsers with OmniBrowser}
 
+%\st is not only an object-oriented programming language; it is also known for its extensive integrated development environment supporting interactive and dynamic programming. While the default tools are adequate for browsing the code and developing applications, it is often cumbersome to extend the environment to support new language constructs or to build additional tools supporting new ways of navigating and presenting source code. 
 
 \noindent
+In this chapter, we present \ob, a browser framework that supports the definition of browsers based on explicit metamodels. In the \obf, a browser is a graphical list-oriented tool to navigate and edit any arbitrary domain. The most common representative of this category of tools is the \st system browser, which is used to navigate and edit \st source code.
+In \ob, a browser is described by a domain model and a metagraph that specifies how the domain space may be navigated through. Widgets such as list menus and text panels are used to display information gathered from a particular path in the metagraph. Although widgets are programmatically composed by the framework, \ob allows for interaction with the end user.
 
-%Smalltalk is not only an object-oriented programming language; it is also known for its extensive integrated development environment supporting interactive and dynamic programming. While the default tools are adequate for browsing the code and developing applications, it is often cumbersome to extend the environment to support new language constructs or to build additional tools supporting new ways of navigating and presenting source code. 
-In this chapter, we present \ob, a browser framework that supports the definition of browsers based on explicit metamodels. In \obf, a browser is a graphical list-oriented tool to navigate and edit any arbitrary domain. The most common representative of this category of tools is the Smalltalk system browser, which is used to navigate and edit Smalltalk source code.
-In \ob, a browser is described by a domain model and a metagraph which specifies how the domain space may be navigated through. Widgets such as list menus and text panels are used to display information gathered from a particular path in the metagraph. Although widgets are programmatically composed by the framework, \ob allows for interaction with the end user.
-
-In the following, we show how to build new browsers from predefined parts and how to easily describe new tools. Three exemplary browsers, a file browser, a remake of the ubiquitous Smalltalk system browser, and a coverage browser, will illustrate how to define sophisticated browsers for various domains.
+In the following, we show how to build new browsers from predefined parts and how to easily describe new tools. Three exemplary browsers, a file browser, a remake of the ubiquitous \st system browser, and a coverage browser, will illustrate how to define sophisticated browsers for various domains.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %\section{Introduction}\label{sec:introduction}
 
 %context
-%Smalltalk is an object-oriented language featuring a complete development environment supporting interactive and dynamic programming \cite{Gold83a,Gold84a}. While the default environment already supports advanced ways of navigating source code and fluid development since the eighties, new browsers have been developed over the years: the \emph{Refactoring Browser} \cite{Fowl99a,Robe96a,Robe97a} which was the first system browser supporting refactoring, the \emph{StarBrowser} \cite{Wuyt04a} which supports smart groups, a browser for incremental development supporting visual feedback of undefined methods \cite{Scha04c} and the \emph{Whiskers} browser that shows multiple methods at the same time maximizing the screen space. Strong\-Talk, a more exotic Smalltalk version featuring optional typing, offered a glyph based browsing environment. 
+%\st is an object-oriented language featuring a complete development environment supporting interactive and dynamic programming \cite{Gold83a,Gold84a}. While the default environment already supports advanced ways of navigating source code and fluid development since the eighties, new browsers have been developed over the years: the \emph{Refactoring Browser} \cite{Fowl99a,Robe96a,Robe97a} which was the first system browser supporting refactoring, the \emph{StarBrowser} \cite{Wuyt04a} which supports smart groups, a browser for incremental development supporting visual feedback of undefined methods \cite{Scha04c} and the \emph{Whiskers} browser that shows multiple methods at the same time maximizing the screen space. Strong\-Talk, a more exotic \st version featuring optional typing, offered a glyph based browsing environment. 
 
 
 %problem
-%The problem when building all of these browsers is that they are always rebuilt from scratch because there hardly exists any domain models or frameworks for building such development tools. In fact, the current browsers in most Smalltalk environments are hard to extend for two reasons: (a) they are monolythic applications that are not really meant to be included elsewhere, and (b) the navigation and interaction of the end-user with the browsers is typically hardcoded in the browser UI elements, and is therefore hard to change or extend.
+%The problem when building all of these browsers is that they are always rebuilt from scratch because there hardly exists any domain models or frameworks for building such development tools. In fact, the current browsers in most \st environments are hard to extend for two reasons: (a) they are monolythic applications that are not really meant to be included elsewhere, and (b) the navigation and interaction of the end-user with the browsers is typically hardcoded in the browser UI elements, and is therefore hard to change or extend.
 
 %some solutions exist, but only partially
-%Note that some Smalltalk environments allow one to embed applications within each-other. VisualWorks for example has a notion of \emph{subcanvases} which can be used to that end. This helps to reduce the problem (a) in the previous paragraph, but not problem (b) of the hardcoding of the  the navigation and interaction in the browser UI elements. Other browsers are designed with a certain amount of customizability in mind, and are therefore easier to extend, but even those lack explicit descriptions of the navigation.
+%Note that some \st environments allow one to embed applications within each-other. VisualWorks for example has a notion of \emph{subcanvases} which can be used to that end. This helps to reduce the problem (a) in the previous paragraph, but not problem (b) of the hardcoding of the  the navigation and interaction in the browser UI elements. Other browsers are designed with a certain amount of customizability in mind, and are therefore easier to extend, but even those lack explicit descriptions of the navigation.
 %
 %As was already reported by Steyaert \emph{et al.}~\cite{Stey96a}, we conclude that current visual application builders and application frameworks do not live up to their expectations of rapid application development or non-programming-expert application development. They fall short when compared to component-oriented development environments in which applications are built with components that have a strong affinity with the problem domain (\ie being domain-specific). 
 
 
 
-%\rw{I do not agree with this part. If you want to say that the situation in Squeak is not good, then say so. Generalizing it to other Smalltalk (e.g. Dolphin, VW, ...) is stretcing it much too far}. \ab{I haven't checked with VW (I cannot run it on my machine), but I would be really surprised if the situation is not similar than in Squeak. Is there an easy way to extend the refactoring browser with a new pane for example?}\sd{IN VW you can easily add a tab after this is not a easy composition}
-%Still these browsers acts as standalone application and it is difficult to extend them or compose their functionality to produce even richer environments. In the Squeak Smalltalk environment, for example, the default environment browsers and tools are inflexible and changing them requires nearly patching the system. The main reason is that the domain of the browser \ie the navigation and the interaction with the end-user are not explicit but hardcoded into the browser UI elements and such as cannot be easily extended or customizable. 
+%\rw{I do not agree with this part. If you want to say that the situation in \pharo is not good, then say so. Generalizing it to other \st (e.g. Dolphin, VW, ...) is stretcing it much too far}. \ab{I haven't checked with VW (I cannot run it on my machine), but I would be really surprised if the situation is not similar than in \pharo. Is there an easy way to extend the refactoring browser with a new pane for example?}\sd{IN VW you can easily add a tab after this is not a easy composition}
+%Still these browsers acts as standalone application and it is difficult to extend them or compose their functionality to produce even richer environments. In the \pharo \st environment, for example, the default environment browsers and tools are inflexible and changing them requires nearly patching the system. The main reason is that the domain of the browser \ie the navigation and the interaction with the end-user are not explicit but hardcoded into the browser UI elements and such as cannot be easily extended or customizable. 
 
-%Application builders such as the ones present in VisualWorks or Dolphin Smalltalk already improve the situation by offering an interpretation of the widgets elements via window spec like declaration interpretation. However as reported by Steayert \etal \cite{Stey96a}, current visual application builders and application frameworks do not live up to their expectations of rapid application development or non-programming-expert application development. They fall short when compared to component-oriented development environments in which applications are built with components that have a strong affinity with the problem domain (\ie being domain-specific). 
+%Application builders such as the ones present in VisualWorks or Dolphin \st already improve the situation by offering an interpretation of the widgets elements via window spec like declaration interpretation. However as reported by Steayert \etal \cite{Stey96a}, current visual application builders and application frameworks do not live up to their expectations of rapid application development or non-programming-expert application development. They fall short when compared to component-oriented development environments in which applications are built with components that have a strong affinity with the problem domain (\ie being domain-specific). 
 
 %solution: ob
-%This chapter presents \ob, a framework to define and compose new browsers. In \obf, a browser is a graphical list-oriented tool to navigate and edit an arbitrary domain. The most common representative of this category of tools is the Smalltalk system browser, which is used to navigate and edit Smalltalk source code.
+%This chapter presents \ob, a framework to define and compose new browsers. In \obf, a browser is a graphical list-oriented tool to navigate and edit an arbitrary domain. The most common representative of this category of tools is the \st system browser, which is used to navigate and edit \st source code.
 %In \obf, a browser is described by a domain model and a metagraph which specifies how the domain space is navigated through. Widgets such as list menus and text panels are used to display information gathered from a particular path in the metagraph. Although widgets are programmatically composed, the \obf framework supports their interaction.
 
 %The contributions of this article are: the description of a metadriven framework to build system browsers and the application of the framework to build some tools. 
@@ -221,24 +109,24 @@ In the following, we show how to build new browsers from predefined parts and ho
 
 The state of a graphical user interface (GUI) is defined as a collection of the states of the widgets making up the interface. The state of a widget refers to the state the widget is in. It may be modified whenever an end-user performs an action on this widget such as clicking a button or selecting an entry in a menu. Therefore, a GUI has a high number of different states. Asserting the validity for each of these states is crucial to avoid broken or inconsistent interfaces.
 
-Given the potential high number of different states of a GUI, asserting the validity of a GUI is a challenging task. Let's illustrate this situation with the Smalltalk system browser, a graphical tool to edit and navigate into Smalltalk source code.
+Given the potential high number of different states of a GUI, asserting the validity of a GUI is a challenging task. Let's illustrate this situation with the \st system browser, a graphical tool to edit and navigate into \st source code.
 
 \begin{figure}[!ht]
 \begin{center}
 \includegraphics[scale=0.65]{miniStBrowser}
-\caption{The traditional Smalltalk System Browser roughly depicted.} \figlabel{miniStBrowser}
+\caption{The traditional \st System Browser roughly depicted.} \figlabel{miniStBrowser}
 \end{center}
 \end{figure}
 
 
-\figref{miniStBrowser} depicts the different widgets of a traditional Smalltalk class system browser (see \figref{ob} for a real picture). Without entering into details, A, B, C and D are lists that show class categories (groups of classes), classes, method protocols (groups of methods) and methods. E is a radio button composed of three choices and F is a text pane. 
+\figref{miniStBrowser} depicts the different widgets of a traditional \st class system browser (see \figref{ob} for a real picture). Without entering into details, A, B, C and D are lists that show class categories (groups of classes), classes, method protocols (groups of methods) and methods. E is a radio button composed of three choices and F is a text pane. 
 
 %After having selected a class category in the pane A, selecting a class in pane B renders the definition of this class in pane F. After having selected a class (pane B) and a method category (pane C), pane D shows a list of method names. Clicking a method name makes the definition of the selected method appear in the text pane (pane F). 
 
 Pane A lists the categories in the system. Selecting a category in this list, makes the classes in that category appear in pane B. Selecting a class results in the protocols for that class being shown in pane C, and selecting a protocol lists the method names in pane D. Switch E controls whether the class or the metaclass is being edited, and therefore whether the protocols and methods shown are instance level or class level methods. Pane F is a text pane that gives feedback on whatever is selected in the top panes, always displaying the most specific information possible. For example, when a user has selected a method in a protocol in a class in a certain category, pane F shows the definition of that method (and not the definition of the class of that method). 
 %\sd{this part is a bit boring what I would be nice is  to have is a complex example of interaction.}\rw{Yes, but we need to give the basic first :-( }
 
-The description of how the browser works shows a number of navigation invariants that need to be kept when implementing the browser. For example, the selections goes from left to right: it is not possible to have methods listed in pane D with pane C being empty.
+The description of how the browser works shows a number of navigation invariants that need to be kept when implementing the browser. For example, the selections go from left to right: it is not possible to have methods listed in pane D with pane C being empty.
 
 Invariants such as the one given above need to be implemented and checked when building a browser. So we are dealing with writing an application that deals with a potentially very big number of states in which only certain transitions between states need to be allowed (the ones that correspond to navigations the user of the browser). Whenever a user clicks on widgets that make up the GUI of the browser, the state of one or more widgets is changed, and possibly new navigation possibilities open up (being able to select a method name, for example). To deal with the fact that a widget can be in an inconsistent state, developers often rely on guards: the method performing an action in reaction to a user action always checks whether the state is actually correct or not nil. 
 
@@ -253,7 +141,7 @@ In the next section, we describe \ob, a framework to design browsers where the d
 
 The domain of the \obf is \emph{browsers}, applications with a graphical user interface that are used to navigate a graph of domain elements. When instantiating  the \obf to create a browser for a particular domain, the domain elements need to be specified, as well as the desired navigation paths between them.
 
-The \obf is structured around (i) an explicit domain model and (ii) a metagraph, a state machine, that specifies the navigation in and interaction with the domain model. The user interface is constructed by the framework, and uses a layout similar to the Smalltalk System Browser, with two horizontal parts. The top part is a column-based section where the navigation is done. The bottom half is a text pane.
+The \obf is structured around (i) an explicit domain model and (ii) a metagraph, a state machine, that specifies the navigation in and interaction with the domain model. The user interface is constructed by the framework, and uses a layout similar to the \st System Browser, with two horizontal parts. The top part is a column-based section where the navigation is done. The bottom half is a text pane.
 
 %\secref{overview} explains the major classes that make up the \obf. \secref{fileBrowserExample} shows a concrete instantiation to build a file browser. \secref{corebehavior} goes in some more detail and describes the core behavior of the framework. Section~\ref{widgets} explains how the widgets are glued together.
 
@@ -277,7 +165,7 @@ The navigation of this domain graph is specified in a \emph{metagraph}, a state 
 %\footnote{In a former version of \ob~\cite{Berg07c}, actors where used to defines actions and where attached to a metanode. In the current version of \ob actors have been replaced by commands.}.
 The metanode does not have the knowledge of the domain nodes, however each node is associated to a metanode. Transitions between meta\-nodes are defined by metaedges. When a metaedge is traversed (\ie result of pressing a button or selecting an entry list), sibling nodes are created from a given node by invoking a method that has the name of the metaedge.
 
-A \emph{metanode} has the ability to be auto selected with the method \ct{MetaNode>>>autoSelect: aMetaNode}. When a particular child for auto selection is designated, the first node produced by following its metaedge will be selected.
+A \emph{metanode} has the ability to be auto selected with the method \lct{Meta\-Node\ct{>>>}autoSelect: aMetaNode}. When a particular child for auto selection is designated, the first node produced by following its metaedge will be selected.
 
 
 \paragraph{Command.} A \emph{Command} enables interaction and manipulation of the domain graph. Commands may be available through menus and buttons in the browser. They therefore have the ability to render themselves in a user interfaces and are responsible for handling exceptions that may occur when triggered. 
@@ -293,7 +181,7 @@ The metagraph describes a state machine. When the browser is in a state in which
 
 A filter provides a strategy for filtering out some of the nodes from the display. If a node is the starting point of several edges, a filter may be needed to filter out all but one edge to determine which path has to be taken in the metagraph. 
 
-\paragraph{Definition.} While navigating in the domain space, information about the selected node is displayed in a dedicated textual panel. If edition of the text is expected by the browser user, then a definition is necessary to handle modification and commitment (\ie an \emph{accept} in the Smalltalk terminology). A definition is produced by a node. 
+\paragraph{Definition.} While navigating in the domain space, information about the selected node is displayed in a dedicated textual panel. If edition of the text is expected by the browser user, then a definition is necessary to handle modification and commitment (\ie an \emph{accept} in the \st terminology). A definition is produced by a node. 
 
 
 \subsection{Building a File Browser}\label{sec:fileBrowserExample}
@@ -408,7 +296,7 @@ The implementation shows the two responsibilities of a node: rendering itself (i
 
 To visually distinguish files from directories when browsing a directory with our file browser, we can add an icon to each element in the list. To illustrate this, we will denote directories with a small folder icon. 
 
-The first step is to integrate the icon itself into a Squeak image. In the class \ct{OBMorphicIcons} you see some pre-defined icons stored in methods such as \ct{arrowUp}. To import an icon stored as an image (\eg as a GIF file), you can use this code:
+The first step is to integrate the icon itself into a \pharo image. In the class \ct{OBMorphicIcons} you see some pre-defined icons stored in methods such as \ct{arrowUp}. To import an icon stored as an image (\eg as a GIF file), you can use this code:
 
 \begin{code}{}
 | image stream |
@@ -486,7 +374,7 @@ Open a new browser, then right click on a selected file and you will get a menu 
 %:===============
 \subsection{Core Behavior of the Framework}\label{sec:corebehavior}
 
-The core of the \ob framework is composed of 8 classes (\figref{core}). We denote the Smalltalk metaclass hierarchy by a dashed arrow. 
+The core of the \ob framework is composed of 8 classes (\figref{core}). We denote the \st metaclass hierarchy by a dashed arrow. 
 
 \begin{figure}[!ht]
 \begin{center}
@@ -501,7 +389,7 @@ The navigation graph is built with instances of the class \ct{OBMetaNode}. Trans
 
 At runtime, the graph traversal is triggered by user actions (\eg pressing a button or selecting a list entry) which send the metaedge's name to the node that is currently selected. The rendering of a node is performed by invoking on the domain node the selector stored in the variable \ct{displaySelector} in the metanode.
 
-The class \ct{OBCommand} is instantiated by the framework and the set of commands for a browser is discovered (through the Smalltalk reflection API) when a browser is instantiated. All methods starting with the \ct{cmd} prefix are considered as commands. Each of this method should return the \emph{class} of the command (and not an instance of it).
+The class \ct{OBCommand} is instantiated by the framework and the set of commands for a browser is discovered (through the \st reflection API) when a browser is instantiated. All methods starting with the \ct{cmd} prefix are considered as commands. Each of this method should return the \emph{class} of the command (and not an instance of it).
 
 The class \ct{OBNode} represents an element of the domain graph. Each node has a name. This name is used when lists of nodes are displayed in the navigation columns of the browser. When a node is selected in a list, information related to this node needs to be displayed in the bottom text pane. 
 When the node is not supposed to be edited, the message \ct{text} is sent to it, returning a string  displayed in the bottom pane. When it is editable, the message \ct{definition} is sent and it is expected to return an instance of a subclass of \ct{OBDefinition}. Note that the nodes do not need to be configured to be editable or not. When they implement a method \ct{definition}, this will be used and the node will be editable. If that method is not present, then the method \ct{text} is used. 
@@ -553,14 +441,14 @@ The root of a metagraph corresponds to the left-most list. The number of lists d
 
 In this section we show how the framework is used to implement the traditional class system browser. 
 
-\subsection{The Smalltalk System Browser}\seclabel{systemBrowser}
-The system browser is probably the most important tool offered by the Squeak programming environment. It enables code navigation and code editing. \figref{ob} shows the graphical user interface of this browser, and how it appears to the Smalltalk programmer. 
+\subsection{The \st System Browser}\seclabel{systemBrowser}
+The system browser is probably the most important tool offered by the \pharo programming environment. It enables code navigation and code editing. \figref{ob} shows the graphical user interface of this browser, and how it appears to the \st programmer. 
 
 
 \begin{figure}[!ht]
 \begin{center}
 \includegraphics[scale=0.50]{obbrowser.pdf}
-\caption{\ob based Smalltalk system browser.} \figlabel{ob}
+\caption{\ob based \st system browser.} \figlabel{ob}
 \end{center}
 \end{figure}
 
@@ -577,7 +465,7 @@ The \ct{-- all --} method category gets automatically selected when no other met
 %:===============
 
 \subsection{System Browser Internals}
-The \ob-based implementation of the Squeak system browser is composed of 17 classes (2 classes for the browser, 3 classes for the definitions of classes, methods and organization, 10 classes defining nodes and 2 utility classes with abstractions to help link the browser and the system). \figref{obInternal} shows the classes in \obf that need to be subclassed to produce the system browser. Note that the two utility classes are not represented on the picture.
+The \ob-based implementation of the \pharo system browser is composed of 17 classes (2 classes for the browser, 3 classes for the definitions of classes, methods and organization, 10 classes defining nodes and 2 utility classes with abstractions to help link the browser and the system). \figref{obInternal} shows the classes in \obf that need to be subclassed to produce the system browser. Note that the two utility classes are not represented on the picture.
 
 % Squeak-dev3.10-7143: Number of Classes = 102, number of methods: 675
 
@@ -598,7 +486,7 @@ The \ob-based implementation of the Squeak system browser is composed of 17 clas
 \end{figure}
 
 
-Compared to the default implementation of the Squeak System Browser this is less code and better factored. In addition other code-browsers can freely reuse these parts.
+Compared to the default implementation of the \pharo System Browser this is less code and better factored. In addition other code-browsers can freely reuse these parts.
 
 \begin{figure}[!ht]
 \begin{center}
@@ -710,7 +598,7 @@ Each graphical widget composing a browser is a listener and can emit events. Cre
 %:AB ==> Done \sd{ok this is emitted but I do not know who is listening or registering this event I guess it but we should say it.}
 
 
-\paragraph{State of the browser.} Contrary to the original Squeak system browser where each widget state is contained in a dedicated variable, the state of a \obf-based browser is defined as a path in the metagraph starting from the root metanode. Each metanode taking part of this path is associated to a domain node. This preserves the synchronization between different graphical widgets of a browser.
+\paragraph{State of the browser.} Contrary to the original \pharo system browser where each widget state is contained in a dedicated variable, the state of a \obf-based browser is defined as a path in the metagraph starting from the root metanode. Each metanode taking part of this path is associated to a domain node. This preserves the synchronization between different graphical widgets of a browser.
 
 %\sd{would be nice to add that taken from colin email: but I do not completely understand it. Alex do you get it? ----
 %you wrote in your nodes: New nodes can be created by subclassing \ct{Node}. When a \textit{find class} operation is performed, the method \ct{ancestrySelector} can be overridden to specify the ancestry relationship. 
@@ -782,7 +670,7 @@ Several other browsers such as a browser specifically supporting new language co
 \paragraph{Ease of use.}
 As any good framework, extending it following the framework intention makes it easy to specify advanced browsers. The fact that the browser navigation is explicitly defined in one place lets the programmer easily understand and control the tool navigation and user interaction. The programmer does not have the burden to explicitly create and glue together the UI widgets and their specific layout. To add additional custom widgets in a concrete browser, the developer can simply define a class implementing this widget and add an object of this class to the list of widgets used during the creation of the browser. This list is defined on the class-side of \ct{OBBrowser} in the method \ct{panels}. Still the programmer focuses on the key domain of the browser: its navigation and the interaction with the user. 
 
-\paragraph{Explicit state transitions.} Maintaining coherence among different widgets and keeping them synchronized is a non-trival issue that, while well supported by GUI frameworks,  is often not well used. For instance, in the original Squeak browser, methods are scattered with checks for nil or 0 values. For instance, the method \ct{classComment: aText notifying: aPluggableTextMorph}, which is called by the text pane (F widget) to assign a new comment to the selected class (B widget), is:
+\paragraph{Explicit state transitions.} Maintaining coherence among different widgets and keeping them synchronized is a non-trival issue that, while well supported by GUI frameworks,  is often not well used. For instance, in the original \pharo browser, methods are scattered with checks for nil or 0 values. For instance, the method \ct{classComment: aText notifying: aPluggableTextMorph}, which is called by the text pane (F widget) to assign a new comment to the selected class (B widget), is:
 
 \begin{code}
 Browser\sep{}classComment: aText notifying: aPluggableTextMorph 
@@ -791,7 +679,7 @@ Browser\sep{}classComment: aText notifying: aPluggableTextMorph
         ifNotNil: [ ... ]
 \end{code}
 
-The code above copes with the fact that when pressing on the class comment button, there is no warranty that a class is selected. In a good UI design, the comment class button should have been disabled, however there are still checks done whether a class is selected or not. Among the 438 accessible methods in the non \ob-based Squeak class \ct{Browser}, 63 of them invoke \ct{ifNil:} to test whether a list is selected or not and 62 of them send the message \ct{ifNotNil:}. Those are not isolated Smalltalk examples. The code that describes some GUI present in the JHotDraw framework also contains the pattern checking for a nil value of variables that may reference graphical widgets. 
+The code above copes with the fact that when pressing on the class comment button, there is no warranty that a class is selected. In a good UI design, the comment class button should have been disabled, however there are still checks done whether a class is selected or not. Among the 438 accessible methods in the non \ob-based \pharo class \ct{Browser}, 63 of them invoke \ct{ifNil:} to test whether a list is selected or not and 62 of them send the message \ct{ifNotNil:}. Those are not isolated \st examples. The code that describes some GUI present in the JHotDraw framework also contains the pattern checking for a nil value of variables that may reference graphical widgets. 
 
 Such a situation does not occur in \obf, as metagraphs are declaratively defined, and each metaedge describes an action the user can perform on a browser, states a browser can be in are explicit and fully described.
 
@@ -810,7 +698,7 @@ Such a situation does not occur in \obf, as metagraphs are declaratively defined
 
 %\paragraph{Separation of domain and navigation} The domain model and the navigation into the space domain are fully separated: a metanode does not and cannot have a reference to the domain node currently selected and displayed.
 
-%The questions of having to define nodes or reusing the Smalltalk underlying metamodel is interesting. Using class extensions it should possible to avoid to have to wrap domain entities into nodes. Still creating a new node that could merge two kinds of entities such as classes and packages is important to build advanced navigation as the VisualWorks package/class selection described above.
+%The questions of having to define nodes or reusing the \st underlying metamodel is interesting. Using class extensions it should possible to avoid to have to wrap domain entities into nodes. Still creating a new node that could merge two kinds of entities such as classes and packages is important to build advanced navigation as the VisualWorks package/class selection described above.
 
 %
 
@@ -899,7 +787,7 @@ Such a situation does not occur in \obf, as metagraphs are declaratively defined
 
 %While both \applflab and the \ob make it easy to build browsers, there are some differences. The \ob is a domain specific approach for building browsers, while \applflab is general. So when using \applflab to build browser, browser specific components need to be built first, for example to get the left-to-right selection behavior that is built-in with \ob. \applflab also had a steeper learning curve, since building a good reusable component (be it a visual one or a regular one) remains fairly difficult. On the other hand, \ob offers more built-in behavior which makes it easier to use but also forces certain behavior that might not always be wanted.\\
 
-%\paragraph{ThingLab} Freeman-Benson and Maloney~\cite{Free89a} wrote ThingLab II, an object-oriented constraint system for direct manipulation user interface implemented in Smalltalk-80. In ThingLab II, user-manipulable entities are collections of objects know as \textit{Things}. ThingLab II provides a large number of primitive Things equivalent to the operations and data structures provided in any high-level language: numerical operations, points, strings, bitmaps, conversion, etc. 
+%\paragraph{ThingLab} Freeman-Benson and Maloney~\cite{Free89a} wrote ThingLab II, an object-oriented constraint system for direct manipulation user interface implemented in \st-80. In ThingLab II, user-manipulable entities are collections of objects know as \textit{Things}. ThingLab II provides a large number of primitive Things equivalent to the operations and data structures provided in any high-level language: numerical operations, points, strings, bitmaps, conversion, etc. 
 
 %A thing is constructed from things objects and constraint objects. Higher-level things can be built out of the lower-level ones. Constraints are either satisfied or they are not satisfied, and they are simple declarative declarations that do not hold state. 
 %Browser navigation can be expressed by constraints between the different elements that composed a browser. But there is no explicit distinction between the domain and its navigation. 
@@ -919,7 +807,7 @@ Such a situation does not occur in \obf, as metagraphs are declaratively defined
 %Browsers are build by describing the model in term of domain nodes, the navigation with a metagraph and a set of actors to enable interaction between the browser user with the domain browsed. Graphical widgets and their layout are fully abstracted by the Omnibrowser framework, enabling a graphical tool to navigate and edit a domain model without writing any graphical description.
 
 %context
-Smalltalk is known for its advanced development environment, featuring advanced browsers that let developers navigate and change code relatively easily.
+\st is known for its advanced development environment, featuring advanced browsers that let developers navigate and change code relatively easily.
 
 
 %problem
@@ -933,8 +821,8 @@ In this framework, browsers are built by modeling the domain with \emph{nodes}, 
 The framework uses these descriptions to construct a graphical application. The top half of the application uses lists that allow the user to navigate the described domain. The bottom half of the window is used to visualize and edit nodes selected in the top half.
 
 %validation
-The framework is implemented in Squeak Smalltalk and called \ob.
-This Chapter shows three concrete instantiations of the framework: a file browser to navigate a file system, a reimplementation of the ubiquitous Smalltalk System Browser, and a code coverage browser.
+The framework is implemented in \pharo \st and called \ob.
+This Chapter shows three concrete instantiations of the framework: a file browser to navigate a file system, a reimplementation of the ubiquitous \st System Browser, and a code coverage browser.
 Of course, there are more instantiations available than we have not discussed in this chapter.
 The validation shows that the goals of the frameworks are met. Building the System Browser with the \obf shows that the code is much simpler. The Code Coverage browser shows that it is easy to extend an existing browser.
 
