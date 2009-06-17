@@ -7,7 +7,8 @@
 % 2007-12-18 - Andrew review pass
 % 2008-05-30 - Stef review pass
 % 2009-04-22 - Oscar revised
-% 2009-04-23 - Alex revised (added \alex{} annotation to indicate difference between Squeak and Pharo)
+% 2009-04-23 - Alex revised (noted Squeak vs Pharo)
+% 2009-06-17 - Oscar migrated to Pharo
 
 %=================================================================
 \ifx\wholebook\relax\else
@@ -39,27 +40,28 @@
 \newcommand{\MCB}{\MC browser\xspace}
 \newcommand{\RI}{repository inspector\xspace}
 
+%:===> TO BE INDEXED! <===
+
 %=================================================================
 \chapter{Versioning your code with \MC}
 
 \alex{Maybe a section on MC Configuration maps may be given}
+\on{what are they?}
+
+\on{Instead of a chapter on Installer, wouldn't a short section on Scripting Monticello suffice?}
 
 A versioning system helps you to store and log multiple versions of your code. In addition it may help you to manage concurrent accesses to a common source code repository. It keeps track of all changes to a set of documents and enables several developers to collaborate. As soon as the size of your software increases beyond a few classes, you probably need a versioning system.
 
 Many different versioning systems are available. CVS\footnote{\url{http://www.nongnu.org/cvs}} and Subversion\footnote{\url{http://subversion.tigris.org}} are probably the most popular.
-In principle you could use them to manage the development of Squeak software projects, but such a practice would disconnect the versioning system from the Squeak environment.
+In principle you could use them to manage the development of \pharo software projects, but such a practice would disconnect the versioning system from the \pharo environment.
 In addition, CVS-like tools only version plain text files and not individual packages, classes or methods. We would therefore lack the ability to track changes at the appropriate level of granularity. Knowing that you store classes and methods instead of plain text can be exploited by the versioning tools to better support your development process.
 
 %\ab{It would be better to say concretely why this would be a bad idea, rather than resorting to name-calling.  Many people think that files are good.  Let's tell the reader about the disadvantages!}
 
-\emph{\MC{}} is  a versioning system for Squeak\sd{pharo?} in which classes and methods, rather than lines of text,
-are the units of change. \emph{SqueakSource} is an online central repository in which you can store versions of your applications using \MC. SqueakSource is the equivalent of GForge, and \MC the equivalent of CVS. 
+\emph{\MC{}} is  a versioning system for \pharo in which classes and methods, rather than lines of text,
+are the units of change. \emph{\sqsrc} is an online central repository in which you can store versions of your applications using \MC. \sqsrc is the equivalent of GForge, and \MC the equivalent of CVS. 
 
-In this chapter, you will learn how to use use \MC and SqueakSource to manage your software. We have already seen \MC briefly in the chapters ``A First Application'' and ``The Squeak Programming Environment'' in \emph{Squeak by Example}. This chapter delves into the details of additional features of \MC that are useful for versioning large applications.
-
-%\on{Should state explicitly what is new in this chapter.
-%We have already seen \MC in ``A First Application'' (section 2.9) and in ``The Squeak Programming Environment'' (section 6.3), so we should be told what is new.
-%}
+In this chapter, you will learn how to use use \MC and \sqsrc to manage your software. We have already seen \MC briefly in earlier chapters (\charef{firstApp} and \charef{env}). This chapter delves into the details of additional features of \MC that are useful for versioning large applications.
 
 %=================================================================
 \section{Basic usage}
@@ -69,7 +71,7 @@ We will start by reviewing the basics of creating a package and committing chang
 %-----------------------------------------------------------------
 \subsection{Running example --- perfect numbers}
 
-We will use a small running example of perfect numbers\footnote{Perfect numbers were discovered by Euclid. A perfect number is positive integer that is the sum of its proper divisors. $6 = 1 + 2 + 3$ is the first perfect number.} in this chapter to illustrate the features of \MC. We will start our project by defining some simple tests.
+We will use a small running example of perfect numbers\footnote{Perfect numbers were discovered by Euclid. A perfect number is a positive integer that is the sum of its proper divisors. $6 = 1 + 2 + 3$ is the first perfect number.} in this chapter to illustrate the features of \MC. We will start our project by defining some simple tests.
 
 \dothis{Define a subclass of \ct{TestCase} called \ct{PerfectTest} in the category \ct{Perfect}, and define the following test methods in the protocol \ct{running}:}
 \begin{code}{}
@@ -84,11 +86,8 @@ Of course these tests will fail as we have not yet implemented the \ct{isPerfect
 %-----------------------------------------------------------------
 \subsection{Launching \MC}
 
-\MC is included in the standard Squeak \sd{and Pharo} distribution\footnote{\url{http://www.squeak.org}} and in the image for developers\footnote{\url{http://damiencassou.seasidehosting.st/Smalltalk/squeak-dev}}\alex{The distributed Pharo will be the image for developpers}. \sd{as alex said in pharo this will be by default.}
+\MC is included in the standard \pharo distribution.
 We will assume that \MC is already installed in your image.
-%\on{We should state explicitly which version of Squeak we are using for the screen shots for the entire book. This should be explained in the Foreword. I am redoing the figures using the SBE download image. (For some reason the snapshots in this chapter were of very poor quality, so I have to redo them anyway.)}
-%If you use another image that does not have \MC pre-installed, you can install yourself it using application deployment tools such as \emph{SqueakMap} and \emph{Universe} (normally accessible via \menu{open ...} then \menu{SqueakMap Package Loader} and \menu{Package Universe Browser}). A universe is a distribution of packages: all the packages within a universe have be validated to work for a specific version of Squeak. 
-%\on{Universe is not described anywhere else in the book.  The reader does not know what this is.}
 The \MC Browser can be launched from the \emph{World} menu by selecting \menu{open ...} and \menu{\MC Browser}.
 
 \begin{figure}[ht]\centering
@@ -125,7 +124,7 @@ Our new package named \pkg{Perfect} contains:
 
 \item All methods for any class in \emph{any} system category defined in protocols named \prot{*perfect} or \prot{*Perfect}, or in protocols whose names start with \prot{*perfect-} or \prot{*Perfect-}. Such methods are known as \emph{extensions}. We don't have any yet, but we will define some very soon.
 
-\item All methods in classes in the system category \scat{Perfect}, or in system categories whose names begin with \scat{Perfect-}, \emph{except} those in protocols whose names start with \prot{*} (\ie belonging to \emph{other} packages). This includes our \ct{testPerfect} method, since it belongs to the protocol \ct{running}.
+\item All methods belonging to classes in the system category \scat{Perfect}, or in system categories whose names begin with \scat{Perfect-}, \emph{except} those in protocols whose names start with \prot{*} (\ie belonging to \emph{other} packages). This includes our \ct{testPerfect} method, since it belongs to the protocol \ct{running}.
 
 \end{itemize}
 
@@ -134,7 +133,7 @@ Our new package named \pkg{Perfect} contains:
 
 Note in \figref{perfect} that the \button{Save} button is disabled (greyed out).
 
-Before we commit our \ct{Perfect} package, we need to specify \emph{where} we want to save it. A \emph{repository} is a package container, which may either be local to your machine or remotely accessed. Several different protocols may be employed to establish a connection between your Squeak image and a repository. As we will see later (\secref{monti:repositories}), \MC supports a large choice of repositories, though the most commonly used one is HTTP, since this is the one required by SqueakSource.
+Before we commit our \ct{Perfect} package, we need to specify \emph{where} we want to save it. A \emph{repository} is a package container, which may either be local to your machine or remotely accessed. Several different protocols may be employed to establish a connection between your \pharo image and a repository. As we will see later (\secref{monti:repositories}), \MC supports a large choice of repositories, though the most commonly used one is HTTP, since this is the one required by \sqsrc.
 
 At least one repository, called \ct{package-cache}, is set up by default, shown as the first entry in the list of repositories on the right hand side of your \MCB (see \figref{monticelloMain}).
 This local cache is automatically created in the same directory where the image you are using is located. It will contain a copy of all the packages you download or save. 
@@ -146,18 +145,20 @@ To add a new repository to a selected package, we can simply press the \button{+
 
 \begin{figure}[ht]\centering
 	\includegraphics[width=.55\textwidth]{saving}
-	\caption{A new version name and a comment may be set when committing.\figlabel{saving}}
+	\caption{You may set a new version name and a comment when you commit.\figlabel{saving}}
 \end{figure}
 
-The \ct{Perfect} package is now saved in \ct{package-cache} contained in the same directory than your Squeak image. Note however that if you use any other options (HTTP, FTP, another local directory), the package will also be saved in the package-cache directory. 
+The \ct{Perfect} package is now saved in \ct{package-cache} contained in the same directory as your \pharo image. Note however that if you use any other options (HTTP, FTP, another local directory), a copy of your package will also be saved in the package-cache directory. 
 
-\dothis{Use your favorite file browser (\eg Windows Explorer, Finder or XTerm) to confirm that a file \ct{Perfect-XX.1.mcz} was created in your package cache. \ct{XX} corresponds to your initials}
+\dothis{Use your favorite file browser (\eg Windows Explorer, Finder or XTerm) to confirm that a file \ct{Perfect-XX.1.mcz} was created in your package cache. \ct{XX} corresponds to your name or initials.\footnote{In the past, the convention was for developers to log their changes using only their initials. Now, with many developers sharing identical initials, the convention is to use an identifier based on the full name, such as ``apblack'' or ``andrew.black''.}}
 
 %You may change the version name and add a comment.
 %\ab{Experience with my students is that changing the version name is a really bad idea, since it can easily break \MC.}
 %\alex{I was not able to find a satisfying explanation, So I prefer to leave this point out}
 
-A version is an immutable snapshot of a package that has been written to a repository. Each version has a unique version number to identify it in a repository. \sd{but pay attention this number is not globally unique in another repository you may have the same file identifier for a different snapshot. \MC is a distributed source code versioning system.} When saving a version into a repository, the next available number is automatically assigned to the version. Note that version branches do not interfere with this numbering scheme (as with CVS or Subversion). As we shall see later, versions are ordered by their version number by default when opening a repository.
+A version is an immutable snapshot of a package that has been written to a repository. Each version has a unique version number to identify it in a repository.
+But beware, this number is \emph{not} globally unique\,---\,in another repository you might have the same file identifier for a \emph{different snapshot}. For example, \ct{Perfect-onierstrasz.1.mcz} in another repository might be the \emph{final}, deployed version of our project!
+When saving a version into a repository, the next available number is automatically assigned to the version. Note that version branches do not interfere with this numbering scheme (as with CVS or Subversion). As we shall see later, versions are ordered by their version number by default when opening a repository.
 
 %-----------------------------------------------------------------
 \subsection{Class extensions}
@@ -181,6 +182,8 @@ PerfectTest>>>testPerfectBoundary
 Although these methods do not belong to the \ct{Perfect} system category, they \emph{do} belong to the \ct{Perfect} package since they are in a protocol whose name starts with \ct{*} and matches the package name. Such methods are known as \emph{class extensions}, since they extend existing classes with new methods. These methods will \emph{only} be available to someone who loads our \ct{Perfect} package.
 
 \alex{We could give a reference to the Cmd-p command in the OB browser. This keystroke is used to turn a method into a class-extension.}
+\on{you mean it moves a method to an extension package}
+
 %-----------------------------------------------------------------
 \subsection{``Clean'' and ``Dirty'' packages}
 
@@ -230,14 +233,14 @@ Once a package is selected, the right-hand pane lists the versions of the select
 \item a version name displayed with a normal typeface shows an older version than the installed current one.
 \end{itemize}
 
-Right-clicking the right-hand side of the inspector opens a menu with different sorting options. The \menu{unchanged} entry in the menu discards any particular sorting. It uses the order given by the repository.
+{\Actclick}ing the right-hand side of the inspector opens a menu with different sorting options. The \menu{unchanged} entry in the menu discards any particular sorting. It uses the order given by the repository.
 
 %-----------------------------------------------------------------
 \subsection{Loading, unloading and updating packages}
 
 At present we have two versions of the \ct{Perfect} package stored safely in our \ct{package-cache} repository. We will now see how to unload this package, load an earlier version, and finally update it.
 
-\dothis{Select the \ct{Perfect} package and its repository in the \MCB. Right-click on the package name and select \menu{unload package}.}
+\dothis{Select the \ct{Perfect} package and its repository in the \MCB. \Actclick on the package name and select \menu{unload package}.}
 
 \begin{figure}[ht]\centering
 	\includegraphics[width=.8\textwidth]{{unload}}
@@ -320,7 +323,16 @@ Congratulations! You have now created a new branch of the \ct{Perfect} package.
 %-----------------------------------------------------------------
 \subsection{Merging}
 
-\alex{This subsection will need a major overhaul when turning the chapter for Pharo. The merging tool is radically different}\sd{Is it not. There is a preference to get the one shown in this section. We should just say useDiff....}
+\on{Should we be describing the new strategy instead?}
+
+This section describes the conventional merging facility of Monticello.
+To use it, make sure that the preference \ct{useNewDiffToolsForMC} is disabled.
+You can either use the Preference Browser, or you can do this programmatically by evaluating the following expression:
+\begin{code}{}
+Preferences disable: #useNewDiffToolsForMC
+\end{code}
+
+% \alex{This subsection will need a major overhaul when turning the chapter for Pharo. The merging tool is radically different}\sd{Is it not. There is a preference to get the one shown in this section. We should just say useDiff....}
 You can merge one version of a package with another using the \button{Merge} button in the \MCB. Typically you will want to do this when (i) you discover that you have been working on a out-of-date version, or (ii) branches that were supposed to be independent have to be re-integrated. Both scenarios are common when multiple developers are working on the same package.
 
 Consider the current situation with our \ct{Perfect} package, as illustrated at the left of \figref{branching-merging}. We have published a new version 3 that is based on version 1.
@@ -349,13 +361,15 @@ At this point we realize that there are changes in version 2 that we would like 
 	\caption{Select a separate branch (in bold) to be merged.\figlabel{mergeButton}}
 \end{figure}
 
-\dothis{Select version 2 in the repository browser, as shown in \figref{mergeButton}, and click the \button{Merge} button.}
+\dothis{Select version 2 in the repository browser, as shown in \figref{mergeButton}, and \click the \button{Merge} button.}
 
 The merge tool is a tool that allows for fine-grained package version merging. Elements contained in the package to-be-merged are listed in the upper text pane. The lower text pane shows the definition of a selected element. 
 
 \begin{figure}[ht]\centering
 	\includegraphics[width=.55\textwidth]{mergeTool}
 	\caption{Version 2 of the \ct{Perfect} package being merged with the current version 3.
+	\on{This is a major fail! The old merge tool used to show deleted text striked through.
+	Now, colour blind people will see no difference at all!}
 	\figlabel{mergeTool}}
 \end{figure}
 
@@ -369,6 +383,7 @@ A method or a class is in conflict if its definition has been altered. \figref{m
 \item[Bold=A method is conflicting.] A decision needs to be taken to keep the proposed change or reject it. The proposed method \ct{Integer>>>>isPerfect} is in conflict with an existing definition in the image. The conflict can be resolved by clicking \button{Keep} or \button{Reject}.
 \item[Underlined=Repository replace current.] An \underline{underlined} element will be kept and replace the current element in the image. In \figref{keepReject} we see that \ct{Integer>>>isPerfect} from version 2 has been kept.
 \item[Barred=Repository version rejected.] A \sout{barred} element has been rejected, and the local definition will not be replaced. In \figref{keepReject} \ct{Integer>>>divisors} from version 2 is rejected, so the definition from version 3 will remain.
+\on{This appears to no longer be true! -- a rejected element is simply shown in plain font! -- should be fixed.}
 \end{description}
 
 \begin{figure}[ht]\centering
@@ -379,7 +394,9 @@ A method or a class is in conflict if its definition has been altered. \figref{m
 
 Note that the merge tool offers buttons to select all newer or all older changes, or to select all local or all remote changes that are still in conflict.
 
-\dothis{Keep \ct{Integer>>>>isPerfect} and reject \ct{Integer>>>divisors}, and click the \button{Merge} button. Confirm that the tests are all green. Commit the new new merged version of \ct{Perfect} as version 4.}
+\dothis{Keep \ct{Integer>>>>isPerfect} and reject \ct{Integer>>>divisors}, and click the \button{Merge} button. Confirm that the tests are all green. Commit the new merged version of \ct{Perfect} as version 4.}
+
+\on{Something is wrong here -- it complains that version 3 might be newer. When I saved it however everything seems fine.}
 
 \begin{figure}[ht]\centering
 	\includegraphics[width=.8\textwidth]{merged}
@@ -394,9 +411,7 @@ If you now refresh the \RI, you will see that there are no more versions shown i
 \seclabel{monti:exploring}
 
 \MC has many other useful features. As we can see in \figref{monticelloMain}, the \MCB window has nine buttons. We have already used four of them\,---\,\button{+Package}, \button{Save}, \button{+Repository} and \button{Open}.
-We will now look at \button{Browse}, \button{History} and \button{Changes}, which are used to explore the state and history of repositories
-
-\alex{The ordering is different in Pharo}
+We will now look at \button{Browse}, \button{Changes} and \button{History}, which are used to explore the state and history of repositories
 
 %-----------------------------------------------------------------
 \subsection{Browse}
@@ -412,29 +427,14 @@ The advantage of the snapshot browser over the system browser is its ability to 
 	\caption{The snapshot browser reveals that the \ct{Perfect} package extends the class \ct{Integer} with 2 methods.\figlabel{packageviewer}}
 \end{figure}
 
-For example, \figref{packageviewer} shows the class extensions defined in the \pkg{Perfect} package. Note that code cannot be edited here, though by yellow-clicking (\ie right-clicking, if your environment has been set up accordingly) on a class or a method name you can open a regular system browser.
+For example, \figref{packageviewer} shows the class extensions defined in the \pkg{Perfect} package. Note that code cannot be edited here, though by {\actclick}ing, if your environment has been set up accordingly) on a class or a method name you can open a regular system browser.
 
 It is a good practice to always browse the code of your package before publishing it, to ensure that it really contains what you think it does.
 
-\alex{David's browser shows class extensions, although it does not supersede the snapshot browser, it should be mention here}
+\alex{David's browser shows class extensions. Although it does not supersede the snapshot browser, it should be mentioned here}
 
 
-\sd{could we get rid of this yellow and red clicking. it makes no sense. I remember that I propose a good naming convention for the mouse button -- it was also in one of the freebooks - select = left = you select a window to move it around, operate you want to get the menus and act on something and  meta is for the rest}
-%-----------------------------------------------------------------
-\subsection{History} 
-
-The \button{History} button opens a version history viewer that displays the comments committed along with each version of the selected package (see \figref{historyviewer}).  
-The versions of the package, in this case \ct{Perfect}, are listed on the left,
-while information about the selected version is displayed on the right.
-
-\dothis{Select the \ct{Perfect} package and click the \button{History} button.}
-
-\begin{figure}[ht]\centering
-	\includegraphics[width=.75\textwidth]{{historyviewer}}
-	\caption{The version history viewer provides information about the various versions of a package.\figlabel{historyviewer}}
-\end{figure}
-
-By yellow-clicking on a particular version, you can explore the changes with respect to the current working copy of the package loaded in the image, or spawn a new history browser relative to the selected version.
+% \sd{could we get rid of this yellow and red clicking. it makes no sense. I remember that I propose a good naming convention for the mouse button -- it was also in one of the freebooks - select = left = you select a window to move it around, operate you want to get the menus and act on something and  meta is for the rest}
 
 %-----------------------------------------------------------------
 \subsection{Changes} 
@@ -460,7 +460,23 @@ PerfectTest>>>testPerfectTo1000
 \end{figure}
 
 \figref{patchbrowser} shows that the \ct{Perfect} package has been locally modified with one changed method and one new method.
-As usual, yellow-clicking on a change offers you a choice of contextual operations.
+As usual, {\actclick}ing on a change offers you a choice of contextual operations.
+
+%-----------------------------------------------------------------
+\subsection{History} 
+
+The \button{History} button opens a version history viewer that displays the comments committed along with each version of the selected package (see \figref{historyviewer}).  
+The versions of the package, in this case \ct{Perfect}, are listed on the left,
+while information about the selected version is displayed on the right.
+
+\dothis{Select the \ct{Perfect} package and click the \button{History} button.}
+
+\begin{figure}[ht]\centering
+	\includegraphics[width=.75\textwidth]{{historyviewer}}
+	\caption{The version history viewer provides information about the various versions of a package.\figlabel{historyviewer}}
+\end{figure}
+
+By {\actclick}ing on a particular version, you can explore the changes with respect to the current working copy of the package loaded in the image, or spawn a new history browser relative to the selected version.
 
 %=================================================================
 \section{Advanced topics}
@@ -536,43 +552,43 @@ Let us see how this works in practice.  Our \ct{Perfect} package currently bundl
 \dothis{Take the following steps:
 \begin{itemize}\setlength{\itemsep}{0pt}
 \item Load version 4 of the \ct{Perfect} package from the package cache
-\item Rename the \ct{Perfect} category to \ct{Perfect-Tests} (yellow-click on the category in the system browser to rename it)
-\item Rename the \ct{*perfect} protocol of the \ct{Integer} class to \ct{*perfect-extensions} (again, yellow click to rename it)
-\item In the \MCB, add the packages \ct{Perfect-All}, \ct{Perfect-Extensions} and \ct{Perfect-Tests}.
-\item Add \ct{Perfect-Extensions} and \ct{Perfect-Tests} as required packages to \ct{Perfect-All} (yellow-click on \ct{Perfect-All})
-\item Save package \ct{Perfect-All} in the package-cache repository.
+\item Create a new package in the system browser called \ct{NewPerfect-Tests} and drag the class \ct{PerfectTest} to this package
+% \item \sout{Rename the \ct{Perfect} category to \ct{Perfect-Tests} ({\actclick} on the category in the system browser to rename it)} \on{There is no menu item to rename a package!}
+\item Rename the \ct{*perfect} protocol of the \ct{Integer} class to \ct{*newperfect-extensions} (\actclick to rename it)
+\item In the \MCB, add the packages \ct{NewPerfect-All} and \ct{NewPerfect-Extensions}.
+\item Add \ct{NewPerfect-Extensions} and \ct{NewPerfect-Tests} as required packages to \ct{NewPerfect-All} ({\actclick} on \ct{NewPerfect-All})
+\item Save package \ct{NewPerfect-All} in the package-cache repository.
 	Note that \MC prompts for comments to save the required packages too.
 \item Check that all three packages have been saved in the package cache.
-\item \MC thinks that \ct{Perfect} is still loaded. Unload it and then load \ct{Perfect-All} from the \RI. This will cause \ct{Perfect-Extensions} and \ct{Perfect-Tests} to be loaded as well as required packages.
+\item \MC thinks that \ct{Perfect} is still loaded. Unload it and then load \ct{NewPerfect-All} from the \RI. This will cause \ct{NewPerfect-Extensions} and \ct{NewPerfect-Tests} to be loaded as well as required packages.
 \item Check that all tests run.
 \end{itemize}
 }
 
-Note that when \ct{Perfect-All} is selected in the \MCB, the dependent packages are displayed in bold (see \figref{perfectDependencies}).
+Note that when \ct{NewPerfect-All} is selected in the \MCB, the dependent packages are displayed in bold (see \figref{perfectDependencies}).
 
 \begin{figure}[ht]
 \centering
 	\includegraphics[width=0.8\textwidth]{{perfectDependencies}}
-	\caption{\ct{Perfect-All} requires \ct{Perfect-Extensions} and \ct{Perfect-Tests}.\figlabel{perfectDependencies}}
+	\caption{\ct{NewPerfect-All} requires \ct{NewPerfect-Extensions} and \ct{NewPerfect-Tests}.\figlabel{perfectDependencies}}
 \end{figure}
 
-\important{If you further develop the \ct{Perfect} package, you should only load or save \ct{Perfect-All}, not its required packages.}
+\important{If you further develop the \ct{Perfect} package, you should only load or save \ct{NewPerfect-All}, not its required packages.}
 
 Here is the reason why:
 
 \begin{itemize}
-\item If you load \ct{Perfect-All} from a repository (package-cache, or anywhere else), this will cause \ct{Perfect-Extensions} and \ct{Perfect-Tests} to be loaded from the same repository.
-\item If you modify the \ct{PerfectTest} class, this will cause the \ct{Perfect-Tests} and \ct{Perfect-All} packages to both become dirty (but not \ct{Perfect-Extensions}).
-\item To commit the change, you should save \ct{Perfect-All}. This will commit a new version of \ct{Perfect-All} which then requires the new version of \ct{Perfect-Tests}. (It will also depend on the existing, unmodified version of \ct{Perfect-Extensions}.)  Loading the latest version of \ct{Perfect-All} will also load the latest version sof the required packages.
-\item If instead you save \ct{Perfect-Tests}, this will \emph{not} cause \ct{Perfect-All} to be saved.  This is bad because you effectively break the dependency.  If you then load the latest version of \ct{Perfect-All} you will not get the latest versions of the required packages. Don't do it!
+\item If you load \ct{NewPerfect-All} from a repository (package-cache, or anywhere else), this will cause \ct{NewPerfect-Extensions} and \ct{NewPerfect-Tests} to be loaded from the same repository.
+\item If you modify the \ct{PerfectTest} class, this will cause the \ct{NewPerfect-Tests} and \ct{NewPerfect-All} packages to both become dirty (but not \ct{NewPerfect-Extensions}).
+\item To commit the change, you should save \ct{NewPerfect-All}. This will commit a new version of \ct{NewPerfect-All} which then requires the new version of \ct{NewPerfect-Tests}. (It will also depend on the existing, unmodified version of \ct{NewPerfect-Extensions}.)  Loading the latest version of \ct{NewPerfect-All} will also load the latest version sof the required packages.
+\item If instead you save \ct{NewPerfect-Tests}, this will \emph{not} cause \ct{NewPerfect-All} to be saved.  This is bad because you effectively break the dependency.  If you then load the latest version of \ct{NewPerfect-All} you will not get the latest versions of the required packages. Don't do it!
 \end{itemize}
 
-
-\sd{watch out: do not name your top level package with a suffix (perfect) that could match your subpackages. Do not put Perfect as dependent of Perfect-Extensions and PerfectTest. You would get in trouble since MC would save all the classes for three package while you only want two packages and an empty one the top level.}
+\important{Do not name your top level package with a suffix (\eg \ct{Perfect}) that could match your subpackages. Do not define \ct{Perfect} as a required package of \ct{Perfect-Extensions} or \ct{PerfectTest}. You would get in trouble since \MC would save all the classes for three packages while you only want two packages and an empty one at the top level.}
 %-----------------------------------------------------------------
 \subsection{Class initialization}
 
-When \MC loads a package into the image, any class that defines an \ct{initialize} method on the class side will be be sent the \ct{initialize} message. The message is sent \emph{only} to classes that define this method on the class side. A class that does not define this method will not be initialized, even if \ct{initialize} is defined by one of its superclasses. \sd{watch out the initialize method is not invoked when you reload a package.}
+When \MC loads a package into the image, any class that defines an \ct{initialize} method on the class side will be be sent the \ct{initialize} message. The message is sent \emph{only} to classes that define this method on the class side. A class that does not define this method will not be initialized, even if \ct{initialize} is defined by one of its superclasses. NB: the initialize method is not invoked when you merely reload a package!
 
 %\on{OK, I confirmed this with a simple test}
 
@@ -616,14 +632,14 @@ When our package is loaded, this code will be evaluated and the instance variabl
 \section{Kinds of repositories}
 \seclabel{monti:repositories}
 
-Several kinds of repositories are supported by \MC, each with different characteristics and uses. Repositories can be read-only, write-only or read-write. Access rights may be defined globally or can be tied to a particular user (as in SqueakSource, for example).
+Several kinds of repositories are supported by \MC, each with different characteristics and uses. Repositories can be read-only, write-only or read-write. Access rights may be defined globally or can be tied to a particular user (as in \sqsrc, for example).
 % and are related to the way of storing data used.
 
-\paragraph{HTTP} HTTP repositories are probably the most popular kind of repository since this is the kind supported by SqueakSource. % (Such servers can also be configured for read-only access. Saving versions via HTTP uses the PUT method \ab{Is ``put'' the right word}, which must be enabled on the server.)
+\paragraph{HTTP} HTTP repositories are probably the most popular kind of repository since this is the kind supported by \sqsrc. % (Such servers can also be configured for read-only access. Saving versions via HTTP uses the PUT method \ab{Is ``put'' the right word}, which must be enabled on the server.)
 
-The nice thing about HTTP repositories is that it's easy to link directly to specific versions from web sites or SqueakMap. With a little configuration work on the HTTP server, HTTP repositories can be made browsable by ordinary web browsers, WebDAV clients, and so on.
+The nice thing about HTTP repositories is that it's easy to link directly to specific versions from web sites or \sqmap. With a little configuration work on the HTTP server, HTTP repositories can be made browsable by ordinary web browsers, WebDAV clients, and so on.
 
-HTTP repositories may be used with an HTTP server other than SqueakSource. For example, a simple configuration\footnote{\url{http://www.visoracle.com/squeak/faq/monticello-1.html}} turns Apache into a \MC repository with restricted access rights:
+HTTP repositories may be used with an HTTP server other than \sqsrc. For example, a simple configuration\footnote{\url{http://www.visoracle.com/squeak/faq/monticello-1.html}} turns Apache into a \MC repository with restricted access rights:
 
 \begin{code}{}
 "My apache2 install worked as a Monticello repository right out of the box on my
@@ -655,23 +671,23 @@ This repository type stores versions in a GOODS object database.
 GOODS is a fully distributed object-oriented database management system that uses an active client model\footnote{\url{http://www.garret.ru/~knizhnik/goods.html}}.
 It's a read-write repository, so it makes a good ``working'' repository where versions can be saved and retreived. Because of the transaction support, journaling and replication capabilities offered by GOODS, it is suitable for large repositories used by many clients.  
 
-\paragraph{Directory} A directory repository stores versions in a directory in the local file system. Since it requires very little work to set up, it's handy for private projects; since it requires no network connection, it's the only option for disconnected development. The \ct{package-cache} we have been using in the exercises for this chapter is an example of this kind of repository. Versions in a directory repository may be copied to a public or shared repository at a later time. SqueakSource supports this feature by allowing package versions (.mcz files) to be imported for a given project. Simply log in to SqueakSource, navigate to the project, and click on the \menu{Import Versions} link.
+\paragraph{Directory} A directory repository stores versions in a directory in the local file system. Since it requires very little work to set up, it's handy for private projects; since it requires no network connection, it's the only option for disconnected development. The \ct{package-cache} we have been using in the exercises for this chapter is an example of this kind of repository. Versions in a directory repository may be copied to a public or shared repository at a later time. \sqsrc supports this feature by allowing package versions (.mcz files) to be imported for a given project. Simply log in to \sqsrc, navigate to the project, and click on the \menu{Import Versions} link.
 
 \paragraph{Directory with Subdirectories}  A ``directory with subdirectories'' is very similar to ``directory'' except that it looks in subdirectories to retrieve list of available packages. Instead of having a flat directory that contains all package versions, such as repository may be be hierarchically  structured with  subdirectories.
 
-\paragraph{SMTP} SMTP repositories are useful for sending versions by mail. When creating an SMTP repository, you specify a destination email address. This could be the address of another developer\,---\,the package's maintainer, for example\,---\,or a mailing list such as squeak-dev. Any versions saved in such a repository will be emailed to this address.  SMTP repositories are write-only.
+\paragraph{SMTP} SMTP repositories are useful for sending versions by mail. When creating an SMTP repository, you specify a destination email address. This could be the address of another developer\,---\,the package's maintainer, for example\,---\,or a mailing list such as pharo-project. Any versions saved in such a repository will be emailed to this address.  SMTP repositories are write-only.
 
-\paragraph{SqueakMap Release} This is a write-only repository used for publishing releases of a package to SqueakMap. To configure the repository enter the name of the package on SqueakMap, your SqueakMap initials and your SqueakMap password. Now any versions saved to the repository will be uploaded to your SqueakMap account, and registered as a new release with SqueakMap.  
+\paragraph{\sqmap Release} This is a write-only repository used for publishing releases of a package to \sqmap. To configure the repository enter the name of the package on \sqmap, your \sqmap initials and your \sqmap password. Now any versions saved to the repository will be uploaded to your \sqmap account, and registered as a new release with \sqmap.  
 
-You need an account on SqueakMap to add packages. New accounts may be created online\footnote{\url{http://map.squeak.org}}. The list of packages you add will appear on the SqueakMap package list displayed when SqueakMap is open.
+You need an account on \sqmap to add packages. New accounts may be created online\footnote{\url{http://map.squeak.org}}. The list of packages you add will appear on the \sqmap package list displayed when \sqmap is open.
 
 %\alex{I added few sentences about adding package on squeakmap. But not many people are using it now. It is progressively being replaced by universe.}
-%\ab{We havn't talked bout how to put stuff on SqueakMap, only about how to load it.  So, we should add that material, either here, or in a subsequent subsection.}
+%\ab{We havn't talked bout how to put stuff on \sqmap, only about how to load it.  So, we should add that material, either here, or in a subsequent subsection.}
 
-\paragraph{SqueakMap Cache} When packages are installed via SqueakMap, downloaded files are stored in a dedicated subdirectory in your working directory that acts as a cache. In order to make these files available to \MC for loading, merging, \etc, a SqueakMap Cache repository is created when these files are loaded for the first time.
+\paragraph{\sqmap Cache} When packages are installed via \sqmap, downloaded files are stored in a dedicated subdirectory in your working directory that acts as a cache. In order to make these files available to \MC for loading, merging, \etc, a \sqmap Cache repository is created when these files are loaded for the first time.
 
 %\on{why don't you first talk about the package cache?  I see you commented it out.}
-%\alex{Because it does not appear in Squeak anymore. Maybe it was buggy or simply obsolete}
+%\alex{Because it does not appear in \pharo anymore. Maybe it was buggy or simply obsolete}
 
 %\ab{One thing to say is how to get to versions in some \emph{other} package cache}
 %\alex{I am not sure about what you mean.}. 
@@ -684,20 +700,20 @@ You need an account on SqueakMap to add packages. New accounts may be created on
 %\alex{I added a new paragraph on it above}
 
 %-----------------------------------------------------------------
-\subsection{Using SqueakSource}
+\subsection{Using \sqsrc}
 
-SqueakSource is a online repository that you can use to store your \MC packages. An instance is running and accessible from \url{http://www.squeaksource.com}. At the time this chapter is being written, over 1500 projects are registered on SqueakSource and nearly 2000 people have an account. \figref{squeaksource} shows the main web page.  
+\sqsrc is a online repository that you can use to store your \MC packages. An instance is running and accessible from \url{http://www.squeaksource.com}. At the time this chapter is being written, over 1500 projects are registered on \sqsrc and nearly 2000 people have an account. \figref{squeaksource} shows the main web page.  
 
 \begin{figure}[ht]\centering
 	\includegraphics[width=.75\textwidth]{squeaksource2}
-	\caption{SqueakSource, the online \MC code repository.\figlabel{squeaksource}}
+	\caption{\sqsrc, the online \MC code repository.\figlabel{squeaksource}}
 \end{figure}
 
-\dothis{Use a web browser to visit the SqueakByExample project at \url{http://www.squeaksource.com/SqueakByExample.html}. This project contains the Quinto project from the First Application chapter. In the registration section on that web page you should see this \emph{repository expression:}}
+\dothis{Use a web browser to visit the \pbe project at \url{http://www.squeaksource.com/PharoByExample.html}. This project contains the Lights Out project from \charef{firstApp}. In the registration section on that web page you should see this \emph{repository expression:}} \on{FIX THIS --- Quinto should be renamed to LightsOut}
 
 \begin{code}{}
 MCHttpRepository
-    location: 'http://www.squeaksource.com/SqueakByExample'
+    location: 'http://www.squeaksource.com/PharoByExample'
     user: ''
     password: ''
 \end{code}
@@ -706,13 +722,13 @@ MCHttpRepository
 Since you are not going to commit new versions of this package, you do not need to fill in the user and password.
 \button{Open} the repository, select the latest version and click \button{Load}.}
 
-Pressing the \link{Register Member} link on the SqueakSource home page will probably be your first step if you do not have a SqueakSource account. 
+Pressing the \link{Register Member} link on the \sqsrc home page will probably be your first step if you do not have a \sqsrc account. 
 Once you are a member, \link{Register Project} allows you to create a new project. 
 
 
 \begin{figure}[ht]\centering
 	\includegraphics[width=.80\textwidth]{squeaksourcesetting}
-	\caption{Repositories under SqueakSource are highly configurable.\figlabel{squeaksourcesetting}}
+	\caption{Repositories under \sqsrc are highly configurable.\figlabel{squeaksourcesetting}}
 \end{figure}
 
 \MC offers a large range of options (cf. \figref{squeaksourcesetting}) to configure a project repository: tags may be assigned, a license may be chosen, access for people who are not part of the project may be restricted (read/write, read, no access), emails may be sent upon commits, mailing list, and users may be defined to be members of the project (as administrator, developer, or guest).
@@ -724,9 +740,9 @@ Once you are a member, \link{Register Project} allows you to create a new projec
 %\item Is your computer turned on?
 %\item Is your network cable plugged in?
 %\item Can you reach \url{http://squeaksource.com/} with a web browser from the same host as the image?
-%\item Are people on IRC (or any other forum) ranting about SqueakSource being down again?
-%\item Is SqueakSource accessible from other sites?\footnote{A handy link to check this is: \url{http://downforeveryoneorjustme.com/squeaksource.com}}
-%\item Can you ping \url{http://squeaksource.com/} from Squeak?:\\
+%\item Are people on IRC (or any other forum) ranting about \sqsrc being down again?
+%\item Is \sqsrc accessible from other sites?\footnote{A handy link to check this is: \url{http://downforeveryoneorjustme.com/squeaksource.com}}
+%\item Can you ping \url{http://squeaksource.com/} from Pharo?:\\
 %   \ct{Socket pingPorts: #(80) on: 'squeaksource.com' timeOutSecs: 30}.
 %\item Can you load packages using \MC from \\\url{http://squeaksource.com/}?
 %\end{enumerate}
@@ -740,7 +756,9 @@ Versions are stored in repositories as binary files.
 These files are commonly call ``mcz files'' as they carry the extension .mcz.
 This stands for ``\MC zip'' since an mcz file is simply a zipped file containing the course code and other meta-data.
 
-\important{An mcz file can be dragged and dropped onto an open image file, just like a change set. \squeak will then prompt you to ask if you want to load the package it contains. \sd{but you lose the fact that this is a package so don't do that.}}
+\important{An mcz file can be dragged and dropped onto an open image file, just like a change set. \squeak will then prompt you to ask if you want to load the package it contains. \MC will not know which repository the package came from, however, so do not use this technique for development.}
+
+% \sd{but you lose the fact that this is a package so don't do that.}
 
 You may try to unzip such a file, for example to view the source code directly, but normally end users should not need to unzip these files themselves.
 If you unzip it, you will find the following members of the mcz file.
@@ -782,7 +800,7 @@ It basically says that the version \ct{AA-ab.3} has an empty log message, was cr
 %=================================================================
 \section{Chapter Summary}
 
-%This chapter explained how to use \MC and SqueakSource to manage the source code of your application.
+%This chapter explained how to use \MC and \sqsrc to manage the source code of your application.
 
 This chapter has presented the functionality of \MC in detail.
 The following points were covered:
@@ -793,7 +811,7 @@ The following points were covered:
 
 \item When you modify any methods or classes in a package, it will be marked as ``dirty'' in \MC, and can be saved to a repository.
 
-\item There are many kinds of repositories, the most popular being HTTP repositories, such as those hosted by SqueakSource.
+\item There are many kinds of repositories, the most popular being HTTP repositories, such as those hosted by \sqsrc.
 
 \item Saved packages are caches locally in a directory called \ct{package-cache}.
 
@@ -813,13 +831,13 @@ The following points were covered:
 
 \item You can drag and drop an mcz file onto your image as a quick way to load it.
 
-%\item \MC is used to manage your packages. \MC is part of the Squeak standard distribution.
+%\item \MC is used to manage your packages. \MC is part of the Pharo standard distribution.
 
-%\item SqueakSource is a remote online central repository in which you can store your code.
+%\item \sqsrc is a remote online central repository in which you can store your code.
 
 %\item \MC packages are mapped to class categories. 
 
-%\item After having created a package in \MC, you may store it in a remote repository such as that offered by SqueakSource.
+%\item After having created a package in \MC, you may store it in a remote repository such as that offered by \sqsrc.
 
 %\item Merging and backporting are feature provided by \MC that allow changes to cross different version line and to move along a same package version line.
 
@@ -832,10 +850,10 @@ The following points were covered:
 
 %\section{Packages in \MC: PackageInfo}
 
-%The PackageInfo system is a simple, lightweight way of organizing Smalltalk source: it is nothing more than a naming convention, which uses (or abuses) the existing categorization mechanisms to group related code. Let me give you an example: say that you are developing a framework named SqueakLink to facilitate using relational databases from Squeak. You will probably have a series of system categories to contain all of your classes (e.g., category \cat{SqueakLink-Connections} containing the classes \ct{OracleConnection}, \ct{MySQLConnection} and \ct{PostgresConnection})
-%(\cat{SqueakLink-Model} containing \ct{DBTable}, \ct{DBRow}  and \ct{DBQuery}) and so on. But not all of your code will reside in these classes\,---\,you may also have, for example, a series of methods to convert objects into an SQL friendly format: \mthind{Object}{asSQL},  \mthind{String}{asSQL} and \mthind{Date}{asSQL}.
+%The PackageInfo system is a simple, lightweight way of organizing Smalltalk source: it is nothing more than a naming convention, which uses (or abuses) the existing categorization mechanisms to group related code. Let me give you an example: say that you are developing a framework named PharoLink to facilitate using relational databases from Pharo. You will probably have a series of system categories to contain all of your classes (e.g., category \cat{PharoLink-Connections} containing the classes \ct{OracleConnection}, \ct{MySQLConnection} and \ct{PostgresConnection})
+%(\cat{PharoLink-Model} containing \ct{DBTable}, \ct{DBRow}  and \ct{DBQuery}) and so on. But not all of your code will reside in these classes\,---\,you may also have, for example, a series of methods to convert objects into an SQL friendly format: \mthind{Object}{asSQL},  \mthind{String}{asSQL} and \mthind{Date}{asSQL}.
 
-%These methods belong in the same package as the classes in \cat{SqueakLink-Connections} and \cat{SqueakLink-Model}. You mark this by placing those methods in a method category (of \ct{Object}, \ct{String}, \ct{Date}, and so on) named \cat{*squeaklink} (note the initial star). The combination of the \cat{SqueakLink-...} system categories and the \cat{*squeaklink} method categories forms a package named "SqueakLink".
+%These methods belong in the same package as the classes in \cat{PharoLink-Connections} and \cat{PharoLink-Model}. You mark this by placing those methods in a method category (of \ct{Object}, \ct{String}, \ct{Date}, and so on) named \cat{*squeaklink} (note the initial star). The combination of the \cat{PharoLink-...} system categories and the \cat{*squeaklink} method categories forms a package named "PharoLink".
 
 %
 %\section{Getting Started}
@@ -895,7 +913,7 @@ The following points were covered:
 
 %\paragraph{Repositories}
 
-%These are places to store your Versions. Unlike CVS, in which a Package is associated with one Repository, a \MC Package can have Versions in many repositories. When adding a new Repository to use, you can choose from SqueakMap Cache, FTP, HTTP (webdav), SqueakMap Release, SMTP, or a directory somewhere on your hard drive (or network drive).
+%These are places to store your Versions. Unlike CVS, in which a Package is associated with one Repository, a \MC Package can have Versions in many repositories. When adding a new Repository to use, you can choose from \sqmap Cache, FTP, HTTP (webdav), \sqmap Release, SMTP, or a directory somewhere on your hard drive (or network drive).
 
 %For example, if I have six versions of package Foo, I could have Foo versions 1-4 being on my local harddrive, and 5-6 being on an ftp server. You could download version 5, make some changes and commit a new version (7) to your WebDAV repository. I can download and merge that version with my own work to produce version 8, which I save to my ftp repository.
 
@@ -922,7 +940,7 @@ The following points were covered:
 
 %It is now possible to introspect on this package; for example, refactory classes will return the long list of classes that make up the Refactoring Browser. refactory coreMethods will return a list of MethodReferences for all of the methods in those classes. refactory extensionMethods is perhaps one of the most interesting queries: it will return a list of all methods contained in the Refactory package but not contained within a Refactory class. This includes, for example, \mthind{String}{expandMacrosWithArguments:} and \mthind{Behavior}{parseTreeFor:}.
 
-%Since the PackageInfo naming conventions are based on those used already by Squeak, it is possible to use it to perform analysis even of code that has not explicitly adapted to work with it. For example, (PackageInfo named: 'Collections') externalSubclasses will return a list of all Collection subclasses outside the Collections categories.
+%Since the PackageInfo naming conventions are based on those used already by \pharo, it is possible to use it to perform analysis even of code that has not explicitly adapted to work with it. For example, (PackageInfo named: 'Collections') externalSubclasses will return a list of all Collection subclasses outside the Collections categories.
 
 %You can send fileOut to an instance of PackageInfo to get a changeset of the entire package. For more sophisticated versioning of packages, see the \MC project.
 
