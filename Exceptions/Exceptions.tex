@@ -10,6 +10,7 @@
 % 2008-11-29 - Damien Pollet fixes
 % 2008-12-13 - Oscar revised
 % 2009-03-18 - Stef extended
+% 2009-06-17 - Oscar migrated to Pharo
 
 %=================================================================
 \ifx\wholebook\relax\else
@@ -37,10 +38,12 @@
 	\sloppy
 \fi
 
+%:===> TO BE INDEXED! <===
+
 %=================================================================
 \chapter{Handling exceptions}
 
-\on{I am editing this chapter. Started (again) March 3, 2009.}
+\on{I have the lock}
 
 %=================================================================
 
@@ -48,17 +51,17 @@ All applications have to deal with exceptional situations.
 Arithmetic errors may occur (division by zero), unexpected situations may arise (file not found), or resources may be exhausted (network down, disk full, \etc).
 The old-fashioned solution is to have operations that fail return a special \emph{error code}\,---\,client code must then check the return value of each operation, and take special action to handle errors.
 
-Modern programming languages, including \squeak, instead offer a dedicated exception-handling mechanism that greatly simplifies the way in which exceptional situations are signaled and handled.
-Before ANSI Smalltalk (1996), several  exception handling mechanisms existed, often incompatible each other. \squeak essentially uses the ANSI standard, which we present in this chapter from a user perspective.
+Modern programming languages, including \st, instead offer a dedicated exception-handling mechanism that greatly simplifies the way in which exceptional situations are signaled and handled.
+Before ANSI \st (1996), several  exception handling mechanisms existed, largely incompatible each other. \pharo essentially uses the ANSI standard, which we present in this chapter from a user perspective.
 
 In a nutshell, different classes of \emph{exceptions} are specified to cover the unusual situations that may arise.
 Normal code does not clutter the main logic flow with checks for error codes, but specifies instead an \emph{exception handler} to ``catch'' exceptions.
 When something goes wrong, the corresponding exception is \emph{signaled}, capturing essential information about the offending context.
 This interrupts the main flow of execution, and allows the exception handler to decide what to do next.
 
-\squeak's exception-handling mechanism is particularly expressive and flexible, covering a wide range of possibilities. Exception handlers can be used to \emph{ensure} that certain actions take place even if something goes wrong, or to take action only if something goes wrong.
+\pharo's exception-handling mechanism is particularly expressive and flexible, covering a wide range of possibilities. Exception handlers can be used to \emph{ensure} that certain actions take place even if something goes wrong, or to take action only if something goes wrong.
 Like everything in \st, exceptions are objects, and respond to a number of different messages.
-A handler not only has the possibility to specify an alternative action to perform, but it may also ask the exception object \emph{resume} the interrupted operation, to \emph{retry} the operation, to \emph{pass} the exception on to another handler, or even to \emph{reraise} a completely different exception.
+A handler not only has the possibility to specify an alternative action to perform, but it may also ask the exception object to \emph{resume} the interrupted operation, to \emph{retry} the operation, to \emph{pass} the exception on to another handler, or even to \emph{reraise} a completely different exception.
 
 With the help of a series of examples, we shall explore all of these possibilities, and we will also take a brief look into the internal mechanics of exceptions and exception handlers.
 
@@ -75,7 +78,7 @@ Consider the following example, which creates an image file from a screenshot ta
 \needlines{4}
 \begin{code}{}
 | writer |
-[	writer := GIFReadWriter on: (FileStream newFileNamed: 'Squeak.gif').
+[	writer := GIFReadWriter on: (FileStream newFileNamed: 'Pharo.gif').
 	writer nextPutImage: (Form fromUser)
 ]	ensure: [ writer ifNotNil: [ writer close ] ]
 \end{code}
@@ -111,7 +114,7 @@ The message \ct{ensure:} returns the value of the block to which this message is
 The message \ct{ifCurtailed:} is typically used for ``cleaning'' actions. It is similar to \ct{ensure:}, but instead of ensuring that its argument block is evaluated even if the receiver terminates abnormally, \ct{ifCurtailed:} does so \emph{only} if the receiver terminates abnormally by signaling an exception or by performing a non-local return.
 
 In the following example, the argument to \ct{ifCurtailed:} performs an early return, so the following statement is never reached.
-In Smalltalk, this is referred to as a \emph{non-local return}.
+In \st, this is referred to as a \emph{non-local return}.
 Nevertheless the argument block will be executed.
 \needlines{4}
 \begin{code}{}
@@ -138,7 +141,7 @@ Here are some  examples of \lct{ifCurtailed:} usage where the text displayed in 
 [1 / 0] ifCurtailed: [Transcript show: 'This is displayed after selecting Abandon in the debugger'; cr]
 \end{code}
 
-Although \ct{ifCurtailed:} and \ct{ensure:} are implemented as primitives in Squeak, in principle \ct{ifCurtailed:} could be implemented using \ct{ensure:} as follows:
+Although \ct{ifCurtailed:} and \ct{ensure:} are implemented as primitives in \pharo, in principle \ct{ifCurtailed:} could be implemented using \ct{ensure:} as follows:
 
 \begin{code}{}
 ifCurtailed: curtailBlock
@@ -175,7 +178,7 @@ Both \ct{ensure:} and \ct{ifCurtailed:} offer simple mechanisms to handle abnorm
 \noindent
 The code that detects an abnormal situation and signals an exception (\lct{\emph{aBlock}}) is called a \emph{protected block}, and the block that is evaluated if an exception is signaled (\lct{\emph{handlerAction}}) is  an \emph{exception handler}.
 
-ANSI Smalltalk defines this message as follows:
+ANSI \st defines this message as follows:
 \begin{quote}
 ``The receiver is evaluated such that if during its evaluation an exception corresponding to selector is signaled then action will be evaluated. The result of evaluating the receiver is returned.''
 \end{quote}
@@ -207,10 +210,10 @@ It is important to understand  that the message \ct{on:do:} defines the scope wh
 Without exceptions, the only way to handle the case that a method may fail to produce an expected result is to introduce explicit error codes as possible return values. In fact, in languages like C, code is littered with checks for such error codes, thus obscuring the main application logic.
 Error codes are also fragile in the face of evolution: if error codes change, then all clients must be adapted to take the new codes into account. By using exceptions instead of error codes, the programmer is freed from the task of explicitly checking each return value, and the program logic stays uncluttered.
 
-If \squeak would not provide exception-handling support, then the tiny example we saw in the previous section would look something like this:
+If \st would not provide exception-handling support, then the tiny example we saw in the previous section would look something like this:
 
 \begin{code}{| source destination fromStream toStream contents result success failure |}
-"Pseudo-code -- luckily Squeak does not work like this. Without the 
+"Pseudo-code -- luckily Smalltalk does not work like this. Without the 
 benefit of exception handling we must check error codes for each operation."
 source := 'log.txt'.
 destination := 'log-backup.txt'.
@@ -253,14 +256,14 @@ Exceptions are organized in a class hierarchy. Conceptually, the exceptions \ct{
 
 \begin{figure}[ht]\centering
         \includegraphics[width=.5\linewidth]{SimpleHierarchy}
-        \caption{A small part of the Squeak exception hierarchy.\figlabel{hierarchy}}
+        \caption{A small part of the \pharo exception hierarchy.\figlabel{hierarchy}}
 \end{figure}
 
-In Smalltalk, exceptions are objects just like any other entity. An exception is an instance of an exception class which is part of a hierarchy of exceptions.
+In \st, exceptions are objects just like any other entity. An exception is an instance of an exception class which is part of a hierarchy of exceptions.
 
 \ct{FileStreamException} is a class and adds information to characterize the specific abnormal situation it describes. \ct{FileStreamException} defines the \ct{fileName} instance variable which contains the name of the file that signaled the exception. The root of the exception class hierarchy is \ct{Exception}, which is a direct subclass of \ct{Object}.
 
-In some versions of Squeak, \ct{Exception} has 10 direct subclasses and 93 indirect subclasses!
+In some versions of \pharo, \ct{Exception} has 10 direct subclasses and 93 indirect subclasses!
 \begin{code}{} % NB: Fragile -- should not be a test
 Exception subclasses size     --> 10
 Exception subclasses 	        --> {Error . IllegalResumeAttempt . Notification . ProgressInitiationException . Abort . UnhandledError . TestFailure . Halt . MCNoChangesException . RefactoringWarning}
@@ -307,7 +310,7 @@ Transcript show: result; cr
 
 By default, every exception offers a description to be used by development tools to report abnormal situations in a clear and comprehensible manner. In that spirit, any exception instance answers to the message \ct{description}. Moreover, the descriptive message may be set  using the message \ct{messageText:} or by signaling the exception using \ct{signal:}.
 
-Another example can be seen in the \ct{doesNotUnderstand:} mechanism, a pillar of the reflective capabilities of Smalltalk. Whenever an object is sent a message that it does not understand, the VM will (eventually) send it the message \ct{doesNotUnderstand:} with a literal argument representing the offending message. The default implementation of this method, defined in the class \ct{Object}, simply signals a \ct{MessageNotUnderstood} exception, causing a debugger to be opened at that point in the execution.
+Another example can be seen in the \ct{doesNotUnderstand:} mechanism, a pillar of the reflective capabilities of \st. Whenever an object is sent a message that it does not understand, the VM will (eventually) send it the message \ct{doesNotUnderstand:} with a literal argument representing the offending message. The default implementation of this method, defined in the class \ct{Object}, simply signals a \ct{MessageNotUnderstood} exception, causing a debugger to be opened at that point in the execution.
 This method illustrates the need to store specific information such as the receiver and the message not understood.
 
 \needlines{4}
@@ -324,7 +327,7 @@ Object>>>doesNotUnderstand: aMessage
 %=================================================================
 \section{Setting breakpoints}
 
-In Smalltalk it is possible to set a breakpoint within a method by sending the message \ct{self halt}. The method \ct{halt}, implemented in \ct{Object}, makes use of exceptions to open a debugger at the location of the breakpoint.
+In \st it is possible to set a breakpoint within a method by sending the message \ct{self halt}. The method \ct{halt}, implemented in \ct{Object}, makes use of exceptions to open a debugger at the location of the breakpoint.
 The method \ct{halt} is defined as follows:
 
 \needlines{6}
@@ -379,19 +382,19 @@ StandardToolSet>>>debug: aProcess context: aContext label: aString contents: con
 
 We will now have a look at how block handlers are selected and fetched from the method call stack to handle a signaled exception. But before we do this, we need to understand how the control flow of a program is internally represented in the virtual machine.
 
-At each point in the execution of a program, the method call stack of a program is defined as a sequential list of activation contexts. Each activation context represents a method invocation and contains the information needed for its execution, namely its receiver, its arguments, and its local variables. It also contains a reference to the context that triggered its creation, \ie the activation context associated to the calling method. In Squeak, the classes \ct{MethodContext} and \ct{BlockContext} model this information. Activation contexts are linked to each other and form a chain describing the method call stack.
+At each point in the execution of a program, the method call stack of a program is defined as a sequential list of activation contexts. Each activation context represents a method invocation and contains the information needed for its execution, namely its receiver, its arguments, and its local variables. It also contains a reference to the context that triggered its creation, \ie the activation context associated to the calling method. In \pharo, the classes \ct{MethodContext} and \ct{BlockContext} model this information. Activation contexts are linked to each other and form a chain describing the method call stack.
 
 Suppose that we attempt to open a \ct{BookMorph} on a non-existent file.
 A \ct{FileDoesNotExistException} will be signaled, and the method call stack will contain the activation contexts created by the methods \ct{openFromFile:}, \ct{oldFileNamed:}, and \ct{signal} (\figref{stack}):
 
 \begin{figure}[ht]\centering
         \includegraphics[width=.9\linewidth]{Stack}
-        \caption{A Squeak method call stack.\figlabel{stack}}
+        \caption{A \pharo method call stack.\figlabel{stack}}
 \end{figure}
 
-Since everything is an object in Smalltalk, we should expect activation contexts to also be objects.
-Actually, certain Smalltalk dialects and implementations use the native C execution stack of the virtual machine to avoid creating objects all the time.
-The Squeak virtual machine does not do this, but instead creates the list of activation context objects only on demand, for example, whenever the debugger is started.
+Since everything is an object in \st, we should expect activation contexts to also be objects.
+Actually, certain \st dialects and implementations use the native C execution stack of the virtual machine to avoid creating objects all the time.
+The \pharo virtual machine does not do this, but instead creates the list of activation context objects only on demand, for example, whenever the debugger is started.
 
 When we send \lct{\emph{aBlock} on: \emph{ExceptionClass} do: \emph{anHandler}}, we associate an exception handler (\lct{\emph{anHandler}}) to a given class of exceptions (\lct{\emph{ExceptionClass}}) for the activation context of the protected block (\lct{\emph{aBlock}}).
 This information is used to identify and invoke the exception handler whenever an exception is signaled. The handler will be available on the stack, and can be found by traversing the stack starting from the top down to the activation frame where the \ct{on:do:} message has been sent.
@@ -490,7 +493,7 @@ result := [Error signal]
 result --> 7
 \end{code}
 
-The ANSI standard is not clear regarding the difference between \ct{do: [:ex | 100 ]} and \ct{do: [:ex | ex return: 100]} to return a value. We suggest you to use \ct{return:} since it is more intention-revealing, even if these two expressions are equivalent in Squeak.
+The ANSI standard is not clear regarding the difference between \ct{do: [:ex | 100 ]} and \ct{do: [:ex | ex return: 100]} to return a value. We suggest you to use \ct{return:} since it is more intention-revealing, even if these two expressions are equivalent in \pharo.
 
 A variant of \ct{return:} is the message \ct{return}, which returns \ct{nil}. 
 
@@ -576,9 +579,12 @@ The usefulness of resuming a control flow is illustrated by the class \ct{Instal
 Installer>>>installQuietly: packageNameCollectionOrDetectBlock 
 	self package: packageNameCollectionOrDetectBlock. 
 	 [ self install ] on: Warning do: [ :ex | ex resume ]. 
-%	 [ self install ] on: Warning do: [ :ex | ex resume: true ]. 
 \end{code}
+%	 [ self install ] on: Warning do: [ :ex | ex resume: true ]. 
 % The code actually says resume: true, but Keith Hodges confirms that this is not necessary
+
+
+%:===> CONVERT USER INTERACTION TO REAL EXAMPLE <===
 
 Another typical situation can be seen when an interaction with the user is required, as in the following example:
 \on{should turn this into a real example or a test}
@@ -612,7 +618,7 @@ It is not always a reasonable option to \ct{resume} an exception. For example, t
 \section{Example: deprecation}
 
 \emph{Deprecation} offers a good case study of a simple mechanism built using exceptions.
-This design pattern allows a programmer to mark a method as being ``deprecated'', meaning that it may disappear in a future release and should not be used any more. In Squeak, a method can be marked as deprecated as follows:
+This design pattern allows a programmer to mark a method as being ``deprecated'', meaning that it may disappear in a future release and should not be used any more. In \pharo, a method can be marked as deprecated as follows:
 
 \begin{code}{}
 SequenceableCollection>>>upTo: anObject
@@ -628,7 +634,7 @@ When the message \ct{upTo:} is sent, if the \ct{showDeprecationWarnings} prefere
         \caption{Sending a deprecated message.\figlabel{deprecation}}
 \end{figure}
 
-Deprecation is easily implemented in \squeak in just a few steps.
+Deprecation is easily implemented in \pharo in just a few steps.
 First, we define \ct{Deprecation} as a subclass of \ct{Warning}.
 We should normally consider overriding \ct{isResumable}, \ct{description}, and \ct{defaultAction}. In this case the default implementations are fine:
 
@@ -664,7 +670,7 @@ Object>>>deprecated: anExplanationString
 \section{Passing on exceptions}
 
 To illustrate the remaining possibilities for handling exceptions, we will look at how to implement a generalization of the \ct{perform:} method.
-If we send \ct{perform: aSymbol} to an object, this will cause the message named \ct{aSymbol} to be sent  to that object:
+If we send \lct{perform: \emph{aSymbol}} to an object, this will cause the message named \lct{\emph{aSymbol}} to be sent  to that object:
 \begin{code}{@TEST}
 5 perform: #factorial --> 120    "same as: 5 factorial"
 \end{code}
@@ -789,10 +795,11 @@ The rest of the magic occurs in the class \ct{ExceptionSet}, which has a surpris
 
 \section{How this is implemented?}
 
+%:===> REVISE IMPLEMENTATION SECTION <===
 \on{As an explanation, this part really does not work. I would prefer to leave it out.}
 \sd{no this is really important I did a new pass on it}
 
-Up until now, we presented the use of exceptions in Smalltalk and their power without really saying a word on their implementation
+Up until now, we presented the use of exceptions in \st and their power without really saying a word on their implementation
 at the execution engine level (Virtual Machine). Normally you do not need to know how handler are really looked up at execution time to use exception. Therefore in the first reading you can skip this section. Now if you are curious and really want to know how this is implemented 
 at the Virtual Machine level, this section is for you.  This section will uncover the internal of the Pharo exception mechanism. The mechanism is quite simple, making it worth to know how it operates. This section is a wonderful example on how Pharo can reveal information just by browsing its source code.
 
@@ -810,7 +817,7 @@ BlockContext>>>on: exception do: handlerAction
 
 When reading the code we learn two things: First, this method is implemented as a primitive, which means that  a function defined in the virtual machine is executed, when this method is invoked. Second, the method body simply returns the value of the block receiver and sets the variable \ct{handlerActive} to true. Surprinsingly simple. 
 
-A primitive method as \ct{on:do:} has a body and a primitive number. Normally, the method body is not executed since the method is bound to a function written in C. When the method has to be executed, the C function is executed instead. In case of a failure in the C function, the Smalltalk method body is executed. The method body is then in charge of taking decisions on how to deal with the failure.
+A primitive method as \ct{on:do:} has a body and a primitive number. Normally, the method body is not executed since the method is bound to a function written in C. When the method has to be executed, the C function is executed instead. In case of a failure in the C function, the \st method body is executed. The method body is then in charge of taking decisions on how to deal with the failure.
 Here the method \ct{on:do:} is associated with the primitive number 199. This number is important to understand the following. 
 
 So you are puzzled. Where the argument of the \ct{on:do:} method are then stored. Let's look at the instance variables of the class \ct{BlockContext}. 
@@ -841,7 +848,7 @@ The last statement is a 2-length array that contains the exception type and the 
 \paragraph{Finding Handlers.}
 Now that we know how the information is stored, let's have a look at how it is looked up at runtime. 
 
-First, we might think that the primitive 199 is complex to write. But in our case, the C function that corresponds to the primitive 199 \emph{always} fails\footnote{The source code of the primitive is \ct{Interpreter>>>primitiveMarkHandlerMethod} in the VMMaker Squeaksource project}. Its definition is therefore trivial. The body of \ct{on:do:} is therefore always executed since the primitive fails. An important point is that the execution of the primitive marks the executing context with 199, the primitive number. 
+First, we might think that the primitive 199 is complex to write. But in our case, the C function that corresponds to the primitive 199 \emph{always} fails\footnote{The source code of the primitive is \ct{Interpreter>>>primitiveMarkHandlerMethod} in the VMMaker \sqsrc project}. Its definition is therefore trivial. The body of \ct{on:do:} is therefore always executed since the primitive fails. An important point is that the execution of the primitive marks the executing context with 199, the primitive number. 
 
 \begin{code}{}
 primitiveMarkHandlerMethod
@@ -897,23 +904,27 @@ So in summary the virtual machine finds the activation contexts that correspond 
 
 
 
-%I could not get the following. \ugh{Method contexts are objects that may be manipulated as any plain objects. They represent a linked list of a which may be shortened a anytime. This is the principle of exception. In theory, it is not necessary to hardcode functions dedicated to exceptions in the virtual machine. This is a superb example of the Smalltalk flexibility.}
+%I could not get the following. \ugh{Method contexts are objects that may be manipulated as any plain objects. They represent a linked list of a which may be shortened a anytime. This is the principle of exception. In theory, it is not necessary to hardcode functions dedicated to exceptions in the virtual machine. This is a superb example of the \st flexibility.}
 
 \section{Error and Notification}
+
+%:===> CANCEL ERROR AND NOTIFICATION SECTION ? <===
+
+
 \sd{probably redundant}
 \on{not very interesting or useful --- I would leave this out too}
 
-\ugh{First of all, let us have a look at the different kind of exceptions offered by Smalltalk. Among the exceptions that may be signaled, we make a distinction between errors and notifications. The first tells the programmer that the program falls into an abnormal situation. The latter tells that a particular event occurred but if no action is taken, the program will continue to execute. Notifications are often used as alters (\ct{Warning} class) which are used to notify abnormal but non-lethal behavior. Note that C\# and Java propose a similar use of exceptions.}
+\ugh{First of all, let us have a look at the different kind of exceptions offered by \st. Among the exceptions that may be signaled, we make a distinction between errors and notifications. The first tells the programmer that the program falls into an abnormal situation. The latter tells that a particular event occurred but if no action is taken, the program will continue to execute. Notifications are often used as alters (\ct{Warning} class) which are used to notify abnormal but non-lethal behavior. Note that C\# and Java propose a similar use of exceptions.}
 
-Graphically user interfaces makes a great use of notifications. In Squeak, \ct{ProgressNotification} is used to move the progress bar forward when a task is being realized. \ct{ProgressNotification} is a subclass of \ct{Notification}.
+Graphically user interfaces makes a great use of notifications. In \pharo, \ct{ProgressNotification} is used to move the progress bar forward when a task is being realized. \ct{ProgressNotification} is a subclass of \ct{Notification}.
 
 \begin{figure}[ht]\centering
         \includegraphics[width=.6\linewidth]{hierarchy}
-        \caption{An except of the Squeak exception hierarchy.\figlabel{hierarchy}
+        \caption{An except \on{?} of the \pharo exception hierarchy.\figlabel{hierarchy}
         \on{Kill Object. Which of these are resumable? Why this chart?}}
 \end{figure}
 
-Compared with other languages, Smalltalk features an interesting ability for its exceptions: the control flow that signaled an exception may be resumed in the exception handler that caught the exception. The control flow of the application before the exception was signaled may then continue. Of course, it is the responsibility of the exception handler to update the system in order to give sense to an exception resume.
+Compared with other languages, \st features an interesting ability for its exceptions: the control flow that signaled an exception may be resumed in the exception handler that caught the exception. The control flow of the application before the exception was signaled may then continue. Of course, it is the responsibility of the exception handler to update the system in order to give sense to an exception resume.
 
 The property of being resumed is orthogonal to the notion of error. An error may be resumable. For example, the class \ct{MessageNotUnderstood} is a subclass of \ct{Error} but it is resumable:
 \on{? discussed above with Halt}
@@ -951,11 +962,13 @@ In this chapter we saw how to use exceptions to signal and handle abnormal situa
 
 \item An exception handler may specify a new block to try by sending \ct{retryUsing:} to the signaled exception, with the new block as its argument. Here too, the handler remains in effect.
 
+%:===> COMPLETE SUMMARY <===
+
 \item \on{add summary for remaining sections}
 
 \end{itemize}
 
-\paragraph{Acknowledgment.}  We gratefully acknowledge Vassili Bykov for the raw material he provided. We also thank Paolo Bonzini, the main developer of GNU Smalltalk, for the Smalltalk implementations of \ct{ensure:} and \ct{ifCurtailed:}.
+\paragraph{Acknowledgment.}  We gratefully acknowledge Vassili Bykov for the raw material he provided. We also thank Paolo Bonzini, the main developer of GNU \st, for the \st implementations of \ct{ensure:} and \ct{ifCurtailed:}.
 
 %=========================================================
 \ifx\wholebook\relax\else
