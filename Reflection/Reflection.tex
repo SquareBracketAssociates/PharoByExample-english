@@ -10,7 +10,7 @@
 % 2009-06-01 - Oscar started to revise again and add new material
 % 2009-06-08 - Lukas -- unsent messages
 % 2009-06-15 - Oscar completed revision
-% 2009-06-26 - Lukas comments
+% 2009-06-17 - Alexandre completed revision
 
 %=================================================================
 \ifx\wholebook\relax\else
@@ -43,10 +43,14 @@
 %=================================================================
 \chapter{Reflection}\label{cha:reflection}
 
-\lr{A section on pragmas/method annotations is missing. This is a very common and very practical application of reflection.}
+\alex{I addressed lukas comments using editorial macros. Please, if you read this, remove this comment and remove the editorial macros, else their purpose is diminished}
+
+\lr{A section on pragmas/method annotations is missing. This is a very common and very practical application of reflection.}\alex{I agree on this, I will give a try in the next few days}
+
+
 
 \st is a reflective programming language.
-In a nutshell, this means that programs are able to ``reflect'' on their own execution. \lr{not only on execution, also on the static model}
+In a nutshell, this means that programs are able to ``reflect'' on their own execution \ins{and structure}. \lr{not only on execution, also on the static model}
 More technically, this means that the \emph{metaobjects} of the runtime system can be \emph{reified} as ordinary objects, which can be queried and inspected.
 The metaobjects in \st are classes, metaclasses, method dictionaries, compiled methods, the run-time stack, and so on.
 This form of reflection is also called \emph{introspection}, and is supported by many modern programming languages.
@@ -98,7 +102,7 @@ To trigger the window refresh, evaluate \ct!self contentsChanged! in the lower p
 
 How does the inspector work?
 In \st, all instance variables are protected.
-In theory, it is impossible to access them if the class doesn't define any accessor.
+In theory, it is impossible to access them \ins{from other object} if the class doesn't define any accessor.
 In practice, the inspector can access instance variables without needing accessors, because it uses the reflective abilities of \st.
 In \st, classes define instance variables either by name or by numeric indices.
 The inspector uses methods defined by the \ct!Object! class to access them: \lct{instVarAt: \emph{index}} and \lct{instVarNamed: \emph{aString}} can be used to get the value of the instance variable at position \lct{\emph{index}} or identified by \lct{\emph{aString}}, respectively; to assign new values to these instance variables, it uses \ct!instVarAt:put:! and \ct!instVarNamed:put:!.
@@ -233,16 +237,19 @@ As we saw previously, you can obtain an instance of a given class by sending it 
 Point someInstance --> 0@0
 \end{code}
 
-You can also gather all the instances with \ct!#allInstances!, or the number of alive instances in memory with \ct!#instanceCount!. \lr{\ct!String allSubInstances! would be interesting too, to get Symbols and Strings.}
+You can also gather all the instances with \ct!#allInstances!, or the number of alive instances in memory with \ct!#instanceCount!. \lr{\ct!String allSubInstances! would be interesting too, to get Symbols and Strings.}\alex{I added this below}
 
+\alex{In a Pharo0.1-10342dev09.96.3, I have "ByteString instanceCount --> 63607"}
 \begin{code}{} % Cannot test this
 ByteString allInstances     --> #('collection' 'position'  ...)
 ByteString instanceCount --> 104565
+\ins{String allSubInstances size -->  101675}
 \end{code}
+\ins{there is an ins above, but it is not showed in blue}
 
 These features can be very useful when debugging an application, because you can ask a class to enumerate those of its methods exhibiting specific properties.
 \begin{itemize}
-\item \ct!whichSelectorsAccess:! returns the list of all selectors of methods that read the instance variable named as the argument \lr{it also returns the methods that write the given field}
+\item \ct!whichSelectorsAccess:! returns the list of all selectors of methods that read \ins{or write in} the instance variable named as the argument \lr{it also returns the methods that write the given field}
 \item \ct!whichSelectorsStoreInto:! returns the selectors of methods that modify the value of an instance variable
 \item \ct!whichSelectorsReferTo:! returns the selectors of methods that send a given message
 \item \ct!crossReference! associates each message with the set of methods that send it.
@@ -299,7 +306,7 @@ For example, you can programmatically browse all implementors of the message \ct
 SystemNavigation default browseAllImplementorsOf: #ifTrue:
 \end{code}
 
-\lr{Maybe mention that browsing all senders of \ct!ifTrue:! does not work as one would expect?}
+\lr{Maybe mention that browsing all senders of \ct!ifTrue:! does not work as one would expect?} \alex{this is said later on}
 
 \begin{figure}[ht]\centering
 	\includegraphics[width=\linewidth]{implementors}
@@ -565,9 +572,9 @@ Since the proxy will implement virtually no methods of its own, any message sent
 
 Let us have a look at how this may be implemented\footnote{You can also load \pkg{PBE-Reflection} from \url{http://www.squeaksource.com/PharoByExample/}}.
 
-\sd{strange I do not see the class definition first line in the pdf}
+\sd{strange I do not see the class definition first line in the pdf}\alex{a \{\} was missing}
 We define a \ct{LoggingProxy} as follows:
-\begin{code}
+\begin{code}{}
 ProtoObject subclass: #LoggingProxy
 	instanceVariableNames: 'subject invocationCount'
 	classVariableNames: ''
@@ -664,7 +671,7 @@ Consider a very large library of classes with many methods.  Instead of loading 
 
 %\on{Stef sez: check ObjectOut -- I looked, but this seems to be very old. Depends on SqueakPage.}
 
-Let us look at a simple variant of this technique where we have a class that automatically adds accessors for its instance variables on-demand: \lr{the last statement should return the result of the message, otherwise you cannot proceed with the debugger}
+Let us look at a simple variant of this technique where we have a class that automatically adds accessors for its instance variables on-demand: \lr{the last statement should return the result of the message, otherwise you cannot proceed with the debugger} \alex{all redefinition of doesNotUnderstand: includes a return statement. However, I do not see your comment lukas, I tried to insert a 'self halt' in the method, I was able to proceed. I added the return in the function}
 \begin{code}{}
 DynamicAcccessors>>>doesNotUnderstand: aMessage
 	| messageName |
@@ -673,9 +680,9 @@ DynamicAcccessors>>>doesNotUnderstand: aMessage
 		ifTrue: [
 			self class compile: messageName, String cr, ' ^ ', messageName.
 			^ aMessage sendTo: self ].
-	super doesNotUnderstand: aMessage
+	^ super doesNotUnderstand: aMessage
 \end{code}
-Any message not understood is trapped here. If an instance variable with the same name as the message sent exists, then we ask our class to compile an accessor for that instance variablesm and we re-send the message.
+Any message not understood is trapped here. If an instance variable with the same name as the message sent exists, then we ask our class to compile an accessor for that instance variables and we re-send the message.
 
 Suppose the class \ct{DynamicAcccessors} has an (uninitialized) instance variable \ct{x} but no pre-defined accessor. Then the following will generate the accessor dynamically and retrieve the value:
 \begin{code}{}
@@ -687,7 +694,7 @@ Let us step through what happens the first time the message \ct{x} is sent to ou
 
 \begin{figure}[ht]\centering
 	\includegraphics[width=\linewidth]{DynamicAccessors}
-	\caption{Dynamically creating accessors.\label{fig:DynamicAccessors}}
+	\caption{Dynamically creating accessors.\label{fig:DynamicAccessors} \alex{not sure whether the figure is highly necessary. The code is rather simple and the figure complete to follow in my opinion.}}
 \end{figure}
 
 (1) We send \ct{x} to \ct{myDA}, (2) the message is looked up in the class, and (3) not found in the class hierarchy. (4) This causes \ct{self doesNotUnderstand: #x} to be sent back to the object, (5) triggering a new lookup. This time \ct{doesNotUnderstand:} is found immediately in \ct{DynamicAccessors}, (6) which asks its class to compile the string \ct{'x ^ x'}. The \ct{compile} method is looked up (7), and (8) finally found in \ct{Behavior}, which (9-10) adds the new compiled method to the method dictionary of \ct{DynamicAccessors}. Finally, (11-13) the message is resent, and this time it is found.
@@ -707,16 +714,16 @@ Note the use of \ct{Object>>>perform:} in step (13) which can be used to send me
 \label{sec:wrapper}
 
 We have already seen that compiled methods are ordinary objects in \st, and they support a number of methods that allow the programmer to query the run-time system.
-What is perhaps a bit more surprising, is that \emph{any object} can play the role of a compiled method. All it has to do is respond to the method \st{run:with:in:} and a few other important messages.
+What is perhaps a bit more surprising, is that \emph{any object} can play the role of a compiled method. All it has to do is respond to the method \ct{run:with:in:} and a few other important messages.
 
 \dothis{Define an empty class \ct{Demo}. Evaluate \ct{Demo new answer42} and notice how the usual ``Message Not Understood'' error is raised.}
 
 Now we will install a plain \st object in the method dictionary of our \ct{Demo} class.
 
-\dothis{Evaluate \lct{Demo methodDict at: \#answer42 put: ObjectsAsMethodsExample new.}
+\dothis{\ins{Assuming you have loaded the PBE-Reflection package, e}valuate \lct{Demo methodDict at: \#answer42 put: ObjectsAsMethodsExample new.}
 Now try again to print the result of \ct{Demo new answer42}. This time we get the answer \ct{42}.}
 
-If we have look at the class \ct{ObjectsAsMethodsExample} we will find the following methods:
+If we have look at the class \ct{ObjectsAsMethodsExample} we will find the following methods: \alex{I would favor in having return 42 in the run:with:in: method, and not having answer42 defined in ObjectsAsMethodsExample, this could be confusing I imagine}
 \needlines{5}
 \begin{code}{}
 answer42
@@ -766,7 +773,7 @@ TestRunner>>>collectCoverageFor: methods
 		reset;
 		suiteAll.
 	[ wrappers do: [ :each | each install ].
-	[ self runSuite: suite ] ensure: [ wrappers do: [ :each | each uninstall ] ] ] valueUnpreemptively.
+	  [ self runSuite: suite ] ensure: [ wrappers do: [ :each | each uninstall ] ] ] valueUnpreemptively.
 	wrappers := wrappers reject: [ :each | each hasRun ].
 	wrappers isEmpty 
 		ifTrue: 
@@ -817,6 +824,51 @@ mark
 That's all there is to it!
 
 Method wrappers can be used to perform any kind of suitable behaviour before or after the normal operation of a method.  Typical applications are instrumentation (collecting statistics about the calling patterns of methods), checking optional pre- and post-conditions, and memoization (optionally cacheing computed values of methods).
+
+%:======================================
+\section{Pragmas}
+
+\emph{Pragmas} provide data about a program that is not part of the program itself. They have no direct effect on the operation of the method they annotate.
+Pragmas have a number of uses, among them:
+\begin{itemize}
+\item Information for the compiler: Pragmas can be used by the compiler to make a method call a primitive function. This function has to be defined by the virtual machine or by an external plugging.
+\item Runtime processing: Some pragmas are available to be examined at runtime.
+\end{itemize}
+
+Pragmas can be applied to a program's method declarations only. A method may declare one or more pragmas, and the pragmas have to be declared prior any Smalltalk statement. A pragma may be parametrized using literals.
+
+We glimpsed this notion when we introduced primitives earlier in this chapter. A primitive is no more than a pragma declaration. 
+Consider \ct{<primitive: 73>} as contained in \ct{instVarAt:}. The pragma is \ct{primitive:} and is parametrized with an immediate value, \ct{73}. 
+
+Beside the compiler, Lint is a heavy user of pragmas. Lint is a static code analyzer that flags suspicious, non-portable constructs, and code that is likely to contain bugs. It happens that a method needs to be excluded from Lint analysis. This is the case of:
+
+\begin{code}{}
+MorphObjectOut>>>doesNotUnderstand: aMessage 
+	"Bring in the object, install, then resend aMessage"
+	"Transcript show: thisContext sender selector; cr."
+	"useful for debugging"
+	
+	! \textbf{<lint: 'Unnecessary "= true"' rationale: 'recursionFlag may be nil' author: 'stephane.ducasse'>}!
+	...
+\end{code}	
+
+One of the pragmas used by Lint to filter out methods is \ct{lint:rationale:author:}.
+
+By being instance of the class \ct{Pragma}, pragmas are first class objects. A compiled method answers to the message \ct{pragmas}. This method returns an array of pragmas. 
+
+\begin{code}{@TEST}
+(MorphObjectOut >> #doesNotUnderstand:) pragmas                                            --> an Array(<lint: 'Unnecessary "= true"' rationale: 'recursionFlag may be nil' author: 'stephane.ducasse'>)
+\end{code}
+
+Methods defining a particular query may be retrieved from a class.
+
+\begin{code}{@TEST}
+Pragma allNamed: #lint:rationale:author: in: MorphObjectOut -->  an Array(<lint: 'Unnecessary "= true"' rationale: 'recursionFlag may be nil' author: 'stephane.ducasse'>)
+\end{code}
+
+Variant of \ct{allNamed:in:} may be found on the class side of \ct{Pragma}.
+
+A pragma knows in which method it is defined (using \ct{method}), the name of the method (\ct{selector}), the class that contains the method (\ct{methodClass}), its number of arguments (\ct{numArgs}), about the literals the pragma has for arguments (\ct{hasLiteral:} and \ct{hasLiteralSuchThat:}). 
 
 %:======================================
 \section{Chapter summary}
