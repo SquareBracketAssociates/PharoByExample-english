@@ -495,6 +495,7 @@ By convention, methods in \st that send \ct{self subclassResponsibility} are con
 \sd{lukas may be we should have another chapter showing such kind of beasts. I would love to read it.
 Showing how to use block to build exception and such a kind of point. I think that this chapter should be an introduction may be
 we should have a Reflection applied chapter}
+\lr{I would love to help writing such a chapter}
 %-----------------------------------------------------------------
 \subsection{Intelligent breakpoints}
 
@@ -671,7 +672,8 @@ Consider a very large library of classes with many methods.  Instead of loading 
 
 %\on{Stef sez: check ObjectOut -- I looked, but this seems to be very old. Depends on SqueakPage.}
 
-Let us look at a simple variant of this technique where we have a class that automatically adds accessors for its instance variables on-demand: \lr{the last statement should return the result of the message, otherwise you cannot proceed with the debugger} \alex{all redefinition of doesNotUnderstand: includes a return statement. However, I do not see your comment lukas, I tried to insert a 'self halt' in the method, I was able to proceed. I added the return in the function}
+Let us look at a simple variant of this technique where we have a class that automatically adds accessors for its instance variables on-demand: \lr{the last statement should return the result of the message, otherwise you cannot proceed with the debugger} \alex{all redefinition of doesNotUnderstand: includes a return statement. However, I do not see your comment lukas, I tried to insert a 'self halt' in the method, I was able to proceed. I added the return in the function} \lr{Of course it depends on the exact circumstances. If you perform a message on self that returns self it does not matter, but in any other case a forgotten return can introduce strange side effects. There was no return in the listing below, but now there is and the problem is solved.}
+
 \begin{code}{}
 DynamicAcccessors>>>doesNotUnderstand: aMessage
 	| messageName |
@@ -835,10 +837,10 @@ Pragmas have a number of uses, among them:
 \item Runtime processing: Some pragmas are available to be examined at runtime.
 \end{itemize}
 
-Pragmas can be applied to a program's method declarations only. A method may declare one or more pragmas, and the pragmas have to be declared prior any Smalltalk statement. A pragma may be parametrized using literals.
+Pragmas can be applied to a program's method declarations only. A method may declare one or more pragmas, and the pragmas have to be declared prior any Smalltalk statement. A pragma may be parametrized using literals. \lr{A pragma is a message send with literal arguments.}
 
 We glimpsed this notion when we introduced primitives earlier in this chapter. A primitive is no more than a pragma declaration. 
-Consider \ct{<primitive: 73>} as contained in \ct{instVarAt:}. The pragma is \ct{primitive:} and is parametrized with an immediate value, \ct{73}. 
+Consider \ct{<primitive: 73>} as contained in \ct{instVarAt:}. The pragma \lr{selector} is \ct{primitive:} and is parametrized with an immediate \lr{literal} value, \ct{73}. 
 
 Beside the compiler, Lint is a heavy user of pragmas. Lint is a static code analyzer that flags suspicious, non-portable constructs, and code that is likely to contain bugs. It happens that a method needs to be excluded from Lint analysis. This is the case of:
 
@@ -869,6 +871,8 @@ Pragma allNamed: #lint:rationale:author: in: MorphObjectOut -->  an Array(<lint:
 Variant of \ct{allNamed:in:} may be found on the class side of \ct{Pragma}.
 
 A pragma knows in which method it is defined (using \ct{method}), the name of the method (\ct{selector}), the class that contains the method (\ct{methodClass}), its number of arguments (\ct{numArgs}), about the literals the pragma has for arguments (\ct{hasLiteral:} and \ct{hasLiteralSuchThat:}). 
+
+\lr{Typically pragmas are performed on an interpreter object that understands the pragma message.}
 
 %:======================================
 \section{Chapter summary}
