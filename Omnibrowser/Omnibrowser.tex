@@ -5,6 +5,7 @@
 % HISTORY:
 % 2008-01-19 - Alex first draft
 % 2008-03-31 - David Roethlisberger reviewed and extended
+% 2009-06-29 - Oscar Nierstrasz reviewing
 
 %=================================================================
 
@@ -55,8 +56,8 @@
 	\sloppy
 \fi
 
-\newcommand{\ob}{OmniBrowser\xspace}
-\newcommand{\obf}{OmniBrowser framework\xspace}
+\newcommand{\ob}{Omni\-Brow\-ser\xspace}
+\newcommand{\obf}{Omni\-Brow\-ser framework\xspace}
 \newcommand{\applflab}{ApplFLab\xspace}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -69,9 +70,9 @@
 
 \noindent
 In this chapter, we present \ob, a browser framework that supports the definition of browsers based on explicit metamodels. In the \obf, a browser is a graphical list-oriented tool to navigate and edit any arbitrary domain. The most common representative of this category of tools is the \st system browser, which is used to navigate and edit \st source code.
-In \ob, a browser is described by a domain model and a metagraph that specifies how the domain space may be navigated through. Widgets such as list menus and text panels are used to display information gathered from a particular path in the metagraph. Although widgets are programmatically composed by the framework, \ob allows for interaction with the end user.
+In \ob, a browser is described by a domain model and a metagraph that specifies how the domain space may be navigated. Widgets, such as list menus and text panels, are used to display information gathered from a particular path in the metagraph. Although widgets are programmatically composed by the framework, \ob allows for interaction with the end user.
 
-In the following, we show how to build new browsers from predefined parts and how to easily describe new tools. Three exemplary browsers, a file browser, a remake of the ubiquitous \st system browser, and a coverage browser, will illustrate how to define sophisticated browsers for various domains.
+We look at how to build new browsers from predefined parts and how to easily describe new tools. We will illustrate how to define sophisticated browsers for various domains with the help of three example: a file browser, a remake of the ubiquitous \st system browser, and a coverage browser.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %\section{Introduction}\label{sec:introduction}
@@ -103,18 +104,18 @@ In the following, we show how to build new browsers from predefined parts and ho
 %In \secref{problem} we describe difficulties and challenges to define states and flow between those states for a graphical user interface. In \secref{omnibrowser} we present the key entities of \obf. In \secref{codebrowser} we present the \ob-based system browser and in \secref{coverageBrowser} we describe the coverage code browser. In \secref{discussion} we discuss about properties of the \obf. In \secref{relatedwork} we provide an overview of related work. In \secref{conclusion} we conclude by summarizing the presented work.
 
 
-%:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Representing State of a User Interface} \label{sec:problem}
 %In this section we stress some of the problems encountered when building complex tools such as an advanced code editor. 
 
-The state of a graphical user interface (GUI) is defined as a collection of the states of the widgets making up the interface. The state of a widget refers to the state the widget is in. It may be modified whenever an end-user performs an action on this widget such as clicking a button or selecting an entry in a menu. Therefore, a GUI has a high number of different states. Asserting the validity for each of these states is crucial to avoid broken or inconsistent interfaces.
+The state of a graphical user interface (GUI) is defined as the collection of states of the widgets making up the interface. The state of a widget refers to the state the widget is in. It may be modified whenever an end-user performs an action on this widget such as clicking a button or selecting an entry in a menu. A GUI typically has a large number of possible states. Asserting the validity \on{?} of each of these states is crucial to avoid broken or inconsistent interfaces.
 
-Given the potential high number of different states of a GUI, asserting the validity of a GUI is a challenging task. Let's illustrate this situation with the \st system browser, a graphical tool to edit and navigate into \st source code.
+Given the potential high number of different states of a GUI, asserting the validity of a GUI is a challenging task. \on{why?} Let's illustrate this situation with the \st system browser, a graphical tool to edit and navigate into \st source code.
 
 \begin{figure}[!ht]
 \begin{center}
 \includegraphics[scale=0.65]{miniStBrowser}
-\caption{The traditional \st System Browser roughly depicted.} \figlabel{miniStBrowser}
+\caption{Layout of the traditional \st system browser} \figlabel{miniStBrowser}
 \end{center}
 \end{figure}
 
@@ -127,19 +128,19 @@ Pane A lists the categories in the system. Selecting a category in this list, ma
 %\sd{this part is a bit boring what I would be nice is  to have is a complex example of interaction.}\rw{Yes, but we need to give the basic first :-( }
 
 The description of how the browser works shows a number of navigation invariants that need to be kept when implementing the browser. For example, the selections go from left to right: it is not possible to have methods listed in pane D with pane C being empty.
+Invariants such as this one need to be implemented and checked when building a browser. So we are dealing with writing an application that deals with a potentially very large number of states in which only certain transitions between states are allowed (\ie those that correspond to navigations by the user of the browser). Whenever a user clicks on widgets that make up the GUI of the browser, the state of one or more widgets is changed, and possibly new navigation possibilities open up (being able to select a method name, for example, is only possible after a class has been selected). To deal with the fact that a widget may be in an \ugh{inconsistent state} \on{how?! need an example}, developers often rely on guards: the method performing an action in reaction to a user action always checks whether the state is actually correct or not nil. \on{need concrete example!}
 
-Invariants such as the one given above need to be implemented and checked when building a browser. So we are dealing with writing an application that deals with a potentially very big number of states in which only certain transitions between states need to be allowed (the ones that correspond to navigations the user of the browser). Whenever a user clicks on widgets that make up the GUI of the browser, the state of one or more widgets is changed, and possibly new navigation possibilities open up (being able to select a method name, for example). To deal with the fact that a widget can be in an inconsistent state, developers often rely on guards: the method performing an action in reaction to a user action always checks whether the state is actually correct or not nil. 
+In addition the state management is often spread over the UI elements. This leads to code with complex and often error-prone logic. In addition it makes tool elements difficult to extend and reuse in different context. \on{example!}
 
-In addition the state management is often spread over the UI elements. This leads to code with complex and often error-prone logic. In addition it makes tool elements difficult to extend and reuse in different context.
-
-The main problem when building a browser is representing the mapping from the intended navigation model to the domain model and widgets. 
+\on{bleh --- written like the intro to an academic paper} The main problem when building a browser is representing the mapping from the intended navigation model to the domain model and widgets. 
 %Even though graphical frameworks like MVC~\cite{Tryg79a,Tryg03a} and Coral~\cite{Szek88a} offer ways to modularize the model and the graphical user interface, they do not provide means (i) to preserve consistency of the interface by restricting unexpected state transition to happen and (ii) to keep the widgets synchronized with each other~\cite{Kras88a}.
 In the next section, we describe \ob, a framework to design browsers where the domain model is distinct from the navigation space. The latter is being described by a metagraph. The state of a browser is defined by a path in this metagraph.
 
-%:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Graph and Metagraph of a Browser} \label{sec:omnibrowser}
 
-The domain of the \obf is \emph{browsers}, applications with a graphical user interface that are used to navigate a graph of domain elements. When instantiating  the \obf to create a browser for a particular domain, the domain elements need to be specified, as well as the desired navigation paths between them.
+% ON: Redundant
+% The domain of the \obf is \emph{browsers}, applications with a graphical user interface that are used to navigate a graph of domain elements. When instantiating  the \obf to create a browser for a particular domain, the domain elements need to be specified, as well as the desired navigation paths between them.
 
 The \obf is structured around (i) an explicit domain model and (ii) a metagraph, a state machine, that specifies the navigation in and interaction with the domain model. The user interface is constructed by the framework, and uses a layout similar to the \st System Browser, with two horizontal parts. The top part is a column-based section where the navigation is done. The bottom half is a text pane.
 
@@ -155,18 +156,19 @@ The major classes that make up the \obf are presented in \figref{core}, and expl
 \end{center}
 \end{figure}
 
-\paragraph{Browser.} A \emph{browser} is a graphical tool to navigate and edit a domain space. This domain has to be described in terms of a directed cyclic graph (DCG). It is cyclic because for example file systems or structural meta models of programming language (\ie packages, classes, methods...) contain cycles, and we need to be able to model those. The domain graph has to have an entry point, its root. The path from this root to a particular node corresponds to a state of the browser defined by a particular combination of user actions (such as menu selections or button presses).
+\paragraph{Browser.} A \emph{browser} is a graphical tool to navigate and edit a domain space. This domain has to be described in terms of a directed cyclic graph (DCG). It is cyclic because for example file systems or structural meta models of programming languages (\ie packages, classes, methods...) contain cycles, and we need to be able to model these. The domain graph has to have an entry point, its root. The path from this root to a particular node corresponds to a state of the browser defined by a particular combination of user actions (such as menu selections or button presses).
 The navigation of this domain graph is specified in a \emph{metagraph}, a state machine describing the states and their possible transitions.
 
-\paragraph{Node.} A \emph{node} is a wrapper for a domain object, and has two responsibilities: rendering the domain object, and returning domain nodes. Note that how the domain graph can be navigated is implemented in the \emph{metagraph}.
-%\rw{it is linked to? it points to? -- cannot find a clear and easy way to say what is needed here} \ab{it generates nodes actually...}
+\paragraph{Node.} A \emph{node} is a wrapper for a domain object, and has two responsibilities: rendering the domain object, and returning domain nodes.
 
-\paragraph{Metagraph.} A browser's \emph{metagraph} defines the way a user traverses the graph of domain objects. A metagraph is composed of metanodes and metaedges. A metanode identifies a state in which the browser may be. A metanode may reference a filter (described below)
+\on{too much text already without a running example!}
+
+\paragraph{Metagraph.} A browser's \emph{metagraph} specifies the way a user traverses the graph of domain nodes. A metagraph is composed of metanodes and metaedges. A metanode identifies a state in which the browser may be. A metanode may reference a filter (described below)
 %\footnote{In a former version of \ob~\cite{Berg07c}, actors where used to defines actions and where attached to a metanode. In the current version of \ob actors have been replaced by commands.}.
 The metanode does not have the knowledge of the domain nodes, however each node is associated to a metanode. Transitions between meta\-nodes are defined by metaedges. When a metaedge is traversed (\ie result of pressing a button or selecting an entry list), sibling nodes are created from a given node by invoking a method that has the name of the metaedge.
 
 A \emph{metanode} has the ability to be auto selected with the method \lct{Meta\-Node\ct{>>>}autoSelect: aMetaNode}. When a particular child for auto selection is designated, the first node produced by following its metaedge will be selected.
-
+\on{Why should I care about this now?}
 
 \paragraph{Command.} A \emph{Command} enables interaction and manipulation of the domain graph. Commands may be available through menus and buttons in the browser. They therefore have the ability to render themselves in a user interfaces and are responsible for handling exceptions that may occur when triggered. 
 
@@ -174,8 +176,10 @@ Commands are defined in a non-invasive way: adding and removing commands is done
 
 A command is defined by subclassing \ct{OBCommand}, then redefining its four main methods with the desired behavior and finally defining a method on the browser class whose name begins with \ct{cmd}. This method has to return a command class. An example is provided in the following subsection.
 
+%:===>HERE<===
+
 \paragraph{Filter.} 
-The metagraph describes a state machine. When the browser is in a state in which more than one transition are available, the user decides which transition to follow. To allow that to happen \ob displays the possible transitions  to the user. From all the possible transitions, \obf fetches all the nodes that represent the states the user could arrive at by following those transitions and list them in the next column. Note that the transition is not actually made yet, and the definition pane is still displaying the current definition. Once a click is made, the transition  actually happens, the definition pane is updated (and perhaps other panes such as button bars), and \ob gathers the next round of possible transitions.
+The metagraph describes a state machine. When the browser is in a state in which more than one transition are available, the user decides which transition to follow. To allow that to happen \ob displays the possible transitions  to the user. From all the possible transitions, \obf fetches all the nodes that represent the states the user could arrive at by following those transitions and list them in the next column. Note that the transition is not actually made yet, and the definition pane is still displaying the current definition. \ugh{Once a click is made}, the transition  actually happens, the definition pane is updated (and perhaps other panes such as button bars), and \ob gathers the next round of possible transitions.
 
 %\ab{This was not introduced before, it is not clear to me that people will get this example: for example \ct{\#allCategory} (which will lead to the allMethodCategory state) and\ct{\#categories} (which will lead to the methodCategories state)}
 
@@ -371,7 +375,7 @@ OBFileBrowser>>cmdRemoveFile
 
 Open a new browser, then right click on a selected file and you will get a menu that contains this command. Currently, the list of files is not refreshed when files are removed. Refreshing can for instance be done by announcing a \ct{nodeDeleted} announcement in the \ct{execute} method. This can be achieved by inserting the expression \ct{target announce: (OBNodeDeleted node: self)}. Since this is a common operation, an helper is provided for that purpose: simply send the \ct{signalDeletion} message to \ct{target}.
 
-%:===============
+%===============
 \subsection{Core Behavior of the Framework}\label{sec:corebehavior}
 
 The core of the \ob framework is composed of 8 classes (\figref{core}). We denote the \st metaclass hierarchy by a dashed arrow. 
@@ -399,10 +403,7 @@ When the browser is in a state where several transitions are available, it displ
 As explained before, a filter or modal filter can be used to select only a number of outgoing edges when not all of them need to be shown to the user. This is useful for instance to display the instance side, comments, or class side of a particular class in the classic standard system browser (cf. \secref{codebrowser}). Class \ct{OBFilter} is responsible for filtering nodes in the graph. The method \ct{nodesForParent:} computes a transition in the domain metagraph. This method returns a list of nodes obtained from a given node passed as argument. The class \ct{OBFilter} is subclassed into \ct{OBModalFilter}, a handy filter that represents transitions in the metagraph that can be traversed by using a radio button in the GUI.
 
 
-%:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Glueing Widgets with the Metagraph}\label{widgets}
 From the programmer point of view, creating a new browser implies defining a domain model (set of nodes like \ct{FileNode} and \ct{DirectoryNode}), a metagraph intended to steer the navigation and a set of commands to define interaction and actions with domain elements. The graphical user interface of a browser is automatically generated by the \obf. The GUI generated by \obf is contained in one window, and it is composed of 4 kinds of widgets (lists, radio buttons, menus and text panes).
 
@@ -435,7 +436,7 @@ The root of a metagraph corresponds to the left-most list. The number of lists d
 
 % - How it can be extended with a package/class button.
 
-%:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{The \ob-based System Browser} \seclabel{codebrowser}
 
@@ -462,8 +463,7 @@ In the upper part, the class list contains three buttons (titled \ct{instance}, 
 The \ct{-- all --} method category gets automatically selected when no other method category is selected. This is specified in the \ct{OBMetagraphBuilder>>>populateClassNode} method by invoking \ct{autoSelect: aMetanode}.
 %\alex{This method does not exist in the last version of Squeak-dev I have. OB is evolving fast} \dr{i guess this was just a mistake in the paper, the method is called populateClassNode, not populateClass}
 
-%:===============
-
+%===============
 \subsection{System Browser Internals}
 The \ob-based implementation of the \pharo system browser is composed of 17 classes (2 classes for the browser, 3 classes for the definitions of classes, methods and organization, 10 classes defining nodes and 2 utility classes with abstractions to help link the browser and the system). \figref{obInternal} shows the classes in \obf that need to be subclassed to produce the system browser. Note that the two utility classes are not represented on the picture.
 
@@ -606,8 +606,7 @@ Each graphical widget composing a browser is a listener and can emit events. Cre
 %The notion of ancestry refers to domain objects. It's mainly useful for jumping directly to a node that's deep in the graph - browsing a particular method, for example. To do this, one has to be able to select the correct class category, class, method category and method. To do this, we start at the root node, and walk down the graph, scanning the edges of the metagraph and choosing those that lead to ancestors of the target node, until the target node is reached.
 %}
 
-%:===============
-
+%===============
 \section{The Coverage Browser}\label{sec:coverageBrowser}
 
 The coverage browser is an extension to the system browser to show the coverage of code by unit tests.
@@ -647,8 +646,7 @@ The coverage browser is composed of 11 classes (one class for the browser, five 
 % number of methods in the coverage browser = 83 
 %(#(CoverageActor CoverageElementActor CoverageEnvironmentActor CoverageMethodNodeActor CoverageSetActor CoverageBrowser CoverageMethodNode CoverageNode CoverageElementNode CoverageEnvironmentNode CoverageSetNode) collect: [:cname| Smalltalk at: ('OB', cname) asSymbol]) inject: 0 into: [:sum :el| sum + el methodDictionary size] 
 
-%:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Evaluation and Discussions} \seclabel{discussion}
 
 Several other browsers such as a browser specifically supporting new language constructs such as Traits have been developed using \obf demonstrating that the framework is mature and extensible. Figure~\ref{browsers} shows some browsers that are based on \obf.
@@ -752,8 +750,7 @@ Such a situation does not occur in \obf, as metagraphs are declaratively defined
 %	self error: 'Browser internal error: unknown edit selection.'
 %\end{code}
 
-%:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %\section{Related Work} \seclabel{relatedwork}
 
 %\paragraph{MVC} The Model-View-Controller~\cite{Kras88a,Tryg03a,Tryg79a} promotes a distinction between three important roles (namely data, output and interaction) that should be reflected in the design of a user interface framework. Those roles were reflected in three abstract superclasses: \ct{Model}, \ct{View}, \ct{Controller}. Still for system browsers, developers consider the model as the entities of the domain and do not have explicit or meta entities describing the navigation within the domain model. Note also that a controller in MVC captures the interaction of users with a widget,and passes this information to the model. The level of abstraction, however, is lower than what is offered by  \emph{Command} in the \obf, which is not programmed in terms of a widget but in terms of the domain entities.\\
@@ -793,9 +790,7 @@ Such a situation does not occur in \obf, as metagraphs are declaratively defined
 %Browser navigation can be expressed by constraints between the different elements that composed a browser. But there is no explicit distinction between the domain and its navigation. 
 
 
-%:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Conclusion} \seclabel{conclusion}
 
 % [RoelSpace :-) ]
