@@ -584,34 +584,32 @@ Installer>>>installQuietly: packageNameCollectionOrDetectBlock
 % The code actually says resume: true, but Keith Hodges confirms that this is not necessary
 
 
-%:===> CONVERT USER INTERACTION TO REAL EXAMPLE <===
-
 Another typical situation can be seen when an interaction with the user is required, as in the following example:
-\on{should turn this into a real example or a test}
 \begin{code}{}
-MyApplication>>>readOptionsFrom: aStream 
+ResumableLoader>>>readOptionsFrom: aStream 
 	| option |
-	[aStream atEnd] whileFalse: 	
-		[option := self parseOptionString. "nil if invalid" 
-		option isNil 
-			ifTrue: [InvalidOption signal] 
-			ifFalse: [self addOption: option]]. 
-	aStream close. 
+	[aStream atEnd]
+		whileFalse: [option := self parseOption: aStream.
+			"nil if invalid"
+			option isNil
+				ifTrue: [InvalidOption signal]
+				ifFalse: [self addOption: option]].
+	aStream close
 
- MyApplication>>>readConfiguration 
-	| stream | 
-	stream := 'options' asFilename readStream. 
-	[self readOptionsFrom: stream] 
-		on: InvalidOption 
-		do: [:ex |
-			(UIManager default confirm: 'Invalid option line. Continue loading?') 
-				ifTrue: [ex resume] 
-				ifFalse: [ex return]]. 
-		stream close. 
+ResumableLoader>>>readConfiguration
+	| stream |
+	stream := self optionStream.
+	[self readOptionsFrom: stream]
+		on: InvalidOption
+		do: [:ex | (UIManager default confirm: 'Invalid option line. Continue loading?')
+				ifTrue: [ex resume]
+				ifFalse: [ex return]].
+	stream close
 \end{code}
 
-If an invalid option is provided in \ct{readOptionsFrom:}, an \ct{InvalidOption} exception is signaled. The block handler in \ct{readConfiguration} resumes the exception, then the \ct{signal} method call in \ct{readOptionsFrom:} returns and the execution keeps going.
+If an invalid option is encountered in \ct{readOptionsFrom:}, an \ct{InvalidOption} exception is signaled. The block handler in \ct{readConfiguration} resumes the exception, then the \ct{signal} method call in \ct{readOptionsFrom:} returns and the execution keeps going.
 
+Note that \ct{InvalidOption} must be a resumable exception. It suffices to define it as a subclass of \ct{Exception}.
 It is not always a reasonable option to \ct{resume} an exception. For example, there is no sensible way to resume a \ct{FileNotFound} exception. The message \ct{isResumable} is used to determine whether an exception may be resumed or not. In \ct{Error>>>isResumable} returns \ct{false}, so by default subclasses of \ct{Error} are not resumable, unless they override this method to return \ct{true}.
 
 %=================================================================
@@ -793,15 +791,23 @@ Exception class>>>, anotherException
 The rest of the magic occurs in the class \ct{ExceptionSet}, which has a surprisingly trivial implementation.
 
 
+%=========================================================
 \section{How this is implemented?}
 
 %:===> REVISE IMPLEMENTATION SECTION <===
-\on{As an explanation, this part really does not work. I would prefer to leave it out.}
-\sd{no this is really important I did a new pass on it}
+%\on{As an explanation, this part really does not work. I would prefer to leave it out.}
+%\sd{no this is really important I did a new pass on it}
 
-Up until now, we presented the use of exceptions in \st and their power without really saying a word on their implementation
-at the execution engine level (Virtual Machine). Normally you do not need to know how handler are really looked up at execution time to use exception. Therefore in the first reading you can skip this section. Now if you are curious and really want to know how this is implemented 
-at the Virtual Machine level, this section is for you.  This section will uncover the internal of the Pharo exception mechanism. The mechanism is quite simple, making it worth to know how it operates. This section is a wonderful example on how Pharo can reveal information just by browsing its source code.
+\on{need new intro}
+
+\ugh{Up to now, we have presented the use of exceptions in \st without really saying a word about their implementation.
+at the execution engine level (Virtual Machine). 
+Normally you do not need to know how handlers are really looked up at execution time to use exceptions.
+Therefore in the first reading you can skip this section. Now if you are curious and really want to know how this is implemented at the Virtual Machine level, this section is for you. 
+This section will uncover the internal of the Pharo exception mechanism.
+The mechanism is quite simple, making it worth to know how it operates.
+This section is a wonderful example on how Pharo can reveal information just by browsing its source code.}
+
 
 \paragraph{Storing Handlers.}
 What we want to understand is how the information (exception type and its associated handler) is stored and how this information is found at run-time. Let us look at the definition of the central method \ct{on:do:} defined on the class \ct{BlockContext} which is the class representing the block-closure. 
@@ -815,7 +821,7 @@ BlockContext>>>on: exception do: handlerAction
 	^self value 
 \end{code}
 
-When reading the code we learn two things: First, this method is implemented as a primitive, which means that  a function defined in the virtual machine is executed, when this method is invoked. Second, the method body simply returns the value of the block receiver and sets the variable \ct{handlerActive} to true. Surprinsingly simple. 
+When reading the code we learn two things: First, this method is implemented as a primitive, which means that  a function defined in the virtual machine is executed, when this method is invoked. Second, the method body simply returns the value of the block receiver and sets the variable \ct{handlerActive} to true. Surprisingly simple. 
 
 A primitive method as \ct{on:do:} has a body and a primitive number. Normally, the method body is not executed since the method is bound to a function written in C. When the method has to be executed, the C function is executed instead. In case of a failure in the C function, the \st method body is executed. The method body is then in charge of taking decisions on how to deal with the failure.
 Here the method \ct{on:do:} is associated with the primitive number 199. This number is important to understand the following. 
@@ -832,6 +838,8 @@ ContextPart variableSubclass: #BlockContext
 
 They are not defined there nor in the superclass. So what is the only solution left? To store the information in the object representing the stack itself. Let us have a look at that. The exception type associated and the exception handler are kept in this activation context (index 1 and 2, respectively). To verify this, you can inspect the following piece of code:
 
+\on{isn't there a method that uses this information? start there}
+
 \begin{code}{}
 | exception handler | 
 [exception := thisContext sender at: 1. 
@@ -843,6 +851,8 @@ do: [:ex| ].
 \end{code}
 
 The last statement is a 2-length array that contains the exception type and the exception handler. 
+
+\on{Don't see why this is important or interesting -- where is it used? I checked and could not find out where in the system this is accessed.}
 
 
 \paragraph{Finding Handlers.}
@@ -906,35 +916,34 @@ So in summary the virtual machine finds the activation contexts that correspond 
 
 %I could not get the following. \ugh{Method contexts are objects that may be manipulated as any plain objects. They represent a linked list of a which may be shortened a anytime. This is the principle of exception. In theory, it is not necessary to hardcode functions dedicated to exceptions in the virtual machine. This is a superb example of the \st flexibility.}
 
-\section{Error and Notification}
+%=========================================================
+%\section{Error and Notification}
 
-%:===> CANCEL ERROR AND NOTIFICATION SECTION ? <===
+%
+%\sd{probably redundant}
+%\on{not very interesting or useful --- I would leave this out too}
 
+%\ugh{First of all, let us have a look at the different kind of exceptions offered by \st. Among the exceptions that may be signaled, we make a distinction between errors and notifications. The first tells the programmer that the program falls into an abnormal situation. The latter tells that a particular event occurred but if no action is taken, the program will continue to execute. Notifications are often used as alters (\ct{Warning} class) which are used to notify abnormal but non-lethal behavior. Note that C\# and Java propose a similar use of exceptions.}
 
-\sd{probably redundant}
-\on{not very interesting or useful --- I would leave this out too}
+%Graphically user interfaces makes a great use of notifications. In \pharo, \ct{ProgressNotification} is used to move the progress bar forward when a task is being realized. \ct{ProgressNotification} is a subclass of \ct{Notification}.
 
-\ugh{First of all, let us have a look at the different kind of exceptions offered by \st. Among the exceptions that may be signaled, we make a distinction between errors and notifications. The first tells the programmer that the program falls into an abnormal situation. The latter tells that a particular event occurred but if no action is taken, the program will continue to execute. Notifications are often used as alters (\ct{Warning} class) which are used to notify abnormal but non-lethal behavior. Note that C\# and Java propose a similar use of exceptions.}
+%\begin{figure}[ht]\centering
+%        \includegraphics[width=.6\linewidth]{hierarchy}
+%        \caption{An except \on{?} of the \pharo exception hierarchy.\figlabel{hierarchy}
+%        \on{Kill Object. Which of these are resumable? Why this chart?}}
+%\end{figure}
 
-Graphically user interfaces makes a great use of notifications. In \pharo, \ct{ProgressNotification} is used to move the progress bar forward when a task is being realized. \ct{ProgressNotification} is a subclass of \ct{Notification}.
+%Compared with other languages, \st features an interesting ability for its exceptions: the control flow that signaled an exception may be resumed in the exception handler that caught the exception. The control flow of the application before the exception was signaled may then continue. Of course, it is the responsibility of the exception handler to update the system in order to give sense to an exception resume.
 
-\begin{figure}[ht]\centering
-        \includegraphics[width=.6\linewidth]{hierarchy}
-        \caption{An except \on{?} of the \pharo exception hierarchy.\figlabel{hierarchy}
-        \on{Kill Object. Which of these are resumable? Why this chart?}}
-\end{figure}
+%The property of being resumed is orthogonal to the notion of error. An error may be resumable. For example, the class \ct{MessageNotUnderstood} is a subclass of \ct{Error} but it is resumable:
+%\on{? discussed above with Halt}
 
-Compared with other languages, \st features an interesting ability for its exceptions: the control flow that signaled an exception may be resumed in the exception handler that caught the exception. The control flow of the application before the exception was signaled may then continue. Of course, it is the responsibility of the exception handler to update the system in order to give sense to an exception resume.
+%\begin{code}{}
+%MessageNotUnderstood>>>isResumable 
+%     ^true
+%\end{code}
 
-The property of being resumed is orthogonal to the notion of error. An error may be resumable. For example, the class \ct{MessageNotUnderstood} is a subclass of \ct{Error} but it is resumable:
-\on{? discussed above with Halt}
-
-\begin{code}{}
-MessageNotUnderstood>>>isResumable 
-     ^true
-\end{code}
-
-\ugh{Now, we will see how an exception handler may resume an exception.}
+%\ugh{Now, we will see how an exception handler may resume an exception.}
 
 %=================================================================
 \section{Chapter Summary}
