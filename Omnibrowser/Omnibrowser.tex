@@ -176,8 +176,6 @@ Commands are defined in a non-invasive way: adding and removing commands is done
 
 A command is defined by subclassing \ct{OBCommand}, then redefining its four main methods with the desired behavior and finally defining a method on the browser class whose name begins with \ct{cmd}. This method has to return a command class. An example is provided in the following subsection.
 
-%:===>HERE<===
-
 \paragraph{Filter.} 
 The metagraph describes a state machine. When the browser is in a state in which more than one transition are available, the user decides which transition to follow. To allow that to happen \ob displays the possible transitions  to the user. From all the possible transitions, \obf fetches all the nodes that represent the states the user could arrive at by following those transitions and list them in the next column. Note that the transition is not actually made yet, and the definition pane is still displaying the current definition. \ugh{Once a click is made}, the transition  actually happens, the definition pane is updated (and perhaps other panes such as button bars), and \ob gathers the next round of possible transitions.
 
