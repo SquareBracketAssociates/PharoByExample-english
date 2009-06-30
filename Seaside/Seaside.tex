@@ -98,7 +98,7 @@ In the default installation, the default \subind{Seaside}{administrator login} i
 To change them, evaluate: \clsind{WADispatcherEditor} \ct{initialize}.
 This will prompt you for a new name and password.
 
-%:FIG seasideStartup
+
 \begin{figure}[tbh]
 \begin{center}
 \includegraphics[width=\textwidth]{seasideStartup}
@@ -116,7 +116,7 @@ You should see a web page that looks like \figref{seasideStartup}.
 \noindent
 \dothis{Navigate to the \lct{examples{\go}counter} page. (\figref{counter})}
 
-%:FIG counter
+
 \begin{figure}[htb]
 \begin{center}
 \includegraphics[width=0.8\textwidth]{counter}
@@ -148,7 +148,6 @@ In fact, components are ordinary Smalltalk objects.
 The only thing that is special about them is that they should be instances of classes that inherit from the Seaside framework class \ct{WAComponent}.
 We can explore components and their classes from the \pharo image, or directly from the web interface using halos.
 
-%:FIG counterHalos
 \begin{figure}[ht]
 \begin{center}
 \includegraphics[width=\textwidth]{counterHalos}
@@ -171,7 +170,6 @@ Contrast the nicely-formatted source view provided by the Halos with the unforma
 The Seaside class browser and object inspector can be very convenient when the server is running on another computer, especially when the server does not have a display, or if it is in remote place. 
 However, when you are first developing a Seaside application, the server will be running locally, and it is easy to use the ordinary \pharo development tools in the server image.
 
-%:FIG haltingCounter
 \begin{figure}[ht]
 \begin{center}
 \includegraphics[width=0.7\textwidth]{haltingCounter}
@@ -189,7 +187,6 @@ Go back to the web browser and notice that the counter application is running ag
 
 Seaside components can be instantiated multiple times and in different contexts.
 
-%:FIG multiCounterHalos
 \begin{figure}[ht]
 \begin{center}
 \includegraphics[width=\textwidth]{multiCounterHalos}
@@ -222,7 +219,6 @@ Use the same configuration interface to remove this entry point.
 \index{Seaside!configuration}
 
 
-%:FIG counter2
 \begin{figure}[ht]
 \begin{center}
 \includegraphics[width=0.8\textwidth]{counter2}
@@ -291,7 +287,6 @@ We are almost done!
 Now point your browser to \url{http://localhost:8080/seaside/hello}.
 That's it!  You should see a web page like \figref{WAHelloWorld}.}
 
-%:FIG WAHelloWorld
 \begin{figure}[htb]
 \begin{center}
 \includegraphics[width=\textwidth]{WAHelloWorld}
@@ -307,7 +302,6 @@ That's it!  You should see a web page like \figref{WAHelloWorld}.}
 The ``counter'' application is only slightly more complex than the ``hello world'' application.
 \label{sec:backtracking}
 
-%:FIG WACounter
 \begin{figure}[ht]
 \begin{center}
 \includegraphics[width=\textwidth]{WACounter}
@@ -368,7 +362,6 @@ In addition, it is a \emph{composite} component, so Seaside requires it to decla
 It renders itself by rendering each of its subcomponents, separated by a horizontal rule.
 Aside from instance and class-side initialization methods, there is nothing else to the multi-counter!
 
-%:FIG WAMultiCounter
 \begin{figure}[bht]
 \begin{center}
 \includegraphics[width=\textwidth]{WAMultiCounter}
@@ -411,7 +404,6 @@ We have already seen the following brush used in the counter and multi-counter e
 html horizontalRule.
 \end{code}
 
-%:FIG RenderingDemo
 \begin{figure}[ht]
 \begin{center}
 \includegraphics[width=\textwidth]{RenderingDemo}
@@ -625,7 +617,6 @@ Basically a CSS style sheet consists of a set of rules that specify how to forma
 Each rule consists of two parts.
 There is a \emph{selector} that specifies which XHTML elements the rule applies to, and there is a \emph{declaration} which sets a number of attributes for that element.
 
-%:FIG democss
 \begin{figure}[tb]
 \begin{code}{}
 SeasideDemoWidget>>>style
@@ -755,7 +746,6 @@ The generated dialogues are shown in \figref{dialogs}.
 We can see these convenience methods being used within \ct{SeasideDialogDemo>>>renderContentOn:}
 \index{Seaside!convenience methods}
 
-%:FIG dialogs
 \begin{figure}[b]
 \begin{center}
 \includegraphics[width=\textwidth]{dialogs}
@@ -851,7 +841,6 @@ WAConvenienceTest>>>informCheese
 
 The generated dialogues are shown in \figref{chooseCheese}.
 
-%:FIG chooseCheese
 \begin{figure}[ht]
 \begin{center}
 \includegraphics[width=0.8\textwidth]{chooseCheese}
@@ -874,7 +863,6 @@ Seaside allows you to prevent this by defining a task within which certain actio
 You can backtrack within a transaction, but once a transaction is complete, you can no longer go back to it.
 The corresponding pages are \emph{invalidated}, and any attempt to go back to them will cause Seaside to generate a warning and redirect the user to the most recent valid page.
 
-%:FIG sushiStore
 \begin{figure}[ht]
 \begin{center}
 \includegraphics[width=\textwidth]{sushiStore}
@@ -975,7 +963,6 @@ We will build a RPN (Reverse Polish Notation) calculator as a Seaside applicatio
 Furthermore, the Seaside interface will let us toggle between two displays\,---\,one which just shows us the current value on top of the stack, and the other which shows us the complete state of the stack.
 The calculator with the two display options is shown in \figref{stackMachine}.
 
-%:FIG stackMachine
 \begin{figure}[ht]
 \begin{center}
 \includegraphics[width=0.8\textwidth]{stackMachine}
@@ -1094,7 +1081,6 @@ Now the calculator should display a single cell containing the value 0.
 If you toggle the halos, you should see something like this:
 }
 
-%:FIG firstStackDisplay
 \begin{figure}[ht]
 \begin{center}
 \includegraphics[width=0.7\textwidth]{firstStackDisplay}
@@ -1344,7 +1330,6 @@ MyCalculator class>>>initialize
 		addLibrary: SULibrary}}
 \end{code}
 
-%:FIG ajax-processing
 \begin{figure}[ht]
 \begin{center}
 \includegraphics[width=\textwidth]{ajax-processing}

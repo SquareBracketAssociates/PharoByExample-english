@@ -90,18 +90,14 @@
 \newcommand{\xUnit}{$x$Unit\xspace}
 \newcommand{\JUnit}{JUnit\xspace}
 \newcommand{\st}{Smalltalk\xspace}
-% \newcommand{\Pharo}{Pharo\xspace}
 \newcommand{\pharo}{Pharo\xspace} % Use this, not \Pharo
-% \newcommand{\Squeak}{Squeak\xspace} % Please don't change this to "Pharo"! (ON)
-% \newcommand{\sq}{Squeak\xspace} % Please don't change this to "Pharo"! (ON)
 \newcommand{\sqmap}{SqueakMap\xspace}
 \newcommand{\squeak}{Squeak\xspace} % use this, not \Squeak or \sq
 \newcommand{\sqsrc}{SqueakSource\xspace}
-%\newcommand{\sbe}{\url{scg.unibe.ch/SBE}\xspace}
-%\newcommand{\sbe}{\url{squeakbyexample.org}\xspace}
 \newcommand{\sbe}{\url{SqueakByExample.org}\xspace}
-\newcommand{\pbe}{\url{pharo-project.org}\xspace}
-\newcommand{\sba}{\url{SquareBracketAssociates.org}\xspace}
+\newcommand{\pharoweb}{\url{http://pharo-project.org}\xspace}
+\newcommand{\pbe}{\url{http://pharo-project.org/PharoByExample}\xspace}
+\newcommand{\sba}{\url{http://SquareBracketAssociates.org}\xspace}
 %=============================================================
 %:Markup macros for proof-reading
 \usepackage[normalem]{ulem} % for \sout
@@ -113,11 +109,15 @@
 \newcommand{\chg}[2]{\textcolor{red}{\sout{#1}}{\ra}\textcolor{blue}{\uline{#2}}} % please change
 %=============================================================
 %:Editorial comment macros
-\newcommand{\nnbb}[2]{
-    % \fbox{\bfseries\sffamily\scriptsize#1}
-    \fcolorbox{gray}{yellow}{\bfseries\sffamily\scriptsize#1}
-    {\sf\small$\blacktriangleright$\textit{#2}$\blacktriangleleft$}
-   }
+%\newcommand{\nnbb}[2]{
+%    % \fbox{\bfseries\sffamily\scriptsize#1}
+%    \fcolorbox{gray}{yellow}{\bfseries\sffamily\scriptsize#1}
+%    {\sf\small$\blacktriangleright$\textit{#2}$\blacktriangleleft$}
+%   }
+\newcommand{\yellowbox}[1]{\fcolorbox{gray}{yellow}{\bfseries\sffamily\scriptsize#1}}
+\newcommand{\triangles}[1]{{\sf\small$\blacktriangleright$\textit{#1}$\blacktriangleleft$}}
+\newcommand{\nnbb}[2]{\yellowbox{#1} \triangles{#2}}
+\newcommand{\fix}{\yellowbox{FIX!}}
 \newcommand{\ab}[1]{\nnbb{Andrew}{#1}}
 \newcommand{\sd}[1]{\nnbb{St\'{e}f}{#1}}
 \newcommand{\md}[1]{\nnbb{Marcus}{#1}}
@@ -267,7 +267,7 @@
 %   colorlinks,
 %   linkcolor=darkblue,
 %   citecolor=darkblue,
-   pdftitle={Squeak by Example},
+   pdftitle={Pharo by Example},
    pdfauthor={Andrew P. Black, St\'ephane Ducasse,	Oscar Nierstrasz,
 Damien Pollet},
    pdfkeywords={Smalltalk, Squeak, Object-Oriented Programming, OOP},

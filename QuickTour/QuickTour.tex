@@ -34,7 +34,7 @@
 % --------------------------------------------
     \graphicspath{{figures/} {../figures/}}
 	\begin{document}
-	\renewcommand{\nnbb}[2]{} % Disable editorial comments
+	% \renewcommand{\nnbb}[2]{} % Disable editorial comments
 	\sloppy
 \fi
 %=================================================================
@@ -42,76 +42,74 @@
 	\raisebox{-0.8ex}[0pt][0pt]{%
 		\includegraphics[width=1em]{cloverleafKey}}}
 %=================================================================
-\chapter{A quick tour of \squeak}
+\chapter{A quick tour of \pharo}
 \label{cha:quick}
 
-In this chapter we will give you a high-level tour of \squeak to help you get comfortable with the environment.
+In this chapter we will give you a high-level tour of \pharo to help you get comfortable with the environment.
 There will be plenty of opportunities to try things out, so it would be a good idea if you have a computer handy when you read this chapter.
 
-We will use this icon: \dothisicon{} to mark places in the text where you should try something out in \squeak.
-In particular, you will fire up \squeak, learn about the different ways of interacting with the system, and discover some of the basic tools.
+We will use this icon: \dothisicon{} to mark places in the text where you should try something out in \pharo.
+In particular, you will fire up \pharo, learn about the different ways of interacting with the system, and discover some of the basic tools.
 You will also learn how to define a new method, create an object and send it messages.
 
 %=================================================================
 \section{Getting started}
 
-\squeak is available as a free \ind{download} from \url{www.squeak.org}.
+\pharo is available as a free \ind{download} from \pharoweb.
 There are three parts that you will need to download, consisting of four files (see \figref{download}).
+\fix
+%:==> FIX download files, instructions, snapshots
 
 \begin{figure}[htb]
 \centerline {\includegraphics[width=\textwidth]{annotatedDownload}}
-\caption{The \squeak download files.\label{fig:download}}
+\caption{The \pharo download files.\label{fig:download}}
 \end{figure}
 
 \begin{enumerate}
 
-  \item The \emphind{virtual machine} (VM) is the only part of the system that is different for each operating system and processor.  Pre-compiled virtual machines are available for all the major computing environments.  In \figref{download} we see the VM for the Mac is called \textit{\squeak 3.8.15beta1U.app}.
+  \item The \emphind{virtual machine} (VM) is the only part of the system that is different for each operating system and processor.  Pre-compiled virtual machines are available for all the major computing environments.  In \figref{download} we see the VM for the Mac is called \textit{\pharo \fix 3.8.15beta1U.app}.
 
-  \item The \emphind{sources} file contains the source code for all of the parts of \squeak that don't change very frequently. In \figref{download} it is called \emph{SqueakV39.sources}. Note that the file SqueakV39.sources is only for versions 3.9 and later of \squeak. For earlier versions, use a sources file corresponding to the main version \eg \textit{SqueakV3.sources} for versions of \squeak from 3.0 up to 3.8.
+  \item The \emphind{sources} file contains the source code for all of the parts of \pharo that don't change very frequently. In \figref{download} it is called \fix \emph{SqueakV39.sources}. Note that the file SqueakV39.sources is only for versions 3.9 and later of \pharo. For earlier versions, use a sources file corresponding to the main version \eg \textit{SqueakV3.sources} for versions of \pharo from 3.0 up to 3.8.
 
-  \item The current \emph{system \ind{image}} is a snapshot of a running \squeak system, frozen in time.  It consists of two files: an \emph{.}\emphind{image} file, which contains the state of all of the objects in the system (including classes and methods, since they are objects too), and a \emph{.}\emphind{changes} file, which contains a log of all of the changes to the source code of the system.
+  \item The current \emph{system \ind{image}} is a snapshot of a running \pharo system, frozen in time.  It consists of two files: an \emph{.}\emphind{image} file, which contains the state of all of the objects in the system (including classes and methods, since they are objects too), and a \emph{.}\emphind{changes} file, which contains a log of all of the changes to the source code of the system.
 In \figref{download}, we see that we have grabbed the \textit{Squeak3.9-final-7067} image and changes files.
 Actually, we will use a slightly different image in this book.
 \end{enumerate}
 
-\dothis{Download and install \squeak on your computer.
-We recommend that you use the image provided on the Squeak by Example web page.\footnote{Visit \url{http://SqueakByExample.org} and look for ``Download Squeak'' in the sidebar.}}
+\dothis{Download and install \pharo on your computer.}
+% We recommend that you use the image provided on the \pharo by Example web page.\footnote{\pbe}
 \index{download}
 \label{sec:sbeImage}
 
-%The version of \squeak that we have used for developing the examples in this book is derived from \emphind{Squeak-dev}.\footnote{\url{http://damien.cassou.free.fr/squeak-dev.html}}
-%\label{sec:squeakDev}
-%We chose this image because it has a wider variety of programming tools pre-installed, and because additional packages can be loaded with a single click.  
 Most of the introductory material in this book will work with any version, so if you already have one installed, you may as well continue to use it.
 However, if you notice differences between the appearance or behaviour of your system and what is described here, do not be surprised. 
-On the other hand, if you are about to download \squeak for the first time, you may as well grab the \emph{Squeak by Example} image.
+% On the other hand, if you are about to download \pharo for the first time, you may as well grab the \emph{\pharo by Example} image.
 
-As you work in \squeak, the image and changes files are modified, so you need to make sure that they are writable.
+As you work in \pharo, the image and changes files are modified, so you need to make sure that they are writable.
 Always keep these two files together.
-Never edit them directly with a text editor, as \squeak uses them to store the objects you work with and to log the changes you make to the source code.
+Never edit them directly with a text editor, as \pharo uses them to store the objects you work with and to log the changes you make to the source code.
 It is a good idea to keep a backup copy of the downloaded image and changes files so you can always start from a fresh image and reload your code.
 
 The \emphind{sources} file and the VM can be read-only\,---\,they can be shared between different users.
 All of these files can be placed in the same directory, but it is also possible to put the Virtual Machine and sources file in separate directory where everyone has access to them.
 Do whatever works best for your style of working and your operating system.
 
-\sd{it would be really nice to have a setup and startup section on PC, Mac and Linux}
-\ab{I agree entirely; the reason that this is not here is because I could do only the Mac section.  Damien can probably do Windoze.  Perhaps we can ask on the list for a Linux volunteer?}
+%\sd{it would be really nice to have a setup and startup section on PC, Mac and Linux}
+%\ab{I agree entirely; the reason that this is not here is because I could do only the Mac section.  Damien can probably do Windoze.  Perhaps we can ask on the list for a Linux volunteer?}
 
 %-----------------------------------------------------------------
 \begin{figure}[htb]
 % \centerline {\includegraphics[width=0.6\textwidth]{download}}
 \centerline {\includegraphics[width=\textwidth]{startup}}
-\caption{A fresh \sbe image.\label{fig:startup}}
+\caption{A fresh \pbe image.\label{fig:startup}}
 \end{figure}
 
-\index{launching Squeak}
-\paragraph{Launching.} To start \squeak, do whatever your operating system expects: drag the \emph{.}\emphind{image} file onto the icon of the virtual machine, or double-click the \emph{.image} file, or  at the command line type the name of the virtual machine followed by the path to the \emph{.image} file. (When you have multiple VMs installed on your machine the operating system may not automatically pick the right one; in this case it is safer to drag and drop the image onto the virtual machine, or to use the command line.)
+\index{launching \pharo}
+\paragraph{Launching.} To start \pharo, do whatever your operating system expects: drag the \emph{.}\emphind{image} file onto the icon of the virtual machine, or double-click the \emph{.image} file, or  at the command line type the name of the virtual machine followed by the path to the \emph{.image} file. (When you have multiple VMs installed on your machine the operating system may not automatically pick the right one; in this case it is safer to drag and drop the image onto the virtual machine, or to use the command line.)
 
-Once \squeak is running, you should see a single large window, possibly containing some open workspace windows (see \figref{startup}), and it's not obvious how to proceed!  You will notice that there is no menu bar, or at least not a useful one.  Instead,  \squeak makes heavy use of context-dependent pop-up menus.
+Once \pharo is running, you should see a single large window, possibly containing some open workspace windows (see \figref{startup}), and it's not obvious how to proceed!  You will notice that there is no menu bar, or at least not a useful one.  Instead,  \pharo makes heavy use of context-dependent pop-up menus.
 
-
-\dothis{Start \squeak. You can dismiss any open workspaces by clicking on the {\sf X} in the top left corner of the workspace window.  You can collapse the windows (so that they can be expanded again later) by clicking on the \raisebox{-0.2ex}{{\Large $\circ$}} in the top-right corner.}
+\dothis{Start \pharo. You can dismiss any open workspaces by clicking on the {\sf X} in the top left corner of the workspace window.  You can collapse the windows (so that they can be expanded again later) by clicking on the \raisebox{-0.2ex}{{\Large $\circ$}} in the top-right corner.}
 
 %-----------------------------------------------------------------
 \paragraph{First Interaction.}
@@ -128,7 +126,7 @@ A good place to get started is the \ind{world menu} shown in \figref{threeButton
 		\includegraphics[width=0.25\linewidth]{yellowButtonMenuOnWorkspace}}\hfill
 	\subfigure[The morphic halo]{\label{fig:threeButtons:blue}%
 		\includegraphics[width=0.25\linewidth]{morphicHaloOnWorkspace}}% these braces needed (else no whitespace at end of line)
-	\caption{The world menu (brought up by the red mouse button), a contextual menu (yellow mouse button), and a morphic \subind{Morphic}{halo} (blue mouse button).\label{fig:threeButtons}}
+	\caption{The world menu (brought up by the red mouse button), a contextual menu (yellow mouse button), and a morphic \subind{Morphic}{halo} (blue mouse button). \fix\label{fig:threeButtons}}
 \end{figure}
 \index{red button}
 \index{yellow button}
@@ -146,10 +144,12 @@ A good place to get started is the \ind{world menu} shown in \figref{threeButton
 \label{fig:colouredMouse}
 \end{wrapfigure}
 
-\squeak was originally designed for a computer with a \ind{three button mouse}.  If your mouse has fewer than three buttons, you will have to press extra keys while clicking the mouse to simulate the extra buttons.  A two-button mouse works quite well with \squeak, but if you have only a single-button mouse, you should seriously consider buying a two-button mouse with a clickable scroll wheel: it will make working with \squeak much more pleasant.
+\pharo was originally designed for a computer with a \ind{three button mouse}.  If your mouse has fewer than three buttons, you will have to press extra keys while clicking the mouse to simulate the extra buttons.  A two-button mouse works quite well with \pharo, but if you have only a single-button mouse, you should seriously consider buying a two-button mouse with a clickable scroll wheel: it will make working with \pharo much more pleasant.
 
-\squeak avoids terms like ``left mouse click'' because different computers, mice, keyboards and personal configurations mean that different users will need to press different physical buttons to achieve the same effect.  Instead, the mouse buttons are labeled with colors.  The mouse button that you pressed to get the ``World'' menu is called the \emphind{red button}; it is most often used for selecting items in lists, selecting text, and selecting menu items.
-When you start using \squeak, it can be surprisingly helpful to actually label your mouse, as shown in \figref{colouredMouse}.\footnote{We will avoid the term ``red-click'' and use ``click'' instead, since this is the default.}
+\fix \on{use click macros}
+
+\pharo avoids terms like ``left mouse click'' because different computers, mice, keyboards and personal configurations mean that different users will need to press different physical buttons to achieve the same effect.  Instead, the mouse buttons are labeled with colors.  The mouse button that you pressed to get the ``World'' menu is called the \emphind{red button}; it is most often used for selecting items in lists, selecting text, and selecting menu items.
+\ugh{When you start using \pharo, it can be surprisingly helpful to actually label your mouse, as shown in \figref{colouredMouse}.}\footnote{We will avoid the term ``red-click'' and use ``click'' instead, since this is the default.}
 
 The \emphind{yellow button} is the next most used button; it is used to bring up a contextual menu, that is, a menu that offers different sets of actions depending on where the mouse is pointing; see \figref{threeButtons:yellow}.
 
@@ -163,11 +163,12 @@ If you let the mouse linger over a handle, a help balloon will explain its funct
 \dothis{Click the blue button on the workspace.
 Grab the \raisebox{-0.4ex}{\includegraphics[width=1em]{morphicRotate}} handle near the bottom left corner and drag it to rotate the workspace.}
 
-We recommend that right-handed people configure their mouse to put the \ind{red button} on the left side of their mouse, the \ind{yellow button} on the right, and use a clickable scroll wheel, if one is available, for the blue button.  If you don't have a clickable scroll wheel, then you can get the Morphic halo by holding down the \ct{alt} or \ct{option} key while clicking the \ind{red button}.  If you are using a Macintosh without a second mouse button, you can simulate one by holding down the \clover{} key while clicking the mouse.  However, if you are going to be using \squeak at all often, we recommend investing in a mouse with at least two buttons.
+\on{ask andrew what to do here}
+We recommend that right-handed people configure their mouse to put the \ind{red button} on the left side of their mouse, the \ind{yellow button} on the right, and use a clickable scroll wheel, if one is available, for the blue button.  If you don't have a clickable scroll wheel, then you can get the Morphic halo by holding down the \ct{alt} or \ct{option} key while clicking the \ind{red button}.  If you are using a Macintosh without a second mouse button, you can simulate one by holding down the \clover{} key while clicking the mouse.  However, if you are going to be using \pharo at all often, we recommend investing in a mouse with at least two buttons.
 
 You can configure your mouse to work the way you want by using the preferences of your operating system and mouse driver.
-\squeak has some preferences for customising the mouse and the meta keys on your keyboard. You can find the \ind{preference browser} in the \menu{open} item of the \menu{World} menu. 
-In the preference browser, the \menu{general} category contains an option \menu{swapMouseButtons} that switches the yellow and blue functions (see \figref{prefBrowser}).  The \menu{keyboard} category has options to duplicate the various command keys.   
+\pharo has some preferences for customising the mouse and the meta keys on your keyboard. You can find the \ind{preference browser} in the \menu{open} item of the \menu{World} menu. 
+In the preference browser, the \menu{general} category contains an option \menu{swapMouseButtons} that switches the yellow and blue functions (see \figref{prefBrowser}). \on{fix this --- also preferences for halos} The \menu{keyboard} category has options to duplicate the various command keys.   
 
 \dothis{Open the preference browser and find the \menu{swapMouseButtons} option using the search box.}
 
@@ -182,14 +183,14 @@ In the preference browser, the \menu{general} category contains an option \menu{
 \section{The World menu}
 \index{world menu}
 
-\dothis{Click again on the \squeak background.}
+\dothis{Click again on the \pharo background.}
 You will see the \menu{World} menu again.
-Most \squeak menus are not modal; you can leave them on the screen for as long as you wish by clicking the push pin icon in the top-right corner. Do this. Also, notice that menus appear when you click the mouse, but do not disappear when you release it; they stay visible until you make a selection, or until you click outside of the menu. You can even move the menu around by grabbing its title bar.
+Most \pharo menus are not modal; you can leave them on the screen for as long as you wish by clicking the push pin icon in the top-right corner. Do this. Also, notice that menus appear when you click the mouse, but do not disappear when you release it; they stay visible until you make a selection, or until you click outside of the menu. You can even move the menu around by grabbing its title bar.
 
-The world menu provides you a simple means to access many of the tools that \squeak offers.
+The world menu provides you a simple means to access many of the tools that \pharo offers.
 
 \dothis{Have a closer look at the \menu{world\go{}open \ldots} menu.}
-You will see a list of several of the core tools in \squeak, including the system browser (one of many available class browsers) and the workspace.
+You will see a list of several of the core tools in \pharo, including the system browser (one of many available class browsers) and the workspace.
 We will encounter most of them in the coming chapters.
 
 \begin{figure}[htb]
@@ -201,7 +202,7 @@ We will encounter most of them in the coming chapters.
 \end{figure}
 
 %=================================================================
-\section{Saving, quitting and restarting a \squeak session}
+\section{Saving, quitting and restarting a \pharo session}
 
 \dothis{Bring up the world menu.
 Now select \menu{new morph \ldots} and navigate to \menu{from alphabetical list{\go}A-C{\go}BlobMorph}.
@@ -229,16 +230,16 @@ Put the blob down (by clicking) somewhere. It will start to move.}
 Now click on the \menu{Accept(s)} button.
 Now select \menu{World\go{}save and quit}.}
 
-Now if you go to the location where the original image and changes files were, you will find two new files called ``SBE.\ind{image}'' and ``SBE.\ind{changes}'' that represent the working state of the \squeak image at the moment before you told \squeak to \menu{save and quit}.
+Now if you go to the location where the original image and changes files were, you will find two new files called ``SBE.\ind{image}'' and ``SBE.\ind{changes}'' that represent the working state of the \pharo image at the moment before you told \pharo to \menu{save and quit}.
 If you wish, you can move these two files anywhere that you like on your disk, but if you do so you may (depending on your operating system) need to also move, copy or link to the virtual machine and the \emph{.source} file.
 
-\dothis{Start up \squeak from the newly created ``SBE.image'' file.}
+\dothis{Start up \pharo from the newly created ``SBE.image'' file.}
 
-Now you should find yourself in precisely the state you were when you quit \squeak. The blob is there again and it continues to move from where it was when you left it.
+Now you should find yourself in precisely the state you were when you quit \pharo. The blob is there again and it continues to move from where it was when you left it.
 
-When you start \squeak for the first time, the \squeak \ind{virtual machine} loads the image file that you provide. This file contains a snapshot of a large number of objects, including a vast amount of pre-existing code and a large number of programming tools (all of which are objects). As you work with \squeak, you will send messages to these objects, you will create new objects, and some of these objects will die and their memory will be reclaimed (\ie garbage-collected).
+When you start \pharo for the first time, the \pharo \ind{virtual machine} loads the image file that you provide. This file contains a snapshot of a large number of objects, including a vast amount of pre-existing code and a large number of programming tools (all of which are objects). As you work with \pharo, you will send messages to these objects, you will create new objects, and some of these objects will die and their memory will be reclaimed (\ie garbage-collected).
 
-When you quit \squeak, you will normally save a snapshot that contains all of your objects.  If you save normally, you will overwrite your old image file with the new snapshot. Alternatively you may save the image under a new name, as we just did.
+When you quit \pharo, you will normally save a snapshot that contains all of your objects.  If you save normally, you will overwrite your old image file with the new snapshot. Alternatively you may save the image under a new name, as we just did.
 
 In addition to the \emph{.image} file, there is also a \emph{.changes} file.
 This file contains a log of all the changes to the source code that you have made using the standard tools.
@@ -263,15 +264,15 @@ Click in the pink handle containing the cross; the blob should go away.
 \ifluluelse
 	{\centerline {\includegraphics[width=\textwidth]{Tools}}}
 	{\centerline {\includegraphics[width=0.8\textwidth]{Tools}}}
-\caption{The \squeak \toolsflap.\label{fig:tools}}
+\caption{The \pharo \toolsflap.\label{fig:tools}}
 \end{figure}
 
 %=================================================================
 \section{Workspaces and Transcripts}
 \label{sec:transcript}
 
-\dothis{Close all open windows. Click on the \menu{Tools} tab at the far right of the \squeak environment to open the \toolsflapind.}
-You will see icons for some of the key tools in \squeak (\figref{tools}).
+\dothis{Close all open windows. Click on the \menu{Tools} tab at the far right of the \pharo environment to open the \toolsflapind.}
+You will see icons for some of the key tools in \pharo (\figref{tools}).
 Drag out a \ind{transcript} and a \ind{workspace}.
 
 \dothis{Position and resize the transcript and workspace windows so that the workspace just overlaps the transcript.}
@@ -355,9 +356,9 @@ This time we see the result we expect (\figref{printit}).
 3 + 4 --> 7
 \end{code}
 \noindent
-We use the notation \ct{-->} as a convention in this book to indicate that a particular \squeak expression yields a given result when you \menu{print it}.
+We use the notation \ct{-->} as a convention in this book to indicate that a particular \pharo expression yields a given result when you \menu{print it}.
 
-\dothis{Delete the highlighted text ``\ct{7}'' (\squeak should have selected it for you, so you can just press the delete key). Select \ct{3+4} again and this time \menu{inspect it} (\short{i}).}
+\dothis{Delete the highlighted text ``\ct{7}'' (\pharo should have selected it for you, so you can just press the delete key). Select \ct{3+4} again and this time \menu{inspect it} (\short{i}).}
 \noindent
 Now you should see a new window, called an \emphind{inspector}, with the heading \ct{SmallInteger: 7} (\figref{inspectit}).
 The inspector is an extremely useful tool that will allow you to browse and interact with any object in the system.
@@ -391,43 +392,44 @@ In this case the object we are looking at is the \ct{Object} class.
 We can see directly all the information stored in this class, and we can easily navigate to all its parts.
 
 %=================================================================
-\section{\sqmap}
-\index{SqueakMap}
+% ON: SqueakMap has been removed from Pharo
+%\section{\sqmap}
+%\index{\sqmap}
 
-\sqmap is a web-based catalog of ``packages''\,---\,applications and libraries\,---\,that you can download to your image.
-The \ind{package}{}s are hosted in many different places in the world and maintained by many different people. Some of them may only work with a specific version of \squeak.
-\lr{Maybe mention Package Universes (SqueakMap is not maintained anymore)}
+%\sqmap is a web-based catalog of ``packages''\,---\,applications and libraries\,---\,that you can download to your image.
+%The \ind{package}{}s are hosted in many different places in the world and maintained by many different people. Some of them may only work with a specific version of \pharo.
+%\lr{Maybe mention Package Universes (\sqmap is not maintained anymore)}
 
-\dothis{Open \menu{World \go open... \go \sqmap package loader}.}
-You will need an Internet connection for this to work.  After some time, the \sqmap loader window should appear (\figref{sokoban}).
-On the left side is a very long list of packages.
-The field in the top-left corner is a search pane that can be used to find what you want in the list.
-Type ``\ind{Sokoban}'' in the search pane and hit the return key.
-Clicking on the right-pointing triangle by the name of a package reveals a list of available versions. When a package or a version is selected, information about it appears in the right-hand pane.
-Navigate to the latest version of \ct{Sokoban}.
-With the mouse in the list pane, use the yellow-button menu to \menu{install} the selected package.
-(If \squeak complains that it is not sure this version of the game will work in your image, just say ``yes'' and go ahead.)
-Notice that once a package has been installed, it is marked with an asterisk in the list in the \sqmap package loader. 
+%\dothis{Open \menu{World \go open... \go \sqmap package loader}.}
+%You will need an Internet connection for this to work.  After some time, the \sqmap loader window should appear (\figref{sokoban}).
+%On the left side is a very long list of packages.
+%The field in the top-left corner is a search pane that can be used to find what you want in the list.
+%Type ``\ind{Sokoban}'' in the search pane and hit the return key.
+%Clicking on the right-pointing triangle by the name of a package reveals a list of available versions. When a package or a version is selected, information about it appears in the right-hand pane.
+%Navigate to the latest version of \ct{Sokoban}.
+%With the mouse in the list pane, use the yellow-button menu to \menu{install} the selected package.
+%(If \pharo complains that it is not sure this version of the game will work in your image, just say ``yes'' and go ahead.)
+%Notice that once a package has been installed, it is marked with an asterisk in the list in the \sqmap package loader. 
 
-\begin{figure}[htb]
-\ifluluelse
-	{\centerline {\includegraphics[width=\textwidth]{SqueakMap}}}
-	{\centerline {\includegraphics[scale=0.7]{SqueakMap}}}
-\caption{Using \sqmap to install the Sokoban game.\label{fig:sokoban}}
-\end{figure}
+%\begin{figure}[htb]
+%\ifluluelse
+%	{\centerline {\includegraphics[width=\textwidth]{SqueakMap}}}
+%	{\centerline {\includegraphics[scale=0.7]{SqueakMap}}}
+%\caption{Using \sqmap to install the Sokoban game.\label{fig:sokoban}}
+%\end{figure}
 
-\dothis{After installing this package, start up \ct{Sokoban} by evaluating \ct{SokobanMorph random openInWorld} in a workspace.}
+%\dothis{After installing this package, start up \ct{Sokoban} by evaluating \ct{SokobanMorph random openInWorld} in a workspace.}
 
-% You can also try the \ct{NsGame}; execute it using \ct{NsGame new openInWorld}.
-% ON: I could not find NsGame anywhere!
+%% You can also try the \ct{NsGame}; execute it using \ct{NsGame new openInWorld}.
+%% ON: I could not find NsGame anywhere!
 
-The bottom-left pane in the \sqmap package loader provides various ways to filter the list of packages.   You can choose to see only those packages that are compatible with a particular version of \squeak, or only games, and so on.
+%The bottom-left pane in the \sqmap package loader provides various ways to filter the list of packages.   You can choose to see only those packages that are compatible with a particular version of \pharo, or only games, and so on.
 
 %=================================================================
 \section{The System Browser}
 
 The \ind{system browser} is one of the key tools used for programming.
-As we shall see, there are several interesting browsers available for \squeak, but this is the basic one you will find in any image.
+As we shall see, there are several interesting browsers available for \pharo, but this is the basic one you will find in any image.
 \seeindex{class browser}{system browser}
 \seeindex{browser}{system browser}
 
@@ -467,7 +469,7 @@ Now we see in the bottom pane the source code of the \ct{printString} method, sh
 %=================================================================
 \section{Finding classes}
 
-There are several ways to find a class in \squeak.  The first, as we have just seen above, is to know (or guess) what category it is in, and to navigate to it using the browser.
+There are several ways to find a class in \pharo.  The first, as we have just seen above, is to know (or guess) what category it is in, and to navigate to it using the browser.
 \index{system browser}
 \seeindex{system browser!finding classes}{class, finding}
 \index{class!finding}
@@ -501,7 +503,7 @@ If you click on the \button{?} at the bottom of the class pane, you can see the 
 
 \ab{I thought that this was supposed to be a \emph{Quick} tour!  And here we are describing a tool that I have used maybe twice in 10 years!   In any case, this description should be deferred to the \textbf{Environment} chapter}
 \on{I don't see why.  I use the hierarchy browser a lot!  I think it is really useful to know from the beginning, to help you find your through the hierarchy.}
-If you would like to explore \squeak's inheritance hierarchy, the \emphind{hierarchy browser} can help you.  
+If you would like to explore \pharo's inheritance hierarchy, the \emphind{hierarchy browser} can help you.  
 This can be useful if you are looking for an unknown subclass or superclass of a known class.
 The hierarchy browser is like the system browser, except that the list of classes is arranged as an indented tree mirroring the inheritance hierarchy.
 
@@ -605,7 +607,7 @@ testShout
 	self assert: ('Don''t panic' shout = 'DON''T PANICBANG')
 \end{method} % BANG is the escape for !
 
-How do we create a new method in \squeak?   First, we have to decide which class the method should belong to.
+How do we create a new method in \pharo?   First, we have to decide which class the method should belong to.
 In this case, the \ct{shout} method that we are testing will go in class \clsind{String}, so the corresponding test will, by convention, go in a class called \clsind{StringTest}.
 
 \begin{figure}[hbt]
@@ -683,7 +685,7 @@ shout
 \end{method}
 
 The comma is the string concatenation operation, so the body of this method appends an exclamation mark to an upper-case version of whatever \ct{String} object the \ct{shout} message was sent to.
-The $\uparrow$ tells \squeak that the expression that follows is the answer to be returned from the method, in this case the new concatenated string.
+The $\uparrow$ tells \pharo that the expression that follows is the answer to be returned from the method, in this case the new concatenated string.
 \seeindex{comma}{Collection, comma operator}
 \index{Collection!comma operator}
 
@@ -694,9 +696,9 @@ When you get to a green bar\footnotemark, it's a good idea to save your work and
 So do that right now!
 \footnotetext{Actually, you might not get a green bar since some images contains tests for bugs that still need to be fixed.
 Don't worry about this.
-\squeak is constantly evolving.
-%:PROBLEM --- StringTest has a broken test!
-% ON: There is a broken test in \ct{StringTest>>>\#testIndexOf}!
+\pharo is constantly evolving.
+%:==> PROBLEM --- StringTest has a broken test!
+%: ON: There is a broken test in \ct{StringTest>>>\#testIndexOf}!
 }
 
 \begin{figure}[hbt]
@@ -709,17 +711,17 @@ Don't worry about this.
 
 %=================================================================
 \section{Chapter summary}
-This chapter has introduced you to the \squeak environment and shown you how to use some of the major tools, such as the system browser, the method finder, and the test runner.   You have also seen a little of \squeak's syntax, even though you may not understand it all yet.
+This chapter has introduced you to the \pharo environment and shown you how to use some of the major tools, such as the system browser, the method finder, and the test runner.   You have also seen a little of \pharo's syntax, even though you may not understand it all yet.
 
 \begin{itemize}
-  \item A running \squeak system consists of a \emph{virtual machine}, a \emph{sources} file, and \emph{image} and \emph{changes} files. Only these last two change, as they record a snapshot of the running system.
-  \item When you restore a \squeak image, you will find yourself in exactly the same state\,---\,with the same running objects\,---\,that you had when you last saved that image.
-  \item \squeak is designed to work with a three-button mouse. The buttons are known as the \emph{red}, the \emph{yellow} and the \emph{blue} buttons. If you don't have a three-button mouse, you can use modifier keys to obtain the same effect.
-  \item You use the \ind{red button} on the \squeak background to bring up the \emph{World menu} and launch various tools. You can also launch tools from the \toolsflapind at the right of the \squeak screen.
+  \item A running \pharo system consists of a \emph{virtual machine}, a \emph{sources} file, and \emph{image} and \emph{changes} files. Only these last two change, as they record a snapshot of the running system.
+  \item When you restore a \pharo image, you will find yourself in exactly the same state\,---\,with the same running objects\,---\,that you had when you last saved that image.
+  \item \pharo is designed to work with a three-button mouse. The buttons are known as the \emph{red}, the \emph{yellow} and the \emph{blue} buttons. If you don't have a three-button mouse, you can use modifier keys to obtain the same effect.
+  \item You use the \ind{red button} on the \pharo background to bring up the \emph{World menu} and launch various tools. You can also launch tools from the \toolsflapind at the right of the \pharo screen.
   \item A \emph{workspace} is a tool for writing and evaluating snippets of code. You can also use it to store arbitrary text.
   \item You can use \ind{keyboard shortcuts} on text in the workspace, or any other tool, to evaluate code. The most important of these are \menu{do it} (\short{d}), \menu{print it} (\short{p}), \menu{inspect it} (\short{i}), \menu{explore it} (\short{I}) and \menu{browse it} (\short{b}).
   \item \sqmap is a tool for loading useful packages from the Internet.
-  \item The \emph{system browser} is the main tool for browsing \squeak code, and for developing new code.
+  \item The \emph{system browser} is the main tool for browsing \pharo code, and for developing new code.
   \item The \emph{test runner} is a tool for running unit tests. It also supports Test Driven Development.
 \end{itemize}
 

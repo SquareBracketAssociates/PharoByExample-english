@@ -593,9 +593,6 @@ A metanode can have arbitrarily many filters, resulting in a chain of filters. H
 
 Each graphical widget composing a browser is a listener and can emit events. Creation and registration of widgets as listeners and event emitters is completely transparent to the end user.
 
-%:AB ==> Done \sd{ok this is emitted but I do not know who is listening or registering this event I guess it but we should say it.}
-
-
 \paragraph{State of the browser.} Contrary to the original \pharo system browser where each widget state is contained in a dedicated variable, the state of a \obf-based browser is defined as a path in the metagraph starting from the root metanode. Each metanode taking part of this path is associated to a domain node. This preserves the synchronization between different graphical widgets of a browser.
 
 %\sd{would be nice to add that taken from colin email: but I do not completely understand it. Alex do you get it? ----

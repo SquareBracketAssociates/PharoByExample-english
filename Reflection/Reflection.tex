@@ -72,7 +72,7 @@ Intercession is the ability to \emph{modify} these structures, in other words to
 In this chapter we will focus mainly on structural reflection.
 We will explore many practical examples illustrating how \st supports introspection and metaprogramming.
 
-%:======================================
+%======================================
 \section{Introspection}
 
 Using the inspector, you can look at an object, change the values of its instance variables, and even send messages to it.
@@ -225,7 +225,7 @@ In the next sections we will see how to exploit our knowledge of the runtime str
 \lr{\ct!Morph linesOfCode! would be an interesting metric.}
 \sd{you want to scare people :)}
 
-%:======================================
+%======================================
 \section{Browsing code}
 
 In \st, everything is an object. In particular, classes are objects that provide useful features for navigating through their instances.
@@ -319,7 +319,7 @@ SystemNavigation default browseMethodsWithSourceString: 'super'.
 SystemNavigation default browseAllSelect: [:method | method sendsToSuper ].
 \end{code}
 
-%:======================================
+%======================================
 \section{Classes, method dictionaries and methods}
 
 Since classes are objects, we can inspect or explore them just like any other object.
@@ -385,7 +385,7 @@ There is a convenience method \ct{CompiledMethod>>methodReference} to return the
 (Object>>#=) methodReference methodSymbol --> #=
 \end{code}
 
-%:======================================
+%======================================
 \section{Browsing environments}
 
 Although \ct{SystemNavigation} offers some useful ways to programmatically query and browse system code, there is a better way.  The Refactoring Browser, which is integrated into \pharo, provides both interactive and programmatic ways to pose complex queries.
@@ -433,7 +433,7 @@ Finally, we can find just those methods that send a different super message prog
 Here we ask each compiled method for its (Refactoring Browser) parse tree, in order to find out whether the super messages differ from the method's selector.
 Have a look at the \prot{querying} protocol of the class \ct{RBProgramNode} to see some the things we can ask of parse trees.
 
-%:======================================
+%======================================
 \section{Accessing the run-time context}
 
 We have seen how \st's reflective capabilities let us query and explore objects, classes and methods.  But what about the run-time environment?
@@ -550,7 +550,7 @@ If this is the case, then it raises an exception which, by default, summons the 
 
 It is also possible to supply a boolean or a boolean block as an argument to \ct{haltIf:}, but these cases are straightforward and do not make use of \ct{thisContext}.
 
-%:======================================
+%======================================
 \section{Intercepting messages not understood}
 \label{sec:msgnotunderstood}
 
@@ -711,7 +711,7 @@ Note the use of \ct{Object>>>perform:} in step (13) which can be used to send me
 4 perform: #max: withArguments: (Array with: 6) --> 6
 \end{code}
 
-%:======================================
+%======================================
 \section{Objects as method wrappers}
 \label{sec:wrapper}
 
@@ -827,7 +827,7 @@ That's all there is to it!
 
 Method wrappers can be used to perform any kind of suitable behaviour before or after the normal operation of a method.  Typical applications are instrumentation (collecting statistics about the calling patterns of methods), checking optional pre- and post-conditions, and memoization (optionally cacheing computed values of methods).
 
-%:======================================
+%======================================
 \section{Pragmas}
 
 \emph{Pragmas} provide data about a program that is not part of the program itself. They have no direct effect on the operation of the method they annotate.
@@ -874,7 +874,7 @@ A pragma knows in which method it is defined (using \ct{method}), the name of th
 
 \lr{Typically pragmas are performed on an interpreter object that understands the pragma message.}
 
-%:======================================
+%======================================
 \section{Chapter summary}
 
 Reflection refers to the ability to query, examine and even modify the metaobjects of the run-time system as ordinary objects.

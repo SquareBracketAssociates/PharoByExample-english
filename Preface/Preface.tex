@@ -31,7 +31,7 @@
 % --------------------------------------------
     \graphicspath{{figures/} {../figures/}}
 	\begin{document}
-	\renewcommand{\nnbb}[2]{} % Disable editorial comments
+	% \renewcommand{\nnbb}[2]{} % Disable editorial comments
 	\sloppy
 	\frontmatter
 \fi
@@ -39,24 +39,30 @@
 \chapter{Preface}\label{cha:intro}
 
 %=================================================================
-\section*{What is \squeak?}
+\section*{What is \pharo?}
 
-\squeak is a modern, open source, fully-featured implementation of the \st programming language and environment.
+%:REVISE PHARO DESCRIPTION
 
-\squeak is highly portable --- even its virtual machine is written entirely in \st, making it easy to debug, analyze, and change. \squeak is the vehicle for a wide range of innovative projects from multimedia applications and educational platforms to commercial web development environments. 
+\on{Add some history --- a few short lines on Squeak. Description of how and when Pharo started. What the project is about.}
+
+\pharo is a modern, open source, fully-featured implementation of the \st programming language and environment. \pharo is derived from \squeak, a re-implementation of the classic \st-80 system.
+
+\on{Stef -- what would you like to say here?}
+
+\pharo is highly portable --- even its virtual machine is written entirely in \st, making it easy to debug, analyze, and change. \pharo is the vehicle for a wide range of innovative projects from multimedia applications and educational platforms to commercial web development environments. 
 
 %=================================================================
 \section*{Who should read this book?}
 
-This book presents the various aspects of \squeak, starting with the basics, and proceeding to more advanced topics.
+This book presents the various aspects of \pharo, starting with the basics, and proceeding to more advanced topics.
 
 This book will not teach you how to program. The reader should have some familiarity with programming languages. Some background with object-oriented programming would be helpful.
 
-This book will introduce the \squeak programming environment, the language and the associated tools.  You will be exposed to common idioms and practices, but the focus is on the technology, not on object-oriented design. Wherever possible, we will show you lots of examples. (We have been inspired by Alec Sharp's excellent book on Smalltalk\cite{Shar97a}.)
+This book will introduce the \pharo programming environment, the language and the associated tools.  You will be exposed to common idioms and practices, but the focus is on the technology, not on object-oriented design. Wherever possible, we will show you lots of examples. (We have been inspired by Alec Sharp's excellent book on Smalltalk\cite{Shar97a}.)
 \index{Sharp, Alex}
 
-There are numerous other books on \st freely available on the web but none of these focuses specifically on \squeak. See for example:
-\url{stephane.ducasse.free.fr/FreeBooks.html}
+There are numerous other books on \st freely available on the web but none of these focuses specifically on \pharo. See for example:
+\url{http://stephane.ducasse.free.fr/FreeBooks.html}
 
 \ifluluelse{}{\newpage} % layout hint
 %=================================================================
@@ -66,7 +72,7 @@ There are numerous other books on \st freely available on the web but none of th
 
 Do not be frustrated by parts of \st that you do not immediately understand.
 You do not have to know everything!
-Alan Knight expresses this principle as follows\footnote{\url{www.surfscranton.com/architecture/KnightsPrinciples.htm}}:
+Alan Knight expresses this principle as follows\footnote{\url{http://www.surfscranton.com/architecture/KnightsPrinciples.htm}}:
 \index{Knight, Alan}
 \important{{\bf Try not to care.}
 Beginning \st programmers often have trouble because they think they need to understand all the details of how a thing works before they can use it. This means it takes quite a while before they can master \ct{Transcript show: 'Hello World'}. One of the great leaps in OO is to be able to answer the question ``How does this work?'' with ``I don't care''.}
@@ -80,56 +86,57 @@ This book is an open book in the following senses:
 
 \item	The content of this book is released under the Creative Commons Attribution-ShareAlike (by-sa) license.
 		In short, you are allowed to freely share and adapt this book, as long as you respect the conditions of the license available at the following URL: 
-		\url{creativecommons.org/licenses/by-sa/3.0/}.
+		\url{http://creativecommons.org/licenses/by-sa/3.0/}.
 
-\item	This book just describes the core of \squeak.
+\item	This book just describes the core of \pharo.
 		Ideally we would like to encourage others to contribute chapters
-		on the parts of \squeak that we have not described.
+		on the parts of \pharo that we have not described.
 		If you would like to participate in this effort, please
 		contact us.  We would like to see this book grow!
 \end{itemize}
 
-For more details, visit the book's web site, \sbe, hosted by the Institute of Computer Science and Applied Mathematics of the University of Bern, Switzerland.
+For more details, visit the book's web site, \pbe. \on{should be a sub-page}
 
 %=================================================================
-\section*{The \squeak community}
+\section*{The \pharo community}
 
-The \squeak community is friendly and active.
+The \pharo community is friendly and active.
 Here is a short list of resources that you may find useful:
 
 \begin{itemize}
-\item \url{www.squeak.org} is the main web site of \squeak. (Do not confuse it with \url{www.squeakland.org} which is dedicated to the eToy environment built on top of \squeak but whose audience is elementary school teachers.)
+\item \url{http://www.pharo-project.org} is the main web site of \pharo.
+environment built on top of \pharo but whose audience is elementary school teachers.)
 
-\item \url{www.squeaksource.com} is the equivalent of SourceForge for \squeak projects.
-
-\item \url{wiki.squeak.org/squeak} is a wiki with up-to-date information about \squeak.
+\item \url{http://www.squeaksource.com} is the equivalent of SourceForge for \pharo projects.
 \end{itemize}
 
-\paragraph{About mailing-lists.} There are a lot of mailing-lists and sometimes they can be just a little bit too active. If you do not want to get flooded by mail but would still like to participate we suggest you to use \url{news.gmane.org} or \url{www.nabble.com/Squeak-f14152.html} to browse the lists.
+\on{more?}
 
-You can find the complete list of \squeak mailing-lists at \url{lists.squeakfoundation.org/mailman/listinfo}.
+%\paragraph{About mailing-lists.} There are a lot of mailing-lists and sometimes they can be just a little bit too active. If you do not want to get flooded by mail but would still like to participate we suggest you to use \url{news.gmane.org} or \url{www.nabble.com/Squeak-f14152.html} to browse the lists.
 
-\begin{itemize}
-\item Note that \emph{\squeak-dev} refers to the developers' mailing-list, which can be browsed here:\\
-\url{news.gmane.org/gmane.comp.lang.smalltalk.squeak.general}
-\item \emph{Newbies} refers to a friendly mailing-list for beginners where any question can be asked:\\
-\url{news.gmane.org/gmane.comp.lang.smalltalk.squeak.beginners}\\
-(There is so much to learn that we are all beginners in some aspect of \squeak!)
-\end{itemize}
+%You can find the complete list of \pharo mailing-lists at \url{lists.squeakfoundation.org/mailman/listinfo}.
 
-\paragraph{IRC.}
-Have a question that you need answered quickly? Would you like to meet with other squeakers around the world? A great place to participate in longer-term discussions is the IRC channel on the ``\#squeak'' channel at \url{irc.freenode.net}. Stop by and say ``Hi!''
+%\begin{itemize}
+%\item Note that \emph{\pharo-dev} refers to the developers' mailing-list, which can be browsed here:\\
+%\url{news.gmane.org/gmane.comp.lang.smalltalk.squeak.general}
+%\item \emph{Newbies} refers to a friendly mailing-list for beginners where any question can be asked:\\
+%\url{news.gmane.org/gmane.comp.lang.smalltalk.squeak.beginners}\\
+%(There is so much to learn that we are all beginners in some aspect of \pharo!)
+%\end{itemize}
 
-\paragraph{Other sites.} There are several websites supporting the \squeak community today in various ways.
-Here are some of them:
-\begin{itemize}
-  \item \url{people.squeakfoundation.org} is the site of SqueakPeople, which is a kind of ``\url{advogato.org}'' for squeakers. It offers articles, diaries and an interesting trust metric system.
+%\paragraph{IRC.}
+%Have a question that you need answered quickly? Would you like to meet with other squeakers around the world? A great place to participate in longer-term discussions is the IRC channel on the ``\#squeak'' channel at \url{irc.freenode.net}. Stop by and say ``Hi!''
 
-  \item \url{planet.squeak.org} is the site of PlanetSqueak which is an RSS aggregator. It is good place to get a flood of squeaky things. This includes the latest blog entries from developers and others who have an interest in \squeak.
+%\paragraph{Other sites.} There are several websites supporting the \pharo community today in various ways.
+%Here are some of them:
+%\begin{itemize}
+%  \item \url{people.squeakfoundation.org} is the site of SqueakPeople, which is a kind of ``\url{advogato.org}'' for squeakers. It offers articles, diaries and an interesting trust metric system.
 
-  \item \url{www.frappr.com/squeak} is a site that tracks \squeak users around the world.
+%  \item \url{planet.squeak.org} is the site of PlanetSqueak which is an RSS aggregator. It is good place to get a flood of squeaky things. This includes the latest blog entries from developers and others who have an interest in \pharo.
 
-\end{itemize}
+%  \item \url{www.frappr.com/squeak} is a site that tracks \pharo users around the world.
+
+%\end{itemize}
 
 %=================================================================
 \section*{Examples and exercises}
@@ -143,7 +150,7 @@ In particular, there are many examples that show a fragment of code which can be
 3 + 4 --> 7    "if you select 3+4 and 'print it', you will see 7"
 \end{code}
 
-In case you want to play in \squeak with these code snippets, you can download a plain text file with all the example code from the book's web site: \sbe.
+In case you want to play in \pharo with these code snippets, you can download a plain text file with all the example code from the book's web site: \pbe.
 
 The second convention that we use is to display the icon \dothisicon{} to indicate when there is something for you to do:
 
@@ -184,7 +191,6 @@ The second convention that we use is to display the icon \dothisicon{} to indica
 % We would like to thank various people who have contributed to this book.
 % In particular, we thank
 We would like to thank Hilaire Fernandes and Serge Stinckwich who allowed us to translate parts of their columns on \st, and Damien Cassou for contributing the chapter on streams.
-We also thank Tim Rowledge for the use of the \squeak logo, and Frederica Nierstrasz for the original cover art.
 
 We especially thank Lukas Renggli and Orla Greevy for their comments on drafts of the first release.
 

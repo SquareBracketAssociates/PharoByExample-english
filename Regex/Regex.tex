@@ -98,7 +98,6 @@ WebDir class>>selectHome
 The last method opens a browser to select the directory to open.
 Now, if you inspect the result of \ct{WebDir selectHome}, you will be prompted for the directory containing your web pages, and you will be able to verify that \ct{webDir} and \ct{homePath} are properly initialized to the directory holding your web site and the full path name of this directory.
 
-%:FIG aWebDir
 \begin{figure}[tbh]
 \begin{center}
 \includegraphics[width=0.5\textwidth]{aWebDir}
@@ -408,7 +407,6 @@ Now we can generate a table of contents for an arbitrary web directory!
 WebDir selectHome makeToc
 \end{code}
 
-%:FIG SBE-toc
 \begin{figure}[tbh]
 \begin{center}
 \includegraphics[width=\textwidth]{SBE-toc}
@@ -527,7 +525,6 @@ Regular expressions can also include the following backquote escapes to refer to
 Their upper-case variants, \ct{\W}, \ct{\D} and \ct{\S}, match the complementary characters (non-alphanumerics, non-digits and non-whitespace).
 We can see a summary of the syntax seen so far in \tabref{regexsyntax}.
 
-%:FIGURE -- Regex Syntax in a Nutshell
 \begin{table}
 \centering
 	\begin{tabular}{ll}
@@ -623,7 +620,6 @@ For dessert, here is a recognizer for a general number format: anything like \ct
 
 Character classes can also include the grep(1)-compatible elements listed in \tabref{charclasses}.
 
-%:FIGURE -- Regex character classes
 \begin{table}[htb]
 \centering
 	\begin{tabular}{lp{8cm}}
@@ -672,7 +668,6 @@ So far we have seen the following equivalent ways to write a regular expression 
 \subsection{Matching boundaries}
 The last group of special primitive expressions is shown in \tabref{boundaries}, and is used to match boundaries of strings.
 
-%:FIGURE -- Primitives to match string boundaries
 \begin{table}[htb]
 \centering
 	\begin{tabular}{lp{8cm}}
