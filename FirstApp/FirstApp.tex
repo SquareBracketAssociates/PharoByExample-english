@@ -42,34 +42,35 @@
 \chapter{A first application}
 \label{cha:firstApp}
 
-\on{rename Quinto to Lights Out --- also fix clicks ...}
+\on{fix clicks ...}
 
-In this chapter, we will develop a simple game: \ind{Quinto}. 
+
+In this chapter, we will develop a simple game: \ind{Lights Out}.\footnote{\url{http://en.wikipedia.org/wiki/Lights_Out_(game)}}
 Along the way we will demonstrate most of the tools that \squeak programmers use to construct and debug their programs, and show how programs are exchanged with other developers. We will see the system browser, the object inspector, the debugger and the \ind{Monticello} \ind{package} browser. 
 Development in Smalltalk is efficient: you will find that you spend far more time actually writing code and far less managing the development process. 
 This is partly because the Smalltalk language is very simple, and partly because the tools that make up the programming environment are very well integrated with the language.
 
 %=================================================================
-\section{The Quinto game}
+\section{The Lights Out game}
 
 % DON'T USE WRAPFIGURE CLOSE TOO A PAGE BREAK!!! (ON)
 %\begin{wrapfigure}[13]{r}{0.35\linewidth}%
 %	\vskip -\baselineskip
 %	\centerline{\includegraphics[width=.8\linewidth]{GameBoard}}
-%	\caption{The Quinto game board. The user has just clicked the mouse as shown by the cursor.
+%	\caption{The Lights Out game board. The user has just clicked the mouse as shown by the cursor.
 %	\label{fig:gameBoard}}
 %\end{wrapfigure}
 
 \begin{figure}[ht]
 	\vskip -\baselineskip
 	\centerline{\includegraphics[width=.3\linewidth]{GameBoard}}
-	\caption{The Quinto game board. The user has just clicked the mouse as shown by the cursor.
+	\caption{The Lights Out game board. The user has just clicked the mouse as shown by the cursor.
 	\label{fig:gameBoard}}
 \end{figure}
 
-To show you how to use \squeak's programming tools, we will build a simple game called \emph{Quinto}.  The game board is shown in \figref{gameBoard}; it consists of rectangular array of light yellow \emph{cells}.  When you click on one of the cells with the mouse, the four surrounding cells turn blue.  Click again, and they toggle back to light yellow.  The object of the game is to turn blue as many cells as possible.
+To show you how to use \squeak's programming tools, we will build a simple game called \emph{Lights Out}.  The game board is shown in \figref{gameBoard}; it consists of rectangular array of light yellow \emph{cells}.  When you click on one of the cells with the mouse, the four surrounding cells turn blue.  Click again, and they toggle back to light yellow.  The object of the game is to turn blue as many cells as possible.
 
-The Quinto game shown in \figref{gameBoard} is made up of two kinds of objects: the game board itself, and 100 individual cell objects.  The \squeak code to implement the game will contain two classes: one for the game and one for the cells.
+The Lights Out game shown in \figref{gameBoard} is made up of two kinds of objects: the game board itself, and 100 individual cell objects.  The \squeak code to implement the game will contain two classes: one for the game and one for the cells.
 We will now show you how to define these classes using the \squeak programming tools.
 
 %=================================================================
@@ -102,7 +103,7 @@ Select \menu{add item \ldots}.}
 \end{minipage}
 \end{figure}
 
-Type the name of the new category (we will use \scat{SBE-Quinto}) in the dialog box and click \menu{accept} (or just press the return key); the new category is created, and positioned at the end of the category list.
+Type the name of the new category (we will use \scat{BBE-LightsOut}) in the dialog box and click \menu{accept} (or just press the return key); the new category is created, and positioned at the end of the category list.
 If you selected an existing category first, then the new category will be positioned immediately ahead of the selected one.
 
 %=================================================================
@@ -110,7 +111,7 @@ If you selected an existing category first, then the new category will be positi
 
 As yet there are  of course no classes in the new category. However, the main editing pane displays a template to make it easy to create a new class (see \figref{classTemplate}).
 
-This template shows us a \st expression that sends a message to a class called \ct{Object}, asking it to create a subclass called \ct{NameOfSubClass}.  The new class has no variables, and should belong to the category \scat{SBE-Quinto}.
+This template shows us a \st expression that sends a message to a class called \ct{Object}, asking it to create a subclass called \ct{NameOfSubClass}.  The new class has no variables, and should belong to the category \scat{PBE-LightsOut}.
 
 We simply modify the template to create the class that we really want.
 
@@ -127,7 +128,7 @@ SimpleSwitchMorph subclass: #SBECell
    instanceVariableNames: 'mouseAction'
    classVariableNames: ''
    poolDictionaries: ''
-   category: 'SBE-Quinto'
+   category: 'PBE-LightsOut'
 \end{classdef}
 \index{system browser!defining a class}
 \index{class!creation}
@@ -293,7 +294,7 @@ BorderedMorph subclass: #SBEGame
    instanceVariableNames: ''
    classVariableNames: ''
    poolDictionaries: ''
-   category: 'SBE-Quinto'
+   category: 'PBE-LightsOut'
 \end{classdef}
 
 Here we subclass \clsind{BorderedMorph}; \clsind{Morph} is the superclass of all of the graphical shapes in \squeak, and (surprise!) a \ct{BorderedMorph} is a \ct{Morph} with a border.  
@@ -480,7 +481,7 @@ To move the method, you can simply click on its name and drag it to the newly-cr
    \caption{Drag a method to a protocol.\label{fig:dragMethod}}
 \end{figure}
 
-To complete the Quinto game, we need to define two more methods in class \ct{SBECell} to handle mouse events.
+To complete the Lights Out game, we need to define two more methods in class \ct{SBECell} to handle mouse events.
 \begin{method}[mouseAction:]{A typical setter method}
 SBECell>>>mouseAction: aBlock
    ^ mouseAction := aBlock
@@ -525,7 +526,7 @@ Sending the \ct{value} message causes this code fragment to be evaluated, and co
 %=================================================================
 \section{Let's try our code}
 
-That's it: the Quinto game is complete!
+That's it: the Lights Out game is complete!
 
 If you have followed all of the steps, you should be able to play the game, consisting of just 2 classes and 7 methods.
 
@@ -617,10 +618,10 @@ Now the game should work properly.
 \section{Saving and sharing Smalltalk code}
 \label{sec:Monticello}
 
-Now that you have the Quinto game working, you probably want to save it somewhere so that you can share it with your friends. Of course, you can save your whole \squeak image, and show off your first program by running it, but your friends probably have their own code in their images, and don't want to give that up to use your image.
+Now that you have the Lights Out game working, you probably want to save it somewhere so that you can share it with your friends. Of course, you can save your whole \squeak image, and show off your first program by running it, but your friends probably have their own code in their images, and don't want to give that up to use your image.
 What you need is a way of getting source code out of your \squeak image so that other programmers can bring it into theirs.
 
-The simplest way of doing this is by \emph{filing out} the code.  The yellow-button menu in the System Categories pane will give you the option to file out the whole of category \scat{SBE-Quinto}.
+The simplest way of doing this is by \emph{filing out} the code.  The yellow-button menu in the System Categories pane will give you the option to file out the whole of category \scat{PBE-LightsOut}.
 The resulting file is more or less human readable, but is really intended for computers, not humans.
 You can email this file to your friends, and they can file it into their own \squeak images using the file list browser.
 \seeindex{saving code}{categories}
@@ -629,11 +630,11 @@ You can email this file to your friends, and they can file it into their own \sq
 \seeindex{method!filing out}{file, filing out}
 \index{file!filing out}
 
-\dothis{Yellow-click on the \scat{SBE-Quinto} category and \menu{fileOut} the contents.}
-You should now find a file called ``SBE-Quinto.st'' in the same folder on disk where your image is saved.
+\dothis{Yellow-click on the \scat{PBE-LightsOut} category and \menu{fileOut} the contents.}
+You should now find a file called ``PBE-LightsOut.st'' in the same folder on disk where your image is saved.
 Have a look at this file with a text editor.
 
-\dothis{Open a fresh \squeak image and use the File List tool to \menu{file in} the SBE-Quinto.st fileout.
+\dothis{Open a fresh \squeak image and use the File List tool to \menu{file in} the PBE-LightsOut.st fileout.
 Verify that the game now works in the new image.}
 \seeindex{category!filing in}{file, filing in}
 \seeindex{class!filing in}{file, filing in}
@@ -682,9 +683,9 @@ On the left-hand side of the Monticello browser is a list of packages that have 
 \seeindex{*}{package, dirty}
 \seeindex{dirty package}{package, dirty}
 
-What is a package?  For now, you can think of a package as a group of  class and method categories that share the same prefix.  Since we put all of the code for the Quinto game into the class category called \scat{SBE-Quinto}, we can refer to it as the \ct{SBE-Quinto} package.
+What is a package?  For now, you can think of a package as a group of  class and method categories that share the same prefix.  Since we put all of the code for the Lights Out game into the class category called \scat{PBE-LightsOut}, we can refer to it as the \ct{PBE-LightsOut} package.
 
-\dothis{Add the \ct{SBE-Quinto} package to your Monticello browser using the \button{+Package} button and type \ct{SBE-Quinto}.}
+\dothis{Add the \ct{PBE-LightsOut} package to your Monticello browser using the \button{+Package} button and type \ct{PBE-LightsOut}.}
 
 \subsection{\ind{SqueakSource}: a \ind{SourceForge} for \squeak.} 
 We think that the best way to save your code and share it is to create an account for your project on a SqueakSource server. 
@@ -695,12 +696,12 @@ SqueakSource is like SourceForge\footnote{\url{www.sourceforge.net}}: it is a we
 There is a public SqueakSource server at \url{http://www.squeaksource.com}, and a copy of the code related to this book is stored there at \url{http://www.squeaksource.com/SqueakByExample.html}. You can look at this project with a web browser, but it's a lot more productive to do so from inside \squeak, using the Monticello browser, which lets you manage your packages.
 
 \dothis{Open a web browser to \url{www.squeaksource.com}.
-Create an account for yourself and then create (\ie ``register'') a project for the Quinto game.}
+Create an account for yourself and then create (\ie ``register'') a project for the Lights Out game.}
 SqueakSource will show you the information that you should use when adding a repository using the Monticello browser. 
 
 Once your project has been created on SqueakSource, you have to tell your \squeak system to use it. 
 
-\dothis{With the \ct{SBE-Quinto} package selected, click the \button{+Repository} button in the Monticello browser.}  You will see a list of the different types of Repository that are available; to add a SqueakSource repository select \menu{HTTP}. You will be presented with a dialog in which you can provide the necessary information about the server.
+\dothis{With the \ct{PBE-LightsOut} package selected, click the \button{+Repository} button in the Monticello browser.}  You will see a list of the different types of Repository that are available; to add a SqueakSource repository select \menu{HTTP}. You will be presented with a dialog in which you can provide the necessary information about the server.
 You should copy the presented template to identify your SqueakSource project, paste it into Monticello and supply your initials and password:
 
 \needlines{5}
@@ -733,11 +734,11 @@ Once you have accepted this template, your new repository should be listed on th
 \label{fig:monticello3}}
 \end{figure}
 
-\dothis{Click on the \button{Save} button to save a first version of your Quinto game on SqueakSource.}
+\dothis{Click on the \button{Save} button to save a first version of your Lights Out game on SqueakSource.}
 
 To load a package into your image, you must first select a particular version.  You can do this in the repository browser, which you can open using the \button{Open} button or the yellow-button menu.  Once you have selected a version, you can load it onto your image.
 
-\dothis{Open the \ct{SBE-Quinto} repository you have just saved.}
+\dothis{Open the \ct{PBE-LightsOut} repository you have just saved.}
 
 Monticello has many more capabilities, which will be discussed in depth in \charef{env}.
 You can also look at the on-line documentation for Monticello at \url{http://www.wiresong.ca/Monticello/}.

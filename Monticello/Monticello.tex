@@ -611,7 +611,7 @@ TestCaseExtension class>>initialize
 When our package is loaded, this code will be evaluated and the instance variable will be added, if it does not already exist.
 
 
-%As an illustration, let us suppose an extension of the Quinto game to support unchangeable cells. Those cells are located randomly on the board. Generate numbers need to be generated. This can be done by adding a variable \ct{randomNumber} to the class \ct{SBEGame}. This kind of extension is not well supported by \MC. A package cannot define the variable \ct{randomNumber} as an extension of \ct{SBEGame}. \MC supports method extension only.
+%As an illustration, let us suppose an extension of the Lights Out game to support unchangeable cells. Those cells are located randomly on the board. Generate numbers need to be generated. This can be done by adding a variable \ct{randomNumber} to the class \ct{PBEGame}. This kind of extension is not well supported by \MC. A package cannot define the variable \ct{randomNumber} as an extension of \ct{PBEGame}. \MC supports method extension only.
 %\ab{Tell us what the problem is, before telling us the solution.  With an Example!}
 
 
@@ -619,11 +619,11 @@ When our package is loaded, this code will be evaluated and the instance variabl
 
 %\begin{code}{}
 %GameExtension class>>initialize
-%	(SBEGame instVarNames includes: 'randomNumber') 
-%		ifFalse: [SBEGame addInstVarName: 'randomNumber']
+%	(PBEGame instVarNames includes: 'randomNumber') 
+%		ifFalse: [PBEGame addInstVarName: 'randomNumber']
 %\end{code}
 
-%In the case that \ct{randomNumber} is not defined in \ct{SBEGame}, this variable is added to this class.
+%In the case that \ct{randomNumber} is not defined in \ct{PBEGame}, this variable is added to this class.
 
 %\ab{Isn't this more appropriate for a post-load \emph{do-it} than an \ct{initialize} method?  Do such things not exist (they did with change sets \ldots}
 %\alex{Probably, but this seems to be broken with \MC}
@@ -709,7 +709,7 @@ You need an account on \sqmap to add packages. New accounts may be created onlin
 	\caption{\sqsrc, the online \MC code repository.\figlabel{squeaksource}}
 \end{figure}
 
-\dothis{Use a web browser to visit the \pbe project at \url{http://www.squeaksource.com/PharoByExample.html}. This project contains the Lights Out project from \charef{firstApp}. In the registration section on that web page you should see this \emph{repository expression:}} \on{FIX THIS --- Quinto should be renamed to LightsOut}
+\dothis{Use a web browser to visit the \pbe project at \url{http://www.squeaksource.com/PharoByExample.html}. This project contains the Lights Out project from \charef{firstApp}. In the registration section on that web page you should see this \emph{repository expression:}}
 
 \begin{code}{}
 MCHttpRepository
@@ -718,7 +718,7 @@ MCHttpRepository
     password: ''
 \end{code}
 \noindent
-\emph{Add this repository to \MC by clicking \button{+Repository}, and then selecting \menu{HTTP}. Fill out the template with the URL corresponding to the Quinto project\,---\,you can copy the above repository expression from the web page and paste it into the template.
+\emph{Add this repository to \MC by clicking \button{+Repository}, and then selecting \menu{HTTP}. Fill out the template with the URL corresponding to the Lights Out project\,---\,you can copy the above repository expression from the web page and paste it into the template.
 Since you are not going to commit new versions of this package, you do not need to fill in the user and password.
 \button{Open} the repository, select the latest version and click \button{Load}.}
 

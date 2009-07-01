@@ -260,7 +260,7 @@ Object subclass: #Dog
 	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''
-	category: 'SBE-CIV'
+	category: 'PBE-CIV'
 
 Dog class
 	instanceVariableNames: 'count'
@@ -269,7 +269,7 @@ Dog subclass: #Hyena
 	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''
-	category: 'SBE-CIV'
+	category: 'PBE-CIV'
 \end{classdef}
 
 Now suppose we define class methods for \ct{Dog} to initialize its \ct{count} to \ct{0}, and to increment it when new instances are created:
@@ -452,11 +452,11 @@ To define a new trait, simply replace the subclass creation template by a messag
 \begin{classdef}[tauthor]{Defining a new trait}
 Trait named: #TAuthor
 	uses: { }
-	category: 'SBE-Quinto'
+	category: 'PBE-LightsOut'
 \end{classdef}
 
 \noindent
-Here we define the trait \ct{TAuthor} in the category \scat{SBE-Quinto}.
+Here we define the trait \ct{TAuthor} in the category \scat{PBE-LightsOut}.
 This trait does not \emph{use} any other existing traits.
 In general we can specify a \emph{trait composition expression} of other traits to use as part of the \ct{uses:} keyword argument.
 Here we simply provide an empty array.
@@ -472,22 +472,22 @@ TAuthor>>>author
 \end{method}
 
 \noindent
-Now we can use this trait in a class that already has its own superclass, for instance the \ct{SBEGame} class that we defined in \charef{firstApp}.
-We simply modify the class creation template for \ct{SBEGame} to include a \ct{uses:} keyword argument that specifies that \ct{TAuthor} should be used.
+Now we can use this trait in a class that already has its own superclass, for instance the \ct{PBEGame} class that we defined in \charef{firstApp}.
+We simply modify the class creation template for \ct{PBEGame} to include a \ct{uses:} keyword argument that specifies that \ct{TAuthor} should be used.
 
 \begin{classdef}[sbegamewithtrait]{Using a trait}
-BorderedMorph subclass: #SBEGame
+BorderedMorph subclass: #PBEGame
 	uses: TAuthor
 	instanceVariableNames: 'cells'
 	classVariableNames: ''
 	poolDictionaries: ''
-	category: 'SBE-Quinto'
+	category: 'PBE-LightsOut'
 \end{classdef}
 
-If we now instantiate \ct{SBEGame}, it will respond to the \ct{author} message as expected.
+If we now instantiate \ct{PBEGame}, it will respond to the \ct{author} message as expected.
 
 \begin{code}{}
-SBEGame new author --> 'on'
+PBEGame new author --> 'on'
 \end{code}
 
 Trait composition expressions may combine multiple traits using the \ct{+} operator.
