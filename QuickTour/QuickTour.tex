@@ -45,6 +45,8 @@
 \chapter{A quick tour of \pharo}
 \label{cha:quick}
 
+%:===> CHECK SIZES OF ALL IMAGES FOR LULU LAYOUT
+
 In this chapter we will give you a high-level tour of \pharo to help you get comfortable with the environment.
 There will be plenty of opportunities to try things out, so it would be a good idea if you have a computer handy when you read this chapter.
 
@@ -198,14 +200,6 @@ The world menu provides you a simple means to access many of the tools that \pha
 You will see a list of several of the core tools in \pharo, including the system browser (one of many available class browsers) and the workspace.
 We will encounter most of them in the coming chapters.
 
-%\begin{figure}[htb]
-%\ifluluelse
-%	%{\centerline {\includegraphics[width=0.3\textwidth]{OpenMenu}}}
-%	{\centerline {\includegraphics[scale=0.4]{OpenMenu}}}
-%	{\centerline {\includegraphics[scale=0.7]{OpenMenu}}}
-%\caption{The \menu{open \ldots} dialogue of the world menu.\label{fig:openmenu}}
-%\end{figure}
-
 %=================================================================
 \section{Sending messages}
 
@@ -215,7 +209,14 @@ We will encounter most of them in the coming chapters.
 BouncingAtomsMorph new openInWorld
 \end{code}
 
-\dothis{Now \actclick. A menu should appear. Select \menu{do it (d)}.}
+\dothis{Now \actclick. A menu should appear. Select \menu{do it (d)}. (See \figref{doit}.)}
+
+\begin{figure}[htb]
+\ifluluelse
+	{\centerline {\includegraphics[width=0.7\textwidth]{Doit}}}
+	{\centerline {\includegraphics[width=0.7\textwidth]{Doit}}}
+\caption{``Doing'' an expression\label{fig:doit}}
+\end{figure}
 
 A window containing a large number of bouncing atoms should open in the top left of the \pharo image.
 
@@ -236,17 +237,13 @@ The object, not you, selects the appropriate method for responding to your messa
 
 \begin{figure}[htb]
 \begin{minipage}[b]{0.48\textwidth}
-\ifluluelse
-	{\centerline {\includegraphics[scale=0.4]{atoms}}}
-	{\centerline {\includegraphics[scale=0.7]{atoms}}}
-	\caption{A \bam.\label{fig:atoms}}
+\centerline {\includegraphics[width=0.7\textwidth]{atoms}}
+\caption{A \bam.\label{fig:atoms}}
 \end{minipage}
 \hfill
 \begin{minipage}[b]{0.48\textwidth}
-\ifluluelse
-	{\centerline {\includegraphics[scale=0.5]{saveAs}}}
-	{\centerline {\includegraphics[scale=0.7]{saveAs}}}
-	\caption{The \menu{save as \ldots} dialogue.\label{fig:saveas}}
+\centerline {\includegraphics[width=0.7\textwidth]{saveAs}}
+\caption{The \menu{save as \ldots} dialogue.\label{fig:saveas}}
 \end{minipage}
 \end{figure}
 
@@ -316,32 +313,23 @@ Workspaces are often used to hold documentation about a captured image, as is th
 Transcript show: 'hello world'; cr.
 \end{code}
 
-%\begin{figure}[htb]
-%\centerline {\includegraphics[width=0.6\textwidth]{HelloWorld}}
-%\caption{Overlapping windows. The workspace is active.\label{fig:helloworld}}
-%\end{figure}
-
 Try double-\click{ing} in the workspace at various points in the text you have just typed.
 Notice how an entire word, entire string, or the whole text is selected, depending on whether you \click within a word, at the end of the string, or at the end of the entire expression.
 
 \dothis{Select the text you have typed and \actclick.
 Select \menu{do it (d)}.}
 Notice how the text ``hello world'' appears in the transcript window
-(\figref{doit}).
+(\figref{helloworld}).
 Do it again.
 (The \menu{(d)} in the menu item \menu{do it (d)} tells you that the keyboard shortcut to \emph{do it} is \short{d}. More on this in the next section!)
 
 \begin{figure}[htb]
-\ifluluelse
-	{\centerline {\includegraphics[width=\textwidth]{Doit}}}
-	{\centerline {\includegraphics[scale=0.7]{Doit}}}
-\caption{``Doing'' an expression\label{fig:doit}}
+\centerline {\includegraphics[width=0.6\textwidth]{HelloWorld}}
+\caption{Overlapping windows. The workspace is active.\label{fig:helloworld}}
 \end{figure}
 
 %=================================================================
 \section{Keyboard shortcuts}
-%:===>HERE<===
-\here
 
 If you want  to evaluate an expression, you do not always have to \actclick. Instead, you can use \ind{keyboard shortcuts}. These are the parenthesized expressions in the menu.  Depending on your platform, you may have to press one of the modifier keys (control, alt, command, or meta).
 (We will indicate these generically as \short{\emph{key}}.)
@@ -361,7 +349,7 @@ This time we see the result we expect (\figref{printit}).
 
 \begin{figure}[htb]
 % \centerline {\includegraphics[width=0.4\textwidth]{PrintIt}}
-\centerline {\includegraphics[scale=0.7]{PrintIt}}
+\centerline {\includegraphics[width=0.7\textwidth]{PrintIt}}
 \caption{``Print it'' rather than ``do it''. \label{fig:printit}}
 \end{figure}
 
@@ -381,7 +369,7 @@ The left panel allows us to browse the instance variables of an object, the valu
 The bottom panel can be used to write expressions to send messages to the object.
 
 \begin{figure}[htb]
-\centerline {\includegraphics[scale=0.7]{InspectIt}}
+\centerline {\includegraphics[width=0.7\textwidth]{InspectIt}}
 \caption{Inspecting an object. \label{fig:inspectit}}
 \end{figure}
 
@@ -397,8 +385,8 @@ This time you should see a window labelled \clsind{Object} containing the text
 Click on the triangle to open it up (\figref{exploreit}).
 
 \begin{figure}[htb]
-\centerline {\includegraphics[scale=0.7]{ExploreIt}}
-\caption{Exploring an object. \label{fig:exploreit}}
+\centerline {\includegraphics[width=0.7\textwidth]{ExploreIt}}
+\caption{Exploring \ct{Object}. \label{fig:exploreit}}
 \end{figure}
 
 The explorer is similar to the inspector, but it offers a tree view of a complex object.
@@ -406,53 +394,19 @@ In this case the object we are looking at is the \ct{Object} class.
 We can see directly all the information stored in this class, and we can easily navigate to all its parts.
 
 %=================================================================
-% ON: SqueakMap has been removed from Pharo
-%\section{\sqmap}
-%\index{\sqmap}
-
-%\sqmap is a web-based catalog of ``packages''\,---\,applications and libraries\,---\,that you can download to your image.
-%The \ind{package}{}s are hosted in many different places in the world and maintained by many different people. Some of them may only work with a specific version of \pharo.
-%\lr{Maybe mention Package Universes (\sqmap is not maintained anymore)}
-
-%\dothis{Open \menu{World \go open... \go \sqmap package loader}.}
-%You will need an Internet connection for this to work.  After some time, the \sqmap loader window should appear (\figref{sokoban}).
-%On the left side is a very long list of packages.
-%The field in the top-left corner is a search pane that can be used to find what you want in the list.
-%Type ``\ind{Sokoban}'' in the search pane and hit the return key.
-%\click{ing} on the right-pointing triangle by the name of a package reveals a list of available versions. When a package or a version is selected, information about it appears in the right-hand pane.
-%Navigate to the latest version of \ct{Sokoban}.
-%With the mouse in the list pane, use the yellow-button menu to \menu{install} the selected package.
-%(If \pharo complains that it is not sure this version of the game will work in your image, just say ``yes'' and go ahead.)
-%Notice that once a package has been installed, it is marked with an asterisk in the list in the \sqmap package loader. 
-
-%\begin{figure}[htb]
-%\ifluluelse
-%	{\centerline {\includegraphics[width=\textwidth]{SqueakMap}}}
-%	{\centerline {\includegraphics[scale=0.7]{SqueakMap}}}
-%\caption{Using \sqmap to install the Sokoban game.\label{fig:sokoban}}
-%\end{figure}
-
-%\dothis{After installing this package, start up \ct{Sokoban} by evaluating \ct{SokobanMorph random openInWorld} in a workspace.}
-
-%% You can also try the \ct{NsGame}; execute it using \ct{NsGame new openInWorld}.
-%% ON: I could not find NsGame anywhere!
-
-%The bottom-left pane in the \sqmap package loader provides various ways to filter the list of packages.   You can choose to see only those packages that are compatible with a particular version of \pharo, or only games, and so on.
-
-%=================================================================
 \section{The System Browser}
 
-The \ind{system browser} is one of the key tools used for programming.
+The \ind{system browser}\footnote{Also known as the ``Class browser''. \pharo uses the \ind{OmniBrowser} implementation of the system browser, which may also be variously known as ``OB'' or the ``Package browser''.} is one of the key tools used for programming.
 As we shall see, there are several interesting browsers available for \pharo, but this is the basic one you will find in any image.
 \seeindex{class browser}{system browser}
 \seeindex{browser}{system browser}
 
-\dothis{Open a browser by selecting \menu{World \go open \ldots \go class browser}, or by dragging a Browser from the \toolsflapind.}
+\dothis{Open a browser by selecting \menu{World \go Class browser}.}
 
 \begin{figure}[htb]
 \ifluluelse
 	{\centerline {\includegraphics[width=\textwidth]{ClassBrowser1}}}
-	{\centerline {\includegraphics[scale=0.7]{ClassBrowser1}}}
+	{\centerline {\includegraphics[width=0.7\textwidth]{ClassBrowser1}}}
 \caption{The system browser showing the \ct{printString} method of class object.
 \label{fig:classBrowser}}
 \end{figure}
@@ -461,11 +415,11 @@ We can see a system browser in \figref{classBrowser}.
 The title bar indicates that we are browsing the class \clsind{Object}.\footnote{If the browser you have seems to differ from the one described in this book, you may be using an image with a different default browser. See \faqref{omnibrowser}.}
 
 When the browser first opens, all panes are empty but the leftmost one.
-This first pane lists all known \emph{system categories}, which are groups of related classes.
+This first pane lists all known \emph{packages}, which contain groups of related classes.
 \index{category}
 
-\dothis{Click on the category \scatind{Kernel-Objects}.}
-This causes the second pane to show a list of all of the classes in the selected category.
+\dothis{Click on the \scatind{Kernel} package.}
+This causes the second pane to show a list of all of the classes in the selected package.
 
 \dothis{Select the class \clsind{Object}.}
 Now the remaining two panes will be filled with text.
@@ -499,33 +453,34 @@ select the name and type \short{b}.
 \dothis{Use the keyboard shortcut to browse the class \ct{Boolean}.}
 
 \begin{figure}[hbt]
-\ifluluelse
-	{\centerline {\includegraphics[width=\textwidth]{Kernel-objects-boolean}}}
-	{\centerline {\includegraphics[scale=0.7]{Kernel-objects-boolean}}}
+\centerline {\includegraphics[width=0.8\textwidth]{Kernel-objects-boolean}}
 \caption{The system browser showing the definition of class Boolean.
 \label{fig:browseBoolean}}
 \end{figure}
 
-Notice that when the \ct{Boolean} class is selected but no protocol or method is selected, two panes rather than one appear below the four panes at the top
-(\figref{browseBoolean}).
-The upper one contains the \emph{class definition}.
+Notice that when the \ct{Boolean} class is selected but no protocol or method is selected, instead of the source code of a method, we see a \emph{class definition} (\figref{browseBoolean}).
 This is nothing more than an ordinary \st message that is sent to the parent class, asking it to create a subclass.
 Here we see that the class \ct{Object} is being asked to create a subclass named \ct{Boolean} with no instance variables, class variables or ``pool dictionaries'', and to put the class \ct{Boolean} in the \scatind{Kernel-Objects} category.
+% The lower pane shows the \emph{class comment} --- a piece of plain text describing the class.
+If you \click on the \button{?} at the bottom of the class pane, you can see the class \subind{class}{comment} in a dedicated pane (see \figref{classComment}).
 
-The lower pane shows the \emph{class comment} --- a piece of plain text describing the class.
-If you \click on the \button{?} at the bottom of the class pane, you can see the class \subind{class}{comment} in a dedicated pane.
+\begin{figure}[hbt]
+\centerline {\includegraphics[width=0.8\textwidth]{classComment}}
+\caption{The class comment for \ct{Boolean}.
+\label{fig:classComment}}
+\end{figure}
 
-\ab{I thought that this was supposed to be a \emph{Quick} tour!  And here we are describing a tool that I have used maybe twice in 10 years!   In any case, this description should be deferred to the \textbf{Environment} chapter}
-\on{I don't see why.  I use the hierarchy browser a lot!  I think it is really useful to know from the beginning, to help you find your through the hierarchy.}
-If you would like to explore \pharo's inheritance hierarchy, the \emphind{hierarchy browser} can help you.  
-This can be useful if you are looking for an unknown subclass or superclass of a known class.
-The hierarchy browser is like the system browser, except that the list of classes is arranged as an indented tree mirroring the inheritance hierarchy.
+%\ab{I thought that this was supposed to be a \emph{Quick} tour!  And here we are describing a tool that I have used maybe twice in 10 years!   In any case, this description should be deferred to the \textbf{Environment} chapter}
+%\on{I don't see why.  I use the hierarchy browser a lot!  I think it is really useful to know from the beginning, to help you find your through the hierarchy.}
+%If you would like to explore \pharo's inheritance hierarchy, the \emphind{hierarchy browser} can help you.  
+%This can be useful if you are looking for an unknown subclass or superclass of a known class.
+%The hierarchy browser is like the system browser, except that the list of classes is arranged as an indented tree mirroring the inheritance hierarchy.
 
-\dothis{Click on \button{hierarchy} in the browser while the class \ct{Boolean} is selected.}
-\noindent
-This will open a hierarchy browser showing the superclasses and subclasses of \clsind{Boolean}.
-% (\figref{booleanhierarchybrowser}).
-Navigate to the immediate superclass and subclasses of \ct{Boolean}.
+%\dothis{Click on \button{hierarchy} in the browser while the class \ct{Boolean} is selected.}
+%\noindent
+%This will open a hierarchy browser showing the superclasses and subclasses of \clsind{Boolean}.
+%% (\figref{booleanhierarchybrowser}).
+%Navigate to the immediate superclass and subclasses of \ct{Boolean}.
 
 Often, the fastest way to find a class is to search for it by name.  For example, suppose that you are looking for some unknown class that represents dates and times.
 
@@ -537,15 +492,9 @@ You will be presented with a list of classes whose names contain ``time'' (see \
 
 \begin{figure}[hbt]
 \centerline{
-\ifluluelse{
-	\includegraphics[width=0.5\textwidth]{FindIt}
+	\includegraphics[width=0.45\textwidth]{FindIt}
 	\hspace{1cm}
-	\includegraphics[width=0.4\textwidth]{TimeClasses}
-}{
-	\includegraphics[width=0.4\textwidth]{FindIt}
-	\hspace{1cm}
-	\includegraphics[width=0.3\textwidth]{TimeClasses}
-}
+	\includegraphics[width=0.45\textwidth]{TimeClasses}
 }
 \caption{Searching for a class by name.
 \label{fig:findit}}
@@ -562,14 +511,14 @@ The \emphind{method finder} can help you.
 \seeindex{system browser!finding methods}{method, finding}
 \index{method!finding}
 
-\dothis{Drag the \menu{method finder} icon out of the  \toolsflapind.
+\dothis{Select \menu{World \go Tools ... \go Method finder}.
 Type ``now'' in the top left pane, and \menu{accept} it (or just press the \textsc{return} key).}
 The method finder will display a list of all the method names that contain the substring ``now''.  
-To scroll to \ct{now} itself, move the cursor to the list and type ``\ct{n}''; this trick works in all scrolling windows.  Select ``now'' and the right-hand pane shows you the three classes that define a method with this name, as shown in \figref{MethodFinder}.  Selecting any one of them will open a browser on it.
+To scroll to \ct{now} itself, move the cursor to the list and type ``\ct{n}''; this trick works in all scrolling windows.  Select ``now'' and the right-hand pane shows you the classes that define a method with this name, as shown in \figref{MethodFinder}.  Selecting any one of them will open a browser on it.
 
 \begin{figure}[hbt]
-\centerline {\includegraphics[scale=0.6]{methodFinder-now}}
-\caption{The method finder showing three classes that define a method named \ct{now}.
+\centerline {\includegraphics[width=0.7\textwidth]{methodFinder-now}}
+\caption{The method finder showing all classes defining a method named \ct{now}.
 \label{fig:MethodFinder}}
 \end{figure}
 
@@ -580,7 +529,7 @@ The method finder can still help!  For example, suppose that you would like to f
   the \textsc{return} key, as shown in
   \figref{methodFinder-example1}.}
 \noindent
-The method finder will suggest a method that does what you want.
+The method finder will suggest a method that does what you want.\footnote{If a window pops up with a warning about a deprecated method, don't panic --- the method finder is simply trying out all likely candidates, including deprecated methods. Just \click ~\button{Proceed}.}
 
 An asterisk at the beginning of a line in the right pane of the method finder indicates that this method is the one that was actually used to obtain the requested result. 
 So, the asterisk in front of \ct{String asUppercase} lets us know that the method \mthind{String}{asUppercase} defined on the class \clsind{String} was executed and returned the result we wanted. The methods that do not have an asterisk are just the other methods that have the same name as the ones that returned the expected result. So \cmind{Character}{asUppercase} was not executed on our example, because \ct{'eureka'} is not a \clsind{Character} object.
@@ -588,21 +537,21 @@ So, the asterisk in front of \ct{String asUppercase} lets us know that the metho
 \begin{figure}[hbt]
 \ifluluelse
 	{\centerline {\includegraphics[width=0.9\textwidth]{MethodFinder-example1}}}
-	{\centerline {\includegraphics[scale=0.7]{MethodFinder-example1}}}
+	{\centerline {\includegraphics[width=0.7\textwidth]{MethodFinder-example1}}}
 \caption{Finding a method by example.
 \label{fig:methodFinder-example1}}
 \end{figure}
 
-You can also use the method finder for methods with arguments; for example, if you are looking for a method that will find the greatest common factor of two integers, you might try \ct{25. 35. 5} as an example.  You can also give the method finder multiple examples to narrow the search space; the help text in the bottom pane explains more.
+You can also use the method finder for methods with arguments; for example, if you are looking for a method that will find the greatest common factor of two integers, you might try \ct{25. 35. 5} as an example.  You can also give the method finder multiple examples to narrow the search space; the help text in the bottom pane explains how.
 
 %=================================================================
 \section{Defining a new method}
 
-The advent of \ind{Test Driven Development}\cite{Beck03a} has changed the way that we write code.  
-The idea behind Test Driven Development, also called TDD or Behaviour Driven Development, is that we write a test that defines the desired behaviour of our code \emph{before} we write the code itself.
+The advent of \ind{Test Driven Development}\cite{Beck03a} (TDD) has changed the way that we write code.  
+The idea behind TDD is that we write a test that defines the desired behaviour of our code \emph{before} we write the code itself.
 Only then do we write the code that satisfies the test.
 \seeindex{Behavior Driven Development}{Test Driven Development}
-\orla{describe the technique where we write a test hat ... subsequently we write ...}
+% \orla{describe the technique where we write a test hat ... subsequently we write ...}
 
 Suppose that our assignment is to write a method that ``says something loudly and with emphasis''.  What exactly could that mean?  What would be a good name for such a method?  How can we make sure  that programmers who may have to maintain our method in the future have an unambiguous description of what it should do?   We can answer all of these questions by giving an example:
 
@@ -641,27 +590,47 @@ So select \menu{accept (s)} by \actclick{ing} in the bottom pane, or just type \
 \index{keyboard shortcut!accept}
 \seeindex{accept it}{keyboard shortcut, accept}
 
+If this is the first time you have accepted any code in your image, you will likely be prompted to enter your initials. Since many people have contributed code to the image, it is important to keep track of everyone who creates or modifies methods. Simply enter an unambiguous identifier, such as your first initial and last name, or first and last names separated by a dot.
+
+%\begin{figure}[hbt]
+%\centerline {\includegraphics[width=0.35\textwidth]{initials}}
+%\caption{Entering your initials.
+%\label{fig:initials}}
+%\end{figure}
+
 Because there is as yet no method called \ct{shout}, the browser will ask you to confirm that this is the name that you really want\,---\,and it will suggest some other names that you might have intended (\figref{testShoutConfirm}).
 This can be quite useful if you have merely made a typing mistake, but in this case, we really \emph{do} mean \ct{shout}, since that is the method we are about to create, so we have to confirm this by selecting the first option from the menu of choices, as shown in \figref{testShoutConfirm}. 
 
-\begin{figure}[hbt]
-\ifluluelse
-	{\centerline {\includegraphics[width=\textwidth]{testShoutConfirm}}}
-	{\centerline {\includegraphics[scale=0.7]{testShoutConfirm}}}
-\caption{Accepting the testShout method class \ct{StringTest}.
-\label{fig:testShoutConfirm}}
+
+\begin{figure}[htb]
+\begin{minipage}[b]{0.48\textwidth}
+\centerline {\includegraphics[width=0.6\textwidth]{initials}}
+\caption{Entering your initials.\label{fig:initials}}
+\end{minipage}
+\hfill
+\begin{minipage}[b]{0.48\textwidth}
+\centerline {\includegraphics[width=0.9\textwidth]{testShoutConfirm}}
+\caption{Accepting the \ct{StringTest} method \ct{testShout}.\label{fig:testShoutConfirm}}
+\end{minipage}
 \end{figure}
 
-\dothis{Run your newly created test: open the \ind{SUnit} \emphind{TestRunner}, either by dragging it from the \toolsflapind, or by selecting \menu{World \go open... \go Test Runner}.}
+
+%\begin{figure}[hbt]
+%\ifluluelse
+%	{\centerline {\includegraphics[width=\textwidth]{testShoutConfirm}}}
+%	{\centerline {\includegraphics[width=0.7\textwidth]{testShoutConfirm}}}
+%\caption{Accepting the \ct{StringTest} method \ct{testShout}.
+%\label{fig:testShoutConfirm}}
+%\end{figure}
+
+\dothis{Run your newly created test: open the \ind{SUnit} \emphind{TestRunner} from the \menu{World} menu.}
 
 The leftmost two panes are a bit like the top panes in the system browser.  The left pane contains a list of system categories, but it's restricted to those categories that contain test classes.
 
 \dothis{Select \scat{CollectionsTests-Text} and the pane to the right will show all of the test classes in that category, which includes the class \ct{StringTest}.  The names of the classes are already selected, so \click \menu{Run Selected} to run all these tests.}
 
 \begin{figure}[hbt]
-\ifluluelse
-	{\centerline {\includegraphics[width=\textwidth]{testRunnerOnStringTest}}}
-	{\centerline {\includegraphics[scale=0.5]{testRunnerOnStringTest}}}
+\centerline {\includegraphics[width=0.8\textwidth]{testRunnerOnStringTest}}
 \caption{Running the String tests.
 \label{fig:testRunnerTestShout}}
 \end{figure}
@@ -673,13 +642,13 @@ If you \click on that line of text, the erroneous test will run again, this time
 \cmindex{Behavior}{>>}
 
 The window that opens with the error message is the \st debugger (see \figref{predebugger}).
-\ab{Well, it's actually the \emph{pre-}debugger.  Does this matter?}\damien{I don't think it's important at this point.}
+% \ab{Well, it's actually the \emph{pre-}debugger.  Does this matter?}\damien{I don't think it's important at this point.}
 We will look at the \ind{debugger} and how to use it in \charef{env}.
 
 \begin{figure}[hbt]
 \ifluluelse
 	{\centerline {\includegraphics[width=\textwidth]{Predebugger}}}
-	{\centerline {\includegraphics[scale=0.7]{Predebugger}}}
+	{\centerline {\includegraphics[width=0.7\textwidth]{Predebugger}}}
 \caption{The (pre-)debugger.}
 \label{fig:predebugger}
 \end{figure}
@@ -718,7 +687,7 @@ Don't worry about this.
 \begin{figure}[hbt]
 \ifluluelse
 	{\centerline{\includegraphics[width=\textwidth]{String-Shout}}}
-	{\centerline{\includegraphics[scale=0.7]{String-Shout}}}
+	{\centerline{\includegraphics[width=0.7\textwidth]{String-Shout}}}
 \caption{The \ct{shout} method defined on class \ct{String}.
 \label{fig:String-shout}}
 \end{figure}
