@@ -284,7 +284,7 @@ When you save a new \subind{method}{version} of a method, the old one is not los
    \ifluluelse
 	   {\includegraphics[width=\textwidth]{VersionsOfMouseUp} }
 	   {\includegraphics[scale=0.7]{VersionsOfMouseUp} }
-   \caption{The \ind{versions browser} showing several versions of the \ct{SBECell>>>mouseUp:} method}
+   \caption{The \ind{versions browser} showing several versions of the \ct{PBECell>>>mouseUp:} method}
    \label{fig:mouseUpVersions}
 \end{figure}
 The \button{versions} button gives access to the successive modifications made to the selected method.
@@ -620,10 +620,10 @@ MCHttpRepository
 		{\includegraphics[scale=0.7]{SqueakSource-SBE}}
 	\end{center}
 	\caption{A Repository browser.}
-	\label{fig:SqueakSource:SBE}
+	\label{fig:SqueakSource:PBE}
 \end{figure}
 \noindent
-Then click on \button{Open} to open a repository browser on this repository.  You should see something like \figref{SqueakSource:SBE}.  On the left is a list of all of the packages in the repository; if you select one, then the pane on the right will show all of the versions of the selected package in this repository. 
+Then click on \button{Open} to open a repository browser on this repository.  You should see something like \figref{SqueakSource:PBE}.  On the left is a list of all of the packages in the repository; if you select one, then the pane on the right will show all of the versions of the selected package in this repository. 
 
 If you select one of the versions, you can \button{Browse} it (without loading it into your image), \button{Load} it, or look at the \button{Changes} that will be made to your image by loading the selected version.  You can also make a \button{Copy} of a version of a package, which you can then write to another repository.
 
@@ -631,7 +631,7 @@ As you can see, the names of versions contain the name of the package, the initi
 
 To create a package with Monticello, you have to do two things: write some code, and tell Monticello about it.
 
-\dothis{Create a category called \scat{SBE-Monticello}, and put a couple of classes in it, as shown in \figref{MCnewcategory}.  Also, create a method in an existing class, and put it in the same package as your classes, using the rules from page \pageref{sec:packageRules}\,---\,see \figref{MCnewmethod}.}
+\dothis{Create a category called \scat{PBE-Monticello}, and put a couple of classes in it, as shown in \figref{MCnewcategory}.  Also, create a method in an existing class, and put it in the same package as your classes, using the rules from page \pageref{sec:packageRules}\,---\,see \figref{MCnewmethod}.}
 
 \begin{figure}[btp]
 	\begin{center}
@@ -639,7 +639,7 @@ To create a package with Monticello, you have to do two things: write some code,
 		{\includegraphics[width=\textwidth]{MCnewcategory}}
 		{\includegraphics[scale=0.7]{MCnewcategory}}
 	\end{center}
-	\caption{Two classes in the ``SBE'' package.}
+	\caption{Two classes in the ``PBE'' package.}
 	\label{fig:MCnewcategory}
 \end{figure}
 
@@ -649,14 +649,14 @@ To create a package with Monticello, you have to do two things: write some code,
 		{\includegraphics[width=\textwidth]{MCnewmethod}}
 		{\includegraphics[scale=0.7]{MCnewmethod}}
 	\end{center}
-	\caption{An extension method that will also be in the ``SBE'' package.}
+	\caption{An extension method that will also be in the ``PBE'' package.}
 	\label{fig:MCnewmethod}
 \end{figure}
 
-To tell Monticello about your package, click on \button{+Package}, and type the name of the package, in this case ``SBE''.  Monticello will add \ct{SBE} to its list of packages; the package entry will be marked with an asterisk to show that the version in the image has not yet been written to any repository.
+To tell Monticello about your package, click on \button{+Package}, and type the name of the package, in this case ``PBE''.  Monticello will add \ct{PBE} to its list of packages; the package entry will be marked with an asterisk to show that the version in the image has not yet been written to any repository.
 
 Initially, the only repository associated with this package will be your package cache, as shown in \figref{MC+SBE}.  That's OK: you can still save the code, which will cause it to be written to the package cache.  
-Just click \button{Save} and you will be invited to provide a log message for the version of the package that you are about to save, as shown in \figref{SBE-apb}; when you accept the message, Monticello will save your package.
+Just click \button{Save} and you will be invited to provide a log message for the version of the package that you are about to save, as shown in \figref{PBE-apb}; when you accept the message, Monticello will save your package.
 To indicate this, the asterisk decorating the name in Monticello's package pane will be removed, and the version number added.
 
 If you then make a change to the package\,---\,say by adding a method to one of the classes\,---\,the asterisk will re-appear, showing that you have unsaved changes.  If you open a repository browser on the package cache, you can select the saved version, and use \button{Changes} and the other buttons.  
@@ -667,9 +667,9 @@ You can of course save the new version to the repository too; once you \button{R
 	\begin{center}
 		\includegraphics[width=\textwidth]{MC+SBE}
 		% \on{Sorry Andrew, this one is too wide!}
-		% \includegraphics[scale=0.7]{MC+SBE}
+		% \includegraphics[scale=0.7]{MC+PBE}
 	\end{center}
-	\caption{The as-yet-unsaved SBE package in Monticello.}
+	\caption{The as-yet-unsaved PBE package in Monticello.}
 	\label{fig:MC+SBE}
 \end{figure}
 
@@ -680,7 +680,7 @@ You can of course save the new version to the repository too; once you \button{R
 		{\includegraphics[scale=0.7]{SBE-apb}}
 	\end{center}
 	\caption{Providing a log message for a new version of a package.}
-	\label{fig:SBE-apb}
+	\label{fig:PBE-apb}
 \end{figure}
 
 \begin{figure}[tbp]
