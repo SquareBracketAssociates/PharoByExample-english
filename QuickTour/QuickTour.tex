@@ -57,27 +57,26 @@ You will also learn how to define a new method, create an object and send it mes
 
 \pharo is available as a free \ind{download} from \pharoweb.
 There are three parts that you will need to download, consisting of four files (see \figref{download}).
-\fix
-%:==> FIX download files, instructions, snapshots
 
 \begin{figure}[htb]
 \centerline {\includegraphics[width=\textwidth]{annotatedDownload}}
 \caption{The \pharo download files.\label{fig:download}}
 \end{figure}
+%:===> USE PBE image
 
 \begin{enumerate}
 
-  \item The \emphind{virtual machine} (VM) is the only part of the system that is different for each operating system and processor.  Pre-compiled virtual machines are available for all the major computing environments.  In \figref{download} we see the VM for the Mac is called \textit{\pharo \fix 3.8.15beta1U.app}.
+  \item The \emphind{virtual machine} (VM) is the only part of the system that is different for each operating system and processor.  Pre-compiled virtual machines are available for all the major computing environments.  In \figref{download} we see the VM for the Mac is called \textit{Squeak 4.0.1beta1U.app}.\footnote{\pharo is derived from \squeak 3.9, and presently shares the VM with \squeak.}
 
-  \item The \emphind{sources} file contains the source code for all of the parts of \pharo that don't change very frequently. In \figref{download} it is called \fix \emph{SqueakV39.sources}. Note that the file SqueakV39.sources is only for versions 3.9 and later of \pharo. For earlier versions, use a sources file corresponding to the main version \eg \textit{SqueakV3.sources} for versions of \pharo from 3.0 up to 3.8.
+  \item The \emphind{sources} file contains the source code for all of the parts of \pharo that don't change very frequently. In \figref{download} it is called \emph{SqueakV39.sources}.
 
   \item The current \emph{system \ind{image}} is a snapshot of a running \pharo system, frozen in time.  It consists of two files: an \emph{.}\emphind{image} file, which contains the state of all of the objects in the system (including classes and methods, since they are objects too), and a \emph{.}\emphind{changes} file, which contains a log of all of the changes to the source code of the system.
-In \figref{download}, we see that we have grabbed the \textit{Squeak3.9-final-7067} image and changes files.
-Actually, we will use a slightly different image in this book.
+In \figref{download}, we see that we are using the \textit{PBE} image and changes files.
+Actually, we will use a slightly different image in this book. \on{fix the figure to use Damien's PBE image}
 \end{enumerate}
 
 \dothis{Download and install \pharo on your computer.}
-% We recommend that you use the image provided on the \pharo by Example web page.\footnote{\pbe}
+We recommend that you use the image provided on the \pharo by Example web page.\footnote{\pbe}
 \index{download}
 \label{sec:sbeImage}
 
@@ -100,122 +99,147 @@ Do whatever works best for your style of working and your operating system.
 %-----------------------------------------------------------------
 \begin{figure}[htb]
 % \centerline {\includegraphics[width=0.6\textwidth]{download}}
-\centerline {\includegraphics[width=\textwidth]{startup}}
+\centerline {\includegraphics[width=0.8\textwidth]{startup}}
 \caption{A fresh \pbe image.\label{fig:startup}}
 \end{figure}
 
 \index{launching \pharo}
 \paragraph{Launching.} To start \pharo, do whatever your operating system expects: drag the \emph{.}\emphind{image} file onto the icon of the virtual machine, or double-click the \emph{.image} file, or  at the command line type the name of the virtual machine followed by the path to the \emph{.image} file. (When you have multiple VMs installed on your machine the operating system may not automatically pick the right one; in this case it is safer to drag and drop the image onto the virtual machine, or to use the command line.)
 
-Once \pharo is running, you should see a single large window, possibly containing some open workspace windows (see \figref{startup}), and it's not obvious how to proceed!  You will notice that there is no menu bar, or at least not a useful one.  Instead,  \pharo makes heavy use of context-dependent pop-up menus.
+Once \pharo is running, you should see a single large window, possibly containing some open workspace windows (see \figref{startup}), and it's not obvious how to proceed!
+You might notice a menu bar, but \pharo mainly makes use of context-dependent pop-up menus.
+% You will notice that there is no menu bar, or at least not a useful one.  
+% Instead,  \pharo makes heavy use of context-dependent pop-up menus.
 
-\dothis{Start \pharo. You can dismiss any open workspaces by clicking on the {\sf X} in the top left corner of the workspace window.  You can collapse the windows (so that they can be expanded again later) by clicking on the \raisebox{-0.2ex}{{\Large $\circ$}} in the top-right corner.}
+\dothis{Start \pharo. You can dismiss any open workspaces by \click{ing} on the {\sf X} in the top left corner of the workspace window.  You can collapse the windows (so that they can be expanded again later) by \click{ing} on the \raisebox{-0.2ex}{{\Large $\circ$}} in the top-right corner.}
 
 %-----------------------------------------------------------------
 \paragraph{First Interaction.}
 
-A good place to get started is the \ind{world menu} shown in \figref{threeButtons:red}. 
+A good place to get started is the \ind{world menu} shown in \figref{threeButtons:click}. 
 
-\dothis{Click with the mouse on the background of the main window to show the world menu, then choose \menu{open \ldots \go workspace} to create a new workspace.}
+\dothis{Click with the mouse on the background of the main window to show the world menu, then choose \menu{Workspace} to create a new workspace.}
 
 \begin{figure}[tbh]
 	\centering
-	\subfigure[The world menu]{\label{fig:threeButtons:red}%
-		\includegraphics[width=0.2\linewidth]{worldMenu}}\hfill
-	\subfigure[The contextual menu]{\label{fig:threeButtons:yellow}%
-		\includegraphics[width=0.25\linewidth]{yellowButtonMenuOnWorkspace}}\hfill
-	\subfigure[The morphic halo]{\label{fig:threeButtons:blue}%
-		\includegraphics[width=0.25\linewidth]{morphicHaloOnWorkspace}}% these braces needed (else no whitespace at end of line)
-	\caption{The world menu (brought up by the red mouse button), a contextual menu (yellow mouse button), and a morphic \subind{Morphic}{halo} (blue mouse button). \fix\label{fig:threeButtons}}
+	\subfigure[The world menu]{\label{fig:threeButtons:click}% click
+		\includegraphics[width=0.25\linewidth]{worldMenu}}\hfill
+	\subfigure[The contextual menu]{\label{fig:threeButtons:actclick}% action click
+		\includegraphics[width=0.35\linewidth]{yellowButtonMenuOnWorkspace}}\hfill
+	\subfigure[The morphic halo]{\label{fig:threeButtons:metaclick}% meta click
+		\includegraphics[width=0.35\linewidth]{morphicHaloOnWorkspace}}% these braces needed (else no whitespace at end of line)
+	\caption{The world menu (brought up \click{ing}), a contextual menu (\actclick{ing}), and a morphic \subind{Morphic}{halo} (\metaclick{ing}).\label{fig:threeButtons}}
 \end{figure}
+\seeindex{morphic halo}{Morphic}
+
+%% ON: I had to shrink this and move it up to avoid
+%% it running over the end of the page.
+%\begin{wrapfigure}[19]{r}{0.25\linewidth}
+%% The parameters are the number of narrow lines to the right of the figure [19],
+%% the placement {r} for right, and the width of the figure. Capital R will allow some float.
+%% Inside the wrapfig environment, linewidth is special --- the width of the figure.
+%\includegraphics[width=0.95\linewidth]{colouredMouse}
+%\caption{The author's mouse. \click{ing} the scroll wheel activates the blue button.}
+%\label{fig:colouredMouse}
+%\end{wrapfigure}
+
+\st was originally designed for a computer with a \ind{three button mouse}.  If your mouse has fewer than three buttons, you will have to press extra keys while \click{ing} the mouse to simulate the extra buttons.  A two-button mouse works quite well with \pharo, but if you have only a single-button mouse, you should seriously consider buying a two-button mouse with a clickable scroll wheel: it will make working with \pharo much more pleasant.
+
+\pharo avoids terms like ``left mouse click'' because different computers, mice, keyboards and personal configurations mean that different users will need to press different physical buttons to achieve the same effect.
+Originally \st introduced colours to stand for the different mouse buttons.\footnote{The button colours were \emph{red}, \emph{yellow} and \emph{blue}. The authors of this book could never remember which colour referred to which button.}
 \index{red button}
 \index{yellow button}
 \index{blue button}
-\seeindex{morphic halo}{Morphic}
-
-% ON: I had to shrink this and move it up to avoid
-% it running over the end of the page.
-\begin{wrapfigure}[19]{r}{0.25\linewidth}
-% The parameters are the number of narrow lines to the right of the figure [19],
-% the placement {r} for right, and the width of the figure. Capital R will allow some float.
-% Inside the wrapfig environment, linewidth is special --- the width of the figure.
-\includegraphics[width=0.95\linewidth]{colouredMouse}
-\caption{The author's mouse. Clicking the scroll wheel activates the blue button.}
-\label{fig:colouredMouse}
-\end{wrapfigure}
-
-\pharo was originally designed for a computer with a \ind{three button mouse}.  If your mouse has fewer than three buttons, you will have to press extra keys while clicking the mouse to simulate the extra buttons.  A two-button mouse works quite well with \pharo, but if you have only a single-button mouse, you should seriously consider buying a two-button mouse with a clickable scroll wheel: it will make working with \pharo much more pleasant.
-
-\fix \on{use click macros}
-
-\pharo avoids terms like ``left mouse click'' because different computers, mice, keyboards and personal configurations mean that different users will need to press different physical buttons to achieve the same effect.  Instead, the mouse buttons are labeled with colors.  The mouse button that you pressed to get the ``World'' menu is called the \emphind{red button}; it is most often used for selecting items in lists, selecting text, and selecting menu items.
-\ugh{When you start using \pharo, it can be surprisingly helpful to actually label your mouse, as shown in \figref{colouredMouse}.}\footnote{We will avoid the term ``red-click'' and use ``click'' instead, since this is the default.}
-
-The \emphind{yellow button} is the next most used button; it is used to bring up a contextual menu, that is, a menu that offers different sets of actions depending on where the mouse is pointing; see \figref{threeButtons:yellow}.
+Since many users will use various modifiers keys (\emph{control}, \emph{ALT}, \emph{meta} \etc) to achieve the same effect, we will instead use the following terms:
+\begin{description}
+\item [\click:] this is the most often used mouse button, and is normally equivalent to \click{ing} a single-mouse button without any modifier key. \click on the image to bring up the ``World'' menu (\figref{threeButtons:click}).
+\item [\actclick:] this is the next most used button; it is used to bring up a contextual menu, that is, a menu that offers different sets of actions depending on where the mouse is pointing; see \figref{threeButtons:actclick}. If you do not have a multi-button mouse, then normally you will configure the \emph{control} modifier key to \actclick with the mouse button.
+\item [\metaclick:] Finally, you may \metaclick on any object displayed in the image to activate the ``morphic \subind{Morphic}{halo}'', an array of handles that are used to perform operations on the on-screen objects themselves, such as rotating them or resizing them; see \figref{threeButtons:metaclick}.\footnote{Note that the morphic handles are usually inactive in \pharo, but you can turn them on using the Preferences Browser, which we will see shortly.}
+If you let the mouse linger over a handle, a help balloon will explain its function.
+Typically you will use a third modifier key, such as \emph{command} or \emph{meta} to \metaclick.
+\end{description}
 
 \dothis{Type \ct{Time now} in the workspace.
-Now click the yellow button in the workspace.
+Now \actclick in the workspace.
 Select \menu{print it}.}
 
-Finally, there is the \emphind{blue button}, which is used to activate the ``morphic \subind{Morphic}{halo}'', an array of handles that are used to perform operations on the on-screen objects themselves, such as rotating them or resizing them; see \figref{threeButtons:blue}. 
-If you let the mouse linger over a handle, a help balloon will explain its function.
+Now we will activate \metaclick{ing}.
 
-\dothis{Click the blue button on the workspace.
-Grab the \raisebox{-0.4ex}{\includegraphics[width=1em]{morphicRotate}} handle near the bottom left corner and drag it to rotate the workspace.}
-
-\on{ask andrew what to do here}
-We recommend that right-handed people configure their mouse to put the \ind{red button} on the left side of their mouse, the \ind{yellow button} on the right, and use a clickable scroll wheel, if one is available, for the blue button.  If you don't have a clickable scroll wheel, then you can get the Morphic halo by holding down the \ct{alt} or \ct{option} key while clicking the \ind{red button}.  If you are using a Macintosh without a second mouse button, you can simulate one by holding down the \clover{} key while clicking the mouse.  However, if you are going to be using \pharo at all often, we recommend investing in a mouse with at least two buttons.
-
-You can configure your mouse to work the way you want by using the preferences of your operating system and mouse driver.
-\pharo has some preferences for customising the mouse and the meta keys on your keyboard. You can find the \ind{preference browser} in the \menu{open} item of the \menu{World} menu. 
-In the preference browser, the \menu{general} category contains an option \menu{swapMouseButtons} that switches the yellow and blue functions (see \figref{prefBrowser}). \on{fix this --- also preferences for halos} The \menu{keyboard} category has options to duplicate the various command keys.   
-
-\dothis{Open the preference browser and find the \menu{swapMouseButtons} option using the search box.}
+\dothis{Open the preference browser (\menu{System {\ldots\go} Preferences {\ldots\go} Preference Browser\ldots}) and find the \menu{halosEnabled} option using the search box.}
 
 \begin{figure}[htb]
-\ifluluelse
-	{\centerline {\includegraphics[width=\textwidth]{PreferenceBrowser}}}
-	{\centerline {\includegraphics[scale=0.7]{PreferenceBrowser}}}
+\centerline{\includegraphics[width=0.8\textwidth]{PreferenceBrowser}}
 \caption{The Preference Browser.\label{fig:prefBrowser}}
 \end{figure}
+
+\dothis{Now you should be able to \metaclick on the workspace. (See \figref{threeButtons:metaclick}.)
+Grab the blue \raisebox{-0.4ex}{\includegraphics[width=1em]{morphicRotate}} handle near the bottom left corner and drag it to rotate the workspace.}
+
+We recommend that right-handed people configure their mouse to \click with the left button, \actclick with the right button, and \metaclick with the  clickable scroll wheel, if one is available.  If you don't have a clickable scroll wheel, then you can get the Morphic halo by holding down the \ct{alt} or \ct{option} key while \click{ing}.  If you are using a Macintosh without a second mouse button, you can simulate one by holding down the \clover{} key while \click{ing} the mouse.  However, if you are going to be using \pharo at all often, we recommend investing in a mouse with at least two buttons.
+
+You can configure your mouse to work the way you want by using the preferences of your operating system and mouse driver.
+\pharo has some preferences for customising the mouse and the meta keys on your keyboard.
+In the preference browser, the \menu{keyboard} category contains an option \menu{swapMouseButtons} that switches the \actclick and \metaclick functions.
+There are also options to duplicate the various command keys.   
 
 %=================================================================
 \section{The World menu}
 \index{world menu}
 
-\dothis{Click again on the \pharo background.}
+\dothis{\Click again on the \pharo background.}
 You will see the \menu{World} menu again.
-Most \pharo menus are not modal; you can leave them on the screen for as long as you wish by clicking the push pin icon in the top-right corner. Do this. Also, notice that menus appear when you click the mouse, but do not disappear when you release it; they stay visible until you make a selection, or until you click outside of the menu. You can even move the menu around by grabbing its title bar.
+Most \pharo menus are not modal; you can leave them on the screen for as long as you wish by \click{ing} the push pin icon in the top-right corner. Do this.
+% Also, notice that menus appear when you click the mouse, but do not disappear when you release it; they stay visible until you make a selection, or until you click outside of the menu. You can even move the menu around by grabbing its title bar.
 
 The world menu provides you a simple means to access many of the tools that \pharo offers.
 
-\dothis{Have a closer look at the \menu{world\go{}open \ldots} menu.}
+\dothis{Have a closer look at the \menu{World} and \menu{{}Tools \ldots} menus. (\figref{threeButtons:click})}
+
 You will see a list of several of the core tools in \pharo, including the system browser (one of many available class browsers) and the workspace.
 We will encounter most of them in the coming chapters.
 
-\begin{figure}[htb]
-\ifluluelse
-	%{\centerline {\includegraphics[width=0.3\textwidth]{OpenMenu}}}
-	{\centerline {\includegraphics[scale=0.4]{OpenMenu}}}
-	{\centerline {\includegraphics[scale=0.7]{OpenMenu}}}
-\caption{The \menu{open \ldots} dialogue of the world menu.\label{fig:openmenu}}
-\end{figure}
+%\begin{figure}[htb]
+%\ifluluelse
+%	%{\centerline {\includegraphics[width=0.3\textwidth]{OpenMenu}}}
+%	{\centerline {\includegraphics[scale=0.4]{OpenMenu}}}
+%	{\centerline {\includegraphics[scale=0.7]{OpenMenu}}}
+%\caption{The \menu{open \ldots} dialogue of the world menu.\label{fig:openmenu}}
+%\end{figure}
+
+%=================================================================
+\section{Sending messages}
+
+\dothis{Open a workspace. Type in the following text:}
+
+\begin{code}{}
+BouncingAtomsMorph new openInWorld
+\end{code}
+
+\dothis{Now \actclick. A menu should appear. Select \menu{do it (d)}.}
+
+A window containing a large number of bouncing atoms should open in the top left of the \pharo image.
+
+You have just evaluated your first \st expression!
+You just sent the message \ct{new} to the \bam class, resulting in a new \bam instance, followed by the message \ct{openInWorld} to this instance.
+The \bam class decided what to do with the \ct{new} message, that is, it looked up its \emph{methods} for handling \ct{new} message and reacted appropriately.
+Similarly the \bam instance looked up its method for responding to \ct{openInWorld} and took appropriate action.
+
+If you talk to Smalltalkers for a while, you will quickly notice that they generally do not use expressions like ``call an operation'' or ``invoke a method'', but instead they will say ``send a message''.
+This reflects the idea that objects are responsible for their own actions. 
+You never \emph{tell} an object what to do\,---\,instead you politely \emph{ask} it to do something by sending it a message. 
+The object, not you, selects the appropriate method for responding to your message.
 
 %=================================================================
 \section{Saving, quitting and restarting a \pharo session}
 
-\dothis{Bring up the world menu.
-Now select \menu{new morph \ldots} and navigate to \menu{from alphabetical list{\go}A-C{\go}BlobMorph}.
-You now have a blob ``in hand''.
-Put the blob down (by clicking) somewhere. It will start to move.}
-\index{Morphic}
+\dothis{Now \click on the bouncing atoms window and drag it anywhere you like. You now have the demo ``in hand''. Put it down by \click{ing} anywhere.}
 
 \begin{figure}[htb]
 \begin{minipage}[b]{0.48\textwidth}
 \ifluluelse
-	{\centerline{\includegraphics[scale=0.5]{Blob}}}
-	{\centerline{\includegraphics[scale=0.7]{Blob}}}
-	\caption{An instance of \lct{BlobMorph}.\label{fig:blob}}
+	{\centerline {\includegraphics[scale=0.4]{atoms}}}
+	{\centerline {\includegraphics[scale=0.7]{atoms}}}
+	\caption{A \bam.\label{fig:atoms}}
 \end{minipage}
 \hfill
 \begin{minipage}[b]{0.48\textwidth}
@@ -226,16 +250,15 @@ Put the blob down (by clicking) somewhere. It will start to move.}
 \end{minipage}
 \end{figure}
 
-\dothis{Select \menu{World\go{}save as \ldots}, and enter the name ``SBE''.
-Now click on the \menu{Accept(s)} button.
-Now select \menu{World\go{}save and quit}.}
+\dothis{Select \menu{World\go{}Save as \ldots}, enter the name ``myPharo'', and \click on the \button{OK} button.
+Now select \menu{World\go{}Save and quit}.}
 
-Now if you go to the location where the original image and changes files were, you will find two new files called ``SBE.\ind{image}'' and ``SBE.\ind{changes}'' that represent the working state of the \pharo image at the moment before you told \pharo to \menu{save and quit}.
+Now if you go to the location where the original image and changes files were, you will find two new files called ``myPharo.\ind{image}'' and ``myPharo.\ind{changes}'' that represent the working state of the \pharo image at the moment before you told \pharo to \menu{Save and quit}.
 If you wish, you can move these two files anywhere that you like on your disk, but if you do so you may (depending on your operating system) need to also move, copy or link to the virtual machine and the \emph{.source} file.
 
-\dothis{Start up \pharo from the newly created ``SBE.image'' file.}
+\dothis{Start up \pharo from the newly created ``myPharo.image'' file.}
 
-Now you should find yourself in precisely the state you were when you quit \pharo. The blob is there again and it continues to move from where it was when you left it.
+Now you should find yourself in precisely the state you were when you quit \pharo. The \bam is there again and it continues to move from where it was when you left it.
 
 When you start \pharo for the first time, the \pharo \ind{virtual machine} loads the image file that you provide. This file contains a snapshot of a large number of objects, including a vast amount of pre-existing code and a large number of programming tools (all of which are objects). As you work with \pharo, you will send messages to these objects, you will create new objects, and some of these objects will die and their memory will be reclaimed (\ie garbage-collected).
 
@@ -254,36 +277,35 @@ You might think that the image is the key mechanism for storing and managing sof
 As we shall see very soon, there are much better tools for managing code and sharing software developed by teams.
 Images are very useful, but you should learn to be very cavalier about creating and throwing away images, since tools like Monticello offer much better ways to manage versions and share code amongst developers.
 
-\dothis{Blue-click on the Blob.}
-You will see a collection of colored dots that are collectively called the blob's morphic \subind{Morphic}{halo}.
+\dothis{Blue-click on the \bam.\footnote{Remember, you may have to set the \ct{halosEnabled} option in the Preferences Browser.}}
+You will see a collection of colored dots that are collectively called the \bam's morphic \subind{Morphic}{halo}.
 Each dot is called a \emph{handle}.
-Click in the pink handle containing the cross; the blob should go away. 
-(You may have to try several times as the Blob squirms around and tries to get away from the mouse.)
+Click in the pink handle containing the cross; the \bam should go away. 
 
-\begin{figure}[htb]
-\ifluluelse
-	{\centerline {\includegraphics[width=\textwidth]{Tools}}}
-	{\centerline {\includegraphics[width=0.8\textwidth]{Tools}}}
-\caption{The \pharo \toolsflap.\label{fig:tools}}
-\end{figure}
+%\begin{figure}[htb]
+%\ifluluelse
+%	{\centerline {\includegraphics[width=\textwidth]{Tools}}}
+%	{\centerline {\includegraphics[width=0.8\textwidth]{Tools}}}
+%\caption{The \pharo \toolsflap.\label{fig:tools}}
+%\end{figure}
 
 %=================================================================
 \section{Workspaces and Transcripts}
 \label{sec:transcript}
 
-\dothis{Close all open windows. Click on the \menu{Tools} tab at the far right of the \pharo environment to open the \toolsflapind.}
-You will see icons for some of the key tools in \pharo (\figref{tools}).
-Drag out a \ind{transcript} and a \ind{workspace}.
+\dothis{Close all open windows. Open a \ind{transcript} and a \ind{workspace}. (The transcript can be opened from the \menu{World{\go}Tools ...} submenu.)}
 
 \dothis{Position and resize the transcript and workspace windows so that the workspace just overlaps the transcript.}
-You can resize windows either by dragging one of the corners, or by blue-clicking the window to bring up the morphic handles, and dragging the yellow, bottom right handle.
+You can resize windows either by dragging one of the corners, or by \metaclick{ing} the window to bring up the morphic handles, and dragging the yellow, bottom right handle.
 
-At any time only one window is active; it is in front and has its label highlighted. The mouse cursor must be in the window in which you wish to type.
+At any time only one window is active; it is in front and has its border highlighted.
+% The mouse cursor must be in the window in which you wish to type.
 
 The transcript is an object that is often used for logging system messages.
 It is a kind of ``system console''.
-Note that the transcript is terribly slow, so if you keep it open and write to it certain operations can become 10 times slower.
-In addition the transcript is not thread-safe so you may experience strange problems if multiple objects write concurrently to the transcript.
+%Note that the transcript is terribly slow, so if you keep it open and write to it certain operations can become 10 times slower.
+%In addition the transcript is not thread-safe so you may experience strange problems if multiple objects write concurrently to the transcript.
+% ON: I think the transcript has been made thread-safe now, right?
 
 Workspaces are useful for typing snippets of \st code that you would like to experiment with.
 You can also use workspaces simply for typing arbitrarily text that you would like to remember, such as to-do lists or instructions for anyone who will use your image.
@@ -299,10 +321,10 @@ Transcript show: 'hello world'; cr.
 %\caption{Overlapping windows. The workspace is active.\label{fig:helloworld}}
 %\end{figure}
 
-Try double-clicking in the workspace at various points in the text you have just typed.
-Notice how an entire word, entire string, or the whole text is selected, depending on where you click.
+Try double-\click{ing} in the workspace at various points in the text you have just typed.
+Notice how an entire word, entire string, or the whole text is selected, depending on whether you \click within a word, at the end of the string, or at the end of the entire expression.
 
-\dothis{Select the text you have typed and yellow-click.
+\dothis{Select the text you have typed and \actclick.
 Select \menu{do it (d)}.}
 Notice how the text ``hello world'' appears in the transcript window
 (\figref{doit}).
@@ -316,20 +338,12 @@ Do it again.
 \caption{``Doing'' an expression\label{fig:doit}}
 \end{figure}
 
-You have just evaluated your first \st expression!
-You just sent the message \ct{show: 'hello world'} to the \ct{Transcript} object, followed by the message \ct{cr} (carriage return).
-The \ct{Transcript} then decided what to do with this message, that is, it looked up its \emph{methods} for handling \ct{show:} and \ct{cr} messages and reacted appropriately.
-
-If you talk to Smalltalkers for a while, you will quickly notice that they generally do not use expressions like ``call an operation'' or ``invoke a method'', but instead they will say ``send a message''.
-This reflects the idea that objects are responsible for their own actions. 
-You never \emph{tell} an object what to do\,---\,instead you politely \emph{ask} it to do something by sending it a message. 
-The object, not you, selects the appropriate method for responding to your message.
-
-
 %=================================================================
 \section{Keyboard shortcuts}
+%:===>HERE<===
+\here
 
-If you want  to evaluate an expression, you do not always have to bring up the yellow-button menu. Instead, you can use \ind{keyboard shortcuts}. These are the parenthesized expressions in the menu.  Depending on your platform, you may have to press one of the modifier keys (control, alt, command, or meta).
+If you want  to evaluate an expression, you do not always have to \actclick. Instead, you can use \ind{keyboard shortcuts}. These are the parenthesized expressions in the menu.  Depending on your platform, you may have to press one of the modifier keys (control, alt, command, or meta).
 (We will indicate these generically as \short{\emph{key}}.)
 
 \dothis{Evaluate the expression in the workspace again, but using the keyboard shortcut: \short{d}.}
@@ -405,7 +419,7 @@ We can see directly all the information stored in this class, and we can easily 
 %On the left side is a very long list of packages.
 %The field in the top-left corner is a search pane that can be used to find what you want in the list.
 %Type ``\ind{Sokoban}'' in the search pane and hit the return key.
-%Clicking on the right-pointing triangle by the name of a package reveals a list of available versions. When a package or a version is selected, information about it appears in the right-hand pane.
+%\click{ing} on the right-pointing triangle by the name of a package reveals a list of available versions. When a package or a version is selected, information about it appears in the right-hand pane.
 %Navigate to the latest version of \ct{Sokoban}.
 %With the mouse in the list pane, use the yellow-button menu to \menu{install} the selected package.
 %(If \pharo complains that it is not sure this version of the game will work in your image, just say ``yes'' and go ahead.)
@@ -499,7 +513,7 @@ This is nothing more than an ordinary \st message that is sent to the parent cla
 Here we see that the class \ct{Object} is being asked to create a subclass named \ct{Boolean} with no instance variables, class variables or ``pool dictionaries'', and to put the class \ct{Boolean} in the \scatind{Kernel-Objects} category.
 
 The lower pane shows the \emph{class comment} --- a piece of plain text describing the class.
-If you click on the \button{?} at the bottom of the class pane, you can see the class \subind{class}{comment} in a dedicated pane.
+If you \click on the \button{?} at the bottom of the class pane, you can see the class \subind{class}{comment} in a dedicated pane.
 
 \ab{I thought that this was supposed to be a \emph{Quick} tour!  And here we are describing a tool that I have used maybe twice in 10 years!   In any case, this description should be deferred to the \textbf{Environment} chapter}
 \on{I don't see why.  I use the hierarchy browser a lot!  I think it is really useful to know from the beginning, to help you find your through the hierarchy.}
@@ -515,7 +529,7 @@ Navigate to the immediate superclass and subclasses of \ct{Boolean}.
 
 Often, the fastest way to find a class is to search for it by name.  For example, suppose that you are looking for some unknown class that represents dates and times.
 
-\dothis{Put the mouse in the system category pane of the system browser and type \short{f}, or select \menu{find class \ldots (f)} from the yellow-button menu.  Type ``time'' in the dialog box and accept it.} 
+\dothis{Put the mouse in the system category pane of the system browser and type \short{f}, or select \menu{find class \ldots (f)} by \actclick{ing}.  Type ``time'' in the dialog box and accept it.} 
 \noindent
 You will be presented with a list of classes whose names contain ``time'' (see \figref{findit}).  Choose one, say, \ct{Time}, and the browser will show it, along with a class comment that suggests other classes that might be useful.  If you want to browse one of the others, select its name (in any text pane), and type \short{b}.
 \index{keyboard shortcut!find ...}
@@ -622,7 +636,7 @@ In this case, the \ct{shout} method that we are testing will go in class \clsind
 The highlighted text in the bottom pane is a template that reminds you what a \st method looks like.
 Delete this and enter the code from  \mthref{testShout}.}
 Once you have typed the text into the browser, notice that the bottom pane is outlined in red.  This is a reminder that the pane contains unsaved changes.
-So select \menu{accept (s)} from the yellow-button menu in the bottom pane, or just type \short{s}, to compile and save your method.
+So select \menu{accept (s)} by \actclick{ing} in the bottom pane, or just type \short{s}, to compile and save your method.
 \index{keyboard shortcuts}
 \index{keyboard shortcut!accept}
 \seeindex{accept it}{keyboard shortcut, accept}
@@ -642,7 +656,7 @@ This can be quite useful if you have merely made a typing mistake, but in this c
 
 The leftmost two panes are a bit like the top panes in the system browser.  The left pane contains a list of system categories, but it's restricted to those categories that contain test classes.
 
-\dothis{Select \scat{CollectionsTests-Text} and the pane to the right will show all of the test classes in that category, which includes the class \ct{StringTest}.  The names of the classes are already selected, so click \menu{Run Selected} to run all these tests.}
+\dothis{Select \scat{CollectionsTests-Text} and the pane to the right will show all of the test classes in that category, which includes the class \ct{StringTest}.  The names of the classes are already selected, so \click \menu{Run Selected} to run all these tests.}
 
 \begin{figure}[hbt]
 \ifluluelse
@@ -654,7 +668,7 @@ The leftmost two panes are a bit like the top panes in the system browser.  The 
 
 You should see a message like that shown in \figref{testRunnerTestShout}, which indicates that there was an error in running the tests.  The list of tests that gave rise to errors is shown in the bottom right pane; as you can see, \ct{StringTest>>>#testShout} is the culprit.
 (Note that \ct{StringTest>>#testShout} is the Smalltalk way of identifying the \mthind{StringTest}{testShout} method of the \ct{StringTest} class.)
-If you click on that line of text, the erroneous test will run again, this time in such a way that you see the error happen: ``\ct{MessageNotUnderstood: ByteString>>>shout}''.
+If you \click on that line of text, the erroneous test will run again, this time in such a way that you see the error happen: ``\ct{MessageNotUnderstood: ByteString>>>shout}''.
 \seeindex{\ct{>>}}{Behavior, \ct{>>}}
 \cmindex{Behavior}{>>}
 
@@ -716,8 +730,8 @@ This chapter has introduced you to the \pharo environment and shown you how to u
 \begin{itemize}
   \item A running \pharo system consists of a \emph{virtual machine}, a \emph{sources} file, and \emph{image} and \emph{changes} files. Only these last two change, as they record a snapshot of the running system.
   \item When you restore a \pharo image, you will find yourself in exactly the same state\,---\,with the same running objects\,---\,that you had when you last saved that image.
-  \item \pharo is designed to work with a three-button mouse. The buttons are known as the \emph{red}, the \emph{yellow} and the \emph{blue} buttons. If you don't have a three-button mouse, you can use modifier keys to obtain the same effect.
-  \item You use the \ind{red button} on the \pharo background to bring up the \emph{World menu} and launch various tools. You can also launch tools from the \toolsflapind at the right of the \pharo screen.
+  \item \pharo is designed to work with a three-button mouse to \click, \actclick or \metaclick.  If you don't have a three-button mouse, you can use modifier keys to obtain the same effect.
+  \item You \click on the \pharo background to bring up the \emph{World menu} and launch various tools. You can also launch tools from the \toolsflapind at the right of the \pharo screen.
   \item A \emph{workspace} is a tool for writing and evaluating snippets of code. You can also use it to store arbitrary text.
   \item You can use \ind{keyboard shortcuts} on text in the workspace, or any other tool, to evaluate code. The most important of these are \menu{do it} (\short{d}), \menu{print it} (\short{p}), \menu{inspect it} (\short{i}), \menu{explore it} (\short{I}) and \menu{browse it} (\short{b}).
   \item \sqmap is a tool for loading useful packages from the Internet.
