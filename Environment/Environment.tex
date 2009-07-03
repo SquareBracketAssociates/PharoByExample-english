@@ -39,20 +39,20 @@
 \chapter{The Pharo programming environment}
 \label{cha:env}
 
-The goal of this chapter is to show you how to develop programs in the \squeak programming environment.
+The goal of this chapter is to show you how to develop programs in the \pharo programming environment.
 You have already seen how to define methods and classes using the system browser; this chapter will show you more of the features of the system browser, and introduce you to some of the other browsers.
 
-Of course, very occasionally you may find that your program does not work as you expect. Squeak has an excellent debugger, but like most powerful tools, it can be confusing on first use.  We will walk you through a debugging session and demonstrate some of the features of the debugger. 
+Of course, very occasionally you may find that your program does not work as you expect. \pharo has an excellent debugger, but like most powerful tools, it can be confusing on first use.  We will walk you through a debugging session and demonstrate some of the features of the debugger. 
 
 One of the unique features of Smalltalk is that while you are programming, you are living in a world of live objects, not in a world of static program text.  This makes it possible to get very rapid feedback while programming, which makes you more productive. There are two tools that let you look at, and indeed change, live objects: the \emph{inspector} and the \emph{explorer}.
 
 The consequence of programming in a world of live objects rather than with files and a text editor is that you have to do something explicit to export your program from your Smalltalk image.  
 The old way of doing this, also supported by all Smalltalk dialects, is by creating a \emph{fileout} or a \emph{change set}, which are essentially encoded text files that can be imported into another system.  
-The new way of doing this in \squeak is to upload your code to a versioned repository on a server.  This is done using a tool called \ind{Monticello}, and is a much more powerful and effective way to work, especially when working in a team.
+The new way of doing this in \pharo is to upload your code to a versioned repository on a server.  This is done using a tool called \ind{Monticello}, and is a much more powerful and effective way to work, especially when working in a team.
 \seeindex{change set}{file, filing out}
 \index{file!filing out}
 
-Finally, you may find a bug in Squeak as you work; we explain how to report bugs, and how to submit bug fixes.
+Finally, you may find a bug in \pharo as you work; we explain how to report bugs, and how to submit bug fixes.
 \ab{Or I would, if I knew how.   We should do this, or remove the paragraph.}
 
 %=========================================================
@@ -61,8 +61,8 @@ Finally, you may find a bug in Squeak as you work; we explain how to report bugs
 
 Smalltalk and modern graphical interfaces were developed together.
 Even before the first public release of Smalltalk in 1983, Smalltalk had a self-hosting graphical development environment, and all Smalltalk development was taking place in it.
-Lets start by looking at the main tools in \squeak, all of which can be dragged out of the \toolsflapind in the \sbe image (see \secref{sbeImage}).
-Depending on your personal settings, the \toolsflap{} can be opened by mousing over or clicking on the orange tab on the right-hand edge of \squeak's main window.
+Lets start by looking at the main tools in \pharo, all of which can be dragged out of the \toolsflapind in the \sbe image (see \secref{sbeImage}).
+Depending on your personal settings, the \toolsflap{} can be opened by mousing over or clicking on the orange tab on the right-hand edge of \pharo's main window.
 
 \begin{itemize}
 	\item {The \menu{Browser}} is the central development tool. You will use it to create, define, and organize your classes and methods. Using it you can also navigate through all the library classes: unlike other environments where the source code is stored in separate files, in Smalltalk all classes and methods are contained in the image.
@@ -93,29 +93,12 @@ Depending on your personal settings, the \toolsflap{} can be opened by mousing o
 The \menu{Debugger} has an obvious role, but you will discover that it has a more central place compared to debuggers for other programming languages, because in Smalltalk you can \emph{program} in the \ind{debugger}.  The debugger is not launched from a menu or from the \toolsflap; it is normally entered by running a failing test, by typing \short{\textbf{.}} to interrupt a running process, or by inserting a \ct{self halt} expression in code.
 \index{process!interrupting}
 
-%\ab{somewhere: Using the \menu{Change Sorter}, you can isolate new and modified source code and write it to a file.}
-
-% Les outils que nous n'aborderons pas dans cet article, mais dans un prochain,
-% sont pour l'essentiel :le Refactoring Browser, pour refactoriser son code ;
-% Sunit, un outil pour écrire et lancer des tests unitaires ; Monticello et
-% SqueakSource (équivalent SourceForge) des outils de développement collaboratif.
-% Ces outils sont importants mais s'utilisent à partir d'une certaine maturité
-% dans la programmation Smalltalk. Mais pas d'inquiétude, dans cet article nous
-% allons nous intéresser à des outils dont la maîtrise est toute aussi
-% essentielle. Les outils comme le Workspace et le Transcript ont été abordés
-% dans nos articles précédents. Leur utilisation est simple. Le premier est une
-% sorte de terminal de commandes pour expérimenter des bouts de code. Le
-% deuxième, le Transcript, reçoit les sorties textes.
-
-
-% section overview (end)
-
 %=========================================================
 \section{The System Browser}
 \label{sec:browser} % (fold)
 %apb: what does the fold comment mean?
 
-There are actually several browsers in \squeak: the standard system browser, the package browser, the Omnibrowser, and the Refactoring Browser. 
+There are actually several browsers in \pharo: the standard system browser, the package browser, the Omnibrowser, and the Refactoring Browser. 
 We will take a look at the standard \ind{system browser} first, since the others are variations on it.
 \figref{SystemBrowser0} shows the browser as it appears when you first drag it out of the \toolsflapind.\footnote{If the browser you see looks different from the one we describe, then you might be using an image with a different default browser installed. See \faqref{omnibrowser}.}
 
@@ -278,7 +261,7 @@ Since all of the methods with the same selector ought to be used in the same way
 \subsubsection{Versions of a method}
 \label{sec:versions}
 
-When you save a new \subind{method}{version} of a method, the old one is not lost.  \squeak keeps all of the old versions, and allows you to compare different versions and to go back (``revert'') to an old version.
+When you save a new \subind{method}{version} of a method, the old one is not lost.  \pharo keeps all of the old versions, and allows you to compare different versions and to go back (``revert'') to an old version.
 \begin{figure}[btp]
    \centering
    \ifluluelse
@@ -394,12 +377,12 @@ The \button{source} button brings up the ``what to show'' menu, which allows you
 Note that selecting \menu{prettyPrint} in the ``what to show'' menu is \emph{not} the same as prettyPrinting a method before you save it.  
 The menu controls only what the browser displays, and has no effect on the code stored in the system.  
 You can verify this  by opening two browsers, and selecting \menu{prettyPrint} in one and \menu{source} in the other.   
-In fact, focussing two browsers on the same method and selecting \menu{byteCodes} in one and \menu{decompile} in another is a good way to learn about the Squeak virtual machine's byte-coded instruction set.
+In fact, focussing two browsers on the same method and selecting \menu{byteCodes} in one and \menu{decompile} in another is a good way to learn about the \pharo virtual machine's byte-coded instruction set.
 
 \subsubsection{Refactoring}
 
 \index{system browser!refactor button}
-Did you notice the small \button{R} at the end of the button bar?\footnote{That is, you will notice this button if you first load the AST and RefactoringBrowser packages from SqueakSource or use the \emph{Squeak-dev} image.} 
+Did you notice the small \button{R} at the end of the button bar? \fix
 Although unobtrusive, this button gives access to one of the most powerful and important features of the Smalltalk environment.  
 Clicking on \button{R} gives you access to a hierarchy of menus for refactoring your code.  
 The same refactoring engine is also available in several other ways, for example, through the \ind{yellow button} menu in the class, method and code panes.
@@ -446,7 +429,7 @@ However, if you select no package at all, then all the categories are available,
 
 Unfortunately, the meaning of the term \ind{package} has changed since the package pane browser was developed.  ``Package'' now has a more precise meaning, related to the \emph{Monticello} packaging tool, as we will discuss in the next section.  At present there is no tool that lets you browse packages as defined by \ind{Monticello}, however there is one currently being developed.
 
-The Squeak community is in the process of developing a whole new family of browsers based on a new, highly customizable framework called the \emphind{OmniBrowser}.  The implementation of the OmniBrowser is worth looking at as a good example of object-oriented design, \ab{and I'ld like to add a chapter on it somewhere, perhaps starting with parts of the excellent document written by Niklaus Haldimann on the classbox browser} but from the outside, most of the OmniBrowser-based tools look very similar to the ones that we have just described.  
+The \pharo community is in the process of developing a whole new family of browsers based on a new, highly customizable framework called the \emphind{OmniBrowser}.  The implementation of the OmniBrowser is worth looking at as a good example of object-oriented design, \ab{and I'ld like to add a chapter on it somewhere, perhaps starting with parts of the excellent document written by Niklaus Haldimann on the classbox browser} but from the outside, most of the OmniBrowser-based tools look very similar to the ones that we have just described.  
 The main enhancement that you will notice in the Omni System Browser is the addition of \emph{virtual protocols}.
 \lr{"Virtual Protocols" are a non-default extension to OB (p. 140)}
 In addition to the traditional programmer-defined protocols, each class has a number of virtual protocols defined on it by definitional rules.  For example, the \prot{-{}-supersend-{}-} protocol includes all of the methods that send to \super, while the \prot{-{}-required-{}-} protocol lists all of the messages that are sent by the methods in the current class or its superclasses but not defined.
@@ -493,30 +476,30 @@ Further navigation examples can be found in the FAQ (\appref{faq}).
 
 As you have seen, there are many ways to navigate around Smalltalk code. 
 You may find this confusing at first, in which case you can always fall back to the traditional system browser.
-However, we usually find that once beginners gain more experience with \squeak, the availability of different browsers becomes one of its most valued features, because they provide many ways to help you to understand and organize your code.
+However, we usually find that once beginners gain more experience with \pharo, the availability of different browsers becomes one of its most valued features, because they provide many ways to help you to understand and organize your code.
 The problem of understanding code is one of the greatest challenges of large-scale software development. 
 % section browser (end)
 
 %=========================================================
 \section{Monticello}
 
-We gave you a quick overview of \ind{Monticello}, Squeak's packaging tool, in \secref{Monticello}.  
+We gave you a quick overview of \ind{Monticello}, \pharo's packaging tool, in \secref{Monticello}.  
 However, Monticello has many more features than were discussed there.  
 Because Monticello manages \emph{Packages}, before telling you more about Monticello, it's important that we first explain exactly what a \ind{package} is.
 
 %---------------------------------------------------------
-\subsection{Packages: declarative categorization of Squeak code}
+\subsection{Packages: declarative categorization of \pharo code}
 
 The package system is a simple, lightweight way of organizing Smalltalk source code.
 It leverages the long-used naming convention mentioned above (\secref{package-names}), but adds to it in an important way.
 
 Let's explain this using an example.
-Suppose that you are developing a framework named to facilitate the use of relational databases from Squeak. You have decided to call your framework \ct{SqueakLink}, and have created a series of system categories to contain all of the classes that you have written, \eg
+Suppose that you are developing a framework named to facilitate the use of relational databases from \pharo. You have decided to call your framework \ct{PharoLink}, and have created a series of system categories to contain all of the classes that you have written, \eg
 
 \vspace{1ex}
 \noindent
-Category \ct{'SqueakLink-Connections'} contains \ct{OracleConnection MySQLConnection PostgresConnection}\\
-Category \ct{'SqueakLink-Model'} contains \ct{DBTable DBRow DBQuery}
+Category \ct{'PharoLink-Connections'} contains \ct{OracleConnection MySQLConnection PostgresConnection}\\
+Category \ct{'PharoLink-Model'} contains \ct{DBTable DBRow DBQuery}
 
 \vspace{1ex}
 \noindent
@@ -530,13 +513,13 @@ Date>>>asSQL
 
 \noindent
 These methods belong in \damien{don't we say 'belong to'?} the same package as the classes in the 
-categories \ct{SqueakLink-Connections} and \ct{SqueakLink-Model}. 
+categories \ct{PharoLink-Connections} and \ct{PharoLink-Model}. 
 But clearly the whole of class \ct{Object} does not belong in your package! 
 So you need a way of putting certain \emph{methods} in a package, even though the rest of the class is in another package.
 \index{package!extension}
 \seeindex{extension package}{package, extension}
 
-The way that you do this is by placing those methods in a protocol (of \ct{Object}, \ct{String}, \ct{Date}, and so on) named \prot{*squeaklink} (note the initial asterisk, and the lower-case name). The combination of the \scat{SqueakLink-...} categories and the \prot{*squeaklink} protocols form a package named \ct{SqueakLink}.
+The way that you do this is by placing those methods in a protocol (of \ct{Object}, \ct{String}, \ct{Date}, and so on) named \prot{*PharoLink} (note the initial asterisk, and the {\fix} lower-case name). The combination of the \scat{PharoLink-...} categories and the \prot{*PharoLink} protocols form a package named \ct{PharoLink}.
 To be precise, the rules for what goes in a package are as follows.
 
 A package named \ct{Foo} contains:
@@ -566,7 +549,7 @@ For example, \ct{refactory classes} will return the long list of classes that ma
 \ct{refactory coreMethods}
 will return a list of \ct{MethodReference}s for all of the methods in those classes. \ct{refactory extensionMethods} is perhaps one of the most interesting queries: it will return a list of all methods contained in the \ct{RefactoringEngine} package but not contained within a \lct{Refactoring\-Engine} class. This includes, for example, \ct{ClassDescription>>>chooseThisClassInstVarThenDo:} and \ct{SharedPool class>>>keys}.
 
-Packages are a relatively new addition to Squeak, but since the package naming conventions were based on those already in use, it is possible to use \ct{PackageInfo} to analyze older code that has not been explicitly adapted to work with it.
+Packages are a relatively new addition to \pharo, but since the package naming conventions were based on those already in use, it is possible to use \ct{PackageInfo} to analyze older code that has not been explicitly adapted to work with it.
 
 \dothis{Evaluate  \ct{(PackageInfo named: 'Collections') externalSubclasses}; this expression will answer a list of all subclasses of  \ct{Collection} that are \emph{not} in the \ct{Collections} package. }
 
@@ -608,7 +591,7 @@ Edit the dialog to read:}
 \needlines{4}
 \begin{code}{}
 MCHttpRepository
-	location: 'http://squeaksource.com/SqueakByExample'
+	location: 'http://squeaksource.com/PharoByExample'
 	user: ''
 	password: ''
 \end{code}
@@ -623,6 +606,7 @@ MCHttpRepository
 	\label{fig:SqueakSource:PBE}
 \end{figure}
 \noindent
+\fix \on{fix image -- PBE not SBE}
 Then click on \button{Open} to open a repository browser on this repository.  You should see something like \figref{SqueakSource:PBE}.  On the left is a list of all of the packages in the repository; if you select one, then the pane on the right will show all of the versions of the selected package in this repository. 
 
 If you select one of the versions, you can \button{Browse} it (without loading it into your image), \button{Load} it, or look at the \button{Changes} that will be made to your image by loading the selected version.  You can also make a \button{Copy} of a version of a package, which you can then write to another repository.
@@ -700,8 +684,8 @@ Then you can use the \button{Copy} in the package-cache repository browser, and 
 You can also associate the desired repository with the package by using the \ind{yellow button} menu item \menu{add to package...} on the repository, as shown in \figref{associateRepository}.  
 Once the package knows about a repository, you can save a new version by selecting the repository and the package in the Monticello Browser, and clicking \button{Save}.  
 Of course, you must have permission to write to a repository.  
-The \ct{SqueakByExample} repository on \emphind{SqueakSource} is world readable but not world writable, so if you try and save there, you will see an error message.  
-However, you can create your own repository on \emph{SqueakSource} by using the web interface at \url{http://www.squeaksource.com}, and use this to save your work. 
+The \ct{PharoByExample} repository on \emphind{\sqsrc} is world readable but not world writable, so if you try and save there, you will see an error message.  
+However, you can create your own repository on \sqsrc by using the web interface at \url{http://www.squeaksource.com}, and use this to save your work. 
 This is especially useful as a mechanism to share your code with friends, or if you use multiple computers.
 
 \begin{figure}[tbp]
@@ -714,39 +698,6 @@ This is especially useful as a mechanism to share your code with friends, or if 
 
 If you do try and save to a repository where you don't have write permission, a version will nevertheless be written to the package-cache.  
 So you can recover by editing the repository information (\ind{yellow button} menu in the Monticello Browser) or choosing a different repository, and then using \button{Copy} from the package-cache browser.
-
-\on{I have commented out the Advanced Monticello section for now, as it will surely not be ready for the first release.}
-\begin{comment}
-%---------------------------------------------------------
-\subsection{Advanced Monticello} % TO DO! <=======
-
-Monticello provides some quite sophisticated features for managing versions.
-\ab{I've no idea what these things are.}
-
-\damien{Moved from FirstApp where it was too complicated: A good trick
-  is to always develop in the same folder. This way you get a copy of
-  all the code that you publish on squeaksource on your local
-  machine. You can then backup and browse at will.
-
-}
-\subsubsection{Scripts}
-
-\subsubsection{Backporting}
-
-\subsubsection{Differences}
-
-\subsubsection{Adopting a new ancestor}
-
-\subsubsection{Setting dependencies}
-
-\subsubsection{Nested packages}
-
-One of the most important functions for a version management tool is to let the user build a package out of a number of smaller packages.
-For example, a complex package like refactoring support might be made up of the refactoring engine itself, a GUI, and the services interface that makes it accessible to other tools.  
-Each of these components goes in its own package, and yet,  for the convenience of the user, the whole needs to be available as a single package.
-
-How is this accomplished using Monticello?  \ab{How indeed?  I hope that someone can write this section, because I haven't a clue, but would really like to know.}
-\end{comment}
 
 %=========================================================
 \section{The Inspector and the Explorer}
@@ -793,8 +744,8 @@ You can also try evaluating \ct{TimeStamp now - self}; this will tell you how lo
 
 In addition to \ct{self}, all the instance variables of the object are in scope in the workspace pane, so you can use them in expressions or even assign to them.  For example, if you evaluate \ct{jdn  := jdn - 1} in the workspace pane, you will see that the value of the \ct{jdn} instance variable will indeed change, and the value of \ct{TimeStamp now - self} will increase by one day.
 
-You can change instance variables directly by selecting them, replacing the old value in the right-hand  pane by a Squeak expression, and accepting.  
-Squeak will evaluate the expression and assign the result to the instance variable.
+You can change instance variables directly by selecting them, replacing the old value in the right-hand  pane by a \pharo expression, and accepting.  
+\pharo will evaluate the expression and assign the result to the instance variable.
 
 \begin{figure}[tbp]
 \begin{minipage}{0.48\textwidth}
@@ -858,7 +809,7 @@ Open the root object (by clicking in its triangle), open its \ct{submorphs}, and
 \section{The Debugger}
 \label{sec:debugger} % (fold)
 
-The \ind{debugger} is arguably the most powerful tool in the Squeak tool suite.  It is used not just for debugging, but also for writing new code.
+The \ind{debugger} is arguably the most powerful tool in the \pharo tool suite.  It is used not just for debugging, but also for writing new code.
 To demonstrate the debugger, let's start by writing a bug!
 
 \dothis{Using the browser, add the following method to the class \ct{String}:}
@@ -888,7 +839,7 @@ What a surprise!  Instead of getting the expected answer \ct{'txt'}, a \clsind{P
 \end{figure}
 
 The \ct{PreDebugWindow} has a title-bar that tells us what error occurred, and shows us a \emphind{stack trace} of the messages that led up to the error. 
-Starting from the bottom of the trace, \ct{UndefinedObject>>>DoIt} represents the code that was compiled and run when we selected \ct{'readme.txt' suffix} in the workspace and asked \squeak to \menu{print it}.
+Starting from the bottom of the trace, \ct{UndefinedObject>>>DoIt} represents the code that was compiled and run when we selected \ct{'readme.txt' suffix} in the workspace and asked \pharo to \menu{print it}.
 This code, of course, sent the message \ct{suffix} to a \clsind{ByteString} object (\ct{'readme.txt'}). 
 This caused the inherited \ct{suffix} method in class \ct{String} to execute; all this information is encoded in the next line of the stack trace, \ct{ByteString(String)>>>suffix}.  
 Working up the stack, we can see that \ct{suffix} sent \ct{detect:}\ldots and eventually \ct{detect:ifNone} sent \ct{errorNotFound}.
@@ -941,7 +892,7 @@ This can be useful if you want to watch how a variable changes while you execute
 \index{keyboard shortcut!explore it}
 
 Looking back at the method window, we see that we expected the penultimate line of the method to find \ct{dot} in the string \ct{'readme.txt'}, and that execution should never have reached the final line.
-\squeak does not let us run an execution backwards, but it does let us start a method again, which works very well in code such as this that does not mutate objects, but instead creates new ones.  
+\pharo does not let us run an execution backwards, but it does let us start a method again, which works very well in code such as this that does not mutate objects, but instead creates new ones.  
 
 \dothis{Click \button{Restart}, and you will see that the locus of execution returns to the first statement of the current method.  
 The blue highlight shows that the next message to be sent will be {\ct{do:}} (see \figref{RestartDetectIfNone}).}
@@ -956,15 +907,15 @@ The blue highlight shows that the next message to be sent will be {\ct{do:}} (se
 	\label{fig:RestartDetectIfNone}
 \end{figure}
 
-The \button{Into} and \button{Over} buttons give us two different ways to step through the execution.  If you click \button{Over}, \squeak executes the current message-send (in this case the \ct{do:}) in one step, unless there is an error.  
+The \button{Into} and \button{Over} buttons give us two different ways to step through the execution.  If you click \button{Over}, \pharo executes the current message-send (in this case the \ct{do:}) in one step, unless there is an error.  
 So \button{Over} will take us to the next message-send in the current method, which is \ct{value}: this is exactly where we started, and not much help. 
 What we need to do is to find out why the \ct{do:} is not finding the character that we are looking for.
 
 \dothis{Click \button{Over}, and then click \button{Restart} to get back to the situation shown in \figref{RestartDetectIfNone}.}
 
-\dothis{Click \button{Into}; \squeak will go into the method corresponding to the highlighted message-send, in this case, \ct{Collection>>>do:}.}
+\dothis{Click \button{Into}; \pharo will go into the method corresponding to the highlighted message-send, in this case, \ct{Collection>>>do:}.}
 
-However, it turns out that this is not much help either: we can be fairly confident that \ct{Collection>>>do:} is not broken.  The bug is much more likely to be in \emph{what} we asked \squeak to do.
+However, it turns out that this is not much help either: we can be fairly confident that \ct{Collection>>>do:} is not broken.  The bug is much more likely to be in \emph{what} we asked \pharo to do.
 \button{Through} is the appropriate button to use in this case: we want to ignore the details of the \ct{do:} itself and focus on the execution of the argument block. 
 
 \dothis{Click on \button{Through} a few times.  Select \ct{each} in the context window as you do so.
@@ -1015,7 +966,7 @@ Now that we see the bug, the fix is obvious: we have to convert \ct{dot} to a ch
 
 \dothis{Change the code right in the debugger so that the assignment reads \ct{dot := FileDirectory dot first} and \menu{accept} the change.}
 \on{NB: String>>asCharacter is now deprecated! use first instead}
-Because we are executing code inside a block that is inside a \lct{detect:}, several stack frames will have to be abandoned in order to make this change.  \squeak asks us if this is what we want (see \figref{revertDialog}), and, assuming that we click \menu{yes}, will save (and compile) the new method.
+Because we are executing code inside a block that is inside a \lct{detect:}, several stack frames will have to be abandoned in order to make this change.  \pharo asks us if this is what we want (see \figref{revertDialog}), and, assuming that we click \menu{yes}, will save (and compile) the new method.
 
 \dothis{Click \button{Restart} and then \button{Proceed}; the debugger window will vanish, and the evaluation of the expression \ct{'readme.txt' suffix} will complete, and print the answer \ct{'.txt'}}
 
@@ -1095,7 +1046,7 @@ We will learn more about SUnit in \charef{SUnit}.
 \section{The Process Browser}
 
 \st is a multi-threaded system: there are many lightweight processes (also known as threads) running concurrently in your image. 
-In the future the \squeak virtual machine may take advantage of multiprocessors when they are available, but at present concurrency is implemented by time-slicing.
+In the future the \pharo virtual machine may take advantage of multiprocessors when they are available, but at present concurrency is implemented by time-slicing.
 
 \begin{figure}[btp]
 	\begin{center}
@@ -1107,9 +1058,9 @@ In the future the \squeak virtual machine may take advantage of multiprocessors 
 	\label{fig:processBrowser}
 \end{figure}
 
-The process \subind{process}{browser} is a cousin of the debugger that lets you look at the various processes running inside \squeak.
+The process \subind{process}{browser} is a cousin of the debugger that lets you look at the various processes running inside \pharo.
 \figref{processBrowser} shows a screenshot.
-The top-left pane lists all of the processes in \squeak, in priority order, from the timer interrupt watcher at priority 80 to the idle process at priority 10.
+The top-left pane lists all of the processes in \pharo, in priority order, from the timer interrupt watcher at priority 80 to the idle process at priority 10.
 Of course, on a uniprocessor, the only process that can be running when you look is the UI process; all of the other will be waiting for some kind of event. 
 By default, the display of processes is static; it can be updated using the \ind{yellow button} menu, which also provides an option to \menu{turn on auto-update (a)}
 
@@ -1125,7 +1076,7 @@ The process browser is not equipped with mini-inspectors for \self and \lct{this
 \section{Finding methods}
 \label{sec:methodFinder} 
 
-There are two tools in \squeak to help you find messages; both can be dragged out of the \toolsflapind.
+There are two tools in \pharo to help you find messages; both can be dragged out of the \toolsflapind.
 They differ in both interface and functionality.
 
 The \emph{method finder} was described at some length in \secref{quick:methodFinder}; you can use it to find methods by name or by functionality. 
@@ -1155,7 +1106,7 @@ As with the class browser, the message names browser has a button bar that can b
 \section{Change sets and the Change Sorter}
 \label{sec:env:changeSet} % (fold)
 
-Whenever you are working in \squeak, any changes that you make to methods and classes are recorded in a \ct{change set}.
+Whenever you are working in \pharo, any changes that you make to methods and classes are recorded in a \ct{change set}.
 This includes creating new classes, re-naming classes, changing categories, adding methods to existing classes\,---\,just about everything of significance.  
 However, arbitrary \emph{doits} are not included, so if, for example, you create a new global variable by assigning to it in a workspace, the variable creation will not make it into a \subind{file}{change set}.
 \index{change set browser}
@@ -1195,13 +1146,13 @@ This layout supports the change sorter's main feature, which is the ability to m
 It is also possible to copy individual methods from one side to the other.
 
 You may be wondering why you should care about the composition of a change set.
-the answer is that change sets provide a simple mechanism for exporting code from \squeak to the file system, from where it can be imported into another \squeak image, or into another non-\squeak \st.
+the answer is that change sets provide a simple mechanism for exporting code from \pharo to the file system, from where it can be imported into another \pharo image, or into another non-\pharo \st.
 Change set export is known as ``filing-out'', and can be accomplished using the yellow button menu on any change set, class or method in either browser.
 Repeated file outs create new versions of the file, but change sets are not a versioning tool like Monticello:
 they do not keep track of dependencies.
 \index{file!filing out}
 
-Before the advent of Monticello, change sets were the main means for exchanging code between \squeak{}ers.
+Before the advent of Monticello, change sets were the main means for exchanging code between \pharo{}ers.
 They have the advantage of simplicity (the file out is just a text file, although we \emph{don't} recommend that you try to edit with a text editor), and a degree of portability.  
 It's also quite easy to create a change set that makes changes to many different, unrelated parts of the system\,---\,something that Monticello is not yet equipped to do.
 \ab{Or is it?}
@@ -1238,12 +1189,12 @@ This requires the use of another tool, the file list browser.
 	\label{fig:fileList}
 \end{figure}
 
-The \ind{file list browser} is in fact a general-purpose tool for browsing the file system (and also FTP servers) from \squeak. 
+The \ind{file list browser} is in fact a general-purpose tool for browsing the file system (and also FTP servers) from \pharo. 
 You can open it from the \menu{World\go{}open...\go{}file list} menu, or drag it from the \toolsflapind.
 What you see of course depends on the contents of your local file system, but a typical view is shown in \figref{fileList}.
 \seeindex{file!browsing}{file list browser}
 
-When you first open a file list browser it will be focussed on the current directory, that is, the one from which you started \squeak. The title bar shows the path to this directory.
+When you first open a file list browser it will be focussed on the current directory, that is, the one from which you started \pharo. The title bar shows the path to this directory.
 The larger pane on the left-hand side can be used to navigate the file system in the conventional way.
 When a directory is selected, the files that it contains (but not the directories) are displayed on the right.
 This list of files can be filtered by entering a Unix-style pattern in the small box at the top-left of the window.  
@@ -1281,9 +1232,9 @@ Yellow-button menu items in each of the top four panes will also let you file in
 \section{In Smalltalk, you can't lose code}
 \label{sec:cantLoseCode} % (fold)
 
-It is quite possible to crash \squeak: as an experimental system, \squeak lets you change anything, including things that are vital to make \squeak work! 
+It is quite possible to crash \pharo: as an experimental system, \pharo lets you change anything, including things that are vital to make \pharo work! 
 
-\dothis{To maliciously crash \squeak, try \ct{Object become: nil}.}
+\dothis{To maliciously crash \pharo, try \ct{Object become: nil}.}
 
 The good news is that you need never lose any work, even if you crash and go back to the last saved version of your image, which might be hours old.
 This is because all of the code that you executed is saved in the \emph{.changes} file.
@@ -1296,11 +1247,11 @@ There is no need to read this until you need it.
 However, when you do need it, you'll find it here waiting for you.
 
 In the worst case, you can use a text editor on the \emph{.changes} file, but since it is many megabytes in size, this can be slow and is not recommended. 
-\squeak offers you better ways.
+\pharo offers you better ways.
 
 %---------------------------------------------------------
 \subsection{How to get your code back}
-Restart \squeak from the most recent snapshot, and select \menu{World\go{}help\go{}useful expressions}. 
+Restart \pharo from the most recent snapshot, and select \menu{World\go{}help\go{}useful expressions}. 
 This will open a workspace full of useful expressions. The first three,
 
 \begin{code}{}
@@ -1315,7 +1266,7 @@ are most useful for recovery.
 If you execute \ct{ChangeList browseRecentLog}, you will be given the opportunity to decide how far back in history you wish to browse. 
 Normally, it's sufficient to browse changes as far back as the last snapshot. (You can get much the same effect by editing \ct{ChangeList browseRecent: 2000} so that the number \ct{2000} becomes something else, using trial and error.)
 
-One you have a \emph{recent changes} browser, showing, say, changes back as far as your last snapshot, you will have a list of everything that you have done to \squeak during that time. 
+One you have a \emph{recent changes} browser, showing, say, changes back as far as your last snapshot, you will have a list of everything that you have done to \pharo during that time. 
 You can delete items from this list using the \ind{yellow button} menu.
 When you are satisfied, you can file-in what is left, thus incorporating the changes into your new image.
 It's a good idea to start a new change set, using the ordinary change set browser, before you do the file in, so that all of your recovered code will be in a new change set. 
@@ -1329,13 +1280,13 @@ Creating a class shows up as a \menu{doIt}.
 So, if you have created any new classes, \emph{first} file-in the class creation doIts, then \menu{remove doIts} and file in the methods.
 \lr{Maybe mention that class renames are not logged and completely screw up the change-set mechanism. (p. 174)}
 
-When I am finished with the recovery, I like to file out my new change set, quit \squeak without saving the image, restart, and make sure that the new change set files back in cleanly.
+When I am finished with the recovery, I like to file out my new change set, quit \pharo without saving the image, restart, and make sure that the new change set files back in cleanly.
 % section cantLoseCode (end)
 
 %=========================================================
 \section{Chapter summary}
 
-In order to develop effectively with Squeak, it is important to invest some effort into learning the tools available in the environment.
+In order to develop effectively with \pharo, it is important to invest some effort into learning the tools available in the environment.
 
 \begin{itemize}
   \item The standard \emph{system browser} is your main interface for browsing existing class categories, classes, method protocols and methods, and for defining new ones.
