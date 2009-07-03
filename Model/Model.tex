@@ -39,7 +39,7 @@
 \fi
 %=================================================================
 \chapter{The \st object model}
-\label{cha:SqueakModel}\label{cha:model}
+\label{cha:model}
 
 \st's programming model is simple and uniform: everything is an object, and objects communicate only by sending each other messages.
 However, this simplicity and uniformity can be a source of difficulty for programmers used to other languages. In this chapter we present the core concepts of the \st object model; in particular we discuss the consequences of representing classes as objects.
@@ -93,7 +93,7 @@ The representation of \ct{20 factorial} is certainly different from the represen
 Perhaps the most fundamental consequence of this rule is the following:
 \important{Classes are objects too.}
 Furthermore, classes are not second-class objects: they are really first-class objects that you can send messages to, inspect, and so on.
-This means that \squeak is a truly reflective system, which gives a great deal of expressive power to developers.
+This means that \pharo is a truly reflective system, which gives a great deal of expressive power to developers.
 
 Deep in the implementation of \st, there are three different kinds of objects.  There are (1) ordinary objects with instance variables that are passed by references, there are (2) \emph{small integers} that are passed by value, and there are (3) indexable objects like arrays that hold a contiguous portion of memory.  The beauty of \st is that you normally don't need to care about the differences between these three kinds of object.
 
@@ -167,7 +167,7 @@ For example, method \ct{point>>>dist:}, need not know or care whether the argume
 %---------------------------------------------------------
 \subsection{Methods}
 
-All methods are \subind{method}{public}.\footnote{Well, almost all.  In \squeak, methods whose selectors start with the string \ct{pvt} are private: a \ct{pvt} message can be sent \emph{only} to \self.  However, \ct{pvt} methods are not used very much.}
+All methods are \subind{method}{public}.\footnote{Well, almost all.  In \pharo, methods whose selectors start with the string \ct{pvt} are private: a \ct{pvt} message can be sent \emph{only} to \self.  However, \ct{pvt} methods are not used very much.}
 Methods are grouped into protocols that indicate their intent.
 Some common protocol names have been established by convention, for example, \protind{accessing} for all accessor methods, and \protind{initialization} for establishing a consistent initial state for the object.
 The protocol \protind{private} is sometimes used to group methods that should not be seen from outside.
@@ -376,7 +376,7 @@ ProtoObject superclass  --> nil
 \end{code}
 
 Traditionally the root of the \st inheritance hierarchy is the class \clsind{Object} (since everything is an object).
-In \squeak, the root is actually a class called \clsind{ProtoObject}, but you will normally not pay any attention to this class.
+In \pharo, the root is actually a class called \clsind{ProtoObject}, but you will normally not pay any attention to this class.
 \ct{ProtoObject} encapsulates the minimal set of messages that all objects \emph{must} have.  However, most classes inherit from \ct{Object}, which defines many additional messages that almost all objects ought to understand and respond to.
 Unless you have a very good reason to do otherwise, when creating application classes you should normally subclass \ct{Object}, or one of its subclasses.
 
@@ -392,7 +392,7 @@ Have a look at the protocol \prot{Kernel-Classes \go Class \go subclass creation
 %An abstract class is an ordinary class in which the implementation of some methods is deferred to a subclass.
 %This is repeated in the next section
 
-Although \squeak does not provide multiple inheritance, since version 3.9 it has incorporated a mechanism called \emphind{trait}{}s for sharing behaviour across unrelated classes.
+Although \pharo does not provide multiple inheritance, since version 3.9 it has incorporated a mechanism called \emphind{trait}{}s for sharing behaviour across unrelated classes.
 Traits are collections of methods that can be reused by multiple classes that are not related by inheritance. Using traits allows one to share code between different classes without duplicating code.
 
 %---------------------------------------------------------
@@ -817,7 +817,7 @@ Now we will look at an aspect of \st that is not so easily covered by our five r
 
 %---------------------------------------------------------
 \subsection{Global variables}
-In \squeak, all global variables are stored in a namespace called \glbind{Smalltalk}, which is implemented as an instance of the class \clsind{SystemDictionary}.
+In \pharo, all global variables are stored in a namespace called \glbind{Smalltalk}, which is implemented as an instance of the class \clsind{SystemDictionary}.
 Global variables are accessible everywhere. 
 Every class is named by a global variable; in addition, a few globals are used to name special or commonly useful objects.
 
@@ -825,7 +825,7 @@ The variable \glbind{Transcript} names an instance of \clsind{TranscriptStream},
 The following code displays some information and then goes to the next line in the \ct{Transcript}.
 
 \begin{code}{}
-Transcript show: 'Squeak is fun and powerful' ; cr
+Transcript show: 'Pharo is fun and powerful' ; cr
 \end{code}
 
 \noindent
@@ -853,7 +853,7 @@ and
 (Smalltalk at: #Smalltalk) == Smalltalk --> true
 \end{code}
 
-\item \clsind{Sensor} is an instance of \clsind{EventSensor}, and represents input to \squeak.
+\item \clsind{Sensor} is an instance of \clsind{EventSensor}, and represents input to \pharo.
 For example, \lct{Sensor keyboard} answers the next character input on the keyboard, and \ct{Sensor leftShiftDown} answers \ct{true} if the left shift key is being held down, while \ct{Sensor mousePoint} answers a \ct{Point} indicating the current mouse location.
 
 \item \glbind{World} is an instance of \clsind{PasteUpMorph} that represents the screen.
@@ -879,7 +879,7 @@ SystemOrganization categoryOfElement: #Magnitude --> #'Kernel-Numbers'
 
 \end{itemize}
 
-Current practice is to strictly limit the use of global variables; it is usually better to use class instance variables or class variables, and to provide class methods to access them.  Indeed, if \squeak were to be implemented from scratch today, most of the global variables that are not classes would be replaced by singletons.
+Current practice is to strictly limit the use of global variables; it is usually better to use class instance variables or class variables, and to provide class methods to access them.  Indeed, if \pharo were to be implemented from scratch today, most of the global variables that are not classes would be replaced by singletons.
 
 The usual way to define a global is just to \menu{do it} on an assignment to a capitalized but undeclared identifier.  The parser will then offer to declare the global for you.  If you want to define a global programmatically, just execute \ct{Smalltalk at: #AGlobalName put: nil}.  To remove it, execute \ct{Smalltalk removeKey: #AGlobalName}.
 \glbindex{Smalltalk}
@@ -996,7 +996,7 @@ Once again,  we recommend that you avoid the use of pool variables and pool dict
 %=========================================================
 \section{Chapter summary}
 
-The object model of \squeak is both simple and uniform.
+The object model of \pharo is both simple and uniform.
 Everything is an object, and pretty much everything happens by message sends.
 
 \begin{itemize}
@@ -1014,7 +1014,7 @@ Everything is an object, and pretty much everything happens by message sends.
   There is no syntax for defining abstract classes.
   An abstract class is simply a class with an abstract method\,---\,one 
   whose implementation consists of the expression \ct{self subclassResponsibility}.
-  Although \squeak supports only single inheritance, it is easy to share implementations of methods by packaging them as \emph{traits}.
+  Although \pharo supports only single inheritance, it is easy to share implementations of methods by packaging them as \emph{traits}.
 
   \item Everything happens by message sends.
 	We do not ``call methods'', we ``send messages''.
