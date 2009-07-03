@@ -62,7 +62,7 @@ rules that are applied \emph{uniformly}. The rules are as follows:
 	Every class has a superclass.
 
 \item{}  \label{rule:message}
-	Everything happens by message sends.
+	Everything happens by sending messages.
 
 \item{}  \label{rule:lookup}
 	Method lookup follows the inheritance chain.
@@ -511,7 +511,7 @@ Here we see that the method \ct{addTraitSelector:withMethod:} defined in the tra
 Support for traits is currently being added to the browsers.
 
 %=========================================================
-\section{Everything happens by message sending}
+\section{Everything happens by sending messages}
 
 %\ruleref{message}
 
@@ -547,7 +547,7 @@ expresses this principle succinctly as follows:
 
 Many object-oriented languages provide both static and dynamic operations for objects; in \st there are only dynamic message sends. Instead of providing static class operations, for instance, classes are objects and we simply send messages to classes.
 
-\emph{Nearly} everything in \st happens by message sends.
+\emph{Nearly} everything in \st happens by sending messages.
 At some point action must take place:
 \begin{itemize}
   \item \emph{Variable declarations} are not message sends.
@@ -997,7 +997,7 @@ Once again,  we recommend that you avoid the use of pool variables and pool dict
 \section{Chapter summary}
 
 The object model of \pharo is both simple and uniform.
-Everything is an object, and pretty much everything happens by message sends.
+Everything is an object, and pretty much everything happens by sending messages.
 
 \begin{itemize}
   \item Everything is an object.
@@ -1016,7 +1016,7 @@ Everything is an object, and pretty much everything happens by message sends.
   whose implementation consists of the expression \ct{self subclassResponsibility}.
   Although \pharo supports only single inheritance, it is easy to share implementations of methods by packaging them as \emph{traits}.
 
-  \item Everything happens by message sends.
+  \item Everything happens by sending messages.
 	We do not ``call methods'', we ``send messages''.
 	The receiver then chooses its own method for responding to the message.
 
