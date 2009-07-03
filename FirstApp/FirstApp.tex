@@ -169,7 +169,6 @@ To actually send this message, you must \menu{accept} it.
 \dothis{Accept the new class definition.}
 Either \actclick and select \menu{accept}, or use the shortcut \short{s} (for ``save'').
 The message will be sent to \ct{SimpleSwitchMorph}, which will cause the new class to be compiled.
-\index{yellow button}
 \index{keyboard shortcut!accept}
 
 Once the class definition is accepted, the class will be created and appear in the classes pane of the browser (\figref{LOCell}).
@@ -429,7 +428,7 @@ This is why the browser also offers us the \prot{-{}-all-{}-} virtual protocol, 
 \begin{figure}[htbp]
    \centering
    \includegraphics[width=0.7\textwidth]{Categorize} 
-   \caption{Categorize all uncategorized methods.\label{fig:categorize}}
+   \caption{Automatically categorize all uncategorized methods.\label{fig:categorize}}
 \end{figure}
 
 If you have followed along with this example, the third pane may well contain the protocol \protind{as yet unclassified}.
@@ -440,8 +439,6 @@ How does \pharo{} know that this is the right protocol?  Well, in general \pharo
 
 %You may find that \pharo has already put your \ct{initialize} method into the \protind{initialization} protocol.
 %If so, it's probably because you have loaded a package called \ct{AutomaticMethodCategorizer} into your image.
-
-%:HERE <===
 
 \paragraph{A typographic convention.} Smalltalkers frequently use the notation ``\verb|>>|'' to identify the class to which a method belongs, so, for example, the \ct{cellsPerSide} method in class \ct{LOGame} would be referred to as \ct{LOGame>>cellsPerSide}.
 To indicate that this is \emph{not} \st syntax, we will use the special symbol \ct{>>>} instead, so this method will appear in the text as \ct{LOGame>>>cellsPerSide}
@@ -471,7 +468,7 @@ LOGame>>>newCellAt: i at: j
    origin := self innerBounds origin.
    self addMorph: c.
    c position: ((i - 1) * c width) @ ((j - 1) * c height) + origin.
-   c mouseAction: [self toggleNeighboursOfCellAt: i at: j].
+   c mouseAction: [self toggleNeighboursOfCellAt: i at: j]
 \end{method}
 \cmindex{LOGame}{newCellAt:at:}
 %   ^ c      "omit this final line to create a bug"
@@ -496,7 +493,7 @@ LOGame>>>toggleNeighboursOfCellAt: i at: j
 
 \Mthref{toggleNeighboursOfCellAt:at:} toggles the state of the four cells to the north, south, west and east of cell (\ct{i}, \ct{j}).  The only complication is that the board is finite, so we have to make sure that a neighboring cell exists before we toggle its state.
 
-\dothis{Place this method in a new protocol called \prot{game logic}.\damien{this has to be explained. There were no explications before on how to create a new protocol.}}
+\dothis{Place this method in a new protocol called \prot{game logic}. (\Actclick in the protocol pane to add a new protocol.)}
 To move the method, you can simply click on its name and drag it to the newly-created protocol (\figref{dragMethod}).
 
 \begin{figure}[htbp]
@@ -536,9 +533,7 @@ LOCell>>>mouseUp: anEvent
 \end{method}
 \cmindex{LOCell}{mouseUp:}
 
-\on{hm -- differs from version in repository}
-
-\dothis{Add the method \ct{LOCell>>>mouseUp:} and then \menu{categorize all uncategorized} methods.}
+\dothis{Add the method \ct{LOCell>>>mouseUp:} and then \menu{automatically categorize} methods.}
 \index{method!categorize}
 
 What this method does is to send the message \ct{value} to the object stored in the instance variable \ct{mouseAction}. 
@@ -656,11 +651,14 @@ You can email this file to your friends, and they can file it into their own \ph
 \seeindex{method!filing out}{file, filing out}
 \index{file!filing out}
 
-\dothis{Yellow-click on the \scat{PBE-LightsOut} category and \menu{fileOut} the contents.}
+\dothis{\Actclick on the \scat{PBE-LightsOut} package and \menu{fileOut} the contents.}
 You should now find a file called ``PBE-LightsOut.st'' in the same folder on disk where your image is saved.
 Have a look at this file with a text editor.
 
-\dothis{Open a fresh \pharo image and use the File List tool to \menu{file in} the PBE-LightsOut.st fileout.
+%:===> File-out package needs to be implemented! (On DR's to-do list)
+\on{currently this does not work --- DR has said he will do it.}
+
+\dothis{Open a fresh \pharo image and use the File Browser tool (\menu{Tools \ldots {\go} File Browser}) to \menu{file in} the PBE-LightsOut.st fileout.
 Verify that the game now works in the new image.}
 \seeindex{category!filing in}{file, filing in}
 \seeindex{class!filing in}{file, filing in}
@@ -689,7 +687,7 @@ You can also send a \ct{.mcz} file by email.
 The recipient will have to place it in her \emph{package-cache} folder; she will then be able to use Monticello to browse and load it. 
 %(It is also possible to load it using the file list, but there is a difference between loading a \ct{.mcz} file using a file list and using Monticello \sd{check}.)
 
-\dothis{Open the Monticello browser by selecting \menu{World \go open\,\ldots \go Monticello browser}.}
+\dothis{Open the Monticello browser from the \menu{World} menu.}
 In the right-hand pane of the browser (see \figref{monticello1}) is a list of Monticello repositories, which will include all of the repositories from which code has been loaded into the image that you are using.  
 %In addition to \sqsrc servers, Monticello repositories can live in a variety of other places, the simplest being a directory on your local disk.
 
@@ -715,7 +713,7 @@ What is a package?  For now, you can think of a package as a group of  class and
 
 \subsection{\ind{\sqsrc}: a \ind{SourceForge} for \pharo.} 
 We think that the best way to save your code and share it is to create an account for your project on a \sqsrc server. 
-\sqsrc is like SourceForge\footnote{\url{www.sourceforge.net}}: it is a web front-end to a HTTP Monticello server that lets you manage your projects.
+\sqsrc is like SourceForge\footnote{\url{http://www.sourceforge.net}}: it is a web front-end to a HTTP Monticello server that lets you manage your projects.
 %In addition, \sqsrc includes a wiki, remote code browsing, RSS feed, admin right and access right management,   
 % A number of {\sqsrc servers} around the Internet provide Monticello repositories and other facilities for development projects, including as a Wiki for documentation, remote code browsing, an RSS feed for update notification, and automatic publishing on SqueakMap.
 % \lr{- Automatic publishing on SqueakMap does not work reliable anymore (the SqueakMap API changed several times), so better remove this part (p. 53)}
