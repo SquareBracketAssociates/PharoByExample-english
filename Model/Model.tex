@@ -472,11 +472,11 @@ TAuthor>>>author
 \end{method}
 
 \noindent
-Now we can use this trait in a class that already has its own superclass, for instance the \ct{PBEGame} class that we defined in \charef{firstApp}.
-We simply modify the class creation template for \ct{PBEGame} to include a \ct{uses:} keyword argument that specifies that \ct{TAuthor} should be used.
+Now we can use this trait in a class that already has its own superclass, for instance the \ct{LOGame} class that we defined in \charef{firstApp}.
+We simply modify the class creation template for \ct{LOGame} to include a \ct{uses:} keyword argument that specifies that \ct{TAuthor} should be used.
 
 \begin{classdef}[sbegamewithtrait]{Using a trait}
-BorderedMorph subclass: #PBEGame
+BorderedMorph subclass: #LOGame
 	uses: TAuthor
 	instanceVariableNames: 'cells'
 	classVariableNames: ''
@@ -484,10 +484,10 @@ BorderedMorph subclass: #PBEGame
 	category: 'PBE-LightsOut'
 \end{classdef}
 
-If we now instantiate \ct{PBEGame}, it will respond to the \ct{author} message as expected.
+If we now instantiate \ct{LOGame}, it will respond to the \ct{author} message as expected.
 
 \begin{code}{}
-PBEGame new author --> 'on'
+LOGame new author --> 'on'
 \end{code}
 
 Trait composition expressions may combine multiple traits using the \ct{+} operator.

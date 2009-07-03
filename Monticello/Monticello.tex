@@ -40,7 +40,7 @@
 \newcommand{\MCB}{\MC browser\xspace}
 \newcommand{\RI}{repository inspector\xspace}
 
-%:===> TO BE INDEXED! <===
+%:===> To be indexed!
 
 %=================================================================
 \chapter{Versioning your code with \MC}
@@ -611,7 +611,7 @@ TestCaseExtension class>>initialize
 When our package is loaded, this code will be evaluated and the instance variable will be added, if it does not already exist.
 
 
-%As an illustration, let us suppose an extension of the Lights Out game to support unchangeable cells. Those cells are located randomly on the board. Generate numbers need to be generated. This can be done by adding a variable \ct{randomNumber} to the class \ct{PBEGame}. This kind of extension is not well supported by \MC. A package cannot define the variable \ct{randomNumber} as an extension of \ct{PBEGame}. \MC supports method extension only.
+%As an illustration, let us suppose an extension of the Lights Out game to support unchangeable cells. Those cells are located randomly on the board. Generate numbers need to be generated. This can be done by adding a variable \ct{randomNumber} to the class \ct{LOGame}. This kind of extension is not well supported by \MC. A package cannot define the variable \ct{randomNumber} as an extension of \ct{LOGame}. \MC supports method extension only.
 %\ab{Tell us what the problem is, before telling us the solution.  With an Example!}
 
 
@@ -619,11 +619,11 @@ When our package is loaded, this code will be evaluated and the instance variabl
 
 %\begin{code}{}
 %GameExtension class>>initialize
-%	(PBEGame instVarNames includes: 'randomNumber') 
-%		ifFalse: [PBEGame addInstVarName: 'randomNumber']
+%	(LOGame instVarNames includes: 'randomNumber') 
+%		ifFalse: [LOGame addInstVarName: 'randomNumber']
 %\end{code}
 
-%In the case that \ct{randomNumber} is not defined in \ct{PBEGame}, this variable is added to this class.
+%In the case that \ct{randomNumber} is not defined in \ct{LOGame}, this variable is added to this class.
 
 %\ab{Isn't this more appropriate for a post-load \emph{do-it} than an \ct{initialize} method?  Do such things not exist (they did with change sets \ldots}
 %\alex{Probably, but this seems to be broken with \MC}
