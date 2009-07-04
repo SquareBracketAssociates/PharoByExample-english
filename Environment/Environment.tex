@@ -93,15 +93,11 @@ The \menu{Debugger} has an obvious role, but you will discover that it has a mor
 \index{process!interrupting}
 
 %=========================================================
-\section{The System Browser}
+\section{The Browser}
 \label{sec:browser}
 
-%:HERE
-\here
-
-
-There are actually several browsers in \pharo: the standard browser, the package browser, the Omnibrowser, and the Refactoring Browser. \fix
-We will take a look at the standard \ind{browser} first, since the others are variations on it.
+Many different class browsers have been developed over the years for \st.
+\pharo simplifies this story by offering a single browser that integrates various views.
 \figref{SystemBrowser0} shows the browser as it appears when you first open it.
 
 \begin{figure}[htbp]
@@ -109,20 +105,20 @@ We will take a look at the standard \ind{browser} first, since the others are va
    \ifluluelse
 	 {\includegraphics[width=\textwidth]{SystemBrowser0} }
 	 {\includegraphics[scale=.7]{SystemBrowser0} }
-   \caption{The System Browser}
+   \caption{The Browser}
    \label{fig:SystemBrowser0}
 \end{figure}
 
 The four small panes at the top of the browser represent a hierarchic view of the methods in the system, much in the same way as the \ind{NeXTstep} \textit{File Viewer} and the Mac OS X \textit{Finder} in column mode provide a view of the files on the disk.
-The leftmost pane lists \emph{categories} of classes; select one (say \scat{Kernel-Objects}) and the pane immediately to the right will then show all of the classes in that category.
-\on{I adopted the spelling of NeXTstep recommended by wikipedia}
+The leftmost pane lists \emph{packages} of classes; select one (say \scat{Kernel}) and the pane immediately to the right will then show all of the classes in that package.
+% \on{I adopted the spelling of NeXTstep recommended by wikipedia}
 
 \begin{figure}[htbp]
    \centering
    \ifluluelse
 	   {\includegraphics[width=\textwidth]{SystemBrowser1} }
 	   {\includegraphics[scale=.7]{SystemBrowser1} }
-   \caption{System Browser with the class \ct{Model} selected
+   \caption{Browser with the class \ct{Model} selected
    \label{fig:SystemBrowserModel}}
 \end{figure}
 
@@ -139,7 +135,7 @@ If you select class \menu{Model},  protocol \protind{dependents} and the method 
    \ifluluelse
 	   {\includegraphics[width=\textwidth]{SystemBrowserMyDependents}}
 	   {\includegraphics[scale=.7]{SystemBrowserMyDependents}}
-   \caption{System Browser showing the \ct{myDependents} method in class \ct{Model}
+   \caption{Browser showing the \ct{myDependents} method in class \ct{Model}
    \label{fig:SystemBrowserMyDependents}}
 \end{figure}
 
@@ -156,7 +152,7 @@ Enter the name of the new thing in the dialog, and you are done: there is nothin
    \ifluluelse
 	   {\includegraphics[width=\textwidth]{SystemBrowserClassCreation}}
 	   {\includegraphics[scale=.7]{SystemBrowserClassCreation}}
-   \caption{System Browser showing the class-creation template
+   \caption{Browser showing the class-creation template
    \label{fig:SystemBrowserClassCreation}}
 \end{figure}
 
@@ -194,7 +190,7 @@ The process of creating a new method is similar.  First select the class in whic
    \ifluluelse
 	   {\includegraphics [width=\textwidth]{SystemBrowserMethodTemplate}}
 	   {\includegraphics[scale=.7]{SystemBrowserMethodTemplate}}
-   \caption{System Browser showing the method-creation template
+   \caption{Browser showing the method-creation template
    \label{fig:SystemBrowserMethodTemplate}}
 \end{figure}
 
@@ -431,8 +427,11 @@ However, if you select no package at all, then all the categories are available,
 
 Unfortunately, the meaning of the term \ind{package} has changed since the package pane browser was developed.  ``Package'' now has a more precise meaning, related to the \emph{Monticello} packaging tool, as we will discuss in the next section.  At present there is no tool that lets you browse packages as defined by \ind{Monticello}, however there is one currently being developed.
 
+
+\fix
+
 The \pharo community is in the process of developing a whole new family of browsers based on a new, highly customizable framework called the \emphind{OmniBrowser}.  The implementation of the OmniBrowser is worth looking at as a good example of object-oriented design, \ab{and I'ld like to add a chapter on it somewhere, perhaps starting with parts of the excellent document written by Niklaus Haldimann on the classbox browser} but from the outside, most of the OmniBrowser-based tools look very similar to the ones that we have just described.  
-The main enhancement that you will notice in the Omni System Browser is the addition of \emph{virtual protocols}.
+The main enhancement that you will notice in the Omni Browser is the addition of \emph{virtual protocols}.
 \lr{"Virtual Protocols" are a non-default extension to OB (p. 140)}
 In addition to the traditional programmer-defined protocols, each class has a number of virtual protocols defined on it by definitional rules.  For example, the \prot{-{}-supersend-{}-} protocol includes all of the methods that send to \super, while the \prot{-{}-required-{}-} protocol lists all of the messages that are sent by the methods in the current class or its superclasses but not defined.
 \protindex{supersend}
