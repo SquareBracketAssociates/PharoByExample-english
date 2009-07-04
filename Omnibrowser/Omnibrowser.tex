@@ -72,6 +72,8 @@
 In this chapter, we present \ob, a browser framework that supports the definition of browsers based on explicit metamodels. In the \obf, a browser is a graphical list-oriented tool to navigate and edit any arbitrary domain. The most common representative of this category of tools is the \st system browser, which is used to navigate and edit \st source code.
 In \ob, a browser is described by a domain model and a metagraph that specifies how the domain space may be navigated. Widgets, such as list menus and text panels, are used to display information gathered from a particular path in the metagraph. Although widgets are programmatically composed by the framework, \ob allows for interaction with the end user.
 
+\on{It is confusing to talk about the ``\st system browser'' -- in \pharo there is only the OB browser!}
+
 We look at how to build new browsers from predefined parts and how to easily describe new tools. We will illustrate how to define sophisticated browsers for various domains with the help of three example: a file browser, a remake of the ubiquitous \st system browser, and a coverage browser.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -100,7 +102,7 @@ We look at how to build new browsers from predefined parts and how to easily des
 %This chapter presents \ob, a framework to define and compose new browsers. In \obf, a browser is a graphical list-oriented tool to navigate and edit an arbitrary domain. The most common representative of this category of tools is the \st system browser, which is used to navigate and edit \st source code.
 %In \obf, a browser is described by a domain model and a metagraph which specifies how the domain space is navigated through. Widgets such as list menus and text panels are used to display information gathered from a particular path in the metagraph. Although widgets are programmatically composed, the \obf framework supports their interaction.
 
-%The contributions of this article are: the description of a metadriven framework to build system browsers and the application of the framework to build some tools. 
+%The contributions of this article are: the description of a metadriven framework to build browsers and the application of the framework to build some tools. 
 %In \secref{problem} we describe difficulties and challenges to define states and flow between those states for a graphical user interface. In \secref{omnibrowser} we present the key entities of \obf. In \secref{codebrowser} we present the \ob-based system browser and in \secref{coverageBrowser} we describe the coverage code browser. In \secref{discussion} we discuss about properties of the \obf. In \secref{relatedwork} we provide an overview of related work. In \secref{conclusion} we conclude by summarizing the presented work.
 
 

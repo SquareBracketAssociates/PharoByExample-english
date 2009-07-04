@@ -40,7 +40,7 @@
 \label{cha:env}
 
 The goal of this chapter is to show you how to develop programs in the \pharo programming environment.
-You have already seen how to define methods and classes using the system browser; this chapter will show you more of the features of the system browser, and introduce you to some of the other browsers.
+You have already seen how to define methods and classes using the browser; this chapter will show you more of the features of the browser, and introduce you to some of the other browsers.
 
 Of course, very occasionally you may find that your program does not work as you expect. \pharo has an excellent debugger, but like most powerful tools, it can be confusing on first use.  We will walk you through a debugging session and demonstrate some of the features of the debugger. 
 
@@ -65,7 +65,7 @@ Let's start by looking at the main tools in \pharo.
 
 \begin{itemize}
 	\item {The \menu{Browser}} is the central development tool. You will use it to create, define, and organize your classes and methods. Using it you can also navigate through all the library classes: unlike other environments where the source code is stored in separate files, in Smalltalk all classes and methods are contained in the image.
-	\index{system browser}
+	\index{browser}
 
 	\item{The \menu{Message Names}} tool is used to look at all of the methods with a particular selector, or with a selector containing a substring.
 	\index{message name finder}
@@ -100,8 +100,8 @@ The \menu{Debugger} has an obvious role, but you will discover that it has a mor
 \here
 
 
-There are actually several browsers in \pharo: the standard system browser, the package browser, the Omnibrowser, and the Refactoring Browser. \fix
-We will take a look at the standard \ind{system browser} first, since the others are variations on it.
+There are actually several browsers in \pharo: the standard browser, the package browser, the Omnibrowser, and the Refactoring Browser. \fix
+We will take a look at the standard \ind{browser} first, since the others are variations on it.
 \figref{SystemBrowser0} shows the browser as it appears when you first open it.
 
 \begin{figure}[htbp]
@@ -144,7 +144,7 @@ If you select class \menu{Model},  protocol \protind{dependents} and the method 
 \end{figure}
 
 Unlike directories in the Mac OS X \emph{Finder}, the four top panes of the browser are not quite equal.  
-Whereas classes and methods are part of the Smalltalk language, system categories and message protocols are not: they are a convenience introduced by the browser to limit the amount of information that needs to be shown in each pane.  For example, if there were no protocols, the browser would have to show a list of all of the methods in the selected class; for many classes this list would be too large to navigate conveniently.  
+Whereas classes and methods are part of the Smalltalk language, categories and message protocols are not: they are a convenience introduced by the browser to limit the amount of information that needs to be shown in each pane.  For example, if there were no protocols, the browser would have to show a list of all of the methods in the selected class; for many classes this list would be too large to navigate conveniently.  
 \index{Mac OS X Finder}
 
 Because of this, the way that you create a new category or a new protocol is different from the way that you create a new class or a new method.  To create a new category, select \menu{new category} from the \ind{yellow button} menu in the category pane; to create a new protocol, select \menu{new protocol} from the yellow button menu in the protocol pane. 
@@ -181,13 +181,13 @@ new class (the one whose name follows the \ct{#}) is created (as is
 the corresponding metaclass).  Creating a class also creates a global
 variable that references the class, which is why you can refer to all
 of the existing classes by using their names.  \index{class!creation}
-\index{system browser!defining a class}
+\index{browser!defining a class}
 
 Can you see why the name of the new class has to appear as a \clsind{Symbol} (\ie prefixed with \ct{#}) in the class creation template, but after the class is created, code can refer to the class by using the name as an identifier (\ie without the \ct{#})?
 
 The process of creating a new method is similar.  First select the class in which you want the method to live, and then select a protocol.  The browser will display a method-creation template, as shown in \figref{SystemBrowserMethodTemplate}, which you can fill-in or edit.
 \index{method!creation}
-\index{system browser!defining a method}
+\index{browser!defining a method}
 
 \begin{figure}[htbp]
    \centering
@@ -202,16 +202,16 @@ The process of creating a new method is similar.  First select the class in whic
 \subsection{The button bar}
 \label{sec:ButtonBar}
 
-The system browser provides several tools for exploring and analysing code. Those tools are most simply accessed from the horizontal \subind{system browser}{button bar} in the middle of the browser window.  The buttons are labeled \button{browse}, \button{senders}, \button{implementors}\ldots{}\ %
+The browser provides several tools for exploring and analysing code. Those tools are most simply accessed from the horizontal \subind{browser}{button bar} in the middle of the browser window.  The buttons are labeled \button{browse}, \button{senders}, \button{implementors}\ldots{}\ %
 \figref{SystemBrowserMethodTemplate} shows the complete set.
 
 \subsubsection{Browsing code}
 \label{sec:browsing}
 
-The \button{browse} button opens a new system browser on the class or method that is currently selected. It's often useful to have multiple browsers open at the same time.
+The \button{browse} button opens a new browser on the class or method that is currently selected. It's often useful to have multiple browsers open at the same time.
 When you are writing code you will almost certainly need at least two: one for the method that you are typing, and another to browse around the system to see what to type.
 You can also open a browser on a class named by any selected text using the \short{b} \ind{keyboard shortcut}. 
-\index{system browser!browse button}
+\index{browser!browse button}
 \index{keyboard shortcut!browse it}
 
 \dothis{Try this: in a workspace window, type the name of a class (for instance \ct{ScaleMorph}), select it, and then press \short{b}. This trick is often useful; it works in any text window.}
@@ -219,7 +219,7 @@ You can also open a browser on a class named by any selected text using the \sho
 \subsubsection{Senders and implementors of a message}
 \label{sec:sendersImplementors}
 
-\index{system browser!senders button}
+\index{browser!senders button}
 The \button{senders} button will give you a list of all methods that may use the selected method. With the browser open on \ct{ScaleMorph}, click on the \mthind{ScaleMorph}{checkExtent:} method in the method pane near the top right corner of the browser; the body of \ct{checkExtent:} displays in the bottom part of the browser. If you now press the \button{senders} button, a menu will appear with \ct{checkExtent:} as the topmost item, and below it, all the messages that \ct{checkExtent:} sends (see \figref{SendersOfCheckEvent}).  Selecting an item in this menu will open a browser with the list of all methods in the image that send the selected message. 
 
 \begin{figure}[htbp]
@@ -232,7 +232,7 @@ The \button{senders} button will give you a list of all methods that may use the
 	\label{fig:SendersOfCheckEvent}
 \end{figure}
 
-\index{system browser!implementors button}
+\index{browser!implementors button}
 The \button{implementors} button works in a similar way, but instead of listing the senders of a message, it lists all of the classes that implement a method with the same selector. To see this, select \lct{drawOn:} in the message pane and then bring up the ``implementors of drawOn:'' browser, either using the \button{implementors} button, or the \ind{yellow button} menu on the method pane, or just by typing \short{m} (for {i\textbf{m}ple\textbf{m}entors}) in the method pane with \menu{drawOn:} selected.  You should get a method list window showing a scrolling list of 96 classes that implement a \ct{drawOn:} method.
 It shouldn't be all that surprising that so many classes implement this method: \ct{drawOn:} is the message that is understood by every object that is capable of drawing itself on the screen.  While viewing any one of these methods, try browsing the senders of the \ct{drawOn:} message:  we found 63 methods that send this message.  You can also bring up an implementors browser at any time by selecting a message (including the arguments if it is a keyword message) and typing \short{m}.
 
@@ -241,7 +241,7 @@ It shouldn't be all that surprising that so many classes implement this method: 
 % APB: commented-out because the same thought is expressed below.
 
 If you look at the send of \ct{drawOn:} in \ct{AtomMorph>>>drawOn:}, you will see that it is a super \subind{super}{send}.  So we know that the method that will be executed will be in \ct{AtomMorph}'s superclass.  What class is that?  Click the \button{hierarchy} button and you will see that it is \ct{EllipseMorph}. 
-\index{system browser!hierarchy button}
+\index{browser!hierarchy button}
 
 \begin{figure}[htbp]
 	\begin{center}
@@ -258,7 +258,7 @@ Dataflow analysis can help figure out the class of the receiver of some messages
 For this reason,  the ``senders'' browser shows exactly what its name suggests: all of the senders of the message with the chosen selector.  
 The \button{senders} button is nevertheless extremely useful when you need to understand how you can \emph{use} a method: it lets you navigate quickly through example uses.  
 Since all of the methods with the same selector ought to be used in the same way, all of the uses of a given message ought to be similar.
-\index{system browser!senders button}
+\index{browser!senders button}
 
 \subsubsection{Versions of a method}
 \label{sec:versions}
@@ -275,7 +275,7 @@ When you save a new \subind{method}{version} of a method, the old one is not los
 The \button{versions} button gives access to the successive modifications made to the selected method.
 In \figref{mouseUpVersions} we can see the versions of the \ct{mouseUp:} method that one of the authors created while writing the Lights Out game described in \charef{firstApp}.
 
-\index{system browser!versions button}
+\index{browser!versions button}
 The top pane displays one line for each version of the method, listing the initials of the programmer who wrote it, the date and time at which it was saved, the names of the class and the method, and the protocol in which it was defined.  The current (active) version is at the top of the list;  whichever version is selected is displayed in the bottom pane.  If the \menu{diffs} checkbox is selected, as it is in \figref{mouseUpVersions}, the display also shows the differences between the selected version and the one immediately older.  Buttons are also provided for displaying the differences between the selected method and the current version, and for reverting to the selected version.   The \menu{prettyDiffs} checkbox is useful if there have been changes to layout: it pretty-prints both versions before differencing, so that the differences that are displayed exclude formatting changes. 
 
 The existence of the \ind{versions browser} means that you never have to worry about preserving code that you think might no longer be needed: just delete it.  If you find that you \emph{do} need it, you can always revert to the old version, or copy the needed code fragment out of the old version and paste it into a another method.
@@ -290,7 +290,7 @@ The change set browser is described in \secref{env:changeSet}}
 
 The \button{inheritance} button opens a specialized browser that displays all the methods overridden by the displayed method. 
 To see how it works, display the \cmind{ScaleMorph}{defaultColor} method and click \button{inheritance}. This method definition overrides \mbox{\cmind{RectangleMorph}{defaultColor},} which itself overrides \cmind{Morph}{defaultColor}, as shown in \figref{inheritanceOverriding}. The colour of the \button{inheritance} button depends on how the \subind{method}{overriding} occurs.  The colours are explained in a help balloon:
-\index{system browser!inheritance button}
+\index{browser!inheritance button}
 
 %\newcommand{\colourTag}[1]{\item[{\mdseries \itshape #1}]}
 
@@ -322,7 +322,7 @@ To see how it works, display the \cmind{ScaleMorph}{defaultColor} method and cli
 \end{figure}
 
 \hyphenation{Omni-Brow-ser}
-Note that there are currently two versions of the inheritance browser.  If you are using the version of the system browser based on the \ind{OmniBrowser} framework, the \button{inheritance} button does not change colour, and the inheritance browser looks different.  It also displays more information: it shows not only the methods on the inheritance chain, but also their siblings.  This version of the \ind{inheritance browser} is shown in \figref{OBinheritanceBrowser}.
+Note that there are currently two versions of the inheritance browser.  If you are using the version of the browser based on the \ind{OmniBrowser} framework, the \button{inheritance} button does not change colour, and the inheritance browser looks different.  It also displays more information: it shows not only the methods on the inheritance chain, but also their siblings.  This version of the \ind{inheritance browser} is shown in \figref{OBinheritanceBrowser}.
 
 \begin{figure}[btp]
 	\begin{center}
@@ -340,11 +340,11 @@ Note that there are currently two versions of the inheritance browser.  If you a
 
 The \button{hierarchy} button opens a \ind{hierarchy browser} on the current class; this
 browser can also be opened by using the \menu{browse hierarchy} menu item in the class pane.
-The hierarchy browser is similar to the system browser, but instead of displaying the system categories and the classes in each category, it shows a single list of classes, indented to represent inheritance.
+The hierarchy browser is similar to the browser, but instead of displaying the categories and the classes in each category, it shows a single list of classes, indented to represent inheritance.
 The category of the selected class is displayed in the small annotation pane at the top of the browser.
 The hierarchy browser is designed to make it easy to navigate through the inheritance hierarchy, but does not show all of the classes in the system: only the superclasses and subclasses of the initial class are shown.
 In \figref{hierarchyBrowser}, the hierarchy browser reveals that the direct superclass of \clsind{ScaleMorph} is \clsind{RectangleMorph}.
-\index{system browser!hierarchy button}
+\index{browser!hierarchy button}
 
 \begin{figure}[btp]
 	\begin{center}
@@ -359,8 +359,8 @@ In \figref{hierarchyBrowser}, the hierarchy browser reveals that the direct supe
 \subsubsection{Finding variable references}
 \label{sec:variables}
 
-\index{system browser!inst vars button}
-\index{system browser!class vars button}
+\index{browser!inst vars button}
+\index{browser!class vars button}
 The \button{inst vars} and \button{class vars} buttons help you find where an instance variable or a class variable is used; the same information is accessible from the \ind{yellow button} menu items \menu{inst var refs} and \menu{class var refs} in the class pane.  
 The menu also includes \menu{inst var defs}, which shows the subset of the instance variable references that assign to the variable. 
 Once you click on the button or select the menu item, you will be presented with a dialog that invites you to choose a variable from all of the variables defined in the current class, and all of the variables that it inherits.  The list is in inheritance order; it can often be useful to bring up this list just to remind yourself of the name of an instance variable.  If you click outside the list, it will go away and no variable browser will be created.
@@ -370,7 +370,7 @@ Also available from the yellow button menu on the class pane is \menu{class vars
 \subsubsection{Source}
 \label{sec:sources}
 
-\index{system browser!source button}
+\index{browser!source button}
 The \button{source} button brings up the ``what to show'' menu, which allows you to choose what the browser shows in the source pane.  Options include the \menu{source} code, \menu{prettyPrint}ed source code, \menu{byteCodes} and source code \menu{decompile}d from the byte codes.  The label on the button changes if you select one of the other modes.  There are other options too; if you let the mouse linger over the names, a help balloon will appear.  Try some of them.
 \index{method!pretty-print}
 \index{method!decompile}
@@ -383,7 +383,7 @@ In fact, focussing two browsers on the same method and selecting \menu{byteCodes
 
 \subsubsection{Refactoring}
 
-\index{system browser!refactor button}
+\index{browser!refactor button}
 Did you notice the small \button{R} at the end of the button bar? \fix
 Although unobtrusive, this button gives access to one of the most powerful and important features of the Smalltalk environment.  
 Clicking on \button{R} gives you access to a hierarchy of menus for refactoring your code.  
@@ -417,12 +417,12 @@ There are many other options available in the menus.  It pays to spend a few min
 \dothis{Compare the result of \menu{Browse Protocol}, \menu{Browse Hierarchy},  and \menu{Show Hierarchy} in the class pane menu.}
 
 %---------------------------------------------------------
-\subsection{Other class browsers}
+\subsection{Other browsers}
 \label{sec:otherBrowsers}
 
-At the beginning of this section we mentioned another class browser: the \emphind{package pane browser}. 
+At the beginning of this section we mentioned another browser: the \emphind{package pane browser}. 
 This can be opened from the world menu: \menu{World \go open\ldots \go package pane browser}
-It's basically the same as the class browser, but it knows about the naming convention for system categories.
+It's basically the same as the browser, but it knows about the naming convention for categories.
 You will have noticed that the names of categories have two parts.
 For example, the \ct{ScaleMorph} class belongs to the \scat{Morphic-Widgets} category.
 \label{sec:package-names}
@@ -477,7 +477,7 @@ Further navigation examples can be found in the FAQ (\appref{faq}).
 \subsection{Summary}
 
 As you have seen, there are many ways to navigate around Smalltalk code. 
-You may find this confusing at first, in which case you can always fall back to the traditional system browser.
+You may find this confusing at first, in which case you can always fall back to the traditional browser.
 However, we usually find that once beginners gain more experience with \pharo, the availability of different browsers becomes one of its most valued features, because they provide many ways to help you to understand and organize your code.
 The problem of understanding code is one of the greatest challenges of large-scale software development. 
 % section browser (end)
@@ -496,7 +496,7 @@ The package system is a simple, lightweight way of organizing Smalltalk source c
 It leverages the long-used naming convention mentioned above (\secref{package-names}), but adds to it in an important way.
 
 Let's explain this using an example.
-Suppose that you are developing a framework named to facilitate the use of relational databases from \pharo. You have decided to call your framework \ct{PharoLink}, and have created a series of system categories to contain all of the classes that you have written, \eg
+Suppose that you are developing a framework named to facilitate the use of relational databases from \pharo. You have decided to call your framework \ct{PharoLink}, and have created a series of categories to contain all of the classes that you have written, \eg
 
 \vspace{1ex}
 \noindent
@@ -1099,7 +1099,7 @@ This can quickly become overwhelming.
 The \emph{message names} browser has more limited search functionality: you type a fragment of a message selector in the search box, and the browser lists all methods that contain that fragment in their names, as shown in \figref{methodNamesRandom}.
 However, it is a full-fledged browser:
 if you select one of the names in the left pane, all of the methods with that name are listed in the right pane, and can be browsed in the bottom pane.
-As with the class browser, the message names browser has a button bar that can be used to open other  browsers on the selected method or its class.
+As with the browser, the message names browser has a button bar that can be used to open other  browsers on the selected method or its class.
 
 
 % section methodFinder (end)
@@ -1225,7 +1225,7 @@ However, the full set of options is always available from the \ind{yellow button
 you can easily work around this problem.
 
 The \button{code} button is perhaps the most useful for working with change sets; it opens a browser on the contents of the change set file; an example is shown in \figref{fileContentsBrowser}.
-The file contents browser is similar to the system browser except that it does not show categories, just classes, protocols and methods.
+The file contents browser is similar to the browser except that it does not show categories, just classes, protocols and methods.
 For each class, the browser will tell you whether the class already exists in the system and whether it is defined in the file (but \emph{not} whether the definitions are identical).  
 It will show the methods in each class, and (as shown in \figref{fileContentsBrowser}) will show you the differences between the current version and the version in the file.
 Yellow-button menu items in each of the top four panes will also let you file in the whole of the change set, or the corresponding class, protocol or method. 
@@ -1291,13 +1291,13 @@ When I am finished with the recovery, I like to file out my new change set, quit
 In order to develop effectively with \pharo, it is important to invest some effort into learning the tools available in the environment.
 
 \begin{itemize}
-  \item The standard \emph{system browser} is your main interface for browsing existing class categories, classes, method protocols and methods, and for defining new ones.
-  The system browser offers several useful buttons to directly jump to senders or implementors of a message, versions of a method, and so on.
-  \item There exist several different class browsers (such as the OmniBrowser and the Refactoring Browser), and several specialized browsers (such as the hierarchy browser) which provide different views of classes and methods.
+  \item The standard \emph{browser} is your main interface for browsing existing class categories, classes, method protocols and methods, and for defining new ones.
+  The browser offers several useful buttons to directly jump to senders or implementors of a message, versions of a method, and so on.
+  \item There exist several different browsers (such as the OmniBrowser and the Refactoring Browser), and several specialized browsers (such as the hierarchy browser) which provide different views of classes and methods.
   \item From any of the tools, you can highlight the name of a class or a method and immediately jump to a browser by using the keyboard shortcut \short{b}.
   \item You can also browse the \st system programmatically by sending messages to \ct{SystemNavigation default}.
   \item \emph{Monticello} is a tool for exporting, importing, versioning and sharing packages of classes and methods.
-  A Monticello package consists of a system category, subcategories, and related methods protocols in other categories.
+  A Monticello package consists of a category, subcategories, and related methods protocols in other categories.
   \item The \emph{inspector} and the \emph{explorer} are two tools that are useful for exploring and interacting with live objects in your image.
   You can even inspect tools by blue-clicking to bring up their morphic halo and selecting the debug handle \debugHandle.
   \item The \emph{debugger} is a tool that not only lets you inspect the run-time stack of your program when an error is raised, but it also enables you to interact with all of the objects of your application, including the source code. In many cases you can modify your source code from the debugger and continue executing. The debugger is especially effective as a tool to support test-first development in tandem with SUnit (\charef{SUnit}).

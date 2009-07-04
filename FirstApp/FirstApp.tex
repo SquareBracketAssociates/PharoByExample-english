@@ -46,7 +46,7 @@
 %:===> Check usage of "category" vs "package"
 
 In this chapter, we will develop a simple game: \ind{Lights Out}.\footnote{\url{http://en.wikipedia.org/wiki/Lights_Out_(game)}}
-Along the way we will demonstrate most of the tools that \pharo programmers use to construct and debug their programs, and show how programs are exchanged with other developers. We will see the system browser, the object inspector, the debugger and the \ind{Monticello} \ind{package} browser. 
+Along the way we will demonstrate most of the tools that \pharo programmers use to construct and debug their programs, and show how programs are exchanged with other developers. We will see the browser, the object inspector, the debugger and the \ind{Monticello} \ind{package} browser. 
 Development in Smalltalk is efficient: you will find that you spend far more time actually writing code and far less managing the development process. 
 This is partly because the Smalltalk language is very simple, and partly because the tools that make up the programming environment are very well integrated with the language.
 
@@ -76,14 +76,12 @@ We will now show you how to define these classes using the \pharo programming to
 %=================================================================
 \section{Creating a new Package}
 
-We have already seen the \ind{system browser} in \charef{quick}, where we learned how to navigate to classes and methods, and saw how to define new methods.
-Now we will see how to create packages, system categories and classes.
-\seeindex{system category}{category}
-\seeindex{class category}{system category}
+We have already seen the \ind{browser} in \charef{quick}, where we learned how to navigate to classes and methods, and saw how to define new methods.
+Now we will see how to create packages, categories and classes.
 \index{category!creating}
 \index{package!creating}
 
-\dothis{Open a system browser and \actclick in the package pane.
+\dothis{Open a browser and \actclick in the package pane.
 Select \menu{create package}.}
 
 \begin{figure}[htb]
@@ -145,7 +143,7 @@ SimpleSwitchMorph subclass: #LOCell
    poolDictionaries: ''
    category: 'PBE-LightsOut'
 \end{classdef}
-\index{system browser!defining a class}
+\index{browser!defining a class}
 \index{class!creation}
 \index{Morphic}
 
@@ -195,7 +193,7 @@ You will see a template for method creation in the editing pane.
 Select it, and replace it by the text of \mthref{scbecellinitialize}.
 \protindex{all}
 \index{method!creation}
-\index{system browser!defining a method}
+\index{browser!defining a method}
 
 \needlines{10}
 \begin{numMethod}[scbecellinitialize]{Initializing instances of \ct{LOCell}}
@@ -707,7 +705,7 @@ On the left-hand side of the Monticello browser is a list of packages that have 
 \seeindex{*}{package, dirty}
 \seeindex{dirty package}{package, dirty}
 
-What is a package?  For now, you can think of a package as a group of  class and method categories that share the same prefix.  Since we put all of the code for the Lights Out game into the class category called \scat{PBE-LightsOut}, we can refer to it as the \ct{PBE-LightsOut} package.
+What is a package?  For now, you can think of a package as a group of  class and method categories that share the same prefix.  Since we put all of the code for the Lights Out game into the category called \scat{PBE-LightsOut}, we can refer to it as the \ct{PBE-LightsOut} package.
 
 \dothis{Add the \ct{PBE-LightsOut} package to your Monticello browser using the \button{+Package} button and type \ct{PBE-LightsOut}.}
 
@@ -769,7 +767,7 @@ You can also look at the on-line documentation for Monticello at \url{http://www
 
 %=================================================================
 \section{Chapter summary}
-In this chapter you have seen how to create categories, classes and methods.  You have see how to use the system browser, the inspector, the debugger and the Monticello browser.
+In this chapter you have seen how to create categories, classes and methods.  You have see how to use the browser, the inspector, the debugger and the Monticello browser.
 
 \begin{itemize}
   \item Categories are groups of related classes.
@@ -777,7 +775,7 @@ In this chapter you have seen how to create categories, classes and methods.  Yo
   \item Protocols are groups of related methods.
   \item A new method is created or modified by editing its definition in the browser and then \emph{accepting} the changes.
   \item The inspector offers a simple, general-purpose GUI for inspecting and interacting with arbitrary objects.
-  \item The system browser detects usage of undeclared methods and variables, and offers possible corrections.
+  \item The browser detects usage of undeclared methods and variables, and offers possible corrections.
   \item The \ct{initialize} method is automatically executed after an object is created in \pharo. You can put any initialization code there.
   \item The debugger provides a high-level GUI to inspect and modify the state of a running program.
   \item You can share source code \emph{filing out} a category.

@@ -120,11 +120,11 @@ Our new package named \pkg{Perfect} contains:
 
 \begin{itemize}
 
-\item All classes in the system category \scat{Perfect}, or in system categories whose names start with \scat{Perfect-}. For now this includes only our \ct{PerfectTest} class. \sd{Ask lukas because I do not see why Perfect- would be any different from PerfectZork - is not a special character.}
+\item All classes in the category \scat{Perfect}, or in categories whose names start with \scat{Perfect-}. For now this includes only our \ct{PerfectTest} class. \sd{Ask lukas because I do not see why Perfect- would be any different from PerfectZork - is not a special character.}
 
-\item All methods for any class in \emph{any} system category defined in protocols named \prot{*perfect} or \prot{*Perfect}, or in protocols whose names start with \prot{*perfect-} or \prot{*Perfect-}. Such methods are known as \emph{extensions}. We don't have any yet, but we will define some very soon.
+\item All methods for any class in \emph{any} category defined in protocols named \prot{*perfect} or \prot{*Perfect}, or in protocols whose names start with \prot{*perfect-} or \prot{*Perfect-}. Such methods are known as \emph{extensions}. We don't have any yet, but we will define some very soon.
 
-\item All methods belonging to classes in the system category \scat{Perfect}, or in system categories whose names begin with \scat{Perfect-}, \emph{except} those in protocols whose names start with \prot{*} (\ie belonging to \emph{other} packages). This includes our \ct{testPerfect} method, since it belongs to the protocol \ct{running}.
+\item All methods belonging to classes in the category \scat{Perfect}, or in categories whose names begin with \scat{Perfect-}, \emph{except} those in protocols whose names start with \prot{*} (\ie belonging to \emph{other} packages). This includes our \ct{testPerfect} method, since it belongs to the protocol \ct{running}.
 
 \end{itemize}
 
@@ -179,7 +179,7 @@ PerfectTest>>>testPerfectBoundary
 	self assert: 1 isPerfect not.
 \end{code}
 
-Although these methods do not belong to the \ct{Perfect} system category, they \emph{do} belong to the \ct{Perfect} package since they are in a protocol whose name starts with \ct{*} and matches the package name. Such methods are known as \emph{class extensions}, since they extend existing classes with new methods. These methods will \emph{only} be available to someone who loads our \ct{Perfect} package.
+Although these methods do not belong to the \ct{Perfect} category, they \emph{do} belong to the \ct{Perfect} package since they are in a protocol whose name starts with \ct{*} and matches the package name. Such methods are known as \emph{class extensions}, since they extend existing classes with new methods. These methods will \emph{only} be available to someone who loads our \ct{Perfect} package.
 
 \alex{We could give a reference to the Cmd-p command in the OB browser. This keystroke is used to turn a method into a class-extension.}
 \on{you mean it moves a method to an extension package}
@@ -417,7 +417,7 @@ We will now look at \button{Browse}, \button{Changes} and \button{History}, whic
 \subsection{Browse}
 
 The \button{Browse} button opens a ``snapshot browser'' to display the contents of a package.
-The advantage of the snapshot browser over the system browser is its ability to display class extensions.
+The advantage of the snapshot browser over the browser is its ability to display class extensions.
 
 \dothis{Select the \ct{Perfect} package and click the \button{Browse} button.}
 
@@ -427,7 +427,7 @@ The advantage of the snapshot browser over the system browser is its ability to 
 	\caption{The snapshot browser reveals that the \ct{Perfect} package extends the class \ct{Integer} with 2 methods.\figlabel{packageviewer}}
 \end{figure}
 
-For example, \figref{packageviewer} shows the class extensions defined in the \pkg{Perfect} package. Note that code cannot be edited here, though by {\actclick}ing, if your environment has been set up accordingly) on a class or a method name you can open a regular system browser.
+For example, \figref{packageviewer} shows the class extensions defined in the \pkg{Perfect} package. Note that code cannot be edited here, though by {\actclick}ing, if your environment has been set up accordingly) on a class or a method name you can open a regular browser.
 
 It is a good practice to always browse the code of your package before publishing it, to ensure that it really contains what you think it does.
 
@@ -552,8 +552,8 @@ Let us see how this works in practice.  Our \ct{Perfect} package currently bundl
 \dothis{Take the following steps:
 \begin{itemize}\setlength{\itemsep}{0pt}
 \item Load version 4 of the \ct{Perfect} package from the package cache
-\item Create a new package in the system browser called \ct{NewPerfect-Tests} and drag the class \ct{PerfectTest} to this package
-% \item \sout{Rename the \ct{Perfect} category to \ct{Perfect-Tests} ({\actclick} on the category in the system browser to rename it)} \on{There is no menu item to rename a package!}
+\item Create a new package in the browser called \ct{NewPerfect-Tests} and drag the class \ct{PerfectTest} to this package
+% \item \sout{Rename the \ct{Perfect} category to \ct{Perfect-Tests} ({\actclick} on the category in the browser to rename it)} \on{There is no menu item to rename a package!}
 \item Rename the \ct{*perfect} protocol of the \ct{Integer} class to \ct{*newperfect-extensions} (\actclick to rename it)
 \item In the \MCB, add the packages \ct{NewPerfect-All} and \ct{NewPerfect-Extensions}.
 \item Add \ct{NewPerfect-Extensions} and \ct{NewPerfect-Tests} as required packages to \ct{NewPerfect-All} ({\actclick} on \ct{NewPerfect-All})
@@ -850,10 +850,10 @@ The following points were covered:
 
 %\section{Packages in \MC: PackageInfo}
 
-%The PackageInfo system is a simple, lightweight way of organizing Smalltalk source: it is nothing more than a naming convention, which uses (or abuses) the existing categorization mechanisms to group related code. Let me give you an example: say that you are developing a framework named PharoLink to facilitate using relational databases from Pharo. You will probably have a series of system categories to contain all of your classes (e.g., category \cat{PharoLink-Connections} containing the classes \ct{OracleConnection}, \ct{MySQLConnection} and \ct{PostgresConnection})
+%The PackageInfo system is a simple, lightweight way of organizing Smalltalk source: it is nothing more than a naming convention, which uses (or abuses) the existing categorization mechanisms to group related code. Let me give you an example: say that you are developing a framework named PharoLink to facilitate using relational databases from Pharo. You will probably have a series of categories to contain all of your classes (e.g., category \cat{PharoLink-Connections} containing the classes \ct{OracleConnection}, \ct{MySQLConnection} and \ct{PostgresConnection})
 %(\cat{PharoLink-Model} containing \ct{DBTable}, \ct{DBRow}  and \ct{DBQuery}) and so on. But not all of your code will reside in these classes\,---\,you may also have, for example, a series of methods to convert objects into an SQL friendly format: \mthind{Object}{asSQL},  \mthind{String}{asSQL} and \mthind{Date}{asSQL}.
 
-%These methods belong in the same package as the classes in \cat{PharoLink-Connections} and \cat{PharoLink-Model}. You mark this by placing those methods in a method category (of \ct{Object}, \ct{String}, \ct{Date}, and so on) named \cat{*squeaklink} (note the initial star). The combination of the \cat{PharoLink-...} system categories and the \cat{*squeaklink} method categories forms a package named "PharoLink".
+%These methods belong in the same package as the classes in \cat{PharoLink-Connections} and \cat{PharoLink-Model}. You mark this by placing those methods in a method category (of \ct{Object}, \ct{String}, \ct{Date}, and so on) named \cat{*squeaklink} (note the initial star). The combination of the \cat{PharoLink-...} categories and the \cat{*squeaklink} method categories forms a package named "PharoLink".
 
 %
 %\section{Getting Started}
@@ -933,7 +933,7 @@ The following points were covered:
 
 %The Snapshot browser is much like the standard Smalltalk System Browser except that it displays the contents of a Snapshot, rather than the code that is active in the image. Since Snapshots are immutable, the Snapshot browser does not allow editiing.
 
-%One difference between the Snapshot Browser and the familiar system browsers is that the Snapshot browser uses the special system category '*Extensions' to categorize classes that do not belong to the package, but which have extension methods that do.
+%One difference between the Snapshot Browser and the familiar browsers is that the Snapshot browser uses the special category '*Extensions' to categorize classes that do not belong to the package, but which have extension methods that do.
 %
 %\section{More on PackageInfo}
 %To get a feel for this, try filing the Refactoring Browser. The Refactoring Browser code uses PackageInfo's naming conventions, using "Refactory" as the package name. In a workspace, create a model of this package with  \ct{refactory := PackageInfo named: 'Refactory'}. 

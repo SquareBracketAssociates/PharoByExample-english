@@ -199,7 +199,7 @@ The world menu provides you a simple means to access many of the tools that \pha
 
 \dothis{Have a closer look at the \menu{World} and \menu{{}Tools \ldots} menus. (\figref{threeButtons:click})}
 
-You will see a list of several of the core tools in \pharo, including the system browser (one of many available class browsers) and the workspace.
+You will see a list of several of the core tools in \pharo, including the class browser and the workspace.
 We will encounter most of them in the coming chapters.
 
 %=================================================================
@@ -389,24 +389,25 @@ In this case the object we are looking at is the \ct{Object} class.
 We can see directly all the information stored in this class, and we can easily navigate to all its parts.
 
 %=================================================================
-\section{The System Browser}
+\section{The Class Browser}
 
-The \ind{system browser}\footnote{Also known as the ``Class browser''. \pharo uses the \ind{OmniBrowser} implementation of the system browser, which may also be variously known as ``OB'' or the ``Package browser''.} is one of the key tools used for programming.
+The class \ind{browser}\footnote{Confusingly, this is variously referred to as the ``system browser'' or the ``code browser''. \pharo uses the \ind{OmniBrowser} implementation of the browser, which may also be variously known as ``OB'' or the ``Package browser''.
+In this book we will simply use the term ``browser'', or, in case of ambiguity, the `class browser''.} is one of the key tools used for programming.
 As we shall see, there are several interesting browsers available for \pharo, but this is the basic one you will find in any image.
-\seeindex{class browser}{system browser}
-\seeindex{browser}{system browser}
+\seeindex{class browser}{browser}
 
+%:===> Change World menu item for browser?
 \dothis{Open a browser by selecting \menu{World \go Class browser}.}
 
 \begin{figure}[htb]
 \ifluluelse
 	{\centerline {\includegraphics[width=\textwidth]{ClassBrowser1}}}
 	{\centerline {\includegraphics[width=0.7\textwidth]{ClassBrowser1}}}
-\caption{The system browser showing the \ct{printString} method of class object.
+\caption{The browser showing the \ct{printString} method of class object.
 \label{fig:classBrowser}}
 \end{figure}
 
-We can see a system browser in \figref{classBrowser}.
+We can see a browser in \figref{classBrowser}.
 The title bar indicates that we are browsing the class \clsind{Object}.\footnote{If the browser you have seems to differ from the one described in this book, you may be using an image with a different default browser. See \faqref{omnibrowser}.}
 
 When the browser first opens, all panes are empty but the leftmost one.
@@ -435,8 +436,8 @@ Now we see in the bottom pane the source code of the \ct{printString} method, sh
 \section{Finding classes}
 
 There are several ways to find a class in \pharo.  The first, as we have just seen above, is to know (or guess) what category it is in, and to navigate to it using the browser.
-\index{system browser}
-\seeindex{system browser!finding classes}{class, finding}
+\index{browser}
+\seeindex{browser!finding classes}{class, finding}
 \index{class!finding}
 
 A second way is to send the \ct{browse} message to the class, asking it to open a browser on itself.  Suppose we want to browse the class \clsind{Boolean}.
@@ -451,7 +452,7 @@ select the name and type \short{b}.
 
 \begin{figure}[hbt]
 \centerline {\includegraphics[width=0.8\textwidth]{Kernel-objects-boolean}}
-\caption{The system browser showing the definition of class Boolean.
+\caption{The browser showing the definition of class Boolean.
 \label{fig:browseBoolean}}
 \end{figure}
 
@@ -467,21 +468,9 @@ If you \click on the \button{?} at the bottom of the class pane, you can see the
 \label{fig:classComment}}
 \end{figure}
 
-%\ab{I thought that this was supposed to be a \emph{Quick} tour!  And here we are describing a tool that I have used maybe twice in 10 years!   In any case, this description should be deferred to the \textbf{Environment} chapter}
-%\on{I don't see why.  I use the hierarchy browser a lot!  I think it is really useful to know from the beginning, to help you find your through the hierarchy.}
-%If you would like to explore \pharo's inheritance hierarchy, the \emphind{hierarchy browser} can help you.  
-%This can be useful if you are looking for an unknown subclass or superclass of a known class.
-%The hierarchy browser is like the system browser, except that the list of classes is arranged as an indented tree mirroring the inheritance hierarchy.
-
-%\dothis{Click on \button{hierarchy} in the browser while the class \ct{Boolean} is selected.}
-%\noindent
-%This will open a hierarchy browser showing the superclasses and subclasses of \clsind{Boolean}.
-%% (\figref{booleanhierarchybrowser}).
-%Navigate to the immediate superclass and subclasses of \ct{Boolean}.
-
 Often, the fastest way to find a class is to search for it by name.  For example, suppose that you are looking for some unknown class that represents dates and times.
 
-\dothis{Put the mouse in the system category pane of the system browser and type \short{f}, or select \menu{find class \ldots (f)} by \actclick{ing}.  Type ``time'' in the dialog box and accept it.} 
+\dothis{Put the mouse in the package pane of the browser and type \short{f}, or select \menu{find class \ldots (f)} by \actclick{ing}.  Type ``time'' in the dialog box and accept it.} 
 \noindent
 You will be presented with a list of classes whose names contain ``time'' (see \figref{findit}).  Choose one, say, \ct{Time}, and the browser will show it, along with a class comment that suggests other classes that might be useful.  If you want to browse one of the others, select its name (in any text pane), and type \short{b}.
 \index{keyboard shortcut!find ...}
@@ -505,7 +494,7 @@ Note that if you type the complete (and correctly capitalized) name of a class i
 
 Sometimes you can guess the name of a method, or at least part of the name of a method, more easily than the name of a class.  For example, if you are interested in the current time, you might expect that there would be a method called ``now'', or containing ``now'' as a substring.   But where might it be?
 The \emphind{method finder} can help you.
-\seeindex{system browser!finding methods}{method, finding}
+\seeindex{browser!finding methods}{method, finding}
 \index{method!finding}
 
 \dothis{Select \menu{World \go Tools ... \go Method finder}.
@@ -622,7 +611,7 @@ This can be quite useful if you have merely made a typing mistake, but in this c
 
 \dothis{Run your newly created test: open the \ind{SUnit} \emphind{TestRunner} from the \menu{World} menu.}
 
-The leftmost two panes are a bit like the top panes in the system browser.  The left pane contains a list of system categories, but it's restricted to those categories that contain test classes.
+The leftmost two panes are a bit like the top panes in the browser.  The left pane contains a list of categories, but it's restricted to those categories that contain test classes.
 
 \dothis{Select \scat{CollectionsTests-Text} and the pane to the right will show all of the test classes in that category, which includes the class \ct{StringTest}.  The names of the classes are already selected, so \click \menu{Run Selected} to run all these tests.}
 
@@ -657,7 +646,7 @@ Note that often with Smalltalk you can define the missing method using the \butt
 
 Now let's define the method that will make the test succeed!
 
-\dothis{Select class \clsind{String} in the system browser, select the \menu{converting} protocol, type the text in \mthref{shout} over the method creation template, and \menu{accept} it.
+\dothis{Select class \clsind{String} in the browser, select the \menu{converting} protocol, type the text in \mthref{shout} over the method creation template, and \menu{accept} it.
 (Note: to get a \mbox{\ct{^}}, type \caret). }
 \begin{method}[shout]{The shout method}
 shout
@@ -689,7 +678,7 @@ So do that right now!
 
 %=================================================================
 \section{Chapter summary}
-This chapter has introduced you to the \pharo environment and shown you how to use some of the major tools, such as the system browser, the method finder, and the test runner.   You have also seen a little of \pharo's syntax, even though you may not understand it all yet.
+This chapter has introduced you to the \pharo environment and shown you how to use some of the major tools, such as the browser, the method finder, and the test runner.   You have also seen a little of \pharo's syntax, even though you may not understand it all yet.
 
 \begin{itemize}
   \item A running \pharo system consists of a \emph{virtual machine}, a \emph{sources} file, and \emph{image} and \emph{changes} files. Only these last two change, as they record a snapshot of the running system.
@@ -699,7 +688,7 @@ This chapter has introduced you to the \pharo environment and shown you how to u
   \item A \emph{workspace} is a tool for writing and evaluating snippets of code. You can also use it to store arbitrary text.
   \item You can use \ind{keyboard shortcuts} on text in the workspace, or any other tool, to evaluate code. The most important of these are \menu{do it} (\short{d}), \menu{print it} (\short{p}), \menu{inspect it} (\short{i}), \menu{explore it} (\short{I}) and \menu{browse it} (\short{b}).
   \item \sqmap is a tool for loading useful packages from the Internet.
-  \item The \emph{system browser} is the main tool for browsing \pharo code, and for developing new code.
+  \item The \emph{browser} is the main tool for browsing \pharo code, and for developing new code.
   \item The \emph{test runner} is a tool for running unit tests. It also supports Test Driven Development.
 \end{itemize}
 

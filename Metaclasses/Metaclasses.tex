@@ -78,7 +78,7 @@ The class of a class is called a \emph{metaclass}.
 \label{sec:metaclassIntro}
 A \indmain{metaclass} is created automatically for you whenever you create a class.
 Most of the time you do not need to care or think about metaclasses.
-However, every time that you use the system browser to browse the ``\subind{system browser}{class side}'' of a class, it is helpful to recall that you are actually browsing a different class.
+However, every time that you use the browser to browse the ``\subind{browser}{class side}'' of a class, it is helpful to recall that you are actually browsing a different class.
 A class and its metaclass are two separate classes, even though the former is an instance of the latter. 
 
 To properly explain classes and metaclasses, we need to extend the rules from \charef{model} with the following additional rules.
@@ -257,7 +257,7 @@ It is interesting to step back a moment and realize that there is no difference 
 In both cases the search for the corresponding method starts in the class of the receiver, and proceeds up the inheritance chain.
 
 Thus, messages sent to classes must follow the metaclass inheritance chain.
-Consider, for example, the method \mthind{Color class}{blue}, which is implemented on the \subind{system browser}{class side} of \ct{Color}.
+Consider, for example, the method \mthind{Color class}{blue}, which is implemented on the \subind{browser}{class side} of \ct{Color}.
 If we send the message \ct{blue} to \ct{TranslucentColor}, then it will be looked-up the same way as any other message.
 The lookup starts in \ct{TranslucentColor class}, and proceeds up the metaclass hierarchy until it is found in \ct{Color class} (see \figref{metaclasslookup}).
 

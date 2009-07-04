@@ -200,14 +200,14 @@ However, this is largely irrelevant to you as a programmer: you are concerned wi
 \end{center}
 \end{figure}
 
-For this reason, the browser \index{system browser} helps you to browse both class and metaclass as if they were a single thing with two ``sides'': the ``\subind{system browser}{instance side}'' and the ``\subind{system browser}{class side}'', as shown in \figref{Buttons}. Clicking 
+For this reason, the browser \index{browser} helps you to browse both class and metaclass as if they were a single thing with two ``sides'': the ``\subind{browser}{instance side}'' and the ``\subind{browser}{class side}'', as shown in \figref{Buttons}. Clicking 
 on the \button{instance} button browses the class \ct{Color}, \ie you browse the methods that are executed when messages
 are sent to an instance of \ct{Color}, like the blue color. Pressing the \button{class} button browses the class \ct{Color class}, \ie you see
 the methods that will be executed when messages are sent to the class \ct{Color} itself.
 For example, \ct{Color blue} sends the message \ct{blue} to the class \clsind{Color}.
 You will therefore find the method \ct{blue} defined on the class side of \ct{Color}, not on the instance side.
-\seeindex{class side}{system browser!class side}
-\seeindex{instance side}{system browser!instance side}
+\seeindex{class side}{browser!class side}
+\seeindex{instance side}{browser!instance side}
 
 \needlines{5}
 \begin{code}{@TEST | aColor |}
@@ -217,7 +217,7 @@ aColor red  --> 0.0         "Instance side accessor method red"
 aColor blue --> 1.0        "Instance side accessor method blue"
 \end{code}
 
-You define a class by filling in the template proposed on the \subind{system browser}{instance side}.
+You define a class by filling in the template proposed on the \subind{browser}{instance side}.
 When you accept this template, the system creates not just the class that you defined, but also the corresponding metaclass.
 You can browse the metaclass by clicking on the \button{class} button.
 The only part of the metaclass creation template that makes sense for you to edit directly is the list of instance variable names.
@@ -233,7 +233,7 @@ You will see that there are two kinds of \subind{class}{method} defined on a cla
 \cmind{Color class}{showColorCube}.
 This is typical, although you will occasionally find class methods used in other ways.
 
-It is convenient to place utility methods on the \subind{system browser}{class side} because they can be executed without having to create any additional objects first.
+It is convenient to place utility methods on the \subind{browser}{class side} because they can be executed without having to create any additional objects first.
 Indeed, many of them will contain a comment designed to make it easy to execute them.
 
 \dothis{Browse method \ct{Color class>>>showColorCube}, double-click just inside the quotes on the comment \ct{"Color showColorCube"} and type \short{d}.}
@@ -306,7 +306,7 @@ Since classes and their instances are different objects,
 this has the following immediate consequences:
 \important{A class does not have access to the instance variables of its own instances.}
 \important{An instance of a class does not have access to the class instance variables of its class.}
-For this reason, instance initialization methods must always be defined on the \subind{system browser}{instance side}\,---\,the \subind{system browser}{class side} has no access to instance variables, so cannot initialize them!  
+For this reason, instance initialization methods must always be defined on the \subind{browser}{instance side}\,---\,the \subind{browser}{class side} has no access to instance variables, so cannot initialize them!  
 All that the class can do is to send \ind{initialization} messages, possibly using accessors, to newly created instances.
 
 Similarly, instances can only access class instance variables indirectly, by sending accessor messages to their class.
@@ -328,7 +328,7 @@ Object subclass: #WebServer
 	category: 'Web'
 \end{classdef}
 
-Then, clicking on the \button{class} button, we add the instance variable \ct{uniqueInstance} to the \subind{system browser}{class side}.
+Then, clicking on the \button{class} button, we add the instance variable \ct{uniqueInstance} to the \subind{browser}{class side}.
 
 \begin{classdef}[webserver]{The class side of the singleton class}
 WebServer class 	
@@ -961,7 +961,7 @@ Color class>>>initialize
 
 \noindent
 If you adopt this solution, you need to remember to invoke the \ct{initialize} method after you define it, \eg by evaluating \ct{Color initialize}.
-Although \subind{system browser}{class side} \ct{initialize} methods are executed automatically when code is loaded into memory, they are \emph{not} executed automatically when they are first typed into the browser and compiled, or when they are edited and re-compiled.
+Although \subind{browser}{class side} \ct{initialize} methods are executed automatically when code is loaded into memory, they are \emph{not} executed automatically when they are first typed into the browser and compiled, or when they are edited and re-compiled.
 
 %---------------------------------------------------------
 \subsection{Pool variables}
