@@ -52,8 +52,8 @@ The new way of doing this in \pharo is to upload your code to a versioned reposi
 \seeindex{change set}{file, filing out}
 \index{file!filing out}
 
-Finally, you may find a bug in \pharo as you work; we explain how to report bugs, and how to submit bug fixes.
-\ab{Or I would, if I knew how.   We should do this, or remove the paragraph.}
+%Finally, you may find a bug in \pharo as you work; we explain how to report bugs, and how to submit bug fixes.
+%\ab{Or I would, if I knew how.   We should do this, or remove the paragraph.}
 
 %=========================================================
 \section{Overview}
@@ -61,8 +61,7 @@ Finally, you may find a bug in \pharo as you work; we explain how to report bugs
 
 Smalltalk and modern graphical interfaces were developed together.
 Even before the first public release of Smalltalk in 1983, Smalltalk had a self-hosting graphical development environment, and all Smalltalk development was taking place in it.
-Lets start by looking at the main tools in \pharo, all of which can be dragged out of the \toolsflapind in the \sbe image (see \secref{sbeImage}).
-Depending on your personal settings, the \toolsflap{} can be opened by mousing over or clicking on the orange tab on the right-hand edge of \pharo's main window.
+Let's start by looking at the main tools in \pharo.
 
 \begin{itemize}
 	\item {The \menu{Browser}} is the central development tool. You will use it to create, define, and organize your classes and methods. Using it you can also navigate through all the library classes: unlike other environments where the source code is stored in separate files, in Smalltalk all classes and methods are contained in the image.
@@ -90,7 +89,7 @@ Depending on your personal settings, the \toolsflap{} can be opened by mousing o
 	executing them as \menu{do it}s. The use of the \ind{workspace} was also illustrated in \secref{transcript}.
 \end{itemize}
 
-The \menu{Debugger} has an obvious role, but you will discover that it has a more central place compared to debuggers for other programming languages, because in Smalltalk you can \emph{program} in the \ind{debugger}.  The debugger is not launched from a menu or from the \toolsflap; it is normally entered by running a failing test, by typing \short{\textbf{.}} to interrupt a running process, or by inserting a \ct{self halt} expression in code.
+The \menu{Debugger} has an obvious role, but you will discover that it has a more central place compared to debuggers for other programming languages, because in Smalltalk you can \emph{program} in the \ind{debugger}.  The debugger is not launched from a menu; it is normally entered by running a failing test, by typing \short{\textbf{.}} to interrupt a running process, or by inserting a \ct{self halt} expression in code.
 \index{process!interrupting}
 
 %=========================================================
@@ -98,9 +97,9 @@ The \menu{Debugger} has an obvious role, but you will discover that it has a mor
 \label{sec:browser} % (fold)
 %apb: what does the fold comment mean?
 
-There are actually several browsers in \pharo: the standard system browser, the package browser, the Omnibrowser, and the Refactoring Browser. 
+There are actually several browsers in \pharo: the standard system browser, the package browser, the Omnibrowser, and the Refactoring Browser. \fix
 We will take a look at the standard \ind{system browser} first, since the others are variations on it.
-\figref{SystemBrowser0} shows the browser as it appears when you first drag it out of the \toolsflapind.\footnote{If the browser you see looks different from the one we describe, then you might be using an image with a different default browser installed. See \faqref{omnibrowser}.}
+\figref{SystemBrowser0} shows the browser as it appears when you first open it.
 
 \begin{figure}[htbp]
    \centering
@@ -1076,7 +1075,7 @@ The process browser is not equipped with mini-inspectors for \self and \lct{this
 \section{Finding methods}
 \label{sec:methodFinder} 
 
-There are two tools in \pharo to help you find messages; both can be dragged out of the \toolsflapind.
+There are two tools in \pharo to help you find messages.
 They differ in both interface and functionality.
 
 The \emph{method finder} was described at some length in \secref{quick:methodFinder}; you can use it to find methods by name or by functionality. 
@@ -1122,7 +1121,7 @@ However, arbitrary \emph{doits} are not included, so if, for example, you create
 \end{figure}
 
 At any time, many change sets exist, but only one of them\,---\,\ct{ChangeSet current}\,---\,is collecting the changes that are being made to the image.  
-You can see which change set is current and can examine all of the change sets using the  change set browser, available from \menu{World\go{}open...\go{}simple change sorter} or by dragging the \menu{Change Set} icon out of the \toolsflapind.
+You can see which change set is current and can examine all of the change sets using the  change set browser, available from \menu{World\go{}open...\go{}simple change sorter}. \fix
 
 \figref{changeSetBrowser} shows this browser.  The title bar shows which change set is current, and this change set is selected when the  browser opens. 
 
@@ -1131,7 +1130,7 @@ The top-right pane lists all of the classes affected by the selected change set 
 Selecting one of the classes displays the names of those of its methods that are also in the change set (\emph{not} all of the methods in the class) in the central pane, and selecting a method name displays the method definition in the bottom pane.
 Note that the browser does \emph{not} show you whether the creation of the class itself is part of the change set, although this information is stored in the object structure that is used to represent the change set.
 
-The change set browser also lets you delete classes and methods from the change set using the yellow button menu on the corresponding items.  However, for more elaborate editing of change sets, you should use a second tool, the \textit{change sorter}, available under that name in the \toolsflap or by selecting \menu{World\go{}open...\go{}dual change sorter}, which is shown in \figref{changeSorter}.
+The change set browser also lets you delete classes and methods from the change set using the yellow button menu on the corresponding items.  However, for more elaborate editing of change sets, you should use a second tool, the \textit{change sorter}, available by selecting \menu{World\go{}open...\go{}dual change sorter}, which is shown in \figref{changeSorter}.
 
 \begin{figure}[btp]
 	\begin{center}
@@ -1190,7 +1189,7 @@ This requires the use of another tool, the file list browser.
 \end{figure}
 
 The \ind{file list browser} is in fact a general-purpose tool for browsing the file system (and also FTP servers) from \pharo. 
-You can open it from the \menu{World\go{}open...\go{}file list} menu, or drag it from the \toolsflapind.
+You can open it from the \menu{World\go{}open...\go{}file list} menu.
 What you see of course depends on the contents of your local file system, but a typical view is shown in \figref{fileList}.
 \seeindex{file!browsing}{file list browser}
 

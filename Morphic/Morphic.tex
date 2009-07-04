@@ -173,10 +173,9 @@ It is possible to embed more morphs inside joe.
 In addition to doing this programmatically, you can also embed morphs by direct manipulation.
 
 \dothis{From the world menu select ``objects'' and click on the button labeled ``Graphics''.
-% If you don't have a \menu{Supplies} flap at the bottom of your screen, execute \ct{Flaps enableGlobalFlaps} to create one.  
-Drag an ellipse and a star from the \menu{Supplies} flap.  Place the star over the ellipse, and yellow-click the star to bring up a menu\footnote{You can also blue-click the star to bring up the morphic halo, and then click the red menu handle.}.   Select \menu{embed into \go Ellipse}.  Now the star and the ellipse move together.}
-
-%\dothis{If you don't have a \menu{Supplies} flap at the bottom of your screen, execute \ct{Flaps enableGlobalFlaps} to create one.  Drag a yellow ellipse and a white star from the \menu{Supplies} flap.  Place the star over the ellipse, and yellow-click the star to bring up a menu\footnote{You can also blue-click the star to bring up the morphic halo, and then click the red menu handle.}.   Select \menu{embed into \go Ellipse}.  Now the star and the ellipse move together.}
+\fix
+Drag an ellipse and a star from the \menu{Supplies} flap. \on{No flap anymore!}
+Place the star over the ellipse, and yellow-click the star to bring up a menu\footnote{You can also blue-click the star to bring up the morphic halo, and then click the red menu handle.}.   Select \menu{embed into \go Ellipse}.  Now the star and the ellipse move together.}
 
 To remove a sub-morph, do \ct{joe} \mthind{Morph}{removeMorph:} \ct{star} or \ct{star} \mthind{Morph}{delete}.  This can also be done by direct manipulation:
 

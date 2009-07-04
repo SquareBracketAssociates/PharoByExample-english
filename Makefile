@@ -76,6 +76,10 @@ fun :
 # --------------------------------------------------------------------------------
 # MAINTENANCE
 
+# To do items are tags that look like this "%:===> ...."
+todo :
+	fgrep '%:=' *.tex */*.tex
+
 # report tex files missing HISTORY
 history :
 	find . -name \*.tex | \
