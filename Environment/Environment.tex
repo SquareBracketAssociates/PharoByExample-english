@@ -140,10 +140,10 @@ If you select class \menu{Model},  protocol \protind{dependents} and the method 
 \end{figure}
 
 Unlike directories in the Mac OS X \emph{Finder}, the four top panes of the browser are not quite equal.  
-Whereas classes and methods are part of the Smalltalk language, categories and message protocols are not: they are a convenience introduced by the browser to limit the amount of information that needs to be shown in each pane.  For example, if there were no protocols, the browser would have to show a list of all of the methods in the selected class; for many classes this list would be too large to navigate conveniently.  
+Whereas classes and methods are part of the Smalltalk language, packages and protocols are not: they are a convenience introduced by the browser to limit the amount of information that needs to be shown in each pane.  For example, if there were no protocols, the browser would have to show a list of all of the methods in the selected class; for many classes this list would be too large to navigate conveniently.  
 \index{Mac OS X Finder}
 
-Because of this, the way that you create a new category or a new protocol is different from the way that you create a new class or a new method.  To create a new category, select \menu{new category} from the \ind{yellow button} menu in the category pane; to create a new protocol, select \menu{new protocol} from the yellow button menu in the protocol pane. 
+Because of this, the way that you create a new package or a new protocol is different from the way that you create a new class or a new method.  To create a new package, \actclick in the package pane and select \menu{new package}; to create a new protocol, \actclick in the protocol pane and select \menu{new protocol}.
 Enter the name of the new thing in the dialog, and you are done: there is nothing more to a category or a protocol than its name and its contents.
 \index{category!creating}
 
@@ -169,7 +169,7 @@ them.  The category for the new class is by default the currently
 selected category, but you can change this too if you like.  If you
 already have the browser focussed on the class that you wish to
 subclass, you can get the same template with slightly different
-initialization by using the yellow button menu in the class pane, and
+initialization by \actclick{ing} in the class pane, and
 selecting \menu{more \ldots \go subclass template}.  You can also just
 edit the definition of an existing class, changing the class name to
 something new.  In all cases, when you accept the new definition, the
@@ -229,7 +229,7 @@ The \button{senders} button will give you a list of all methods that may use the
 \end{figure}
 
 \index{browser!implementors button}
-The \button{implementors} button works in a similar way, but instead of listing the senders of a message, it lists all of the classes that implement a method with the same selector. To see this, select \lct{drawOn:} in the message pane and then bring up the ``implementors of drawOn:'' browser, either using the \button{implementors} button, or the \ind{yellow button} menu on the method pane, or just by typing \short{m} (for {i\textbf{m}ple\textbf{m}entors}) in the method pane with \menu{drawOn:} selected.  You should get a method list window showing a scrolling list of 96 classes that implement a \ct{drawOn:} method.
+The \button{implementors} button works in a similar way, but instead of listing the senders of a message, it lists all of the classes that implement a method with the same selector. To see this, select \lct{drawOn:} in the message pane and then bring up the ``implementors of drawOn:'' browser, either using the \button{implementors} button, or \actclick{ing} in the method pane, or just by typing \short{m} (for {i\textbf{m}ple\textbf{m}entors}) in the method pane with \menu{drawOn:} selected.  You should get a method list window showing a scrolling list of 96 classes that implement a \ct{drawOn:} method.
 It shouldn't be all that surprising that so many classes implement this method: \ct{drawOn:} is the message that is understood by every object that is capable of drawing itself on the screen.  While viewing any one of these methods, try browsing the senders of the \ct{drawOn:} message:  we found 63 methods that send this message.  You can also bring up an implementors browser at any time by selecting a message (including the arguments if it is a keyword message) and typing \short{m}.
 
 %The \menu{senders} button lists \emph{all} the methods that send the chosen message: not all of these message sends will necessarily be able to cause the execution of any particular method with the same selector.
@@ -278,7 +278,7 @@ The existence of the \ind{versions browser} means that you never have to worry a
 Get into the habit of using versions;  ``commenting out'' code that is no longer needed is a bad practice because it makes the current code harder to read.
 Smalltalkers rate code readability extremely highly.
 
-\hint{What if you delete a method entirely, and then decide that you want it back?  You can find the deletion in a change set, where you can ask to see versions with the \ind{yellow button} menu.
+\hint{What if you delete a method entirely, and then decide that you want it back?  You can find the deletion in a change set, where you can ask to see versions by \actclick{ing}.
 The change set browser is described in \secref{env:changeSet}}
 
 \subsubsection{Method overridings}
@@ -357,11 +357,11 @@ In \figref{hierarchyBrowser}, the hierarchy browser reveals that the direct supe
 
 \index{browser!inst vars button}
 \index{browser!class vars button}
-The \button{inst vars} and \button{class vars} buttons help you find where an instance variable or a class variable is used; the same information is accessible from the \ind{yellow button} menu items \menu{inst var refs} and \menu{class var refs} in the class pane.  
+The \button{inst vars} and \button{class vars} buttons help you find where an instance variable or a class variable is used; the same information is accessible by \actclick{ing} in the class pane and selecting\menu{inst var refs} and \menu{class var refs}.
 The menu also includes \menu{inst var defs}, which shows the subset of the instance variable references that assign to the variable. 
 Once you click on the button or select the menu item, you will be presented with a dialog that invites you to choose a variable from all of the variables defined in the current class, and all of the variables that it inherits.  The list is in inheritance order; it can often be useful to bring up this list just to remind yourself of the name of an instance variable.  If you click outside the list, it will go away and no variable browser will be created.
 
-Also available from the yellow button menu on the class pane is \menu{class vars}, which opens an inspector showing the class variables of the current class \emph{and their values}, and \menu{class refs (N)} which displays a list of all of the methods that directly reference the current class.
+Also available by \actclick{ing} the class pane is \menu{class vars}, which opens an inspector showing the class variables of the current class \emph{and their values}, and \menu{class refs (N)} which displays a list of all of the methods that directly reference the current class.
 
 \subsubsection{Source}
 \label{sec:sources}
@@ -383,14 +383,13 @@ In fact, focussing two browsers on the same method and selecting \menu{byteCodes
 Did you notice the small \button{R} at the end of the button bar? \fix
 Although unobtrusive, this button gives access to one of the most powerful and important features of the Smalltalk environment.  
 Clicking on \button{R} gives you access to a hierarchy of menus for refactoring your code.  
-The same refactoring engine is also available in several other ways, for example, through the \ind{yellow button} menu in the class, method and code panes.
+The same refactoring engine is also available in several other ways, for example, by \actclick{ing} in the class, method and code panes.
 Refactoring was formerly available only in a special browser called the refactoring browser, but it can now be accessed from any browser.
 
 %---------------------------------------------------------
 \subsection{The browser menus}
 
-Many additional functions are available from the browser's yellow button menu.  
-Since yellow button menus are context-sensitive,  each pane in the browser has its own menu.  
+Many additional functions are available by \actclick{ing} in the browser panes..  
 Even if the labels on the menu items are the same, their \emph{meaning} is context dependent.  
 For example, the category pane, the class pane, the protocol pane and the messages pane all have a \menu{file out} menu item.  However, they do different things: the category pane's \menu{file out} menu files out the whole category, the class pane's \menu{file out} menu files-out the whole class, the protocol pane's \menu{file out} menu files out the whole protocol, and the method pane's \menu{file out} menu files-out just the displayed method.
 Although this may seem obvious, it can be a source of confusion for beginners. 
@@ -682,7 +681,7 @@ You can of course save the new version to the repository too; once you \button{R
 
 To save the new package to a repository other than the package cache, you need to first make sure that Monticello knows about the repository, adding it if necessary.  
 Then you can use the \button{Copy} in the package-cache repository browser, and select the repository to which the package should be copied.  
-You can also associate the desired repository with the package by using the \ind{yellow button} menu item \menu{add to package...} on the repository, as shown in \figref{associateRepository}.  
+You can also associate the desired repository with the package by \actclick{ing} on the repository and selecting \menu{add to package...}, as shown in \figref{associateRepository}.  
 Once the package knows about a repository, you can save a new version by selecting the repository and the package in the Monticello Browser, and clicking \button{Save}.  
 Of course, you must have permission to write to a repository.  
 The \ct{PharoByExample} repository on \emphind{\sqsrc} is world readable but not world writable, so if you try and save there, you will see an error message.  
@@ -698,7 +697,7 @@ This is especially useful as a mechanism to share your code with friends, or if 
 \end{figure}
 
 If you do try and save to a repository where you don't have write permission, a version will nevertheless be written to the package-cache.  
-So you can recover by editing the repository information (\ind{yellow button} menu in the Monticello Browser) or choosing a different repository, and then using \button{Copy} from the package-cache browser.
+So you can recover by editing the repository information (\actclick in the Monticello Browser) or choosing a different repository, and then using \button{Copy} from the package-cache browser.
 
 %=========================================================
 \section{The Inspector and the Explorer}
@@ -711,7 +710,7 @@ By all means experiment, but save your image first!
 %---------------------------------------------------------
 \subsection{The Inspector}
 
-\dothis{As an illustration of what you can do with an \ind{inspector}, type  \ct{TimeStamp now} in a workspace, and then choose \menu{inspect it} from the \ind{yellow button} menu.} 
+\dothis{As an illustration of what you can do with an \ind{inspector}, type  \ct{TimeStamp now} in a workspace, and then \actclick and choose \menu{inspect it}.} 
 (It's not necessary to select the text before using the menu; if no text is selected, the menu operations work on the whole of the current line.
 You can also type \short{i} for \menu{\textbf{i}nspect it}.)
 \clsindex{TimeStamp}
@@ -778,7 +777,7 @@ There are special variants of the inspector for Dictionaries, OrderedCollections
 The \emph{object explorer} is conceptually similar to the inspector, but presents its information in a different way.
 To see the difference, we'll \emph{explore} the same object that we were just inspecting.
 
-\dothis{Select \menu{self} in the inspector's left-hand pane,  and choose \menu{explore (I)} from the \ind{yellow button} menu.}
+\dothis{Select \menu{self} in the inspector's left-hand pane, then \actclick and choose \menu{explore (I)}.}
 The \ind{explorer} window looks like \figref{exploreTimeStampNow}.
 If you click on the small triangle next to \ct{root}, the view will change to \figref{exploreTimeStampNow2}, which shows the instance variables of object that you are exploring.
 Click on the triangle next to \ct{offset}, and you will see \emph{its} instance variables.  
@@ -796,7 +795,6 @@ To see the value of the explorer, let's use it to explore a deeply-nested struct
 Click on the \emph{debug} handle \debugHandle{} and select \menu{explore morph}
 from the menu that appears.  This will open an Explorer on the \clsind{PluggableListMorph} object that represents the method list on the screen.  
 Open the root object (by clicking in its triangle), open its \ct{submorphs}, and continue exploring the structure of the objects that underlie this Morph, as shown in \figref{explorePluggableListMorph}.}
-\index{red button}
 
 \begin{figure}[tbp]
 	\begin{center}
@@ -887,7 +885,7 @@ In \figref{debuggerDetectIfNone},
 This will tell you that \ct{exceptionBlock} is \ct{[self errorNotFound: ...]}.
 So, it is not surprising that we see the corresponding error message.}
 
-Incidentally, if you want to open a full inspector or explorer on one of the variables shown in the mini-inspectors, just double-click on the name of the variable, or select the name of the variable and choose \menu{inspect (i)} or \menu{explore (I)} from the yellow button menu.  
+Incidentally, if you want to open a full inspector or explorer on one of the variables shown in the mini-inspectors, just double-click on the name of the variable, or select the name of the variable and \actclick to choose \menu{inspect (i)} or \menu{explore (I)}.
 This can be useful if you want to watch how a variable changes while you execute other code. 
 \index{keyboard shortcut!inspect it}
 \index{keyboard shortcut!explore it}
@@ -1063,11 +1061,11 @@ The process \subind{process}{browser} is a cousin of the debugger that lets you 
 \figref{processBrowser} shows a screenshot.
 The top-left pane lists all of the processes in \pharo, in priority order, from the timer interrupt watcher at priority 80 to the idle process at priority 10.
 Of course, on a uniprocessor, the only process that can be running when you look is the UI process; all of the other will be waiting for some kind of event. 
-By default, the display of processes is static; it can be updated using the \ind{yellow button} menu, which also provides an option to \menu{turn on auto-update (a)}
+By default, the display of processes is static; it can be updated by \actclick{ing} and selecting \menu{turn on auto-update (a)}
 
 If you select a process in the top-left pane, its stack trace is displayed in the top-right pane, just as with the debugger.
 If you select a stack frame, the corresponding method is displayed in the bottom pane.
-The process browser is not equipped with mini-inspectors for \self and \lct{thisContext}, but yellow button menu items on the stack frames provide equivalent functionality.
+The process browser is not equipped with mini-inspectors for \self and \lct{thisContext}, but \actclick{ing} on the stack frames provide equivalent functionality.
 
 \ab{I don't know what else to say about this; I've never used it.  Can someone add a scenario in which it is useful?}
 
@@ -1127,12 +1125,12 @@ You can see which change set is current and can examine all of the change sets u
 
 \figref{changeSetBrowser} shows this browser.  The title bar shows which change set is current, and this change set is selected when the  browser opens. 
 
-Other change sets can be selected in the top-left pane; the \ind{yellow button} menu allows you to make a different change set current, or to create a new change set.
+Other change sets can be selected in the top-left pane; the \actclick menu allows you to make a different change set current, or to create a new change set.
 The top-right pane lists all of the classes affected by the selected change set (with their categories).
 Selecting one of the classes displays the names of those of its methods that are also in the change set (\emph{not} all of the methods in the class) in the central pane, and selecting a method name displays the method definition in the bottom pane.
 Note that the browser does \emph{not} show you whether the creation of the class itself is part of the change set, although this information is stored in the object structure that is used to represent the change set.
 
-The change set browser also lets you delete classes and methods from the change set using the yellow button menu on the corresponding items.  However, for more elaborate editing of change sets, you should use a second tool, the \textit{change sorter}, available by selecting \menu{World\go{}open...\go{}dual change sorter}, which is shown in \figref{changeSorter}.
+The change set browser also lets you delete classes and methods from the change set using the \actclick menu on the corresponding items.  However, for more elaborate editing of change sets, you should use a second tool, the \textit{change sorter}, available by selecting \menu{World\go{}open...\go{}dual change sorter}, which is shown in \figref{changeSorter}.
 
 \begin{figure}[btp]
 	\begin{center}
@@ -1143,12 +1141,12 @@ The change set browser also lets you delete classes and methods from the change 
 \end{figure}
 
 The change sorter is essentially two change set browsers side by side; each side can focus on a different change set, class, or method.
-This layout supports the change sorter's main feature, which is the ability to move or copy changes from one change set to another, as shown by the \ind{yellow button} menu in \figref{changeSorter}.
+This layout supports the change sorter's main feature, which is the ability to move or copy changes from one change set to another, as shown by the \actclick menu in \figref{changeSorter}.
 It is also possible to copy individual methods from one side to the other.
 
 You may be wondering why you should care about the composition of a change set.
 the answer is that change sets provide a simple mechanism for exporting code from \pharo to the file system, from where it can be imported into another \pharo image, or into another non-\pharo \st.
-Change set export is known as ``filing-out'', and can be accomplished using the yellow button menu on any change set, class or method in either browser.
+Change set export is known as ``filing-out'', and can be accomplished using the \actclick menu on any change set, class or method in either browser.
 Repeated file outs create new versions of the file, but change sets are not a versioning tool like Monticello:
 they do not keep track of dependencies.
 \index{file!filing out}
@@ -1220,7 +1218,7 @@ Instead it just checks for potential problems in the file that might indicate th
 \end{figure}
 
 Because the choice of buttons to display depends on the file's \emph{name}, and not on its contents, sometimes the button that you want won't be on the screen.  
-However, the full set of options is always available from the \ind{yellow button} \menu{more...} menu, so
+However, the full set of options is always available from the \actclick \menu{more...} menu, so
 you can easily work around this problem.
 
 The \button{code} button is perhaps the most useful for working with change sets; it opens a browser on the contents of the change set file; an example is shown in \figref{fileContentsBrowser}.
@@ -1268,7 +1266,7 @@ If you execute \ct{ChangeList browseRecentLog}, you will be given the opportunit
 Normally, it's sufficient to browse changes as far back as the last snapshot. (You can get much the same effect by editing \ct{ChangeList browseRecent: 2000} so that the number \ct{2000} becomes something else, using trial and error.)
 
 One you have a \emph{recent changes} browser, showing, say, changes back as far as your last snapshot, you will have a list of everything that you have done to \pharo during that time. 
-You can delete items from this list using the \ind{yellow button} menu.
+You can delete items from this list using the \actclick menu.
 When you are satisfied, you can file-in what is left, thus incorporating the changes into your new image.
 It's a good idea to start a new change set, using the ordinary change set browser, before you do the file in, so that all of your recovered code will be in a new change set. 
 You can then file out this change set.
