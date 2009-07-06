@@ -1069,33 +1069,10 @@ As with the browser, the message names browser has a button bar that can be used
 Whenever you are working in \pharo, any changes that you make to methods and classes are recorded in a \ct{change set}.
 This includes creating new classes, re-naming classes, changing categories, adding methods to existing classes\,---\,just about everything of significance.  
 However, arbitrary \emph{doits} are not included, so if, for example, you create a new global variable by assigning to it in a workspace, the variable creation will not make it into a \subind{file}{change set}.
-\index{change set browser}
-
-%:===> HERE <===
-\on{the simple change set browser is gone (hidden) --- just describe the sorter}
-
-
-\begin{figure}[btp]
-	\begin{center}
-	\ifluluelse
-		{\includegraphics [width=\textwidth]{changeSetBrowser}}
-		{\includegraphics[width=0.7\textwidth]{changeSetBrowser}}
-	\end{center}
-	\caption{The Change Set Browser}
-	\label{fig:changeSetBrowser}
-\end{figure}
+\index{change sorter}
 
 At any time, many change sets exist, but only one of them\,---\,\ct{ChangeSet current}\,---\,is collecting the changes that are being made to the image.  
-You can see which change set is current and can examine all of the change sets using the  change set browser, available from \menu{World \go Tools \ldots \go Change Sorter}.
-
-\figref{changeSetBrowser} shows this browser.  The title bar shows which change set is current, and this change set is selected when the  browser opens. 
-
-Other change sets can be selected in the top-left pane; the \actclick menu allows you to make a different change set current, or to create a new change set.
-The top-right pane lists all of the classes affected by the selected change set (with their categories).
-Selecting one of the classes displays the names of those of its methods that are also in the change set (\emph{not} all of the methods in the class) in the central pane, and selecting a method name displays the method definition in the bottom pane.
-Note that the browser does \emph{not} show you whether the creation of the class itself is part of the change set, although this information is stored in the object structure that is used to represent the change set.
-
-The change set browser also lets you delete classes and methods from the change set using the \actclick menu on the corresponding items.  However, for more elaborate editing of change sets, you should use a second tool, the \textit{change sorter}, available by selecting \menu{World\go{}open \ldots \go{}dual change sorter}, which is shown in \figref{changeSorter}.
+You can see which change set is current and can examine all of the change sets using the  change sorter, available by selecting \menu{World \go Tools \ldots \go Change Sorter}.
 
 \begin{figure}[btp]
 	\begin{center}
@@ -1105,7 +1082,18 @@ The change set browser also lets you delete classes and methods from the change 
 	\label{fig:changeSorter}
 \end{figure}
 
-The change sorter is essentially two change set browsers side by side; each side can focus on a different change set, class, or method.
+\figref{changeSorter} shows this browser.  The title bar shows which change set is current, and this change set is selected when the change sorter opens. 
+
+Other change sets can be selected in the top-left pane; the \actclick menu allows you to make a different change set current, or to create a new change set.
+The next pane lists all of the classes affected by the selected change set (with their categories).
+Selecting one of the classes displays the names of those of its methods that are also in the change set (\emph{not} all of the methods in the class) in the left central pane, and selecting a method name displays the method definition in the bottom pane.
+Note that the change sorter does \emph{not} show you whether the creation of the class itself is part of the change set, although this information is stored in the object structure that is used to represent the change set.
+
+The change sorter also lets you delete classes and methods from the change set using the \actclick menu on the corresponding items.
+%  However, for more elaborate editing of change sets, you should use a second tool, the \textit{change sorter}, available by selecting \menu{World\go{}open \ldots \go{}dual change sorter}, which is shown in \figref{changeSorter}.
+% The change sorter is essentially two change set browsers side by side; each side can focus on a different change set, class, or method.
+
+The change sorter allows you to simultaneously view two change sets, one on the left hand side and the other on the right.
 This layout supports the change sorter's main feature, which is the ability to move or copy changes from one change set to another, as shown by the \actclick menu in \figref{changeSorter}.
 It is also possible to copy individual methods from one side to the other.
 
@@ -1117,10 +1105,10 @@ they do not keep track of dependencies.
 \index{file!filing out}
 
 Before the advent of Monticello, change sets were the main means for exchanging code between \pharo{}ers.
-They have the advantage of simplicity (the file out is just a text file, although we \emph{don't} recommend that you try to edit with a text editor), and a degree of portability.  
-It's also quite easy to create a change set that makes changes to many different, unrelated parts of the system\,---\,something that Monticello is not yet equipped to do.
-\ab{Or is it?}
-\on{you mean something different than extensions to foreign packages using the *package protocol notation?}
+They have the advantage of simplicity (the file out is just a text file, although we \emph{don't} recommend that you try to edit them with a text editor), and a degree of portability.  
+%It's also quite easy to create a change set that makes changes to many different, unrelated parts of the system\,---\,something that Monticello is not yet equipped to do.
+%\ab{Or is it?}
+%\on{you mean something different than extensions to foreign packages using the *package protocol notation?}
 
 The main drawback of change sets, compared to \ind{Monticello} packages, is that they do not support the notion of dependencies.
 A filed-out change set is a set of \emph{actions} that change any image into which it is loaded. To successfully load a change set requires that the image be in an appropriate state.
@@ -1154,7 +1142,7 @@ This requires the use of another tool, the file list browser.
 \end{figure}
 
 The \ind{file list browser} is in fact a general-purpose tool for browsing the file system (and also FTP servers) from \pharo. 
-You can open it from the \menu{World\go{}open \ldots \go{}file list} menu.
+You can open it from the \menu{World\go{}Tools \ldots \go{}File Browser} menu.
 What you see of course depends on the contents of your local file system, but a typical view is shown in \figref{fileList}.
 \seeindex{file!browsing}{file list browser}
 
@@ -1190,7 +1178,7 @@ The \button{code} button is perhaps the most useful for working with change sets
 The file contents browser is similar to the browser except that it does not show categories, just classes, protocols and methods.
 For each class, the browser will tell you whether the class already exists in the system and whether it is defined in the file (but \emph{not} whether the definitions are identical).  
 It will show the methods in each class, and (as shown in \figref{fileContentsBrowser}) will show you the differences between the current version and the version in the file.
-Yellow-button menu items in each of the top four panes will also let you file in the whole of the change set, or the corresponding class, protocol or method. 
+Contextual menu items in each of the top four panes will also let you file in the whole of the change set, or the corresponding class, protocol or method. 
 
 %=========================================================
 \section{In Smalltalk, you can't lose code}
@@ -1215,19 +1203,21 @@ In the worst case, you can use a text editor on the \emph{.changes} file, but si
 
 %---------------------------------------------------------
 \subsection{How to get your code back}
-Restart \pharo from the most recent snapshot, and select \menu{World\go{}help\go{}useful expressions}. 
-This will open a workspace full of useful expressions. The first three,
+Restart \pharo from the most recent snapshot, and select \menu{World\go{}Tools \ldots \go{}Recover lost changes}. 
+%This will open a workspace full of useful expressions. The first three,
 
-\begin{code}{}
-Smalltalk recover: 10000.
-ChangeList browseRecentLog.
-ChangeList browseRecent: 2000.
-\end{code}
+%\begin{code}{}
+%Smalltalk recover: 10000.
+%ChangeList browseRecentLog.
+%ChangeList browseRecent: 2000.
+%\end{code}
 
-\noindent
-are most useful for recovery.
+%\noindent
+%are most useful for recovery.
 
-If you execute \ct{ChangeList browseRecentLog}, you will be given the opportunity to decide how far back in history you wish to browse. 
+% If you execute \ct{ChangeList browseRecentLog}, you will be given 
+
+This will give the opportunity to decide how far back in history you wish to browse. 
 Normally, it's sufficient to browse changes as far back as the last snapshot. (You can get much the same effect by editing \ct{ChangeList browseRecent: 2000} so that the number \ct{2000} becomes something else, using trial and error.)
 
 One you have a \emph{recent changes} browser, showing, say, changes back as far as your last snapshot, you will have a list of everything that you have done to \pharo during that time. 
