@@ -7,6 +7,7 @@
 % 2007-08-19 - Stef revised
 % 2007-11-09 - Andrew corrections
 % 2008-03-28 - Cassou corrections
+% 2009-07-07 - Oscar fixed broken tests
 
 %=================================================================
 \ifx\wholebook\relax\else
@@ -80,23 +81,22 @@ For example, the class \clsind{Browser} does not redefine the method \ct{printOn
 Browser new printString --> 'a Browser'
 \end{code}
 
-The class \ct{TTCFont} shows an example of \mthind{TTCFont}{printOn:}
-specialization. It prints the name of the class followed by the family
-name, the size and the subfamily name of the font as shown by the code
-below which prints an instance of the class.
+The class \ct{Color} shows an example of \mthind{Color}{printOn:}
+specialization. It prints the name of the class followed the name of the class method used to generate that color.
 
-% \needlines{7}
+\needlines{7}
 \begin{method}[zork]{printOn: redefinition.}
-TTCFont>>>printOn: aStream
-        aStream nextPutAll: 'TTCFont(';
-		nextPutAll: self familyName; space;
-		print: self pointSize; space;
-		nextPutAll: self subfamilyName;
-		nextPut: $)
+Color>>>printOn: aStream
+	| name |
+	(name := self name) ifNotNil: 
+		[ ^ aStream
+			nextPutAll: 'Color ';
+			nextPutAll: name ].
+	self storeOn: aStream
 \end{method}\ignoredollar$
 
 \begin{code}{@TEST}
-TTCFont allInstances anyOne printString --> 'TTCFont(BitstreamVeraSans 6 Bold)'
+Color red printString --> 'Color red'
 \end{code}
 
 Note that the message \ct{printOn:} is not the same as \mthind{Object}{storeOn:}. The message \ct{storeOn:} puts on its argument stream an expression that can be used to recreate the receiver. This expression is evaluated when the stream is read using the message \ct{readFrom:}. \ct{printOn:} just returns a textual version of the receiver. Of course, it may happen that this textual representation may represent the receiver as a self-evaluating expression.
@@ -105,10 +105,11 @@ Note that the message \ct{printOn:} is not the same as \mthind{Object}{storeOn:}
 In functional programming, expressions return values when executed. In Smalltalk, messages (expressions) return objects (values). Some objects have the nice properties that their value is themselves. For example, the value of the object \ct{true} is itself \ie the object \ct{true}. We call such objects \emphind{self-evaluating objects}. You can see a \emph{printed} version of an object value when you print the object in a workspace. Here are some examples of such self-evaluating expressions. 
 
 \begin{code}{@TEST}
-true       --> true
-3@4     --> 3@4
-$a         --> $a
-#(1 2 3) --> #(1 2 3)
+true         --> true
+3@4       --> 3@4
+$a           --> $a
+#(1 2 3)   --> #(1 2 3)
+Color red --> Color red
 \end{code}
 
 Note that some objects such as arrays are self-evaluating or not depending on the objects they contain. For example, an array of booleans is self-evaluating whereas an array of persons is not. In Squeak 3.9, a mechanism was introduced (via the message \mthind{Object}{isSelfEvaluating}) to print collections in their self-evaluating forms as much as possible and this is especially true for brace arrays. The following example shows that a \subind{Array}{dynamic} array is self-evaluating only if its elements are:
@@ -569,7 +570,8 @@ Character space = (Character value: Character space asciiValue) --> true
 The \mthind{Character}{printOn:} method is clever enough to know which of the three ways to generate characters offers the most appropriate representation:
 
 \begin{code}{@TEST}
-Character value: 1   --> Character value: 1
+Character value: 1   --> Character home
+Character value: 2   --> Character value: 2
 Character value: 32 --> Character space
 Character value: 97 --> $a
 \end{code}\ignoredollar$

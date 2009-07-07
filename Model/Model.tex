@@ -723,32 +723,34 @@ It is a common and natural mistake to think this.
 It is also a mistake to think that lookup starts in the superclass of the receiver.
 We shall see with the following example precisely how this works.
 
-Consider the message \ct{initString}, which we can send to any morph:
+Consider the message \ct{constructorString}, which we can send to any morph:
 \begin{code}{@TEST | anEllipse | anEllipse := EllipseMorph new.}
-anEllipse initString --> '(EllipseMorph newBounds: (0@0 corner: 50@40) color: Color yellow) setBorderWidth: 1 borderColor: Color black'
+anEllipse constructorString --> '((EllipseMorph newBounds: (0@0 corner: 50@40) color: Color yellow) setBorderWidth: 1 borderColor: Color black)'
 \end{code}
 The return value is a string that can be evaluated to recreate the morph.
 
 How exactly is this result obtained through a combination of \self and \super sends?
-First, \ct{anEllipse initString} will cause the method \ct{initString} to be found in the class \ct{Morph},
-as shown in \figref{initStringLookup}.
+First, \ct{anEllipse constructorString} will cause the method \ct{constructorString} to be found in the class \ct{Morph},
+as shown in \figref{constructorStringLookup}.
 
 \begin{figure}[htb]
 \begin{center}
 \ifluluelse
-	{\includegraphics[width=\textwidth]{initStringLookup}}
-	{\includegraphics[width=0.8\textwidth]{initStringLookup}}
-\caption{\self and \super sends\label{fig:initStringLookup}}
+	{\includegraphics[width=\textwidth]{constructorStringLookup}}
+	{\includegraphics[width=0.8\textwidth]{constructorStringLookup}}
+\caption{\self and \super sends\label{fig:constructorStringLookup}}
 \end{center}
 \end{figure}
 
-\needlines{5}
-\begin{method}[initString]{A \self send}
-Morph>>>initString
-	^ String streamContents: [:s | self fullPrintOn: s]
+\needlines{2}
+\begin{method}[constructorString]{A \self send}
+Morph>>>constructorString
+	^ String streamContents: [:s | self printConstructorOn: s indent: 0].
 \end{method}
-The method \cmind{Morph}{initString} performs a \self send of \ct{fullPrintOn:}.
-This causes a second lookup to take place, starting in the class \ct{EllipseMorph}, and finding \mthind{BorderedMorph}{fullPrintOn:} in \ct{BorderedMorph} (see \figref{initStringLookup} once again).
+The method \cmind{Morph}{constructorString} performs a \self send of \lct{printConstructorOn:indent:}.
+This message is also looked up, starting in the class \lct{EllipseMorph}, and found in \ct{Morph}.
+This method in turn does a \self send of \lct{printConstructorOn:indent:nodeDict:}, which does a \self send of \ct{fullPrintOn:}.
+Once again, \ct{fullPrintOn:} is looked up starting in the class \ct{EllipseMorph}, and \mthind{BorderedMorph}{fullPrintOn:} is found in \ct{BorderedMorph} (see \figref{constructorStringLookup} once again).
 What is critical to notice is that the \self send causes the method lookup to start again in the class of the receiver, namely the class of \ct{anEllipse}.
 
 \important{A \self send triggers a \emph{dynamic} method lookup starting in the class of the receiver.}
@@ -771,7 +773,7 @@ This would have caused lookup to start from \ct{BorderedMorph}, resulting in an 
 
 \important{A \super send triggers a \emph{static} method lookup starting in the superclass of the class of the method performing the \super send.}
 
-If you think carefully about \super send and \figref{initStringLookup}, you will realize that \super bindings are static: all that matters is the class in which the text of the \super send is found.
+If you think carefully about \super send and \figref{constructorStringLookup}, you will realize that \super bindings are static: all that matters is the class in which the text of the \super send is found.
 By contrast, the meaning of \self is dynamic: it always represents the receiver of the currently executing message. This means that  \emph{all}  messages sent to \self are looked-up by starting in the receiver's class.
 
 %---------------------------------------------------------

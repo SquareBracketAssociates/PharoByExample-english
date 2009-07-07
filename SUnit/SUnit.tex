@@ -7,6 +7,7 @@
 % 2007-01-26 - Andrew updates
 % 2007-05-22 - Andrew first draft
 % 2007-06-24 - Oscar edit
+% 2009-07-06 - Oscar migrate to pharo
 
 %=================================================================
 \ifx\wholebook\relax\else
@@ -30,7 +31,7 @@
 % --------------------------------------------
     \graphicspath{{figures/} {../figures/}}
 	\begin{document}
-	\renewcommand{\nnbb}[2]{} % Disable editorial comments
+	% \renewcommand{\nnbb}[2]{} % Disable editorial comments
 	\sloppy
 \fi
 %=================================================================
@@ -55,7 +56,7 @@ notion of a resource, which we will describe in \secref{resource}.
 \seeindex{resource}{test, resource}
 
 The interest in testing and \ind{Test Driven Development}
-is not limited to \squeak or \st.  
+is not limited to \pharo or \st.  
 Automated testing has become a hallmark of the \ind{Agile software development} movement, and any
 software developer concerned with improving software quality would do well to adopt it.
 Indeed, developers in many languages have come to appreciate
@@ -230,10 +231,11 @@ entering the code as we go along.
 class looks like this:}
 
 \begin{classdef}[exampleSetTest]{An Example Set Test class}
-TestCase subclass: #ExampleSetTest
+Object subclass: #ExampleSetTest
 	instanceVariableNames: 'full empty'
-	classInstanceVariableNames: ''
-	category: 'MyTest'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'MySetTest'
 \end{classdef}
 
 
@@ -321,8 +323,18 @@ Note the use of the method \mthind{TestCase}{deny:} to assert something that sho
 %---------------------------------------------------------
 \subsection{Step 4: run the tests}
 
-The easiest way to execute the tests is with the \sunit \emphind{Test Runner}, 
-which you can open from the \menu{World \go open\,\ldots} menu.
+The easiest way to run the tests is directly from the browser.  Simply \actclick on the package, class name, or on an individual test method, and select \menu{run the tests (t)}.
+The test methods will be flagged red or green, depending on whether they pass or not, and the class will be flagged fully or partially green or red depending on whether all, some or none of the tests pass.
+
+\begin{figure}[tbh]
+  \begin{center}
+	\includegraphics[width=\linewidth]{browser-tests}
+	\caption{Running \sunit tests from the browser}
+	\label{fig:browser-tests}
+  \end{center}
+\end{figure}
+
+You can also select sets of test suites to run, and obtain a more detailed log of the results using the \sunit \emphind{Test Runner}, which you can open by selecting \menu{World \go Test Runner}.
 The \emph{TestRunner}, shown in \figref{test-runner}, is designed to make it easy  to execute groups of tests.
 The left-most pane lists all of the categories that contain test classes (\ie  subclasses of \ct{TestCase}); when some of these categories are selected, the test classes that they contain appear in the pane to the right.
 Abstract classes are italicized, and the test class hierarchy is shown by indentation, so subclasses of \ct{ClassTestCase} are indented more than subclasses of \ct{TestCase}.
@@ -330,42 +342,40 @@ Abstract classes are italicized, and the test class hierarchy is shown by indent
 \begin{figure}[tbh]
   \begin{center}
 	\includegraphics[width=\linewidth]{test-runner}
-	\caption{The \squeak \sunit Test Runner}
+	\caption{The \pharo \sunit Test Runner}
 	\label{fig:test-runner}
   \end{center}
 \end{figure}
 
 \dothis{Open a Test Runner, select the category \menu{MyTest}, and click the \button{Run Selected} button.}
 
+% ON: With OB, you don't need this.
+%You can also run a single test by executing a \menu{print it} on the following code: \ct{ExampleSetTest run: #testRemove}.  
+%We usually include an executable comment in our test methods that allows us to run them
+%with a \menu{do it} from the browser, as shown in \mthref{ExampleSetTestTestRemoveii}.
 
-You can also run your test by executing a \menu{print it} on the following code: \ct{(ExampleSetTest selector: #testRemove) run}.  This expression is equivalent to the shorter
-\ct{ExampleSetTest run: #testRemove}.  
-\ab{Why give the long form?} We usually include an
-executable comment in our test methods that allows us to run them
-with a \menu{do it} from the browser, as shown in \mthref{ExampleSetTestTestRemoveii}.
-
-\needlines{6}
-\begin{method}[ExampleSetTestTestRemoveii]{Executable comments in test methods}
-ExampleSetTest>>>testRemove
-	"self run: #testRemove"
-	full remove: 5.
-	self assert: (full includes: 6).
-	self deny: (full includes: 5)
-\end{method}
+%\needlines{6}
+%\begin{method}[ExampleSetTestTestRemoveii]{Executable comments in test methods}
+%ExampleSetTest>>>testRemove
+%	"self run: #testRemove"
+%	full remove: 5.
+%	self assert: (full includes: 6).
+%	self deny: (full includes: 5)
+%\end{method}
 
 \dothis{Introduce a bug in \ct{ExampleSetTest>>>testRemove} and run the tests again. For example, change \ct{5} to \ct{4}.}
 
 The tests that did not pass (if any) are listed in the right-hand panes of
 the \emph{Test Runner};
 if you want to debug one, to see why it failed, just click on the name.
-Alternatively, you can execute the following expressions:
-\begin{code}{}
-(ExampleSetTest selector: #testRemove) debug
-\end{code}
-or
-\begin{code}{}
-ExampleSetTest debug: #testRemove
-\end{code}
+%Alternatively, you can execute the following expressions:
+%\begin{code}{}
+%(ExampleSetTest selector: #testRemove) debug
+%\end{code}
+%or
+%\begin{code}{}
+%ExampleSetTest debug: #testRemove
+%\end{code}
 
 %---------------------------------------------------------
 \subsection{Step 5: interpret the results}
@@ -391,7 +401,7 @@ In the {test runner}, failing tests cause the bar at the top to turn yellow, and
 %=================================================================
 \section{The \SUnit cook book}
 This section will give you more details on how to use \SUnit.  If you
-have used another testing framework such as \JUnit\footnote{\url{junit.org}},
+have used another testing framework such as \JUnit\footnote{\url{http://junit.org}},
 much of this will be familiar, since all these frameworks have their roots in \SUnit.
 Normally you will use \SUnit's GUI to run tests, but there are
 situations where you may not want to use it.
@@ -728,12 +738,12 @@ TestResult>>>runCase: aTestCase
 
 The method \ct{TestCase>>>runCase} sends the messages
 \mthind{TestCase}{setUp} and \mthind{TestCase}{tearDown} as shown below.
+\needlines{3}
 \begin{method}[testcaseruncase]{Test case template method}
 TestCase>>>runCase
-	self setUp.
-	[self performTest] ensure: [self tearDown]
+	[self setUp.
+	self performTest] ensure: [self tearDown]
 \end{method}
-\lr{Methods 7.15 and 7.17: use \#ensure: instead of \#sunitEnsure:, this has been changed in 3.9}
 
 %---------------------------------------------------------
 \subsection{Running a \lct{TestSuite}}
@@ -758,22 +768,18 @@ released.
 \begin{method}[testsuiterun]{Running a test suite}
 TestSuite>>>run
 	| result |
-	result := TestResult new.
-	self areAllResourcesAvailable
-		ifFalse: [^TestResult signalErrorWith:
-				   'Resource could not be initialized'].
-	[self run: result] ensure: [self resources do:
-									 [:each | each reset]].
+ 	result := TestResult new.
+	self resources do: [ :res |
+		res isAvailable ifFalse: [^res signalInitializationError]].
+	[self run: result] ensure: [self resources do: [:each | each reset]].
 	^result
 \end{method}
-\lr{Methods 7.15 and 7.17: use \#ensure: instead of \#sunitEnsure:, this has been changed in 3.9}
 
 \begin{method}[testsuiterun:]{Passing the test suite to the test result}
 TestSuite>>>run: aResult
-	self tests do:
-			[:each |
-			self sunitChanged: each.
-			each run: aResult]
+	self tests do: [:each | 
+		self changed: each.
+		each run: aResult].
 \end{method}
 The class \clsind{TestResource} and its subclasses keep track of
 their currently created instances (one per class) that can be accessed
@@ -794,7 +800,7 @@ invoked.
 \needlines{4}
 \begin{method}[testresourceisavailable]{Test resource availability}
 TestResource class>>>isAvailable
-	^self current notNil
+	^self current notNil and: [self current isAvailable]
 \end{method}
 \begin{method}[testresourcecurrent]{Test resource creation}
 TestResource class>>>current
@@ -803,6 +809,7 @@ TestResource class>>>current
 \end{method}
 \begin{method}[restresourceinitialize]{Test resource initialization}
 TestResource>>>initialize
+	super initialize.
 	self setUp
 \end{method}
 %=================================================================

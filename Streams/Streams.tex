@@ -9,6 +9,7 @@
 % 2007-08-16 - Cassou continues
 % 2007-08-21 - Oscar edit
 % 2007-08-21 - Cassou review
+% 2009-07-07 - Oscar migrate to Pharo; fixed broken tests
 
 %=================================================================
 \ifx\wholebook\relax\else
@@ -120,7 +121,7 @@ It is also possible to create \ct{ReadWriteStream}s that support both
 the reading and writing protocols.
 
 The main problem with \ct{WriteStream} and \ct{ReadWriteStream} is
-that they only support arrays and strings in Squeak. This is currently
+that they only support arrays and strings in \pharo. This is currently
 being changed by the development of a new library named Nile, 
 but for now if you try to stream over another kind of
 collection, you will get an error:
@@ -659,7 +660,7 @@ FileStream
           stream binary.
           stream size.         --> 4
           stream next.         --> 145
-          stream upToEnd. --> a ByteArray(250 139 98)
+          stream upToEnd. --> #[250 139 98]
       ].
 \end{code}
 

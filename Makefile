@@ -76,6 +76,9 @@ fun :
 # --------------------------------------------------------------------------------
 # MAINTENANCE
 
+graffleDirs :
+	find . -name \*.graffle -type d
+
 # To do items are tags that look like this "%:===> ...."
 todo :
 	fgrep '%:=' *.tex */*.tex

@@ -7,6 +7,7 @@
 % 2007-03-30 - Cassou moved Streams to separate chapter
 % 2007-05-28 - Stef adds material
 % 2007-08-13 - Oscar edits
+% 2009-07-07 - Oscar migrated to Pharo; fixed broken tests
 
 %=================================================================
 \ifx\wholebook\relax\else
@@ -45,22 +46,35 @@
 
 The collection classes form a loosely-defined group of general-purpose subclasses of \clsindmain{Collection} and \clsind{Stream}. The group of classes that appears in the ``\ind{Blue Book}''~\cite{Gold83a} contains 17 subclasses of \ct{Collection} and 9 subclasses of \ct{Stream}, for a total of 28 classes, and had already been redesigned several times before the \st-80 system was released. This group of classes is often considered to be a paradigmatic example of object-oriented design.
 
-In \squeak, the abstract class \ct{Collection} has 98 subclasses, and the abstract class \ct{Stream} has 39 subclasses, but many of these (like \mbox{\clsind{Bitmap},} \clsind{FileStream} and \clsind{CompiledMethod}) are special-purpose classes crafted for use in other parts of the system or in applications, and hence not categorized as ``Collections'' by the system organization. For the purposes of this chapter, we use the term ``Collection Hierarchy'' to mean \ct{Collection} and its 37 subclasses that are \emph{also} in the categories labelled \scat{Collections-*}.
+In \pharo, the abstract class \ct{Collection} has 101 subclasses, and the abstract class \ct{Stream} has 54 subclasses, but many of these (like \mbox{\clsind{Bitmap},} \clsind{FileStream} and \clsind{CompiledMethod}) are special-purpose classes crafted for use in other parts of the system or in applications, and hence not categorized as ``Collections'' by the system organization. For the purposes of this chapter, we use the term ``Collection Hierarchy'' to mean \ct{Collection} and its 47 subclasses that are \emph{also} in the categories labelled \scat{Collections-*}.
 We use the term ``Stream Hierarchy'' to mean \ct{Stream} and its 10 subclasses that are \emph{also} in the \scatind{Collections-Streams} categories.
-The full list is shown in \figref{CollClassesList}.
-These 49 classes respond to 794 messages and define a total of 1236 methods!
+These 57 classes respond to 794 messages and define a total of 1549 methods!
 
-\begin{figure}
-\begin{center}
-\ifluluelse
-	{\fbox{\includegraphics[height=0.9\textheight]{CollectionHierarchyList}}}
-	{\fbox{\includegraphics[width=3in]{CollectionHierarchyList}}}
-\caption{The collection classes in \squeak. Indentation indicates subclassing.
-\textit{\textsf{Italicized}} classes are abstract.
-{\textbf{Bold}} classes are described in the ``Blue Book".}
-\label{fig:CollClassesList}
-\end{center}
-\end{figure}
+% See test case in PBE-Collections for statistics
+
+%c := (Collection allSubclasses select: [:each | each category beginsWith: 'Collections']).
+%s := (Stream allSubclasses select: [:each | each category beginsWith: 'Collections-Streams']).
+%m := (c,s) gather: #methods.
+%Transcript
+%	show: 'Collection subclasses: ', Collection allSubclasses size printString; cr;
+%	show: 'Stream subclasses: ', Stream allSubclasses size printString; cr;
+%	show: 'Collection package subclasses: ', c size printString; cr;
+%	show: 'Collection package subclasses: ', c size printString; cr;
+%	show: 'Stream package subclasses: ', s size printString; cr;
+%	show: 'Total messages: ', m size printString; cr;
+%	show: 'Total messages: ', (m collect: #selector) asSet size printString; cr
+
+%\begin{figure}
+%\begin{center}
+%\ifluluelse
+%	{\fbox{\includegraphics[height=0.9\textheight]{CollectionHierarchyList}}}
+%	{\fbox{\includegraphics[width=3in]{CollectionHierarchyList}}}
+%\caption{The collection classes in \pharo. Indentation indicates subclassing.
+%\textit{\textsf{Italicized}} classes are abstract.
+%{\textbf{Bold}} classes are described in the ``Blue Book".}
+%\label{fig:CollClassesList}
+%\end{center}
+%\end{figure}
 
 In this chapter we focus mainly on the subset of collection classes shown in \figref{CollClassesTree}.
 Streams will be discussed separately in \charef{streams}.
@@ -75,7 +89,7 @@ Streams will be discussed separately in \charef{streams}.
 \ifluluelse
 	{\includegraphics[width=\textwidth]{CollectionHierarchy}}
 	{\includegraphics[width=0.8\textwidth]{CollectionHierarchy}}
-\caption{Some of the key collection classes in \squeak.}
+\caption{Some of the key collection classes in \pharo.}
 \label{fig:CollClassesTree}
 \end{center}
 \end{figure}
@@ -219,7 +233,7 @@ Consequently, the internal array can be replaced with a larger one if the collec
   \clsindex{Interval}
 \end{enumerate}
 In addition to these classes, there are also ``\subind{Collection}{weak}'' variants of \ct{Array}, \ct{Set} and of the various kinds of dictionary.  These collections hold onto their elements weakly, \ie in a way that does not prevent the elements from being garbage collected.
-The \squeak virtual machine is aware of these classes and handles them specially.
+The \pharo virtual machine is aware of these classes and handles them specially.
 \index{weak collections}
 
 Readers interested in learning more about the \st collections are referred to LaLonde and Pugh's excellent book \cite{LaLo90a}.
@@ -387,7 +401,7 @@ It is possible to get an \ct{OrderedCollection} from an \ct{Array} (or any other
 \end{code}
 
 %\paragraph{A word about automatic growth.}
-%Note that while \ct{OrderedCollection} grows automatically when you add new elements it can be better to create an \ct{OrderedCollection} with a good approximation of the numbers of elements it will contain. The following code creates an ordered collection whose size is equal to the number of classes in \squeak and adds all the classes to it.
+%Note that while \ct{OrderedCollection} grows automatically when you add new elements it can be better to create an \ct{OrderedCollection} with a good approximation of the numbers of elements it will contain. The following code creates an ordered collection whose size is equal to the number of classes in \pharo and adds all the classes to it.
 
 % \on{I don't like this example. No one should ever write code like this. Furthermore it is not good advice, as you almost never need to do this.}
 
@@ -659,7 +673,7 @@ Another useful method is \ct{findString:}.
 'GNU/Linux mag' findString: 'linux' startingAt: 1 caseSensitive: false  --> 5
 \end{code}
 
-More advanced pattern matching facilities offering the capabilities of Perl are also available, but they are not included in the standard image\footnote{We strongly recommend Vassili Bykov's \ind{regular expression package}, available at \url{www.squeaksource.com/Regex.html}.
+More advanced pattern matching facilities offering the capabilities of Perl are also available, but they are not included in the standard image\footnote{We strongly recommend Vassili Bykov's \ind{regular expression package}, available at \url{http://www.squeaksource.com/Regex.html}.
 \index{Bykov, Vassili}}.
 
 \paragraph{Some tests on strings.} The  following examples illustrate the use of \mbox{\mthind{String}{isEmpty},} \mthind{String}{includes:} and \mthind{String}{anySatisfy:} which are further messages defined not only on Strings but more generally on collections. 
@@ -675,16 +689,16 @@ More advanced pattern matching facilities offering the capabilities of Perl are 
 There are three messages that are useful to manage string \subind{String}{templating}: \mthind{String}{format:}, \mthind{String}{expandMacros} and \mthind{String}{expandMacrosWith:}.
 
 \begin{code}{@TEST}
-'{1} is {2}' format: {'Squeak' . 'cool'}  --> 'Squeak is cool'
+'{1} is {2}' format: {'Pharo' . 'cool'}  --> 'Pharo is cool'
 \end{code}
 
 The messages of the expandMacros family offer variable substitution, using \ct{<n>} for carriage return, \ct{<t>} for tabulation, \ct{<1s>}, \ct{<2s>}, \ct{<3s>} for arguments (\ct{<1p>}, \ct{<2p>}, surrounds the string with single quotes), and \ct{<1?value1:value2>} for conditional.
 
 \begin{code}{@TEST}
 'look-<t>-here' expandMacros                                         --> 'look-	-here'
-'<1s> is <2s>' expandMacrosWith: 'Squeak' with: 'cool'   --> 'Squeak is cool'
-'<2s> is <1s>' expandMacrosWith: 'Squeak' with: 'cool'   --> 'cool is Squeak'
-'<1p> or <1s>' expandMacrosWith: 'Squeak' with: 'cool'  --> '''Squeak'' or Squeak'
+'<1s> is <2s>' expandMacrosWith: 'Pharo' with: 'cool'   --> 'Pharo is cool'
+'<2s> is <1s>' expandMacrosWith: 'Pharo' with: 'cool'   --> 'cool is Pharo'
+'<1p> or <1s>' expandMacrosWith: 'Pharo' with: 'cool'  --> '''Pharo'' or Pharo'
 '<1?Quentin:Thibaut> plays' expandMacrosWith: true     --> 'Quentin plays'
 '<1?Quentin:Thibaut> plays' expandMacrosWith: false    --> 'Thibaut plays'
 \end{code}
@@ -859,12 +873,12 @@ Smalltalk allClasses detect: [:each | '*java*' match: each asString] ifNone: [ n
 %---------------------------------------------------------
 \subsection{Accumulating results with \lct{inject:into:}}
 Functional programming languages often provide a higher-order function called \emph{fold} or \emph{reduce} to accumulate a result by applying some binary operator iteratively over all elements of a collection.
-In \squeak this is done by \cmind{Collection}{inject:into:}.
+In \pharo this is done by \cmind{Collection}{inject:into:}.
 
 The first argument is an initial value, and the second argument is a two-argument block which is applied to the result this far, and each element in turn.
 
 A trivial application of \ct{inject:into:} is to produce the sum of a collection of numbers.
-Following Gauss, in \squeak we could write this expression to sum the first 100 integers:
+Following Gauss, in \pharo we could write this expression to sum the first 100 integers:
 \begin{code}{@TEST}
 (1 to: 100) inject: 0 into: [:sum :each | sum + each ] --> 5050
 \end{code}
@@ -881,7 +895,7 @@ factorial value: 10 --> 3628800
 \paragraph{\mthind{Collection}{count:}} The message \ct{count:} returns the number of elements satisfying a condition.  The condition is represented as a boolean block.
 
 \begin{code}{@TEST}
-Smalltalk allClasses count: [:each | 'Collection*' match: each asString ] --> 2
+Smalltalk allClasses count: [:each | 'Collection*' match: each asString ] --> 3
 \end{code}
 
 \paragraph{\mthind{Collection}{includes:}} The message \ct{includes:} checks whether the argument is contained in the collection. 
