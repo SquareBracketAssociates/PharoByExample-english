@@ -11,6 +11,7 @@
 % 2008-12-13 - Oscar revised
 % 2009-03-18 - Stef extended
 % 2009-06-17 - Oscar migrated to Pharo
+% 2009-07-16 - Oscar indexing
 
 %=================================================================
 \ifx\wholebook\relax\else
@@ -38,23 +39,17 @@
 	\sloppy
 \fi
 
-%:===> To be indexed!
-
 %=================================================================
 \chapter{Handling exceptions}
-
-\on{I have the lock}
-
-%=================================================================
 
 All applications have to deal with exceptional situations.
 Arithmetic errors may occur (division by zero), unexpected situations may arise (file not found), or resources may be exhausted (network down, disk full, \etc).
 The old-fashioned solution is to have operations that fail return a special \emph{error code}\,---\,client code must then check the return value of each operation, and take special action to handle errors.
 
 Modern programming languages, including \st, instead offer a dedicated exception-handling mechanism that greatly simplifies the way in which exceptional situations are signaled and handled.
-Before ANSI \st (1996), several  exception handling mechanisms existed, largely incompatible each other. \pharo essentially uses the ANSI standard, which we present in this chapter from a user perspective.
+Before \ind{ANSI \st} (1996), several  exception handling mechanisms existed, largely incompatible each other. \pharo essentially uses the ANSI standard, which we present in this chapter from a user perspective.
 
-In a nutshell, different classes of \emph{exceptions} are specified to cover the unusual situations that may arise.
+In a nutshell, different classes of \emphind{exceptions} are specified to cover the unusual situations that may arise.
 Normal code does not clutter the main logic flow with checks for error codes, but specifies instead an \emph{exception handler} to ``catch'' exceptions.
 When something goes wrong, the corresponding exception is \emph{signaled}, capturing essential information about the offending context.
 This interrupts the main flow of execution, and allows the exception handler to decide what to do next.
@@ -68,13 +63,15 @@ With the help of a series of examples, we shall explore all of these possibiliti
 %=================================================================
 \section{Ensuring execution}
 
-The \ct{ensure:} message can be sent to a block to make sure that, even if it fails, the argument block is guaranteed to be executed:
+The \mthind{BlockClosure}{ensure:} message can be sent to a block to make sure that, even if it fails, the argument block is guaranteed to be executed:
 \begin{code}{}
 !\emph{anyBlock}! ensure: !\emph{ensuredBlock}!    "ensuredBlock will run even if anyBlock fails"
 \end{code}
 
 Consider the following example, which creates an image file from a screenshot taken by the user:
 
+\mthindex{FileStream}{newFileNamed:}
+\mthindex{GIFReadWriter}{nextPutImage:}
 \needlines{4}
 \begin{code}{}
 | writer |
@@ -111,7 +108,7 @@ The message \ct{ensure:} returns the value of the block to which this message is
 %=================================================================
 \section{Handling non-local returns}
 
-The message \ct{ifCurtailed:} is typically used for ``cleaning'' actions. It is similar to \ct{ensure:}, but instead of ensuring that its argument block is evaluated even if the receiver terminates abnormally, \ct{ifCurtailed:} does so \emph{only} if the receiver terminates abnormally by signaling an exception or by performing a non-local return.
+The message \mthind{BlockClosure}{ifCurtailed:} is typically used for ``cleaning'' actions. It is similar to \ct{ensure:}, but instead of ensuring that its argument block is evaluated even if the receiver terminates abnormally, \ct{ifCurtailed:} does so \emph{only} if the receiver terminates abnormally by signaling an exception or by performing a non-local return.
 
 In the following example, the argument to \ct{ifCurtailed:} performs an early return, so the following statement is never reached.
 In \st, this is referred to as a \emph{non-local return}.
@@ -123,6 +120,7 @@ Transcript show: 'But not this'.
 \end{code}
 
 In the following example, we can see clearly that the argument to \ct{ifCurtailed:} is only evaluated if the receiver terminates abnormally.
+\clsindex{Error}
 \begin{code}{}
 [Error signal] ifCurtailed: [Transcript show: 'Abandoned'].
 Transcript show: 'Proceeded'.
@@ -171,14 +169,15 @@ Now we will see a more general mechanism for handling exceptions.
 %=================================================================
 \section{Exception handlers}
 
-Both \ct{ensure:} and \ct{ifCurtailed:} offer simple mechanisms to handle abnormal termination of code. A more general mechanism is provided by the message \ct{on:do:}. It looks like this:
+\index{Exception handling}
+Both \ct{ensure:} and \ct{ifCurtailed:} offer simple mechanisms to handle abnormal termination of code. A more general mechanism is provided by the message \mthind{BlockClosure}{on:do:}. It looks like this:
 \begin{code}{}
 !\emph{aBlock}! on: !\emph{exception}! do: !\emph{handlerAction}!
 \end{code}
 \noindent
 The code that detects an abnormal situation and signals an exception (\lct{\emph{aBlock}}) is called a \emph{protected block}, and the block that is evaluated if an exception is signaled (\lct{\emph{handlerAction}}) is  an \emph{exception handler}.
 
-ANSI \st defines this message as follows:
+\ind{ANSI \st} defines this message as follows:
 \begin{quote}
 ``The receiver is evaluated such that if during its evaluation an exception corresponding to selector is signaled then action will be evaluated. The result of evaluating the receiver is returned.''
 \end{quote}
@@ -187,6 +186,11 @@ The beauty of this mechanism lies in the fact that the receiver code is written 
 
 Consider the following example, where we want to copy the contents of one file to another.
 Although several things could go wrong, with exception handling we simply write a straightforward flow of control, defining a single exception handler for the whole transaction:
+\clsindex{FileStream}
+\clsindex{FileStreamException}
+\clsindex{FileDirectory}
+\mthindex{FileDirectory}{oldFileNamed:}
+\mthindex{FileDirectory}{newFileNamed:}
 \begin{code}{| source destination fromStream toStream |}
 source := 'log.txt'.
 destination := 'log-backup.txt'.
@@ -202,7 +206,7 @@ toStream ifNotNil: [toStream close].
 If anything goes wrong, we ask the exception object to provide more details about the error.
 We are guaranteed to get to the end of the protected block, at which point we can close the two file streams, if necessary.
 
-It is important to understand  that the message \ct{on:do:} defines the scope where the exception handler is valid. This block will be used only if the receiver (\ie the protected block) has not completed. Once completed, the exception handler will not be used anymore. Moreover, a block handler is associated exclusively with the kind of exception it handles. In the previous example, only a \ct{FileStreamException} exception (or a more specific variant) may be handled.
+It is important to understand  that the message \ct{on:do:} defines the scope where the exception handler is valid. This block will be used only if the receiver (\ie the protected block) has not completed. Once completed, the exception handler will not be used anymore. Moreover, a block handler is associated exclusively with the kind of exception it handles. In the previous example, only a \clsind{FileStreamException} exception (or a more specific variant) may be handled.
 
 %=================================================================
 \section{Error codes --- don't  do this!}
@@ -252,7 +256,7 @@ Not only must we check error codes at each point that something might go wrong, 
 %=================================================================
 \section{The Exception hierarchy}
 
-Exceptions are organized in a class hierarchy. Conceptually, the exceptions \ct{FileDoesNotExistException}, \ct{FileExistsException} and \ct{CannotDeleteFileException} are specializations of \ct{FileStreamException}. This notion of ``specialization'' enables an exception handler to be associated to a more general abnormal situation (\figref{hierarchy}).
+Exceptions are organized in a class hierarchy. Conceptually, the exceptions \clsind{FileDoesNotExistException}, \clsind{FileExistsException} and \clsind{CannotDeleteFileException} are specializations of \clsind{FileStreamException}. This notion of ``specialization'' enables an exception handler to be associated to a more general abnormal situation (\figref{hierarchy}).
 
 \begin{figure}[ht]\centering
         \includegraphics[width=.5\linewidth]{SimpleHierarchy}
@@ -275,7 +279,8 @@ The two key messages are \ct{on:do:} (sent to blocks to set an exception handler
 %=================================================================
 \section{Signaling an exception}
 
-To signal an exception\footnote{Synonyms are to ``raise'' or to ``throw'' an exception. Since the message to send is called \lct{signal}, we exclusively use that terminology in this chapter.}, you only need to create an instance of the exception class, and to send it the message \ct{signal}, or \ct{signal:} with a textual description. The class \ct{Exception} provides a convenience method \ct{signal} which creates and signals an exception. Below are the two equivalent ways to signal a \ct{ZeroDivide} exception.
+To signal an exception\footnote{Synonyms are to ``raise'' or to ``throw'' an exception. Since the message to send is called \lct{signal}, we exclusively use that terminology in this chapter.}, you only need to create an instance of the exception class, and to send it the message \ct{signal}, or \ct{signal:} with a textual description. The class \ct{Exception} provides a convenience method \ct{signal} which creates and signals an exception. Below are the two equivalent ways to signal a \clsind{ZeroDivide} exception.
+\needlines{2}
 \begin{code}{}
 	ZeroDivide new signal.
 	ZeroDivide signal.    "class-side convenience method does the same as above"
@@ -287,6 +292,7 @@ When an exception is signaled, the exception handling mechanism searches in the 
 
 When signaling an exception, it is possible to provide information specific to the abnormal situation as illustrated in the code below. If the file to be opened does not exist, the name of the non-existent file is recorded in the exception object:
 
+\mthindex{StandardFileStream}{oldFileNamed:}
 \begin{code}{}
 StandardFileStream>>>oldFileNamed: fileName
 	"Open an existing file with the given name for reading and writing. If the name has no directory part, then the file will be created in the default directory. If the file already exists, its prior contents may be modified or replaced, but the file will not be truncated on close."
@@ -310,8 +316,9 @@ Transcript show: result; cr
 
 By default, every exception offers a description to be used by development tools to report abnormal situations in a clear and comprehensible manner. In that spirit, any exception instance answers to the message \ct{description}. Moreover, the descriptive message may be set  using the message \ct{messageText:} or by signaling the exception using \ct{signal:}.
 
-Another example can be seen in the \ct{doesNotUnderstand:} mechanism, a pillar of the reflective capabilities of \st. Whenever an object is sent a message that it does not understand, the VM will (eventually) send it the message \ct{doesNotUnderstand:} with a literal argument representing the offending message. The default implementation of this method, defined in the class \ct{Object}, simply signals a \ct{MessageNotUnderstood} exception, causing a debugger to be opened at that point in the execution.
+Another example can be seen in the \ct{doesNotUnderstand:} mechanism, a pillar of the reflective capabilities of \st. Whenever an object is sent a message that it does not understand, the VM will (eventually) send it the message \ct{doesNotUnderstand:} with a literal argument representing the offending message. The default implementation of this method, defined in the class \ct{Object}, simply signals a \clsind{MessageNotUnderstood} exception, causing a debugger to be opened at that point in the execution.
 This method illustrates the need to store specific information such as the receiver and the message not understood.
+\mthindex{Object}{doesNotUnderstand:}
 
 \needlines{4}
 \begin{code}{}
@@ -327,7 +334,7 @@ Object>>>doesNotUnderstand: aMessage
 %=================================================================
 \section{Setting breakpoints}
 
-In \st it is possible to set a breakpoint within a method by sending the message \ct{self halt}. The method \ct{halt}, implemented in \ct{Object}, makes use of exceptions to open a debugger at the location of the breakpoint.
+In \st it is possible to set a \ind{breakpoint} within a method by sending the message \ct{self halt}. The method \mthind{Object}{halt}, implemented in \ct{Object}, makes use of exceptions to open a debugger at the location of the breakpoint.
 The method \ct{halt} is defined as follows:
 
 \needlines{6}
@@ -340,7 +347,8 @@ Object>>>halt
 	Halt signal
 \end{code}
 
-\ct{Halt} is a direct subclass of \ct{Exception}. A \ct{Halt} exception is \emph{resumable}, which means that it is possible to continue execution after this exception is signaled. The private \ct{Exception} method \ct{isResumable} tells us which exceptions are resumable, for example:
+\index{exception!resumable}
+\clsind{Halt} is a direct subclass of \clsind{Exception}. A \ct{Halt} exception is \emph{resumable}, which means that it is possible to continue execution after this exception is signaled. The private \ct{Exception} method \mthind{Exception}{isResumable} tells us which exceptions are resumable, for example:
 \begin{code}{@TEST}
 Exception new isResumable --> true
 Halt new isResumable          --> true
@@ -352,7 +360,7 @@ As it turns out, roughly 2/3 of all exceptions are resumable:
 (Exception allSubclasses select: [:each | each new isResumable]) size --> 58
 \end{code}
 
-\ct{Halt} redefines the \ct{defaultAction} method, which specifies the action to perform if the exception is not caught anywhere (\ie there is no exception handler for the type \ct{Halt}).
+\ct{Halt} redefines the \mthind{Halt}{defaultAction} method, which specifies the action to perform if the exception is not caught anywhere (\ie there is no exception handler for the type \ct{Halt}).
 
 \begin{code}{}
 Halt>>>defaultAction
@@ -364,6 +372,7 @@ Halt>>>defaultAction
 
 The method  \ct{defaultAction} of the \ct{Halt} class signals a new exception \ct{UnhandledError}, meaning that no handler is present. \ct {UnhandledError} opens a debugger, as its default action shows.
 
+\mthindex{UnhandledError}{defaultAction}
 \begin{code}{}
 UnhandledError>>>defaultAction
 	"The current computation is terminated. The cause of the error should be logged or reported to the user. If the program is operating in an interactive debugging environment the computation should be suspended and the debugger activated."
@@ -372,6 +381,7 @@ UnhandledError>>>defaultAction
 
 A few messages later, the debugger opens:
 
+\mthindex{StandardToolSet}{debug:context:label:contents:fullView:}
 \begin{code}{}
 StandardToolSet>>>debug: aProcess context: aContext label: aString contents: contents fullView: aBool
 	^ Debugger openOn: aProcess context: aContext label: aString contents: contents fullView: aBool
@@ -380,6 +390,8 @@ StandardToolSet>>>debug: aProcess context: aContext label: aString contents: con
 %=================================================================
 \section{How handlers are looked up}
 
+\index{exception!handler}
+\index{activation context}
 We will now have a look at how block handlers are selected and fetched from the method call stack to handle a signaled exception. But before we do this, we need to understand how the control flow of a program is internally represented in the virtual machine.
 
 At each point in the execution of a program, the method call stack of a program is defined as a sequential list of activation contexts. Each activation context represents a method invocation and contains the information needed for its execution, namely its receiver, its arguments, and its local variables. It also contains a reference to the context that triggered its creation, \ie the activation context associated to the calling method. In \pharo, the classes \ct{MethodContext} and \ct{BlockContext} model this information. Activation contexts are linked to each other and form a chain describing the method call stack.
@@ -393,11 +405,14 @@ A \ct{FileDoesNotExistException} will be signaled, and the method call stack wil
 \end{figure}
 
 Since everything is an object in \st, we should expect activation contexts to also be objects.
-Actually, certain \st dialects and implementations use the native C execution stack of the virtual machine to avoid creating objects all the time.
+Actually, certain \st dialects and implementations use the native \ind{C} execution stack of the \ind{virtual machine} to avoid creating objects all the time.
 The \pharo virtual machine does not do this, but instead creates the list of activation context objects only on demand, for example, whenever the debugger is started.
 
+\index{BlockClosure}{on:do:}
 When we send \lct{\emph{aBlock} on: \emph{ExceptionClass} do: \emph{anHandler}}, we associate an exception handler (\lct{\emph{anHandler}}) to a given class of exceptions (\lct{\emph{ExceptionClass}}) for the activation context of the protected block (\lct{\emph{aBlock}}).
 This information is used to identify and invoke the exception handler whenever an exception is signaled. The handler will be available on the stack, and can be found by traversing the stack starting from the top down to the activation frame where the \ct{on:do:} message has been sent.
+
+%:===> CONTINUE INDEXING HERE <===
 
 If no exception handler is available on the stack, the message \ct{defaultAction} will be sent either by \ct{ContextPart>>>handleSignal:} or by \lct{UndefinedObject>>>handleSignal:}. The latter is associated to the bottom of the stack, and is defined as follows:
 
