@@ -15,21 +15,19 @@ TO DO:
 TO DO for old chapters
 ----------------------
 * Fix Makefile for PBE1, PBE2; separate Prefaces for each book
-- Port to Pharo -> OSCAR
-- Fix all broken tests -> OSCAR
-- Update all chapters to use macros for "click", "action-click" and "meta-click"
-- Change Class/System Browser to Browser everywhere!
-- Change System category / class category -> category
-
+All chapters fixed except:
 - Preface: revise to provide description of Pharo
-- Quick Tour -- fixed; adapt to final PBE image, if necessary; Pref Browser?
-- First App -- fixed; fix pretty-print instructions; file-out package
-- Syntax; Messages; Model -- fixed
-- Environment -- fixed; Debugger context is broken!
-- SUnit; Basic Classes; Collections  -- fixed
-- Streams
-- Morphic
-- Metaclasses
+- Quick Tour -- adapt to final PBE image, if necessary; Pref Browser?
+- First App -- fix pretty-print instructions; file-out package
+- Environment -- Debugger context is broken!
+-----------------------------------------------------------------------------
+Check/report these pharo bugs ...
+- pretty print (r) shortcut does nothing
+- pharo debugger context pane is broken (Environment chapter)
+- debugger does not know about block variables
+- context-clicking on process browser raises an error
+- change Tools>Method Search to Tools>Message Names
+- Refactoring scope super-sends of Morphic package broken
 -----------------------------------------------------------------------------
 STATUS OF NEW CHAPTERS
 ----------------------

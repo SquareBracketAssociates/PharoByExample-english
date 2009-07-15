@@ -66,7 +66,7 @@ To refresh your memory, here are the rules of the object model that we explored 
 	Every class has a superclass.
 
 \item{} % \label{rule:message}
-	Everything happens by message sends.
+	Everything happens by sending messages.
 
 \item{} % \label{rule:lookup}
 	Method lookup follows the inheritance chain.
@@ -152,7 +152,7 @@ TranslucentColor superclass --> Color
 Color superclass                   --> Object
 \end{code}
 
-Everything happens by \ind{message send}{}s (\ref{rule:message}), so we can deduce that \mthind{Color class}{blue} is a message to \ct{Color}, \mthind{Object}{class} and \mthind{Color}{alpha:} are messages to the color blue, \mthind{Morph}{openInWorld} is a message to an ellipse morph, and \mthind{Behavior}{superclass} is a message to \ct{TranslucentColor} and \ct{Color}.
+Everything happens by \ind{sending messages}{}s (\ref{rule:message}), so we can deduce that \mthind{Color class}{blue} is a message to \ct{Color}, \mthind{Object}{class} and \mthind{Color}{alpha:} are messages to the color blue, \mthind{Morph}{openInWorld} is a message to an ellipse morph, and \mthind{Behavior}{superclass} is a message to \ct{TranslucentColor} and \ct{Color}.
 The receiver in each case is an object, since everything is an object, but some of these objects are also classes.
 
 Method lookup follows the inheritance chain (\ref{rule:lookup}), so when we send the message \ct{class} to the result of \ct{Color blue alpha: 0.4}, the message is handled when the corresponding method is found in the class \ct{Object}, as shown in \figref{classmessage}.

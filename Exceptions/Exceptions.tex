@@ -790,28 +790,47 @@ Exception class>>>, anotherException
 
 The rest of the magic occurs in the class \ct{ExceptionSet}, which has a surprisingly trivial implementation.
 
+\begin{code}{}
+ExceptionSet>>>initialize
+	super initialize.
+	exceptions := OrderedCollection new
+
+ExceptionSet>>>, anException
+	self add: anException.
+	^self
+
+ExceptionSet>>>add: anException
+	exceptions add: anException
+
+ExceptionSet>>>handles: anException
+	exceptions do: [:ex | (ex handles: anException) ifTrue: [^true]].
+	^false
+\end{code}
+
 
 %=========================================================
-\section{How this is implemented?}
+\section{How exceptions are implemented}
 
-%:===> Revise exceptions implementation <===
 %\on{As an explanation, this part really does not work. I would prefer to leave it out.}
 %\sd{no this is really important I did a new pass on it}
 
-\on{need new intro}
+Let's have a look at how exceptions are implemented at the Virtual Machine level.
 
-\ugh{Up to now, we have presented the use of exceptions in \st without really saying a word about their implementation.
-at the execution engine level (Virtual Machine). 
-Normally you do not need to know how handlers are really looked up at execution time to use exceptions.
-Therefore in the first reading you can skip this section. Now if you are curious and really want to know how this is implemented at the Virtual Machine level, this section is for you. 
-This section will uncover the internal of the Pharo exception mechanism.
-The mechanism is quite simple, making it worth to know how it operates.
-This section is a wonderful example on how Pharo can reveal information just by browsing its source code.}
+%\on{need new intro}
+
+%\ugh{Up to now, we have presented the use of exceptions in \st without really saying a word about their implementation.
+%at the execution engine level (Virtual Machine). 
+%Normally you do not need to know how handlers are really looked up at execution time to use exceptions.
+%Therefore in the first reading you can skip this section. Now if you are curious and really want to know how this is implemented at the Virtual Machine level, this section is for you. 
+%This section will uncover the internal of the Pharo exception mechanism.
+%The mechanism is quite simple, making it worth to know how it operates.
+%This section is a wonderful example on how Pharo can reveal information just by browsing its source code.}
 
 
 \paragraph{Storing Handlers.}
-What we want to understand is how the information (exception type and its associated handler) is stored and how this information is found at run-time. Let us look at the definition of the central method \ct{on:do:} defined on the class \ct{BlockContext} which is the class representing the block-closure. 
+First we need to understand is how the exception type and its associated handler  are stored and how this information is found at run-time. Let us look at the definition of the central method \ct{on:do:} defined on the class \ct{BlockContext} which is the class representing the block-closure. 
 
+\needlines{6}
 \begin{code}{}
 BlockContext>>>on: exception do: handlerAction 
 	"Evaluate the receiver in the scope of an exception handler." 
@@ -821,12 +840,12 @@ BlockContext>>>on: exception do: handlerAction
 	^self value 
 \end{code}
 
-When reading the code we learn two things: First, this method is implemented as a primitive, which means that  a function defined in the virtual machine is executed, when this method is invoked. Second, the method body simply returns the value of the block receiver and sets the variable \ct{handlerActive} to true. Surprisingly simple. 
+This code tells us two things: First, this method is implemented as a primitive, which means that  a function defined in the virtual machine is executed, when this method is invoked. Second, the method body simply returns the value of the block receiver and sets the variable \ct{handlerActive} to true. Surprisingly simple. 
 
 A primitive method as \ct{on:do:} has a body and a primitive number. Normally, the method body is not executed since the method is bound to a function written in C. When the method has to be executed, the C function is executed instead. In case of a failure in the C function, the \st method body is executed. The method body is then in charge of taking decisions on how to deal with the failure.
 Here the method \ct{on:do:} is associated with the primitive number 199. This number is important to understand the following. 
 
-So you are puzzled. Where the argument of the \ct{on:do:} method are then stored. Let's look at the instance variables of the class \ct{BlockContext}. 
+So you are puzzled. Where are the arguments of the \ct{on:do:} method stored? Let's look at the instance variables of the class \ct{BlockContext}. 
 
 \begin{code}{}
 ContextPart variableSubclass: #BlockContext
@@ -836,9 +855,7 @@ ContextPart variableSubclass: #BlockContext
 	category: 'Kernel-Methods'
 \end{code}
 
-They are not defined there nor in the superclass. So what is the only solution left? To store the information in the object representing the stack itself. Let us have a look at that. The exception type associated and the exception handler are kept in this activation context (index 1 and 2, respectively). To verify this, you can inspect the following piece of code:
-
-\on{isn't there a method that uses this information? start there}
+They are neither defined here nor in the superclass. So what is the only solution left? To store the information in the object representing the stack itself. The exception type and the handler are stored in the activation context, in index positions 1 and 2, respectively. To verify this, you can evaluate the following piece of code:
 
 \begin{code}{}
 | exception handler | 
@@ -847,13 +864,10 @@ They are not defined there nor in the superclass. So what is the only solution l
  1 / 0] 
 on: Error 
 do: [:ex| ]. 
-{ exception . handler } 
+{ exception . handler } explore
 \end{code}
 
-The last statement is a 2-length array that contains the exception type and the exception handler. 
-
-\on{Don't see why this is important or interesting -- where is it used? I checked and could not find out where in the system this is accessed.}
-
+The last line explores a 2-length array that contains the exception type and the exception handler. 
 
 \paragraph{Finding Handlers.}
 Now that we know how the information is stored, let's have a look at how it is looked up at runtime. 
@@ -862,8 +876,8 @@ First, we might think that the primitive 199 is complex to write. But in our cas
 
 \begin{code}{}
 primitiveMarkHandlerMethod
-     "Primitive. Mark the method for exception handling. The primitive must fail after marking the 
-     context so that the regular code is run."
+     "Primitive. Mark the method for exception handling. The primitive must fail after
+     marking the context so that the regular code is run."
      
      self inline: false.
     ^self primitiveFail
@@ -875,7 +889,8 @@ does it.
 
 \begin{code}{}
 Exception>>signal
-	"Ask ContextHandlers in the sender chain to handle this signal.  The default is to execute and return my defaultAction."
+	"Ask ContextHandlers in the sender chain to handle this signal.
+	The default is to execute and return my defaultAction."
 
 	signalContext := thisContext contextTag.
 	^ thisContext nextHandlerContext handleSignal: self
@@ -970,10 +985,6 @@ In this chapter we saw how to use exceptions to signal and handle abnormal situa
 \item An exception handler may retry a protected block by sending \ct{retry} to the signaled exception. The handler remains in effect.
 
 \item An exception handler may specify a new block to try by sending \ct{retryUsing:} to the signaled exception, with the new block as its argument. Here too, the handler remains in effect.
-
-%:===> Complete Exception summary
-
-\item \on{add summary for remaining sections}
 
 \end{itemize}
 

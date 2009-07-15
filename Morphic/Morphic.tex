@@ -7,6 +7,7 @@
 % 2006-12-10 - Pollet translating
 % 2007-08-16 - Oscar edit
 % 2007-11-05 - Andrew edit
+% 2009-07-07 - Oscar migrate to Pharo
 
 %=================================================================
 \ifx\wholebook\relax\else
@@ -30,7 +31,7 @@
 % --------------------------------------------
     \graphicspath{{figures/} {../figures/}}
 	\begin{document}
-	\renewcommand{\nnbb}[2]{} % Disable editorial comments
+	% \renewcommand{\nnbb}[2]{} % Disable editorial comments
 	\sloppy
 \fi
 %=================================================================
@@ -40,8 +41,8 @@
 %Then we need a cookbook of how to do simple things in Morphic.
 %The observer pattern and its implementation with changed:  and update: messages could go here.  Or in ``Idiomatic design patterns'' later.}
 
-\indmain{Morphic} is the name given to \squeak's graphical interface.
-Morphic is written in \st, so it is fully portable between operating systems; as a consequence, \squeak looks exactly the same on Unix, MacOS and Windows.
+\indmain{Morphic} is the name given to \pharo's graphical interface.
+Morphic is written in \st, so it is fully portable between operating systems; as a consequence, \pharo looks exactly the same on Unix, MacOS and Windows.
 What distinguishes Morphic from most other user interface toolkits is that it does not have separate modes for ``composing'' and ``running'' the interface: all the graphical elements can be assembled and disassembled by the user, at any time.\footnote{We thank Hilaire Fernandes for permission to base this chapter on his original article in French.}
 
 \ab{After the first printing, I took an editing pass, correcting some errors and grammatical infelicities.}
@@ -52,37 +53,43 @@ What distinguishes Morphic from most other user interface toolkits is that it do
 \section{The history of Morphic}
 
 Morphic was developed by John Maloney and Randy Smith for the \ind{Self} programming language, staring around 1993. 
-Maloney later wrote a new version of Morphic for \squeak, but the basic ideas behind the Self version are still alive and well in \squeak Morphic: \emph{directness} and \emph{liveness}.
+Maloney later wrote a new version of Morphic for \squeak, but the basic ideas behind the Self version are still alive and well in \pharo Morphic: \emph{directness} and \emph{liveness}.
 Directness means that the shapes on the screen are objects that can be examined or changed directly, that is, by pointing at them using the mouse.
 Liveness means that the user interface is always able to respond to user actions: information on the screen is continuously updated as the world that it describes changes.
 A simple example of this is that you can detach a menu item and keep it as a button.
 
-\dothis{Bring up the world menu. Blue-click once on the world menu to bring up its morphic halo, then blue-click again on the menu item you want to detach to bring up its halo.  Now drag that item elsewhere on the screen by grabbing the black handle \grabHandle, as shown in \figref{detachingMenu}.}
+\dothis{Bring up the world menu. \Metaclick once on the world menu to bring up its morphic halo\footnote{Recall that you should set \button{halosEnabled} in the Preferences browser. Alternatively, you can evaluate \ct{Preferences enable: \#halosEnabled} in a workspace.}, then \metaclick again on the menu item you want to detach to bring up its halo.  Now drag that item elsewhere on the screen by grabbing the black handle \grabHandle, as shown in \figref{detachingMenu}.}
 \index{Morphic!halo}
 \index{blue button}
 
 \begin{figure}[ht]
 	\ifluluelse
-		{\centerline{\includegraphics[width=0.6\textwidth]{detachingMenu}}}
-		{\centerline{\includegraphics[width=0.4\textwidth]{detachingMenu}}}
-	\caption{Detaching a morph, here the \menu{new morph} menu item, to make it an independent button.
+		{\centerline{\includegraphics[width=0.25\textwidth]{detachingMenu}}}
+		{\centerline{\includegraphics[width=0.25\textwidth]{detachingMenu}}}
+	\caption{Detaching a morph, here the \menu{Workspace} menu item, to make it an independent button.
 		\label{fig:detachingMenu}}
 \end{figure}
 
-All of the objects that you see on the screen when you run \squeak are \emph{Morphs}, that is, they are instances of subclasses of class \ct{Morph}.
+All of the objects that you see on the screen when you run \pharo are \emph{Morphs}, that is, they are instances of subclasses of class \ct{Morph}.
 \mbox{\ct{Morph}} itself is a large class with many methods; this makes it possible for subclasses to implement interesting behaviour with little code.
 You can create a morph to represent any object, although how good a representation you get depends on the object!
 
-\dothis{To create a morph to represent a string object, execute the following code in a workspace, one line at a time.}
+\dothis{To create a morph to represent a string object, execute the following code in a workspace.} % , one line at a time.}
 \begin{code}{}
-s := 'Morph' asMorph openInWorld.
-s openViewerForArgument
+'Morph' asMorph openInWorld
 \end{code}
 \cmindex{Morph}{openInWorld}
 
-The first line creates a Morph to represent the string \ct{'Morph'}, and then opens it (that is, displays it) in the ``world'', which is the name that \squeak gives to the screen.  
-You should obtain a graphical element\,---\,a Morph\,---\,which you can manipulate by blue-clicking.
-The second line opens a ``viewer'' that shows you attributes of this Morph, such as its \ct{x} and \ct{y}  coordinates on the screen.  Clicking on one of the yellow exclamation marks sends a message to the Morph, which responds appropriately.
+%\begin{code}{}
+%s := 'Morph' asMorph openInWorld.
+%s openViewerForArgument
+%\end{code}
+%\cmindex{Morph}{openInWorld}
+% ON: openViewerForArgument is gone in pharo!
+
+This creates a Morph to represent the string \ct{'Morph'}, and then opens it (that is, displays it) in the ``world'', which is the name that \pharo gives to the screen.  
+You should obtain a graphical element\,---\,a Morph\,---\,which you can manipulate by \metaclick{ing}.
+%The second line opens a ``viewer'' that shows you attributes of this Morph, such as its \ct{x} and \ct{y}  coordinates on the screen.  Clicking on one of the yellow exclamation marks sends a message to the Morph, which responds appropriately.
 
 Of course, it is possible to define morphs that are more interesting graphical representations than the one that you have just seen.
 The method \mthind{Object}{asMorph} has a default implementation in class \ct{Object} class that just creates a StringMorph.
@@ -172,17 +179,17 @@ If you now try to grab the star with the mouse, you will find that you actually 
 It is possible to embed more morphs inside joe.  
 In addition to doing this programmatically, you can also embed morphs by direct manipulation.
 
-\dothis{From the world menu select ``objects'' and click on the button labeled ``Graphics''.
-\fix
-Drag an ellipse and a star from the \menu{Supplies} flap. \on{No flap anymore!}
-Place the star over the ellipse, and yellow-click the star to bring up a menu\footnote{You can also blue-click the star to bring up the morphic halo, and then click the red menu handle.}.   Select \menu{embed into \go Ellipse}.  Now the star and the ellipse move together.}
+%\dothis{From the world menu select ``objects'' and click on the button labeled ``Graphics''.
+%\fix
+%Drag an ellipse and a star from the \menu{Supplies} flap. \on{No flap anymore!}
+%Place the star over the ellipse, and yellow-click the star to bring up a menu\footnote{You can also \metaclick the star to bring up the morphic halo, and then click the red menu handle.}.   Select \menu{embed into \go Ellipse}.  Now the star and the ellipse move together.}
 
-To remove a sub-morph, do \ct{joe} \mthind{Morph}{removeMorph:} \ct{star} or \ct{star} \mthind{Morph}{delete}.  This can also be done by direct manipulation:
+%To remove a sub-morph, do \ct{joe} \mthind{Morph}{removeMorph:} \ct{star} or \ct{star} \mthind{Morph}{delete}.  This can also be done by direct manipulation:
 
-\dothis{Blue click twice on the star.  Drag the star away from the ellipse using the grab handle \grabHandle{}.}
+%\dothis{Blue click twice on the star.  Drag the star away from the ellipse using the grab handle \grabHandle{}.}
 
-\noindent
-The first click brings up the morphic halo on the ellipse; the second click the halo on the star.   Each click moves the focus down one level of embedding.
+%\noindent
+%The first click brings up the morphic halo on the ellipse; the second click the halo on the star.   Each click moves the focus down one level of embedding.
 
 
 %=================================================================
@@ -321,7 +328,6 @@ This doesn't matter when we fill the cross with an opaque colour, but the bug be
 m := CrossMorph new bounds: (0@0 corner: 300@300).
 m openInWorld.
 m color: (Color blue alpha: 0.3).
-
 \end{code}
 
 \noindent
@@ -421,17 +427,15 @@ CrossMorph>>>handlesMouseDown: anEvent
 	^true
 \end{method}
 
-\fix
-
-Suppose that when the red mouse button is clicked, we want to change the color of the cross to red, and when the yellow button is clicked we want to change the color to yellow.
+Suppose that when we click on the cross, we want to change the color of the cross to red, and when we \actclick on it, we want to change the color to yellow.
 This can be accomplished by \mthref{mouseDown}.
 
 \needlines{7}
 \begin{method}[mouseDown]{Reacting to mouse clicks by changing the morph's color.}
 CrossMorph>>>mouseDown: anEvent
-	anEvent redButtonPressed
+	anEvent redButtonPressed "click"
 		ifTrue: [self color: Color red].
-	anEvent yellowButtonPressed
+	anEvent yellowButtonPressed "action-click"
 		ifTrue: [self color: Color yellow].
 	self changed
 \end{method}
@@ -441,7 +445,7 @@ Notice that in addition to changing the color of the morph, this method also sen
 This makes sure that morphic sends \ct{drawOn:} in a timely fashion.
 \ab{However, the \ct{self changed} message seems to be entirely unnecessary; the colour changes instantly without it.}
 Note also that once the morph handles \ind{mouse events}, you can no longer grab it with the mouse and move it.
-Instead you have to use the halo: blue-click on the morph to make the halo appear and grab either the brown move handle \moveHandle{} or the black pickup handle \grabHandle{} at the top of the morph.
+Instead you have to use the halo: \metaclick on the morph to make the halo appear and grab either the brown move handle \moveHandle{} or the black pickup handle \grabHandle{} at the top of the morph.
 
 The \ct{anEvent} argument of \ct{mouseDown:} is an instance of \mbox{\clsind{MouseEvent},} which is a subclass of \lct{Mor\-phic\-Event}. \ct{MouseEvent} defines the \mthind{MouseEvent}{redButtonPressed} and \mthind{MouseEvent}{yellowButtonPressed} methods. Browse this class to see what other methods it provides to interrogate the mouse event.
 
@@ -500,7 +504,7 @@ The \ct{anEvent} argument of \ct{handleKeystroke:} is an instance of \clsind{Key
 
 \subsection{Morphic animations}
 
-Morphic provides a simple animation system with two main methods: \mthind{Morphic}{step} is sent to a morph at regular intervals of time, while \mthind{Morphic}{stepTime} specifies the time in milliseconds between \ct{step}s.\footnote{\ct{stepTime} is actually the \emph{minimum} time between \ct{step}s.   If you ask for a \ct{stepTime} of 1\,ms, don't be surprised if \squeak is too busy to step your morph that often.}
+Morphic provides a simple animation system with two main methods: \mthind{Morphic}{step} is sent to a morph at regular intervals of time, while \mthind{Morphic}{stepTime} specifies the time in milliseconds between \ct{step}s.\footnote{\ct{stepTime} is actually the \emph{minimum} time between \ct{step}s.   If you ask for a \ct{stepTime} of 1\,ms, don't be surprised if \pharo is too busy to step your morph that often.}
 In addition, 
 \mthind{Morphic}{startStepping} turns on the stepping mechanism, while \mthind{Morphic}{stopStepping} turns it off again;  \mthind{Morphic}{isStepping} can be used to find out whether a morph is currently being stepped.
 \index{Morphic!animation}
@@ -854,33 +858,35 @@ DieMorph>>>drawOn: aCanvas
 \noindent
 That's all you need to do!
 
-If you're curious, have a look at the \mthind{Canvas}{asAlphaBlendingCanvas:} method.
-You can also get antialiasing by using \clsind{BalloonCanvas} and transforming the die drawing methods as shown in \mthsref{aadie}.
-
 \begin{figure}[ht]
 	\centerline{\includegraphics[scale=0.7]{multiMorphs}}
 	\caption{The die displayed with alpha-transparency.
 		\label{fig:multiMorphs}}
 \end{figure}
 
-\needlines{6}
-\begin{methods}[aadie]{Drawing an antialiased die.}
-DieMorph>>>drawOn: aCanvas
-	| theCanvas |
-	theCanvas := aCanvas asBalloonCanvas aaLevel: 3.
-	super drawOn: aCanvas.
-	(self perform: ('face' , dieValue asString) asSymbol)
-		do: [:aPoint | self drawDotOn: theCanvas at: aPoint]
+% ON: This appears to be broken:
 
-DieMorph>>>drawDotOn: aCanvas at: aPoint
-	aCanvas
-		drawOval: (Rectangle
-			center: self position + (self extent * aPoint)
-			extent: self extent / 6)
-		color: Color black
-		borderWidth: 0
-		borderColor: Color transparent
-\end{methods}
+%If you're curious, have a look at the \mthind{Canvas}{asAlphaBlendingCanvas:} method.
+%You can also get antialiasing by using \clsind{BalloonCanvas} and transforming the die drawing methods as shown in \mthsref{aadie}.
+
+%\needlines{6}
+%\begin{methods}[aadie]{Drawing an antialiased die.}
+%DieMorph>>>drawOn: aCanvas
+%	| theCanvas |
+%	theCanvas := aCanvas asBalloonCanvas aaLevel: 3.
+%	super drawOn: aCanvas.
+%	(self perform: ('face' , dieValue asString) asSymbol)
+%		do: [:aPoint | self drawDotOn: theCanvas at: aPoint]
+
+%DieMorph>>>drawDotOn: aCanvas at: aPoint
+%	aCanvas
+%		drawOval: (Rectangle
+%			center: self position + (self extent * aPoint)
+%			extent: self extent / 6)
+%		color: Color black
+%		borderWidth: 0
+%		borderColor: Color transparent
+%\end{methods}
 
 %=================================================================
 \section{Chapter summary}
@@ -889,7 +895,7 @@ Morphic is a graphical framework in which graphical interface elements can be dy
 
 \begin{itemize}
   \item You can convert an object into a morph and display that morph on the screen by sending it the messages \ct{asMorph openInWorld}.
-  \item You can manipulate a morph by blue-clicking on it and using the handles that appear. (Handles have help balloons that explain what they do.)
+  \item You can manipulate a morph by \metaclick{ing} on it and using the handles that appear. (Handles have help balloons that explain what they do.)
   \item You can compose morphs by embedding one onto another, either by drag and drop or by sending the message \ct{addMorph:}.
   \item You can subclass an existing morph class and redefine key methods, like \ct{initialize} and \ct{drawOn:}.
   \item You can control how a morph reacts to mouse and keyboard events by redefining the methods \ct{handlesMouseDown:}, \ct{handlesMouseOver:}, \etc

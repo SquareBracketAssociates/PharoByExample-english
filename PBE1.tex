@@ -1,0 +1,159 @@
+% $Author: oscar $
+% $Date: 2009-06-30 15:08:59 +0200 (Tue, 30 Jun 2009) $
+% $Revision: 27772 $
+
+% HISTORY:
+% 2009-07-10 - Oscar setup
+
+%=================================================================
+% This is the main file for the Pharo By Example Omnibus.
+% The individual chapters can also be latexed by themselves.
+%=================================================================
+\documentclass[a4paper,10pt,twoside]{book}
+\usepackage[
+	papersize={6in,9in},
+	hmargin={.75in,.75in},
+	vmargin={.75in,1in},
+	ignoreheadfoot
+]{geometry}
+\input{common.tex}
+\setboolean{lulu}{true}
+%=================================================================
+% A4
+%\documentclass[a4paper,11pt,twoside]{book}
+%\input{common.tex}
+%\usepackage{a4wide}
+%=================================================================
+% Add the path for the figures of each chapter here:
+\graphicspath{
+	{figures/}
+	% BOOK 1
+	{BasicClasses/figures/}
+	{Collections/figures/}
+	{Environment/figures/}
+	{FirstApp/figures/}
+	{Messages/figures/}
+	{Metaclasses/figures/}
+	{Model/figures/}
+	{Morphic/figures/}
+	{Preface/figures/}
+	{Profiling/figures/}
+	{QuickTour/figures/}
+	{SUnit/figures/}
+	{Streams/figures/}
+	{Syntax/figures/}
+}
+%=================================================================
+\let\wholebook=\relax
+\makeindex
+\makeglossary
+%=================================================================
+\renewcommand{\nnbb}[2]{} % Disable editorial comments
+%=================================================================
+\begin{document}
+\frontmatter
+%=================================================================
+\setcounter{page}{1}
+\pagestyle{headings}
+%=================================================================
+\author{
+	Andrew P. Black\quad
+	St\'ephane Ducasse\\[1ex]
+	Oscar Nierstrasz\quad
+	Damien Pollet
+	\\[4ex]
+	with Damien Cassou and Marcus Denker}
+% (to be updated at the end)
+\title{\Huge\bf Pharo by Example}
+\isodate
+\date{\emph{Version of \today}}
+\maketitle
+%=================================================================
+~ % force the vfill
+\vfill
+\begin{footnotesize}
+\setlength{\parindent}{0pt}
+This book is available as a free download from \pbe.\\[1cm]
+
+Copyright \copyright~2007, 2008, 2009 by Andrew P. Black, St\'ephane Ducasse, Oscar Nierstrasz and Damien Pollet.\\[1cm]
+
+The contents of this book are protected under Creative Commons Attribution-ShareAlike 3.0 Unported license.
+
+\emph{You are free:}
+\begin{description}
+  \item[to Share] \,---\, to copy, distribute and transmit the work
+  \item[to Remix] \,---\, to adapt the work
+\end{description}
+\emph{Under the following conditions:}
+\begin{description}
+  \item[Attribution.] You must attribute the work in the manner specified by the author or licensor (but not in any way that suggests that they endorse you or your use of the work).
+  \item[Share Alike.] If you alter, transform, or build upon this work, you may distribute the resulting work only under the same, similar or a compatible license.
+\end{description}
+\begin{itemize}
+  \item For any reuse or distribution, you must make clear to others the license terms of this work. The best way to do this is with a link to this web page:
+  \url{creativecommons.org/licenses/by-sa/3.0/}
+  \item Any of the above conditions can be waived if you get permission from the copyright holder.
+  \item Nothing in this license impairs or restricts the author's moral rights.
+\end{itemize}
+\raisebox{-0.25cm}{\includegraphics[width=2cm]{CreativeCommons-BY-SA}}\quad
+\parbox{\textwidth-2cm-1em}{
+	Your fair dealing and other rights are in no way affected by the above.
+	This is a human-readable summary of the Legal Code (the full license):\\
+	\url{creativecommons.org/licenses/by-sa/3.0/legalcode}}\\[1cm]
+Published by Square Bracket Associates, Switzerland. \sba\\
+% ISBN 978-3-9523341-0-2\\
+% First Edition, September, 2007. Revised editions with corrections, March 2008, May 2008.
+Special Omnibus edition, September 2009 (planned)
+\end{footnotesize}
+\vfill
+%=================================================================
+%\bibliographystyle{jurabib}
+%\end{document}
+%=================================================================
+\tableofcontents
+% \listoffigures
+% \listoftables
+% \lstlistoflistings
+\sloppy % To avoid LaTeX's annoying habit of letting lines stick over the margins!
+%=================================================================
+\input{Preface/Preface.tex}
+\mainmatter
+%=================================================================
+\part{Getting Started}
+\input{QuickTour/QuickTour.tex}
+\input{FirstApp/FirstApp.tex}
+\input{Syntax/Syntax.tex}
+\input{Messages/Messages.tex}
+%=================================================================
+\part{Developing in Squeak}
+\input{Model/Model.tex}
+\input{Environment/Environment.tex}
+\input{SUnit/SUnit.tex}
+\input{BasicClasses/BasicClasses.tex}
+\input{Collections/Collections.tex}
+\input{Streams/Streams.tex}
+\input{Morphic/Morphic.tex}
+%=================================================================
+\part{Advanced Squeak}
+\input{Metaclasses/Metaclasses.tex}
+%=================================================================
+\appendix
+\part{Appendices}
+\input{FAQ/FAQ.tex}
+%=================================================================
+% \printglossary
+\bibliographystyle{jurabib}
+\bibliography{scg}
+%=================================================================
+{\small\raggedright\printindex}
+%=================================================================
+% Round out to multiple of 4 pages
+% NB: we *must* have some blank pages at the end
+\cleardoublepage
+~ % Force some space
+\cleardoublepage
+~ % Force some space
+\cleardoublepage
+%=================================================================
+\end{document}
+%=================================================================

@@ -22,7 +22,7 @@ PDFLATEX = pdflatex -file-line-error
 
 # TO-DO: add rules for BOOK1?
 
-# BOOK1=PBE1
+BOOK1=PBE1
 BOOK2=PBE2
 OMNIBUS=PBE-Omnibus
 
@@ -43,6 +43,17 @@ OMNIBUS : clean examples examples2
 		-e 's/Package wrapfig Warning: wrapfigure used inside a conflicting environment[\n\r]*//g;' \
 		warnings.txt
 
+BOOK1 : clean examples
+	time ${PDFLATEX} ${BOOK1}
+	time ${PDFLATEX} ${BOOK1} | tee warnings.txt
+	# Filter out blank lines and bogus warnings
+	perl -pi \
+		-e '$$/ = "";' \
+		-e 's/[\n\r]+/\n/g;' \
+		-e 's/LaTeX Warning: Label `\w*:defaultlabel'\'' multiply defined.[\n\r]*//g;' \
+		-e 's/Package wrapfig Warning: wrapfigure used inside a conflicting environment[\n\r]*//g;' \
+		warnings.txt
+
 BOOK2 : clean examples2
 	time ${PDFLATEX} ${BOOK2}
 	time ${PDFLATEX} ${BOOK2} | tee warnings.txt
@@ -53,6 +64,8 @@ BOOK2 : clean examples2
 		-e 's/LaTeX Warning: Label `\w*:defaultlabel'\'' multiply defined.[\n\r]*//g;' \
 		-e 's/Package wrapfig Warning: wrapfigure used inside a conflicting environment[\n\r]*//g;' \
 		warnings.txt
+
+
 
 # We need a makefile rule to generate the index as well ...
 index :
