@@ -112,8 +112,11 @@ graffleDirs :
 todo :
 	fgrep '%:=' *.tex */*.tex
 
-# report tex files missing HISTORY
 history :
+	sh history.sh > history.txt
+
+# report tex files missing HISTORY
+missinghistory :
 	find . -name \*.tex | \
 	xargs fgrep -L HISTORY
 
