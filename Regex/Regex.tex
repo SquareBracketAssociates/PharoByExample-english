@@ -39,15 +39,16 @@
 %=================================================================
 \chapter{Regular Expressions in \pharo}\label{cha:regex}
 
-
-Regular expressions are widely used in many scripting languages such as Perl, Python and Ruby.
+\indexmain{Regular expressions|see{Regex}}
+Regular expressions are widely used in many scripting languages such as \ind{Perl}, \ind{Python} and \ind{Ruby}.
 They are useful to identify strings that match a certain pattern, to check that input conforms to an expected format, and to rewrite strings to new formats.
-\pharo also supports regular expressions due to the Regex package contributed by Vassili Bykov.
-Regex is installed by default in \pharo. If you are using an older image that does not include Regex the Regex package, you can install it yourself from SqueakSource\footnote{\url{http://www.squeaksource.com/Regex.html}}.
+\pharo also supports regular expressions due to the \pkgind{Regex} package contributed by Vassili Bykov. \index{Bykov, Vassili}
+Regex is installed by default in \pharo. If you are using an older image that does not include Regex the Regex package, you can install it yourself from \ind{\sqsrc}\footnote{\url{http://www.squeaksource.com/Regex.html}}.
 
 A regular expression\footnote{\url{http://en.wikipedia.org/wiki/Regular_expression}} is a template that matches a set of strings.
 For example, the regular expression \ct{'h.*o'} will match the the strings \ct{'ho'}, \ct{'hiho'} and \ct{'hello'}, but it will not match \ct{'hi'} or \ct{'yo'}.
 We can see this in \pharo as follows:
+\mthindex{String}{matchesRegex:}
 \begin{code}{@TEST}
 'ho' matchesRegex: 'h.*o'     --> true
 'hiho' matchesRegex: 'h.*o'  --> true
@@ -58,7 +59,7 @@ We can see this in \pharo as follows:
 
 In this chapter we will start with a small tutorial example in which we will develop a couple of classes to generate a very simple site map for a web site.
 We will use regular expressions
-(i) to identify HTML files,
+(i) to identify \ind{HTML} files,
 (ii) to strip the full path name of a file down to just the file name,
 (iii) to extract the title of each web page for the site map, and
 (iv) to generate a relative path from the root directory of the web site to the HTML files it contains.
@@ -67,7 +68,7 @@ After we complete the tutorial example, we will provide a more complete descript
 %=================================================================
 \section{Tutorial example\,---\,generating a site map}
 
-% All the code is in the package SBE2-Regex in http://www.squeaksource.com/SqueakByExample
+% All the code is in the package PBE-Regex in http://www.squeaksource.com/SqueakByExample
 
 Our job is to write a simple application that will generate a site map for a web site that we have stored locally on our hard drive.  The site map will contain links to each of the HTML files in the web site, using the title of the document as the text of the link. Furthermore, links will be indented to reflect the directory structure of the web site.
 
@@ -132,8 +133,10 @@ If we browse the \ct{FileDirectory} class, we find that the method \ct{fileNames
 Character cr asString matchesRegex: '.' --> false
 \end{code}
 
-The \ct{*} (known as the ``Kleene star'', after Stephen Kleene, who invented it) is a regex operator that will match the preceding regex any number of times (including zero).
+\index{Regex syntax!@\ct{*}}
+The \ct{*} (known as the ``\ind{Kleene star}'', after Stephen Kleene, who invented it) is a regex operator that will match the preceding regex any number of times (including zero).
 
+\mthindex{String}{matchesRegex:}
 \begin{code}{@TEST}
 '' matchesRegex: 'x*'     --> true
 'x' matchesRegex: 'x*'   --> true
@@ -141,6 +144,7 @@ The \ct{*} (known as the ``Kleene star'', after Stephen Kleene, who invented it)
 'y' matchesRegex: 'x*'   --> false
 \end{code}
 
+\index{Regex syntax!@\ct{.}}
 Since the dot is a special character in regexes, if we want to literally match a dot, then we must escape it.
 
 \begin{code}{@TEST}
@@ -177,7 +181,7 @@ If you send \ct{htmlFiles} to a \ct{WebDir} instance and \menu{print it}, you sh
 %-----------------------------------------------------------------
 \subsection{Caching the regex}
 
-Now, if you browse \ct{matchesRegex:}, you will discover that it is an extension method of \ct{String} that creates a fresh instance of \ct{RxParser} every time it is sent.  That is fine for ad hoc queries, but if we are applying the same regex to every file in a web site, it is smarter to create just one instance of \ct{RxParser} and reuse it. Let's do that.
+Now, if you browse \mthind{String}{matchesRegex:}, you will discover that it is an extension method of \ct{String} that creates a fresh instance of \clsind{RxParser} every time it is sent.  That is fine for ad hoc queries, but if we are applying the same regex to every file in a web site, it is smarter to create just one instance of \ct{RxParser} and reuse it. Let's do that.
 
 \dothis{Add a new instance variable \ct{htmlRegex} to \ct{WebDir} and initialize it by sending \ct{asRegex} to our regex string.  Modify \ct{WebDir>>htmlFiles} to use the same regex each time as follows:}
 
@@ -231,14 +235,15 @@ That's not very informative, so let's use a regex to get the actual file name fo
 To do this, we want to strip away all the characters from the path name up to the last directory.
 On a Unix file system directories end with a slash (\ct{/}), so we need to delete everything up to the last slash in the file path.
 
-The \ct{String} extension method \ct{copyWithRegex:matchesReplacedWith:} does what we want:
+The \ct{String} extension method \mthind{String}{copyWithRegex:matchesReplacedWith:} does what we want:
 
 \begin{code}{@TEST}
 'hello' copyWithRegex: '[elo]+' matchesReplacedWith: 'i' --> 'hi'
 \end{code}
 
+\index{Regex syntax!@\ct{+}}
 In this example the regex \ct{[elo]} matches any of the characters \ct{e}, \ct{l} or \ct{o}.
-The operator \ct{+} is like the Kleene star, but it matches exactly \emph{one} or more instances of the regex preceding it. Here it will match the entire substring \ct{'ello'} and replay it in a fresh string with the letter \ct{i}.
+The operator \ct{+} is like the \ind{Kleene star}, but it matches exactly \emph{one} or more instances of the regex preceding it. Here it will match the entire substring \ct{'ello'} and replay it in a fresh string with the letter \ct{i}.
 
 \dothis{Add the following method and verify that it works as expected.}
 
@@ -263,6 +268,7 @@ First we need a way to get at the contents of each page. This is straightforward
 
 \dothis{Add the following method and try it out.}
 
+\mthind{FileStream}{oldFileOrNoneNamed:}
 \begin{code}{}
 WebPage>>contents
 	^ (FileStream oldFileOrNoneNamed: path) contents
@@ -270,6 +276,7 @@ WebPage>>contents
 
 Actually, you might have problems if your web pages contain non-ascii characters, in which case you might be better off with the following code:
 
+\clsindex{Latin1TextConverter}
 \begin{code}{}
 WebPage>>contents
 	^ (FileStream oldFileOrNoneNamed: path)
@@ -288,8 +295,11 @@ You should now be able to see something like this:
 
 Now let's extract the title. In this case we are looking for the text that occurs \emph{between} the HTML tags \ct{<title>} and \ct{</title>}. 
 
+\index{Regex syntax!@\ct{^}}
 What we need is a way to extract \emph{part} of the match of a regular expression. Subexpressions of regexes are delimited by parentheses.  Consider the regex \ct{([CARETaeiou]+)([aeiou]+)}. It consists of two subexpressions, the first of which will match a sequence of one or more non-vowels, and the second of which will match one or more vowels. (The operator \ct{CARET} at the start of a bracketed set of characters negates the set.\footnote{NB: In \pharo the caret is also the return keyword, which we write as \ct{^}. To avoid confusion, we will write \ct{CARET} when we are using the caret within regular expressions to negate sets of characters, but you should not forget, they are actually the same thing.}) Now we will try to match a \emph{prefix} of the string \ct{'pharo'} and extract the submatches:
 
+\mthindex{RxMatcher}{matchesPrefix:}
+\mthindex{RxMatcher}{subexpression:}
 \begin{code}{| re |}
 re := '([CARETaeiou]+)([aeiou]+)' asRegex.
 re matchesPrefix: 'pharo' --> true
@@ -304,6 +314,7 @@ We will use the same trick to extract the title from an HTML file.
 
 \dothis{Define the following method:}
 
+\mthindex{String}{asRegexIgnoringCase}
 \begin{code}{}
 WebPage>>title
 	| re |
@@ -335,6 +346,7 @@ Luckily this is trivial\,---\,it is simple the full path to the web page minus t
 
 We must only watch out for one thing.  Since the \ct{homePath} variable does not end in a \ct{/}, we must append one, so that relative path does not include a leading \ct{/}. Notice the difference between the following two results:
 
+\mthindex{String}{copyWithRegex:matchesReplacedWith:}
 \begin{code}{}
 '/home/testweb/index.html' copyWithRegex: '/home/testweb' matchesReplacedWith: '' --> '/index.html'
 '/home/testweb/index.html' copyWithRegex: '/home/testweb/' matchesReplacedWith: '' -->  'index.html'
@@ -407,22 +419,22 @@ Now we can generate a table of contents for an arbitrary web directory!
 WebDir selectHome makeToc
 \end{code}
 
-%:===> Change regex web example to use PBE instead of SBE
-
 \begin{figure}[tbh]
 \begin{center}
-\includegraphics[width=\textwidth]{SBE-toc}
+\includegraphics[width=\textwidth]{PBE-toc}
 \caption{A small site map}
-\label{fig:SBE-toc}
+\label{fig:PBE-toc}
 \end{center}
 \end{figure}
 
 %=================================================================
 \section{Regex syntax}
 
+\indexmain{Regex syntax}
 We will now have a closer look at the syntax of regular expressions as supported by the Regex package.
 
 The simplest regular expression is a single character.  It matches exactly that character. A sequence of characters matches a string with exactly the same sequence of characters:
+\mthindex{String}{matchesRegex:}
 \begin{code}{@TEST}
 'a' matchesRegex: 'a'                  --> true
 'foobar' matchesRegex: 'foobar'  --> true
@@ -434,7 +446,8 @@ produce more complex regular expressions. Sequencing (placing expressions one
 after another) as an operator is, in a certain sense, ``invisible''\,---\,yet it is
 arguably the most common.
 
-We have already seen the Kleene star (\ct{*}) and the \ct{+} operator.
+\indexmain{Regex syntax!@\ct{*}}
+We have already seen the \ind{Kleene star} (\ct{*}) and the \ct{+} operator.
 A regular expression followed by an asterisk matches any number (including 0) of matches of the original expression. For example:
 \begin{code}{@TEST}
 'ab' matchesRegex: 'a*b'         --> true
@@ -443,7 +456,8 @@ A regular expression followed by an asterisk matches any number (including 0) of
 'aac' matchesRegex: 'a*b'	    --> false    "b does not match"
 \end{code}
 
-The Kleene start has higher precedence than sequencing. A star applies to the
+\index{Regex!operator precedence}
+The Kleene star has higher precedence than sequencing. A star applies to the
 shortest possible subexpression that precedes it. For example, \ct{ab*}
 means \ct{a} followed by zero or more occurrences of \ct{b}, not ``zero or more
 occurrences of \ct{ab}'':
@@ -452,12 +466,15 @@ occurrences of \ct{ab}'':
 'abab' matchesRegex: 'ab*' --> false
 \end{code}
 
+\indexmain{Regex syntax!@\ct{()}}
 To obtain a regex that matches ``zero or more occurrences of \ct{ab}'', we must enclose \ct{ab} in parentheses:
 \begin{code}{@TEST}
 'abab' matchesRegex: '(ab)*'   --> true
 'abcab' matchesRegex: '(ab)*' --> false    "c spoils the fun"
 \end{code}
 
+\indexmain{Regex syntax!@\ct{+}}
+\indexmain{Regex syntax!@\ct{?}}
 Two other useful operators similar to \ct{*} are \ct{+} and \ct{?}.
 \ct{+} matches one or more instances of the regex it modifies, and \ct{?} will match zero or one instances.
 \begin{code}{@TEST}
@@ -467,6 +484,7 @@ Two other useful operators similar to \ct{*} are \ct{+} and \ct{?}.
 'abbc' matchesRegex: 'ab?c' --> false    "too many b's"
 \end{code}
 
+\indexmain{Regex syntax!escape}
 As we have seen, the characters \ct{*}, \ct{+}, \ct{?}, \ct{(}, and \ct{)} have special meaning within regular expressions. If we need to match any of them literally, it should be escaped by preceding it with a backslash \ct{\}. Thus, backslash is also special character, and needs to be escaped for a literal match. The same holds for all further special characters we will see.
 \begin{code}{@TEST}
 'ab*' matchesRegex: 'ab*'  --> false    "star in the right string is special"
@@ -474,6 +492,7 @@ As we have seen, the characters \ct{*}, \ct{+}, \ct{?}, \ct{(}, and \ct{)} have 
 'a\c' matchesRegex: 'a\\c'  --> true
 \end{code}
 
+\indexmain{Regex syntax!@\ct{|}}
 The last operator is \ct{|}, which expresses choice between two subexpressions.
 It matches a string if either of the two subexpressions matches the string.
 It has the lowest precedence\,---\,even lower than sequencing. For example, \ct{ab*|ba*} means 'a followed by any number of b's, or b followed by any number of a's':
@@ -492,6 +511,7 @@ A bit more complex example is the expression \ct{c(a|d)+r}, which matches the na
 
 It is possible to write an expression that matches an empty string, for example the expression \ct{a|} matches an empty string.  However, it is an error to apply \ct{*}, \ct{+}, or \ct{?} to such an expression: \ct{(a|)*} is invalid.
 
+\indexmain{Regex syntax!character set}
 So far, we have used only characters as the \emph{smallest} components of regular expressions. There are other, more interesting, components. A character set is a string of characters enclosed in square brackets. It matches any single character if it appears between the brackets. For example, \ct{[01]} matches either \ct{0} or \ct{1}:
 \begin{code}{@TEST}
 '0' matchesRegex: '[01]'   --> true
@@ -511,6 +531,7 @@ If the first character after the opening bracket is \ct{CARET}, the set is inver
 '3' matchesRegex: '[CARET01]' --> true
 \end{code}
 
+\indexmain{Regex syntax!character range}
 For convenience, a set may include ranges: pairs of characters separated by a hyphen (\ct{-}). This is equivalent to listing all characters in between: \ct{'[0-9]'} is the same as \ct{'[0123456789]'}.
 Special characters within a set are \ct{CARET}, \ct{-}, and \ct{]}, which closes the set. Below are examples how to literally match them in a set:
 \begin{code}{@TEST}
@@ -527,6 +548,7 @@ Regular expressions can also include the following backquote escapes to refer to
 Their upper-case variants, \ct{\W}, \ct{\D} and \ct{\S}, match the complementary characters (non-alphanumerics, non-digits and non-whitespace).
 We can see a summary of the syntax seen so far in \tabref{regexsyntax}.
 
+\indexmain{Regex syntax}
 \begin{table}
 \centering
 	\begin{tabular}{ll}
@@ -622,13 +644,13 @@ For dessert, here is a recognizer for a general number format: anything like \ct
 
 Character classes can also include the grep(1)-compatible elements listed in \tabref{charclasses}.
 
+\indexmain{Regex syntax!character classes}
 \begin{table}[htb]
 \centering
 	\begin{tabular}{lp{8cm}}
 		\toprule
 		Syntax & What it represents \\
 		\midrule
-
 \lct{[:alnum:]} & any alphanumeric \\
 \lct{[:alpha:]} & any alphabetic character\\
 \lct{[:cntrl:]} & any control character (ascii code is \lct{< 32})\\
@@ -640,7 +662,6 @@ Character classes can also include the grep(1)-compatible elements listed in \ta
 \lct{[:space:]} & any whitespace character\\
 \lct{[:upper:]} & any uppercase character\\
 \lct{[:xdigit:]} & any hexadecimal character \\
-
 		\bottomrule
 	\end{tabular}
 	\caption{Regex character classes\label{tab:charclasses}}
@@ -670,6 +691,7 @@ So far we have seen the following equivalent ways to write a regular expression 
 \subsection{Matching boundaries}
 The last group of special primitive expressions is shown in \tabref{boundaries}, and is used to match boundaries of strings.
 
+\indexmain{Regex syntax!matching string boundaries}
 \begin{table}[htb]
 \centering
 	\begin{tabular}{lp{8cm}}
@@ -774,16 +796,16 @@ If you repeatedly match a number of strings against the same regular expression 
 You can create a matcher using one of the following methods:
 
 \begin{itemize}
-\item You can send \ct{asRegex} or \ct{asRegexIgnoringCase} to the string.
+\item You can send \mthind{String}{asRegex} or \mthind{String}{asRegexIgnoringCase} to the string.
 
-\item You can directly invoke the \ct{RxMatcher} constructor methods \ct{forString:} or \ct{forString:ignoreCase:} (which is what the convenience methods above will do).
+\item You can directly invoke the \ct{RxMatcher} constructor methods \mthind{RxMatcher}{forString:} or \mthind{RxMatcher}{forString:ignoreCase:} (which is what the convenience methods above will do).
 %
 %The \mthind{RxMatcher}{forString:} method is equivalent to \mthind{RxMatcher class}{forString: regexString ignoreCase: false}. A more convenient way is using one of the two matcher-created messages understood by \clsind{String}. 	 \cmind{RxMatcher}{regexString asRegex} is equivalent to \mthind{RxMatcher class}{forString: regexString}. 	 \ct{regexString asRegexIgnoringCase} is equivalent to \cmind{RxMatcher class}{forString: regexString ignoreCase: true}.
 
 %\item Sending a \mthind{RxMatcher class}{forString:ignoreCase:} message to \clsind{RxMatcher} class, with the regular expression string and a Boolean indicating whether case is ignored as arguments.
 \end{itemize}
 
-Here we send \ct{matchesIn:} to collect all the matches found in a string:
+Here we send \mthind{RxMatcher}{matchesIn:} to collect all the matches found in a string:
 
 \begin{code}{@TEST | octal hex |}
 octal := '8r[0-9A-F]+' asRegex.
@@ -807,14 +829,13 @@ A matcher understands these messages (all of them return \ct{true} to indicate s
 '\w+' asRegex matches: 'Krazy' --> true
 \end{code}
 
-
 \mthind{RxMatcher}{matchesPrefix:} -- true if some prefix of the argument string (not necessarily the whole string) matches.
 
 \begin{code}{@TEST}
 '\w+' asRegex matchesPrefix: 'Ignatz hates Krazy' --> true
 \end{code}
 
-\mthind{RxMatcher}{search: aString} -- Search the string for the first occurrence of a matching substring. (Note that the first two methods only try matching from  the very beginning of the string). Using the above example with a  matcher for \ct{a+}, this method would answer success given a string \ct{'baaa'}, while the previous two would fail.
+\mthind{RxMatcher}{search:} \ct{aString} -- Search the string for the first occurrence of a matching substring. (Note that the first two methods only try matching from  the very beginning of the string). Using the above example with a  matcher for \ct{a+}, this method would answer success given a string \ct{'baaa'}, while the previous two would fail.
 
 \begin{code}{@TEST}
 '\b[a-z]+\b' asRegex search: 'Ignatz hates Krazy' --> true    "finds 'hates'"
@@ -842,6 +863,7 @@ names matchesStreamPrefix: ignatz --> true
 
 After a successful match attempt, you can query which part of the original string has matched which part of the regex. A subexpression is a parenthesized part of a regular expression, or the whole expression. When a regular expression is compiled, its subexpressions are assigned indices starting from 1, depth-first, left-to-right.
 
+\index{Regex!subexpression matches}
 For example, the regex \ct{((\d+)\s*(\w+))} has four subexpressions, including itself.
 \begin{code}{}
 1:    ((\d+)\s*(\w+))    "the complete expression"
@@ -891,12 +913,12 @@ result --> #('96' 'Aug' '6')
 \subsection{Enumeration and Replacement}
 
 The \ct{String} enumeration and replacement protocols that we saw earlier in this section are actually implemented by the matcher.
-\ct{RxMatcher} implements the following methods for iterating over matches within strings:
-\ct{matchesIn:},
-\ct{matchesIn:do:},
-\ct{matchesIn:collect:},
-\ct{copy:replacingMatchesWith:} and
-\ct{copy:translatingMatchesUsing:}.
+\lct{RxMatcher} implements the following methods for iterating over matches within strings:
+\mthind{RxMatcher}{matchesIn:},
+\mthind{RxMatcher}{matchesIn:do:},
+\mthind{RxMatcher}{matchesIn:collect:},
+\mthind{RxMatcher}{copy:replacingMatchesWith:} and
+\mthind{RxMatcher}{copy:translatingMatchesUsing:}.
 
 \begin{code}{@TEST | seuss aWords |}
 seuss := 'The cat in the hat is back'.
@@ -908,11 +930,11 @@ aWords copy: seuss translatingMatchesUsing: [ :each | each asUppercase ]     -->
 \end{code}
 
 There are also the following methods for iterating over matches within streams:
-\ct{matchesOnStream:},
-\ct{matchesOnStream:do:},
-\ct{matchesOnStream:collect:},
-\ct{copyStream:to:replacingMatchesWith:} and
-\ct{copyStream:to:translatingMatchesUsing:}.
+\mthind{RxMatcher}{matchesOnStream:},
+\mthind{RxMatcher}{matchesOnStream:do:},
+\mthind{RxMatcher}{matchesOnStream:collect:},
+\mthind{RxMatcher}{copyStream:to:replacingMatchesWith:} and
+\mthind{RxMatcher}{copyStream:to:translatingMatchesUsing:}.
 
 \begin{code}{@TEST | in out numMatch |}
 in := ReadStream on: '12 drummers, 11 pipers, 10 lords, 9 ladies, etc.'.
@@ -933,11 +955,11 @@ Several exceptions may be raised by \ct{RxParser} when building regexes.  The ex
 
 \begin{itemize}
 
-\item \ct{RegexSyntaxError} is raised if a syntax error is detected while parsing a regex
+\item \clsind{RegexSyntaxError} is raised if a syntax error is detected while parsing a regex
 
-\item \ct{RegexCompilationError} is raised if an error is detected while building a matcher
+\item \clsind{RegexCompilationError} is raised if an error is detected while building a matcher
 
-\item \ct{RegexMatchingError} is raised if an error occurs while matching (for example, if a bad selector was specified using \ct{':<selector>:'} syntax, or because of the matcher's internal error)
+\item \clsind{RegexMatchingError} is raised if an error occurs while matching (for example, if a bad selector was specified using \ct{':<selector>:'} syntax, or because of the matcher's internal error)
 
 %\item If a syntax error is detected while parsing expression, \cmind{RxParser}{signalSyntaxException:} is raised/signaled;
 
@@ -955,12 +977,13 @@ Several exceptions may be raised by \ct{RxParser} when building regexes.  The ex
 \section{Implementation Notes by Vassili Bykov}
 % Edited by ON
 
+\index{Bykov, Vassili}
 \paragraph{What to look at first.}
 In 90\% of the cases, the method \cmind{String}{matchesRegex:}  is all you need to access the package.
 
 \clsind{RxParser} accepts a string or a stream of characters with a regular expression, and produces a syntax tree corresponding to the expression. The tree is made of instances of \clsind{Rxs*} classes.
 
-\clsind{RxMatcher}  accepts a syntax tree of a regular expression built by the parser and compiles it into a matcher: a structure made of instances of \clsind{Rxm*} classes. The \clsind{RxMatcher} instance can test whether a string or a positionable stream of characters matches the original regular expression, or it can search a string or a stream for substrings matching the expression. After a match is found, the matcher can report a specific string that matched the whole expression, or any parenthesized subexpression of it. All other classes support the same functionality and are used by \clsind{RxParser}, \clsind{RxMatcher}, or both.
+\clsind{RxMatcher}  accepts a syntax tree of a regular expression built by the parser and compiles it into a matcher: a structure made of instances of \ct{Rxm*} classes. The \clsind{RxMatcher} instance can test whether a string or a positionable stream of characters matches the original regular expression, or it can search a string or a stream for substrings matching the expression. After a match is found, the matcher can report a specific string that matched the whole expression, or any parenthesized subexpression of it. All other classes support the same functionality and are used by \clsind{RxParser}, \clsind{RxMatcher}, or both.
 
 \paragraph{Caveats} The matcher is similar in spirit, but \emph{not} in design
 %--let alone the code--

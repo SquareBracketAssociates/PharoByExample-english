@@ -459,7 +459,8 @@ Damien Pollet},
 \newcommand{\subind}[2]{\index{#1!#2}#2\xspace} % show #2, subindex under #1
 \newcommand{\emphind}[1]{\index{#1}\emph{#1}\xspace} % emph #1
 \newcommand{\emphsubind}[2]{\index{#1!#2}\emph{#2}\xspace} % show emph #2, subindex inder #1
-\newcommand{\scatind}[1]{\index{#1@\textsf{#1} (category)}\scat{#1}} % category or package
+\newcommand{\scatind}[1]{\index{#1@\textsf{#1} (category)}\scat{#1}} % category
+\newcommand{\pkgind}[1]{\index{#1@\textsf{#1} (package)}\pkg{#1}} % package
 \newcommand{\protind}[1]{\index{#1@\textsf{#1} (protocol)}\prot{#1}} % protocol
 % \newcommand{\clsind}[1]{\index{#1@\textsf{#1} (class)}\ct{#1}\xspace}
 \newcommand{\clsind}[1]{\index{#1!\#@(class)}\ct{#1}\xspace} % class
@@ -475,12 +476,14 @@ Damien Pollet},
 % The following only generate an index entry:
 % \newcommand{\clsindex}[1]{\index{#1@\textsf{#1} (class)}}
 \newcommand{\clsindex}[1]{\index{#1!\#@(class)}} % class
+\newcommand{\mthindex}[2]{\index{#1!#2@\ct{#2}}} % method
 \newcommand{\cmindex}[2]{\index{#1!#2@\ct{#2}}} % class>>method
 \newcommand{\cvindex}[1]{\index{#1@\textsf{#1} (class variable)}} % class var
 \newcommand{\glbindex}[1]{\index{#1@\textsf{#1} (global)}}% global
 \newcommand{\pvindex}[1]{\index{#1@\textsf{#1} (pseudo variable)}}% pseudo var
 \newcommand{\seeindex}[2]{\index{#1|see{#2}}} % #1, see #2
 \newcommand{\scatindex}[1]{\index{#1@\textsf{#1} (category)}} % category
+\newcommand{\pkgindex}[1]{\index{#1@\textsf{#1} (package)}} % package
 \newcommand{\protindex}[1]{\index{#1@\textsf{#1} (protocol)}} % protocol
 % How can we have the main entry page numbers in bold yet not break the hyperlink?
 \newcommand{\boldidx}[1]{{\bf #1}} % breaks hyperlink
