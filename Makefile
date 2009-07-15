@@ -65,6 +65,22 @@ BOOK2 : clean examples2
 		-e 's/Package wrapfig Warning: wrapfigure used inside a conflicting environment[\n\r]*//g;' \
 		warnings.txt
 
+# --------------------------------------------------------------------------------
+
+# We need a makefile rule to generate the index as well ...
+index1 :
+	makeindex ${BOOK1}
+
+complete1 : BOOK1 index1
+	time ${PDFLATEX} ${BOOK1}
+
+
+# We need a makefile rule to generate the index as well ...
+index2 :
+	makeindex ${BOOK2}
+
+complete2 : BOOK2 index2
+	time ${PDFLATEX} ${BOOK2}
 
 
 # We need a makefile rule to generate the index as well ...
