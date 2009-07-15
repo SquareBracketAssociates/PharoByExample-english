@@ -52,14 +52,16 @@
 
 A versioning system helps you to store and log multiple versions of your code. In addition it may help you to manage concurrent accesses to a common source code repository. It keeps track of all changes to a set of documents and enables several developers to collaborate. As soon as the size of your software increases beyond a few classes, you probably need a versioning system.
 
-Many different versioning systems are available. CVS\footnote{\url{http://www.nongnu.org/cvs}} and Subversion\footnote{\url{http://subversion.tigris.org}} are probably the most popular.
+Many different versioning systems are available. \ind{CVS}\footnote{\url{http://www.nongnu.org/cvs}} and \ind{Subversion}\footnote{\url{http://subversion.tigris.org}} are probably the most popular.
 In principle you could use them to manage the development of \pharo software projects, but such a practice would disconnect the versioning system from the \pharo environment.
 In addition, CVS-like tools only version plain text files and not individual packages, classes or methods. We would therefore lack the ability to track changes at the appropriate level of granularity. Knowing that you store classes and methods instead of plain text can be exploited by the versioning tools to better support your development process.
 
 %\ab{It would be better to say concretely why this would be a bad idea, rather than resorting to name-calling.  Many people think that files are good.  Let's tell the reader about the disadvantages!}
 
+\indmain{Monticello}
+\index{SqueakSource}
 \emph{\MC{}} is  a versioning system for \pharo in which classes and methods, rather than lines of text,
-are the units of change. \emph{\sqsrc} is an online central repository in which you can store versions of your applications using \MC. \sqsrc is the equivalent of GForge, and \MC the equivalent of CVS. 
+are the units of change. \emph{\sqsrc} is an online central repository in which you can store versions of your applications using \MC. \sqsrc is the equivalent of \ind{GForge}, and \MC the equivalent of CVS. 
 
 In this chapter, you will learn how to use use \MC and \sqsrc to manage your software. We have already seen \MC briefly in earlier chapters (\charef{firstApp} and \charef{env}). This chapter delves into the details of additional features of \MC that are useful for versioning large applications.
 
@@ -71,9 +73,9 @@ We will start by reviewing the basics of creating a package and committing chang
 %-----------------------------------------------------------------
 \subsection{Running example --- perfect numbers}
 
-We will use a small running example of perfect numbers\footnote{Perfect numbers were discovered by Euclid. A perfect number is a positive integer that is the sum of its proper divisors. $6 = 1 + 2 + 3$ is the first perfect number.} in this chapter to illustrate the features of \MC. We will start our project by defining some simple tests.
+We will use a small running example of perfect numbers\footnote{Perfect numbers were discovered by \ind{Euclid}. A perfect number is a positive integer that is the sum of its proper divisors. $6 = 1 + 2 + 3$ is the first perfect number.} in this chapter to illustrate the features of \MC. We will start our project by defining some simple tests.
 
-\dothis{Define a subclass of \ct{TestCase} called \ct{PerfectTest} in the category \ct{Perfect}, and define the following test methods in the protocol \ct{running}:}
+\dothis{Define a subclass of \clsind{TestCase} called \ct{PerfectTest} in the category \ct{Perfect}, and define the following test methods in the protocol \ct{running}:}
 \begin{code}{}
 PerfectTest>>>testPerfect
 	self assert: 6 isPerfect.
@@ -89,6 +91,7 @@ Of course these tests will fail as we have not yet implemented the \ct{isPerfect
 \MC is included in the standard \pharo distribution.
 We will assume that \MC is already installed in your image.
 The \MC Browser can be launched from the \emph{World} menu by selecting \menu{open ...} and \menu{\MC Browser}.
+\index{Monticello!browser}
 
 \begin{figure}[ht]\centering
 	\includegraphics[width=0.8\textwidth]{monticelloBrowser}
@@ -101,7 +104,8 @@ Various operations may be performed via the button pane and the menus of the two
 %-----------------------------------------------------------------
 \subsection{Creating a package}
 
-\MC manages versions of \emph{packages}.  A package is essentially a named set of classes and methods.
+\index{Monticello!creating packages}
+\MC manages versions of \emph{packages}.  A \ind{package} is essentially a named set of classes and methods.
 In fact, a package is an object\,---\,an instance of \clsind{PackageInfo}\,---\,that knows how to identify the classes and methods that belong to it.
 
 We would like to version our \ct{PerfectTest} class. The right way to do this is to define a package\,---\,called \ct{Perfect}\,---\,containing \ct{PerfectTest} and all the related classes and methods we will introduce later. For the moment, no such package exists. We only have a \emph{category} called (coincidentally) \ct{Perfect}. This is perfect, since \MC will map categories to packages for us.
@@ -131,10 +135,12 @@ Our new package named \pkg{Perfect} contains:
 %-----------------------------------------------------------------
 \subsection{Committing changes}
 
+\index{Monticello!committing changes}
 Note in \figref{perfect} that the \button{Save} button is disabled (greyed out).
 
 Before we commit our \ct{Perfect} package, we need to specify \emph{where} we want to save it. A \emph{repository} is a package container, which may either be local to your machine or remotely accessed. Several different protocols may be employed to establish a connection between your \pharo image and a repository. As we will see later (\secref{monti:repositories}), \MC supports a large choice of repositories, though the most commonly used one is HTTP, since this is the one required by \sqsrc.
 
+\index{package-cache}
 At least one repository, called \ct{package-cache}, is set up by default, shown as the first entry in the list of repositories on the right hand side of your \MCB (see \figref{monticelloMain}).
 This local cache is automatically created in the same directory where the image you are using is located. It will contain a copy of all the packages you download or save. 
 By default, copies of your packages are always saved in this directory even when you commit them to a remote server.
@@ -156,7 +162,7 @@ The \ct{Perfect} package is now saved in \ct{package-cache} contained in the sam
 %\ab{Experience with my students is that changing the version name is a really bad idea, since it can easily break \MC.}
 %\alex{I was not able to find a satisfying explanation, So I prefer to leave this point out}
 
-A version is an immutable snapshot of a package that has been written to a repository. Each version has a unique version number to identify it in a repository.
+A \emphind{version} is an immutable snapshot of a package that has been written to a repository. Each version has a unique version number to identify it in a repository.
 But beware, this number is \emph{not} globally unique\,---\,in another repository you might have the same file identifier for a \emph{different snapshot}. For example, \ct{Perfect-onierstrasz.1.mcz} in another repository might be the \emph{final}, deployed version of our project!
 When saving a version into a repository, the next available number is automatically assigned to the version. Note that version branches do not interfere with this numbering scheme (as with CVS or Subversion). As we shall see later, versions are ordered by their version number by default when opening a repository.
 
@@ -179,7 +185,7 @@ PerfectTest>>>testPerfectBoundary
 	self assert: 1 isPerfect not.
 \end{code}
 
-Although these methods do not belong to the \ct{Perfect} category, they \emph{do} belong to the \ct{Perfect} package since they are in a protocol whose name starts with \ct{*} and matches the package name. Such methods are known as \emph{class extensions}, since they extend existing classes with new methods. These methods will \emph{only} be available to someone who loads our \ct{Perfect} package.
+Although these methods do not belong to the \ct{Perfect} category, they \emph{do} belong to the \ct{Perfect} package since they are in a protocol whose name starts with \ct{*} and matches the package name. Such methods are known as \emphind{class extensions}, since they extend existing classes with new methods. These methods will \emph{only} be available to someone who loads our \ct{Perfect} package.
 
 \alex{We could give a reference to the Cmd-p command in the OB browser. This keystroke is used to turn a method into a class-extension.}
 \on{you mean it moves a method to an extension package}
@@ -187,6 +193,7 @@ Although these methods do not belong to the \ct{Perfect} category, they \emph{do
 %-----------------------------------------------------------------
 \subsection{``Clean'' and ``Dirty'' packages}
 
+\index{package!clean and dirty}
 Modifying the code in a package with any of the development tools makes that package \emph{dirty}.
 This means that the version package in the image is different from the version that has been saved or loaded. 
 
@@ -207,8 +214,11 @@ In the \MCB,  a dirty package can be recognized by an asterix (\ct{*}) preceding
 %-----------------------------------------------------------------
 \subsection{Repository inspector} 
 
+\index{Repository inspector|see{Monticello, repository inspector}}
+\index{Monticello!repository inspector}
 Information about the content of a repository can be explored using a \RI, which is launched using the \button{Open} button of \MC (cf \figref{repositoryinspector}).
 
+\index{package-cache}
 \dothis{Select the \ct{package-cache} repository of the \ct{Perfect} package and open it. You should see something like \figref{repositoryinspector}.}
 
 \begin{figure}[ht]\centering
@@ -238,6 +248,8 @@ Once a package is selected, the right-hand pane lists the versions of the select
 %-----------------------------------------------------------------
 \subsection{Loading, unloading and updating packages}
 
+\index{package-cache}
+\index{Monticello!loading, unloading, updating packages}
 At present we have two versions of the \ct{Perfect} package stored safely in our \ct{package-cache} repository. We will now see how to unload this package, load an earlier version, and finally update it.
 
 \dothis{Select the \ct{Perfect} package and its repository in the \MCB. \Actclick on the package name and select \menu{unload package}.}
@@ -268,7 +280,8 @@ Now the tests should be green again.
 %-----------------------------------------------------------------
 \subsection{Branching}
 
-A \emph{branch} is a line of development versions that exists independently of another line, yet still shares a common ancestor version if you look far enough back in time.
+\index{Monticello!branching}
+A \emphind{branch} is a line of development versions that exists independently of another line, yet still shares a common ancestor version if you look far enough back in time.
 
 You may create new version branch when saving your package. Branching is useful when you want to have a new parallel development. For example, suppose your job is to maintain a software in your company. One day a different division asks you for the same software, but with a few parts tweaked for them, since they do things slightly differently. The way to deal with this situation is to create a second branch of your program that incorporate the tweaks, while leaving the first branch unmodified.
 
@@ -325,6 +338,8 @@ Congratulations! You have now created a new branch of the \ct{Perfect} package.
 
 \on{Should we be describing the new strategy instead?}
 
+\index{Monticello!merging}
+\index{Monticello!merge tool}
 This section describes the conventional merging facility of Monticello.
 To use it, make sure that the preference \ct{useNewDiffToolsForMC} is disabled.
 You can either use the Preference Browser, or you can do this programmatically by evaluating the following expression:
@@ -416,6 +431,7 @@ We will now look at \button{Browse}, \button{Changes} and \button{History}, whic
 %-----------------------------------------------------------------
 \subsection{Browse}
 
+\index{Monticello!snapshot browser}
 The \button{Browse} button opens a ``snapshot browser'' to display the contents of a package.
 The advantage of the snapshot browser over the browser is its ability to display class extensions.
 
@@ -427,6 +443,7 @@ The advantage of the snapshot browser over the browser is its ability to display
 	\caption{The snapshot browser reveals that the \ct{Perfect} package extends the class \ct{Integer} with 2 methods.\figlabel{packageviewer}}
 \end{figure}
 
+\index{class extension}
 For example, \figref{packageviewer} shows the class extensions defined in the \pkg{Perfect} package. Note that code cannot be edited here, though by {\actclick}ing, if your environment has been set up accordingly) on a class or a method name you can open a regular browser.
 
 It is a good practice to always browse the code of your package before publishing it, to ensure that it really contains what you think it does.
@@ -439,6 +456,7 @@ It is a good practice to always browse the code of your package before publishin
 %-----------------------------------------------------------------
 \subsection{Changes} 
 
+\index{Monticello!patch browser}
 The \button{Changes} button computes the difference between the code in the image and the most recent version of the package in the repository. 
 
 \dothis{Make the following changes to \ct{PerfectTest}, and then click the \button{Changes} button in the \MCB.}
@@ -465,6 +483,7 @@ As usual, {\actclick}ing on a change offers you a choice of contextual operation
 %-----------------------------------------------------------------
 \subsection{History} 
 
+\index{Monticello!history browser}
 The \button{History} button opens a version history viewer that displays the comments committed along with each version of the selected package (see \figref{historyviewer}).  
 The versions of the package, in this case \ct{Perfect}, are listed on the left,
 while information about the selected version is displayed on the right.
@@ -489,6 +508,7 @@ Now we will have a look at several advanced topics, including backporting, manag
 
 \alex{I am wondering how useful this is. I personally never used it}
 
+\index{Monticello!backporting}
 Sometimes we want to port changes from one branch to another, without actually being forced to merge those branches.
 Backporting is a process of applying selected changes from one version of a package to an ancestor so that these changes can be merged into later branches.  This is especially useful when corrections to software defects must be merged into multiple branches.
 
@@ -528,6 +548,8 @@ You can now save this backported version, merge it into something else, or whate
 %-----------------------------------------------------------------
 \subsection{Dependencies}
 
+\index{Monticello!dependency}
+\index{package!required|see{Monticello, dependency}}
 Most applications cannot live on their own and typically require the presence of other packages in order to work properly. For example, let us have a look at Pier\footnote{\url{http://source.lukas-renggli.ch/pier}}, a meta-described content management system. Pier is a large piece of software with many facets (tools, documentations, blog, catch strategies, security, ...). Each facet is implemented by a separate package. Most Pier packages cannot be used in isolation since they refer to methods and classes defined in other packages. \MC provides a dependency mechanism for declaring the \emph{required packages} of a given package to ensure that it will be correctly loaded.
 
 Essentially, the dependency mechanism ensures that all required packages of a package are loaded before the package is loaded itself. Since required packages may themselves require other packages, the process is applied recursively to a tree of dependencies, ensuring that the leaves of the tree are loaded before any branches that depend on them.
@@ -535,7 +557,7 @@ Whenever new versions of required packages are checked in, then new versions of 
 
 \important{\emph{Dependencies cannot be expressed across repositories}. All requiring and required packages must live in the same repository.}
 
-\figref{dependencies} illustrates how this works in Pier.
+\figref{dependencies} illustrates how this works in \ind{Pier}.
 Package \ct{Pier-All} is an \emph{empty package} that acts as a kind of umbrella.
 It requires \ct{Pier-Blog}, \ct{Pier-Caching} and all the other Pier packages.
 
@@ -564,6 +586,7 @@ Let us see how this works in practice.  Our \ct{Perfect} package currently bundl
 \item Check that all tests run.
 \end{itemize}
 }
+\index{package-cache}
 
 Note that when \ct{NewPerfect-All} is selected in the \MCB, the dependent packages are displayed in bold (see \figref{perfectDependencies}).
 
@@ -588,6 +611,8 @@ Here is the reason why:
 %-----------------------------------------------------------------
 \subsection{Class initialization}
 
+\emph{class!initialization}
+\emph{Monticello!class initialization}
 When \MC loads a package into the image, any class that defines an \ct{initialize} method on the class side will be be sent the \ct{initialize} message. The message is sent \emph{only} to classes that define this method on the class side. A class that does not define this method will not be initialized, even if \ct{initialize} is defined by one of its superclasses. NB: the initialize method is not invoked when you merely reload a package!
 
 %\on{OK, I confirmed this with a simple test}
@@ -632,14 +657,16 @@ When our package is loaded, this code will be evaluated and the instance variabl
 \section{Kinds of repositories}
 \seclabel{monti:repositories}
 
+\index{Monticello!repository}
 Several kinds of repositories are supported by \MC, each with different characteristics and uses. Repositories can be read-only, write-only or read-write. Access rights may be defined globally or can be tied to a particular user (as in \sqsrc, for example).
 % and are related to the way of storing data used.
 
+\index{Monticello!HTTP repository}
 \paragraph{HTTP} HTTP repositories are probably the most popular kind of repository since this is the kind supported by \sqsrc. % (Such servers can also be configured for read-only access. Saving versions via HTTP uses the PUT method \ab{Is ``put'' the right word}, which must be enabled on the server.)
 
-The nice thing about HTTP repositories is that it's easy to link directly to specific versions from web sites or \sqmap. With a little configuration work on the HTTP server, HTTP repositories can be made browsable by ordinary web browsers, WebDAV clients, and so on.
+The nice thing about HTTP repositories is that it's easy to link directly to specific versions from web sites. With a little configuration work on the HTTP server, HTTP repositories can be made browsable by ordinary web browsers, WebDAV clients, and so on.
 
-HTTP repositories may be used with an HTTP server other than \sqsrc. For example, a simple configuration\footnote{\url{http://www.visoracle.com/squeak/faq/monticello-1.html}} turns Apache into a \MC repository with restricted access rights:
+HTTP repositories may be used with an HTTP server other than \ind{\sqsrc}. For example, a simple configuration\footnote{\url{http://www.visoracle.com/squeak/faq/monticello-1.html}} turns \ind{Apache} into a \MC repository with restricted access rights:
 
 \begin{code}{}
 "My apache2 install worked as a Monticello repository right out of the box on my
@@ -664,27 +691,32 @@ Alias /monticello/ /var/monticello/
 I love Monticello and look forward to future improvements."
 \end{code}
 
+\index{Monticello!FTP repository}
 \paragraph{FTP} This is similar to an HTTP repository, except that it uses an FTP server instead. An FTP server may also offer restricted access right and different FTP clients may be used to browse such \MC repository.
 
+\index{Monticello!GOODS repository}
 \paragraph{GOODS}
 This repository type stores versions in a GOODS object database.
 GOODS is a fully distributed object-oriented database management system that uses an active client model\footnote{\url{http://www.garret.ru/~knizhnik/goods.html}}.
 It's a read-write repository, so it makes a good ``working'' repository where versions can be saved and retreived. Because of the transaction support, journaling and replication capabilities offered by GOODS, it is suitable for large repositories used by many clients.  
 
+\index{Monticello!directory repository}
+\index{package-cache}
 \paragraph{Directory} A directory repository stores versions in a directory in the local file system. Since it requires very little work to set up, it's handy for private projects; since it requires no network connection, it's the only option for disconnected development. The \ct{package-cache} we have been using in the exercises for this chapter is an example of this kind of repository. Versions in a directory repository may be copied to a public or shared repository at a later time. \sqsrc supports this feature by allowing package versions (.mcz files) to be imported for a given project. Simply log in to \sqsrc, navigate to the project, and click on the \menu{Import Versions} link.
 
 \paragraph{Directory with Subdirectories}  A ``directory with subdirectories'' is very similar to ``directory'' except that it looks in subdirectories to retrieve list of available packages. Instead of having a flat directory that contains all package versions, such as repository may be be hierarchically  structured with  subdirectories.
 
+\index{Monticello!SMTP repository}
 \paragraph{SMTP} SMTP repositories are useful for sending versions by mail. When creating an SMTP repository, you specify a destination email address. This could be the address of another developer\,---\,the package's maintainer, for example\,---\,or a mailing list such as pharo-project. Any versions saved in such a repository will be emailed to this address.  SMTP repositories are write-only.
 
-\paragraph{\sqmap Release} This is a write-only repository used for publishing releases of a package to \sqmap. To configure the repository enter the name of the package on \sqmap, your \sqmap initials and your \sqmap password. Now any versions saved to the repository will be uploaded to your \sqmap account, and registered as a new release with \sqmap.  
+%\paragraph{\sqmap Release} This is a write-only repository used for publishing releases of a package to \sqmap. To configure the repository enter the name of the package on \sqmap, your \sqmap initials and your \sqmap password. Now any versions saved to the repository will be uploaded to your \sqmap account, and registered as a new release with \sqmap.  
 
-You need an account on \sqmap to add packages. New accounts may be created online\footnote{\url{http://map.squeak.org}}. The list of packages you add will appear on the \sqmap package list displayed when \sqmap is open.
+%You need an account on \sqmap to add packages. New accounts may be created online\footnote{\url{http://map.squeak.org}}. The list of packages you add will appear on the \sqmap package list displayed when \sqmap is open.
 
 %\alex{I added few sentences about adding package on squeakmap. But not many people are using it now. It is progressively being replaced by universe.}
 %\ab{We havn't talked bout how to put stuff on \sqmap, only about how to load it.  So, we should add that material, either here, or in a subsequent subsection.}
 
-\paragraph{\sqmap Cache} When packages are installed via \sqmap, downloaded files are stored in a dedicated subdirectory in your working directory that acts as a cache. In order to make these files available to \MC for loading, merging, \etc, a \sqmap Cache repository is created when these files are loaded for the first time.
+%\paragraph{\sqmap Cache} When packages are installed via \sqmap, downloaded files are stored in a dedicated subdirectory in your working directory that acts as a cache. In order to make these files available to \MC for loading, merging, \etc, a \sqmap Cache repository is created when these files are loaded for the first time.
 
 %\on{why don't you first talk about the package cache?  I see you commented it out.}
 %\alex{Because it does not appear in \pharo anymore. Maybe it was buggy or simply obsolete}
@@ -702,7 +734,7 @@ You need an account on \sqmap to add packages. New accounts may be created onlin
 %-----------------------------------------------------------------
 \subsection{Using \sqsrc}
 
-\sqsrc is a online repository that you can use to store your \MC packages. An instance is running and accessible from \url{http://www.squeaksource.com}. At the time this chapter is being written, over 1500 projects are registered on \sqsrc and nearly 2000 people have an account. \figref{squeaksource} shows the main web page.  
+\indmain{\sqsrc} is a online repository that you can use to store your \MC packages. An instance is running and accessible from \url{http://www.squeaksource.com}. At the time this chapter is being written, over 1500 projects are registered on \sqsrc and nearly 2000 people have an account. \figref{squeaksource} shows the main web page.  
 
 \begin{figure}[ht]\centering
 	\includegraphics[width=.75\textwidth]{squeaksource2}
@@ -752,6 +784,9 @@ Once you are a member, \link{Register Project} allows you to create a new projec
 %=================================================================
 \section{The .mcz file format}
 
+\index{Monticello!version}
+\index{Monticello!mcz format}
+\index{mcz format|see{Monticello, mcz format}}
 Versions are stored in repositories as binary files.
 These files are commonly call ``mcz files'' as they carry the extension .mcz.
 This stands for ``\MC zip'' since an mcz file is simply a zipped file containing the course code and other meta-data.
@@ -767,13 +802,17 @@ If you unzip it, you will find the following members of the mcz file.
 Mcz files are actually ZIP archives that follow certain conventions. Conceptually a version contains four things:
 
 \begin{itemize}
+\index{Monticello!package}
 \item \emph{Package}. A version is related to a particular package. Each mcz file contains a file called ``package'' that contains information about the package's name.
 
 \item \emph{VersionInfo}. This is the meta-data about the snapshot. It contains the author initials, date and time the snapshot was taken, and the ancestry of the snapshot. Each mcz file contains a member called ``version'' which contains this information.
 
 A version doesn't contain a full history of the source code. It's a snapshot of the code at a single point in time, with a UUID identifying that snapshot, and a record of the UUIDs of all the previous snapshots it's descended from.
 
+\index{Monticello!snapshot}
 \item \emph{Snapshot}. A Snapshot is a record of the state of the package at a particular time. Each mcz file contains a directory named ``snapshot/''. All the members in this directory contain definitions of program elements, which when combined form the Snapshot. Current versions of \MC only create one member in this directory, called ``source.st''.
+
+\index{Monticello!dependency}
 \item \emph{Dependencies}. A version may depend on specific version of other packages. An mcz file may contain a ``dependencies/'' directory with a member for each dependency. These members will be named after each package the \MC package depends upon. For example, a \ct{Pier-All} mcz file will contains files named \ct{Pier-Blog} and \ct{Pier-Caching} in its dependencies directory.
 \end{itemize}
 
@@ -813,6 +852,7 @@ The following points were covered:
 
 \item There are many kinds of repositories, the most popular being HTTP repositories, such as those hosted by \sqsrc.
 
+\index{package-cache}
 \item Saved packages are caches locally in a directory called \ct{package-cache}.
 
 \item The \MC \RI can be used to browse a repository. You can select which versions of packages to load or unload.
