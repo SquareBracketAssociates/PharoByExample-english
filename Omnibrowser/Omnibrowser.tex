@@ -77,72 +77,128 @@ In \ob, a browser is described by a domain model and a metagraph that specifies 
 We look at how to build new browsers from predefined parts and how to easily describe new tools. We will illustrate how to define sophisticated browsers for various domains with the help of three example: a file browser, a remake of the ubiquitous \st system browser, and a coverage browser.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%\section{Introduction}\label{sec:introduction}
+\section{Building a simple browser step by step}\label{sec:introduction}
 
-%context
-%\st is an object-oriented language featuring a complete development environment supporting interactive and dynamic programming \cite{Gold83a,Gold84a}. While the default environment already supports advanced ways of navigating source code and fluid development since the eighties, new browsers have been developed over the years: the \emph{Refactoring Browser} \cite{Fowl99a,Robe96a,Robe97a} which was the first system browser supporting refactoring, the \emph{StarBrowser} \cite{Wuyt04a} which supports smart groups, a browser for incremental development supporting visual feedback of undefined methods \cite{Scha04c} and the \emph{Whiskers} browser that shows multiple methods at the same time maximizing the screen space. Strong\-Talk, a more exotic \st version featuring optional typing, offered a glyph based browsing environment. 
+%\subsection{Building a File Browser}\label{sec:fileBrowserExample}
 
-
-%problem
-%The problem when building all of these browsers is that they are always rebuilt from scratch because there hardly exists any domain models or frameworks for building such development tools. In fact, the current browsers in most \st environments are hard to extend for two reasons: (a) they are monolythic applications that are not really meant to be included elsewhere, and (b) the navigation and interaction of the end-user with the browsers is typically hardcoded in the browser UI elements, and is therefore hard to change or extend.
-
-%some solutions exist, but only partially
-%Note that some \st environments allow one to embed applications within each-other. VisualWorks for example has a notion of \emph{subcanvases} which can be used to that end. This helps to reduce the problem (a) in the previous paragraph, but not problem (b) of the hardcoding of the  the navigation and interaction in the browser UI elements. Other browsers are designed with a certain amount of customizability in mind, and are therefore easier to extend, but even those lack explicit descriptions of the navigation.
-%
-%As was already reported by Steyaert \emph{et al.}~\cite{Stey96a}, we conclude that current visual application builders and application frameworks do not live up to their expectations of rapid application development or non-programming-expert application development. They fall short when compared to component-oriented development environments in which applications are built with components that have a strong affinity with the problem domain (\ie being domain-specific). 
-
-
-
-%\rw{I do not agree with this part. If you want to say that the situation in \pharo is not good, then say so. Generalizing it to other \st (e.g. Dolphin, VW, ...) is stretcing it much too far}. \ab{I haven't checked with VW (I cannot run it on my machine), but I would be really surprised if the situation is not similar than in \pharo. Is there an easy way to extend the refactoring browser with a new pane for example?}\sd{IN VW you can easily add a tab after this is not a easy composition}
-%Still these browsers acts as standalone application and it is difficult to extend them or compose their functionality to produce even richer environments. In the \pharo \st environment, for example, the default environment browsers and tools are inflexible and changing them requires nearly patching the system. The main reason is that the domain of the browser \ie the navigation and the interaction with the end-user are not explicit but hardcoded into the browser UI elements and such as cannot be easily extended or customizable. 
-
-%Application builders such as the ones present in VisualWorks or Dolphin \st already improve the situation by offering an interpretation of the widgets elements via window spec like declaration interpretation. However as reported by Steayert \etal \cite{Stey96a}, current visual application builders and application frameworks do not live up to their expectations of rapid application development or non-programming-expert application development. They fall short when compared to component-oriented development environments in which applications are built with components that have a strong affinity with the problem domain (\ie being domain-specific). 
-
-%solution: ob
-%This chapter presents \ob, a framework to define and compose new browsers. In \obf, a browser is a graphical list-oriented tool to navigate and edit an arbitrary domain. The most common representative of this category of tools is the \st system browser, which is used to navigate and edit \st source code.
-%In \obf, a browser is described by a domain model and a metagraph which specifies how the domain space is navigated through. Widgets such as list menus and text panels are used to display information gathered from a particular path in the metagraph. Although widgets are programmatically composed, the \obf framework supports their interaction.
-
-%The contributions of this article are: the description of a metadriven framework to build browsers and the application of the framework to build some tools. 
-%In \secref{problem} we describe difficulties and challenges to define states and flow between those states for a graphical user interface. In \secref{omnibrowser} we present the key entities of \obf. In \secref{codebrowser} we present the \ob-based system browser and in \secref{coverageBrowser} we describe the coverage code browser. In \secref{discussion} we discuss about properties of the \obf. In \secref{relatedwork} we provide an overview of related work. In \secref{conclusion} we conclude by summarizing the presented work.
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Representing State of a User Interface} \label{sec:problem}
-%In this section we stress some of the problems encountered when building complex tools such as an advanced code editor. 
-
-The state of a graphical user interface (GUI) is defined as the collection of states of the widgets making up the interface. The state of a widget refers to the state the widget is in. It may be modified whenever an end-user performs an action on this widget such as clicking a button or selecting an entry in a menu. A GUI typically has a large number of possible states. Asserting the validity \on{?} of each of these states is crucial to avoid broken or inconsistent interfaces.
-
-Given the potential high number of different states of a GUI, asserting the validity of a GUI is a challenging task. \on{why?} Let's illustrate this situation with the \st system browser, a graphical tool to edit and navigate into \st source code.
+To illustrate how to instantiate the \obf, we describe the implementation of a simple file browser supporting the navigation in directories and files.
 
 \begin{figure}[!ht]
 \begin{center}
-\includegraphics[scale=0.65]{miniStBrowser}
-\caption{Layout of the traditional \st system browser} \figlabel{miniStBrowser}
+\includegraphics[scale=0.34]{filebrowser}
+\caption{A minimal file browser based on OmniBrowser.} \label{fig:filebrowser}
 \end{center}
 \end{figure}
 
+\figref{filebrowser} shows the file browser in action. A browser is opened by evaluating \ct{FileBrowser open} in a workspace. The navigation columns in the case of a file browser are used to navigate through directories, where every column lists the contents of the directory selected in its left column, similar to the \emph{Column View} of the Finder in the Mac OS-X operating system.
+Note that we can have an infinite numbers of panes navigating through the file system. The horizontal scrollbar lets the user browse the directory structure. A text panel below the columns displays additional properties of the currently selected directory or file and provides means to manipulate these properties.
 
-\figref{miniStBrowser} depicts the different widgets of a traditional \st class system browser (see \figref{ob} for a real picture). Without entering into details, A, B, C and D are lists that show categories (groups of classes), classes, method protocols (groups of methods) and methods. E is a radio button composed of three choices and F is a text pane. 
+The class describing a browser must inherit from the class \ct{OBBrowser}. The class \ct{FileBrowser} may be defined as follows:
 
-%After having selected a category in the pane A, selecting a class in pane B renders the definition of this class in pane F. After having selected a class (pane B) and a method category (pane C), pane D shows a list of method names. Clicking a method name makes the definition of the selected method appear in the text pane (pane F). 
+\begin{code}{}
+OBBrowser subclass: #FileBrowser	instanceVariableNames: ''	classVariableNames: ''	poolDictionaries: ''	category: 'PBE-Omnibrowser'
+\end{code}
 
-Pane A lists the categories in the system. Selecting a category in this list, makes the classes in that category appear in pane B. Selecting a class results in the protocols for that class being shown in pane C, and selecting a protocol lists the method names in pane D. Switch E controls whether the class or the metaclass is being edited, and therefore whether the protocols and methods shown are instance level or class level methods. Pane F is a text pane that gives feedback on whatever is selected in the top panes, always displaying the most specific information possible. For example, when a user has selected a method in a protocol in a class in a certain category, pane F shows the definition of that method (and not the definition of the class of that method). 
-%\sd{this part is a bit boring what I would be nice is  to have is a complex example of interaction.}\rw{Yes, but we need to give the basic first :-( }
+The default browser title may be overridden by redefining the class method \ct{title}:
 
-The description of how the browser works shows a number of navigation invariants that need to be kept when implementing the browser. For example, the selections go from left to right: it is not possible to have methods listed in pane D with pane C being empty.
-Invariants such as this one need to be implemented and checked when building a browser. So we are dealing with writing an application that deals with a potentially very large number of states in which only certain transitions between states are allowed (\ie those that correspond to navigations by the user of the browser). Whenever a user clicks on widgets that make up the GUI of the browser, the state of one or more widgets is changed, and possibly new navigation possibilities open up (being able to select a method name, for example, is only possible after a class has been selected). To deal with the fact that a widget may be in an \ugh{inconsistent state} \on{how?! need an example}, developers often rely on guards: the method performing an action in reaction to a user action always checks whether the state is actually correct or not nil. \on{need concrete example!}
+\begin{code}{}
+FileBrowser class>>title	^ 'FileBrowser for PBE'
+\end{code}
 
-In addition the state management is often spread over the UI elements. This leads to code with complex and often error-prone logic. In addition it makes tool elements difficult to extend and reuse in different context. \on{example!}
 
-\on{bleh --- written like the intro to an academic paper} The main problem when building a browser is representing the mapping from the intended navigation model to the domain model and widgets. 
-%Even though graphical frameworks like MVC~\cite{Tryg79a,Tryg03a} and Coral~\cite{Szek88a} offer ways to modularize the model and the graphical user interface, they do not provide means (i) to preserve consistency of the interface by restricting unexpected state transition to happen and (ii) to keep the widgets synchronized with each other~\cite{Kras88a}.
-In the next section, we describe \ob, a framework to design browsers where the domain model is distinct from the navigation space. The latter is being described by a metagraph. The state of a browser is defined by a path in this metagraph.
+%\paragraph{Metagraph Definition.} 
+A filesystem encompasses basically two kind of entities, files and directories. 
+\ob uses a \emph{metagraph} to model different navigation paths that a user may take by clicking on browser's items. 
+
+\begin{code}{}
+FileBrowser class>>defaultMetaNode
+     "returns the directory metanode that acts as the root metanode"
+ 
+     | directory file |
+     directory := OBMetaNode named: 'Directory'.
+     file := OBMetaNode named: 'File'.
+     directory 
+          childAt: #directories put: directory;
+          childAt: #files put: file.
+     ^ directory
+\end{code}
+
+A metagraph is composed of metanodes, a metanode representing one particular set of selected items.
+To model the navigation of a filesystem we thus need two metanodes in the metagraph, \ct{Directory} and \ct{File}. Within any directory of a filesystem, we can again find files and other directories, hence there are two kind of transitions outgoing from a directory metanode, named \ct{files} and \ct{directories} in the metagraph. 
+
+The subsequent step is to create class nodes that will be model browser items. For that purpose, we define two subclasses of \ct{OBNode}:
+
+\begin{code}{}
+OBNode subclass: #FileNode	instanceVariableNames: 'path'	classVariableNames: ''	poolDictionaries: ''	category: 'PBE-Omnibrowser'
+
+FileNode subclass: #DirectoryNode	instanceVariableNames: ''	classVariableNames: ''	poolDictionaries: ''	category: 'PBE-Omnibrowser'
+\end{code}
+
+Instances of \ct{FileNode} and \ct{DirectoryNode} will represent files and directory, the domain being navigated through. 
+Nodes wrap objects of the browsed domain. First the class \ct{FileNode}, a subclass of \ct{OBNode}, has to be defined. Instances of this class will represent concrete files. A file node is identified by a full path name, stored in a variable. A directory is another entity in our model that contains directories and files. A directory can be simply modeled as a special kind of file. The only difference between a file and a directory node is that for a directory the path variable points to a directory, not to a file. 
+
+The \ct{path} variable needs accessors:
+
+\begin{code}{}    
+FileNode>>path	^ path
+
+FileNode>>path: aString	path := aString
+\end{code}
+
+A node needs to answer to the message \ct{name}, which returns the title used in the browser:
+
+\begin{code}{}    
+FileNode>>name	"return the name of a file"	^ (self path subStrings: '/') last
+\end{code}
+
+When selected, a node may provide a character string used to fill the lower text pane. In our situation, clicking on a file node should display the content of the selected file. The method \ct{text} has to be defined. 
+
+\begin{code}{}    
+FileNode>>text     ^ 'First 1000 characters: ', String cr,        ((FileStream readOnlyFileNamed: path) converter: Latin1TextConverter new;               next: 1000) asString
+\end{code}
+
+Note that this method \ct{text} has to be used when no further interaction is expected by the end-user. For example, if one wish to modify the content of a file by modifying the text in the lower pane, a \emph{definition} must be used, as we shall see later.
+
+Each node is displayed in a column, and when selected, it provides the list of nodes used to fill the next column. Clicking on a directory must display the list of files and folders in the column located on the right hand side. The methods \ct{directories} and \ct{files} have to be defined:
+
+\begin{code}{}    
+DirectoryNode>>directories     | dir |      dir := FileDirectory on: path.     ^ dir directoryNames collect: [:each |                                   DirectoryNode new path: (dir fullNameFor: each)]
+
+DirectoryNode>>files    | dir |      dir := FileDirectory on:  path.     ^ dir fileNames collect: [:each |                             FileNode new path: (dir fullNameFor: each)]\end{code}
+
+The name \ct{directories} and \ct{files} are also the names of the link between the \ct{Directory} and \ct{File} meta nodes. A more formal explanation is: when one of the two \ct{#directories} and \ct{#files} metaedges is traversed, the name of this metaedge is used as a message name sent to the metanode's node. The two methods are invoked when a directory node is selected.
+
+The implementation of \ct{FileNode} and \ct{DirectoryNode} shows the two responsibilities of a node: rendering itself (implemented in the \ct{text} method), and calculating the nodes reachable from a node (in the \ct{directories} and \ct{files} methods). As there is no further navigation leaving a file node, such a node does not have to define navigation methods such as \ct{directories} or \ct{files}.
+
+
+The file browser is opened for a given directory, \eg the root directory of the filesystem. Thus the metagraph's root metanode represents a directory. The default root node is given by the class method \ct{defaultRootNode}:
+
+\begin{code}{}    
+FileBrowser class>>defaultRootNode
+     ^ DirectoryNode new path: '/'
+\end{code}
+
+Our file browser may now be opened by executing \ct{FileBrowser open}. Currently, no much can be done. Only navigating through directories and displaying file contents. In the subsequent sections, we will see how commands and icons may be added.
+
+%For every metanode in the metagraph we also need a concrete node class in our model, in this case we need two node classes, one representing a directory, the other a file. As the root metanode in the graph represents a directory, the concrete node in the model has to be a concrete directory node, eg. representing the root directory of the filesystem. This default root node is answered by the class-side method \ct{defaultRootNode} of \ct{OBFileBrowser}: 
+
+%\begin{figure}[!ht]
+%\begin{center}
+%\includegraphics[scale=0.55]{metagraph-fs.pdf}
+%\caption{A filesystem as a graph (a) and its corresponding metagraph (b).} \figlabel{graphfs}
+%\end{center}
+%\end{figure}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Enhancing the file browser with actions and icons} \label{sec:enhancing}
+
+A command defines an interaction the user can have with browsed items. All interactions a user can have on the nodes have to be implemented using commands. 
+
+@@HERE
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Graph and Metagraph of a Browser} \label{sec:omnibrowser}
 
-% ON: Redundant
-% The domain of the \obf is \emph{browsers}, applications with a graphical user interface that are used to navigate a graph of domain elements. When instantiating  the \obf to create a browser for a particular domain, the domain elements need to be specified, as well as the desired navigation paths between them.
 
 The \obf is structured around (i) an explicit domain model and (ii) a metagraph, a state machine, that specifies the navigation in and interaction with the domain model. The user interface is constructed by the framework, and uses a layout similar to the \st System Browser, with two horizontal parts. The top part is a column-based section where the navigation is done. The bottom half is a text pane.
 
@@ -187,116 +243,7 @@ A filter provides a strategy for filtering out some of the nodes from the displa
 
 \paragraph{Definition.} While navigating in the domain space, information about the selected node is displayed in a dedicated textual panel. If edition of the text is expected by the browser user, then a definition is necessary to handle modification and commitment (\ie an \emph{accept} in the \st terminology). A definition is produced by a node. 
 
-
-\subsection{Building a File Browser}\label{sec:fileBrowserExample}
-
-To illustrate how the \obf is instantiated, we describe the implementation of a simple file browser supporting the navigation in directories and files.
-
-\begin{figure}[!ht]
-\begin{center}
-\includegraphics[scale=0.54]{filebrowser}
-\caption{A minimal file browser based on OmniBrowser.} \label{fig:filebrowser}
-\end{center}
-\end{figure}
-
-\figref{filebrowser} shows the file browser in action. A browser is opened by evaluating \ct{FileBrowser open} in a workspace. The navigation columns in the case of a file browser are used to navigate through directories, where every column lists the contents of the directory selected in its left column, similar to the \emph{Column View} of the Finder in the Mac OS-X operating system.
-Note that we can have an infinite numbers of panes navigating through the file system. The horizontal scrollbar lets the user browse the directory structure. A text panel below the columns displays additional properties of the currently selected directory or file and provides means to manipulate these properties.
-
-\paragraph{Metagraph Definition.} 
-A filesystem encompasses basically two kind of entities, files and directories. To model the navigation of a filesystem we thus need two metanodes in the metagraph, \ct{Directory} and \ct{File}. Within any directory of a filesystem, we can again find files and other directories, hence there are two kind of transitions outgoing from a directory metanode, \ct{files} and \ct{directories}. When opening the filesystem browser, we launch it for a given directory, \eg the root directory of the filesystem. Thus the metagraph's root metanode represents a directory. \figref{graphfs}, right, shows this metagraph describing a filesystem.
-
-To concretely implement this filesystem metagraph we define a class \ct{OBFileBrowser} as a subclass of \ct{OBBrowser} and write the method \ct{defaultMetaNode} on the class side. This method first defines the two metanodes  \ct{Directory} and \ct{File} and specifies second the two transitions leaving directory and going to the metanodes \ct{Directory} and \ct{File}, respectively. These transitions are implemented as children of the metanode \ct{Directory} and are called \ct{directories} and \ct{files}, respectively. \ct{defaultMetaNode} finally answers the root metanode, in our case \ct{Directory}.
-
-\begin{code}{}
-OBFileBrowser class>>defaultMetaNode
-     "returns the directory metanode that acts as the root metanode"
- 
-     | directory file |
-     directory := OBMetaNode named: 'Directory'.
-     file := OBMetaNode named: 'File'.
-     directory 
-          childAt: #directories put: directory;
-          childAt: #files put: file.
-     ^ directory
-\end{code}
-
-When one of the two \ct{#directories} and \ct{#files} metaedges is traversed, the name of this metaedge is used as a message name sent to the metanode's node.
-
-As soon as we have defined the metagraph, we can model the domain with node classes. For every metanode in the metagraph we also need a concrete node class in our model, in this case we need two node classes, one representing a directory, the other a file. As the root metanode in the graph represents a directory, the concrete node in the model has to be a concrete directory node, eg. representing the root directory of the filesystem. This default root node is answered by the class-side method \ct{defaultRootNode} of \ct{OBFileBrowser}: 
-                    
-\begin{code}{}    
-OBFileBrowser class>>defaultRootNode
-     ^OBDirectoryNode new path: '/'
-\end{code}
-
-The next step consists of modeling the domain objects, \ie nodes.
-
-\paragraph{Node definitions.} Nodes wrap objects of the browsed domain. First the class \ct{OBFileNode}, a subclass of \ct{OBNode}, has to be defined. Instances of this class will represent concrete files. A file node is identified by a full path name, stored in a variable. A directory is another entity in our model that contains directories and files. A directory can be simply modeled as a special kind of file. The only difference between a file and a directory node is that for a directory the path variable points to a directory, not to a file. 
-
-\begin{code}{}
-OBNode subclass: #OBFileNode
-     instanceVariableNames: 'path'
-     classVariableNames: ''
-     poolDictionaries: ''
-     category: 'OBExample-FileBrowser'
-
-OBFileNode subclass: #OBDirectoryNode
-     instanceVariableNames: ''
-     classVariableNames: ''
-     poolDictionaries: ''
-     category: 'OBExample-FileBrowser'
-\end{code}
-
-The name of the node is simply the name of the file selected:
-
-\begin{code}{}
-OBFileNode>>name
-     ^ (self path subStrings: '/') last
-\end{code}
-
-The variable \ct{path} has to be accessed:
-
-\begin{code}{}
-OBFileNode>>path
-     ^ path
-
-OBFileNode>>path: aString
-     path := aString
-\end{code}
-
-A text containing information about the selected file is returned by the method \ct{text}:
-
-\begin{code}{}
-OBFileNode>>text
-     ^ 'First 1000 characters: ', String cr,
-        ((FileStream readOnlyFileNamed: path) converter: Latin1TextConverter new; 
-              next: 1000) asString
-\end{code}
-
-The methods \ct{files} and \ct{directories} are defined on the class \ct{OBDirectoryNode}.
-
-\begin{code}{}
-OBDirectoryNode>>directories
-     | dir | 
-     dir := FileDirectory on: path.
-     ^ dir directoryNames collect: [:each | 
-                                  OBDirectoryNode new path: (dir fullNameFor: each)]
-
-OBDirectoryNode>>files
-     | dir | 
-     dir := FileDirectory on:  path.
-     ^ dir fileNames collect: [:each | 
-                            OBFileNode new path: (dir fullNameFor: each)]
-\end{code}
-
-The implementation shows the two responsibilities of a node: rendering itself (implemented in the \ct{text} method), and calculating the nodes reachable from a node (in the \ct{directories} and \ct{files} methods). As there is no further navigation leaving a file node, such a node does not have to define navigation methods such as \ct{directories} or \ct{files}.
-
-\begin{figure}[!ht]
-\begin{center}
-\includegraphics[scale=0.55]{metagraph-fs.pdf}
-\caption{A filesystem as a graph (a) and its corresponding metagraph (b).} \figlabel{graphfs}
-\end{center}
-\end{figure}
+\ab{@@HERE}
 
 To visually distinguish files from directories when browsing a directory with our file browser, we can add an icon to each element in the list. To illustrate this, we will denote directories with a small folder icon. 
 
@@ -603,45 +550,6 @@ Each graphical widget composing a browser is a listener and can emit events. Cre
 %The notion of ancestry refers to domain objects. It's mainly useful for jumping directly to a node that's deep in the graph - browsing a particular method, for example. To do this, one has to be able to select the correct category, class, method category and method. To do this, we start at the root node, and walk down the graph, scanning the edges of the metagraph and choosing those that lead to ancestors of the target node, until the target node is reached.
 %}
 
-%===============
-\section{The Coverage Browser}\label{sec:coverageBrowser}
-
-The coverage browser is an extension to the system browser to show the coverage of code by unit tests.
-It extends the system browser in two ways.
-First of all it appends the percentage of elements covered by tests to the elements in the lists making up the browser. Secondly it adds a fifth pane that lists the unit tests that test a selected method. 
-A screenshot is shown in \figref{cb-screenshot}.
-It shows us that 39\% of the class \ct{UUID} is covered by tests, and that the method \ct{initialize} is covered a 100\% by the tests shown in the right-most pane. One of these tests is \ct{testCreation}.
-
-\begin{figure}[!ht]
-\begin{center}
-\includegraphics[scale=0.44]{coverageBrowserScreenshot.pdf}
-\caption{Screenshot of the coverage browser.} \figlabel{cb-screenshot}
-\end{center}
-\end{figure}
-
-\begin{figure}[!ht]
-\begin{center}
-\includegraphics[scale=0.55]{coverageBrowser.pdf}
-\caption{Extension of Omnibrowser and system browser to define the coverage browser.} \figlabel{cb}
-\end{center}
-\end{figure}
-
-The coverage browser is composed of 11 classes (one class for the browser, five commands and five nodes). \figref{cb} illustrates how classes in \ob and in the system browser are extended to define this new browser. The metagraph is depicted in \figref{cb-graph} and is identical to the system browser except with a new \ct{Method Coverage} metanode. The depth of the graph, which is 5, is reflected in the number of list panes the browser is composed of.
-
-\begin{figure}[!ht]
-\begin{center}
-\includegraphics[scale=0.45]{cb-graph.pdf}
-\caption{Metagraph for the coverage browser.} \figlabel{cb-graph}
-\end{center}
-\end{figure}
-
-
-%This browser is the "control center" of the coverage tool (probably be named Christo in the future ?). It let the user create "coverage sets". A coverage set is a kind of persistent configuration that knows everything about how to collect coverage data and on which elements. An element might be a package, a method or any other OBNode. The elements can be added by drag & dropping OBNodes from any other Omnibrowser supporting drag & drop. The browser has a button to browse the selection using the coveage browser. Besides several operations on sets and elements the browser enables limited browsing capabilities (sources, tests, obsolete coverage) and has control over the coverage cache.
-
-%The purpose of this browser it to provide a user interface that makes the handling of the coverage tool simple and intuitive - without the need of knowing the technology or how it need to be used/applied.
-
-% number of methods in the coverage browser = 83 
-%(#(CoverageActor CoverageElementActor CoverageEnvironmentActor CoverageMethodNodeActor CoverageSetActor CoverageBrowser CoverageMethodNode CoverageNode CoverageElementNode CoverageEnvironmentNode CoverageSetNode) collect: [:cname| Smalltalk at: ('OB', cname) asSymbol]) inject: 0 into: [:sum :el| sum + el methodDictionary size] 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Evaluation and Discussions} \seclabel{discussion}
