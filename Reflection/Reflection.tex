@@ -859,9 +859,6 @@ One of the pragmas used by Lint to filter out methods is \ct{lint:rationale:auth
 
 By being instance of the class \ct{Pragma}, pragmas are first class objects. A compiled method answers to the message \ct{pragmas}. This method returns an array of pragmas. 
 
-%:===> Test fail due to incorrect parsing of " within strings
-\fix \on{fix test generation for quotes within strings}
-
 \begin{code}{@TEST}
 (MorphObjectOut >> #doesNotUnderstand:) pragmas                                            --> an Array(<lint: 'Unnecessary "= true"' rationale: 'recursionFlag may be nil' author: 'stephane.ducasse'>)
 \end{code}
