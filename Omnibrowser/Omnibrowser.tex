@@ -90,19 +90,24 @@ To illustrate how to instantiate the \obf, we describe the implementation of a s
 \end{center}
 \end{figure}
 
-\figref{filebrowser} shows the file browser in action. A browser is opened by evaluating \ct{FileBrowser open} in a workspace. The navigation columns in the case of a file browser are used to navigate through directories, where every column lists the contents of the directory selected in its left column, similar to the \emph{Column View} of the Finder in the Mac OS-X operating system.
+\figref{filebrowser} shows the file browser in action. The navigation columns in the case of a file browser are used to navigate through directories, where every column lists the contents of the directory selected in its left column, similar to the \emph{Column View} of the Finder in the Mac OS-X operating system.
 Note that we can have an infinite numbers of panes navigating through the file system. The horizontal scrollbar lets the user browse the directory structure. A text panel below the columns displays additional properties of the currently selected directory or file and provides means to manipulate these properties.
 
 The class describing a browser must inherit from the class \ct{OBBrowser}. The class \ct{FileBrowser} may be defined as follows:
 
 \begin{code}{}
-OBBrowser subclass: #FileBrowser	instanceVariableNames: ''	classVariableNames: ''	poolDictionaries: ''	category: 'PBE-Omnibrowser'
+OBBrowser subclass: #FileBrowser
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'PBE-Omnibrowser'
 \end{code}
 
 The default browser title may be overridden by redefining the class method \ct{title}:
 
 \begin{code}{}
-FileBrowser class>>title	^ 'FileBrowser for PBE'
+FileBrowser class>>title
+	^ 'FileBrowser for PBE'
 \end{code}
 
 
@@ -126,12 +131,20 @@ FileBrowser class>>defaultMetaNode
 A metagraph is composed of metanodes, a metanode representing one particular set of selected items.
 To model the navigation of a filesystem we thus need two metanodes in the metagraph, \ct{Directory} and \ct{File}. Within any directory of a filesystem, we can again find files and other directories, hence there are two kind of transitions outgoing from a directory metanode, named \ct{files} and \ct{directories} in the metagraph. 
 
-The subsequent step is to create class nodes that will be model browser items. For that purpose, we define two subclasses of \ct{OBNode}:
+The subsequent step is to create class nodes that will model browser items. For that purpose, we define two subclasses of \ct{OBNode}:
 
 \begin{code}{}
-OBNode subclass: #FileNode	instanceVariableNames: 'path'	classVariableNames: ''	poolDictionaries: ''	category: 'PBE-Omnibrowser'
+OBNode subclass: #FileNode
+	instanceVariableNames: 'path'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'PBE-Omnibrowser'
 
-FileNode subclass: #DirectoryNode	instanceVariableNames: ''	classVariableNames: ''	poolDictionaries: ''	category: 'PBE-Omnibrowser'
+FileNode subclass: #DirectoryNode
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'PBE-Omnibrowser'
 \end{code}
 
 Instances of \ct{FileNode} and \ct{DirectoryNode} will represent files and directory, the domain being navigated through. 
@@ -140,21 +153,28 @@ Nodes wrap objects of the browsed domain. First the class \ct{FileNode}, a subcl
 The \ct{path} variable needs accessors:
 
 \begin{code}{}    
-FileNode>>path	^ path
+FileNode>>path
+	^ path
 
-FileNode>>path: aString	path := aString
+FileNode>>path: aString
+	path := aString
 \end{code}
 
 A node needs to answer to the message \ct{name}, which returns the title used in the browser:
 
 \begin{code}{}    
-FileNode>>name	"return the name of a file"	^ (self path subStrings: '/') last
+FileNode>>name
+	"return the name of a file"
+	^ (self path subStrings: '/') last
 \end{code}
 
 When selected, a node may provide a character string used to fill the lower text pane. In our situation, clicking on a file node should display the content of the selected file. The method \ct{text} has to be defined. 
 
 \begin{code}{}    
-FileNode>>text     ^ 'First 1000 characters: ', String cr,        ((FileStream readOnlyFileNamed: path) converter: Latin1TextConverter new;               next: 1000) asString
+FileNode>>text
+	"return the first 1000 characters"
+     ^ ((FileStream readOnlyFileNamed: path) converter: Latin1TextConverter new; 
+              next: 1000) asString
 \end{code}
 
 Note that this method \ct{text} has to be used when no further interaction is expected by the end-user. For example, if one wish to modify the content of a file by modifying the text in the lower pane, a \emph{definition} must be used, as we shall see later.
@@ -162,11 +182,20 @@ Note that this method \ct{text} has to be used when no further interaction is ex
 Each node is displayed in a column, and when selected, it provides the list of nodes used to fill the next column. Clicking on a directory must display the list of files and folders in the column located on the right hand side. The methods \ct{directories} and \ct{files} have to be defined:
 
 \begin{code}{}    
-DirectoryNode>>directories     | dir |      dir := FileDirectory on: path.     ^ dir directoryNames collect: [:each |                                   DirectoryNode new path: (dir fullNameFor: each)]
+DirectoryNode>>directories
+     | dir | 
+     dir := FileDirectory on: path.
+     ^ dir directoryNames collect: [:each | 
+                            DirectoryNode new path: (dir fullNameFor: each)]
 
-DirectoryNode>>files    | dir |      dir := FileDirectory on:  path.     ^ dir fileNames collect: [:each |                             FileNode new path: (dir fullNameFor: each)]\end{code}
+DirectoryNode>>files
+    | dir | 
+     dir := FileDirectory on:  path.
+     ^ dir fileNames collect: [:each | 
+                            FileNode new path: (dir fullNameFor: each)]
+\end{code}
 
-The name \ct{directories} and \ct{files} are also the names of the link between the \ct{Directory} and \ct{File} meta nodes. A more formal explanation is: when one of the two \ct{#directories} and \ct{#files} metaedges is traversed, the name of this metaedge is used as a message name sent to the metanode's node. The two methods are invoked when a directory node is selected.
+The name \ct{directories} and \ct{files} are also the names of the link between the \ct{Directory} and \ct{File} meta nodes. A formal explanation for this is: when one of the two \ct{#directories} and \ct{#files} metaedges is traversed, the name of this metaedge is used as a message name sent to the metanode's node. The two methods are invoked when a directory node is selected.
 
 The implementation of \ct{FileNode} and \ct{DirectoryNode} shows the two responsibilities of a node: rendering itself (implemented in the \ct{text} method), and calculating the nodes reachable from a node (in the \ct{directories} and \ct{files} methods). As there is no further navigation leaving a file node, such a node does not have to define navigation methods such as \ct{directories} or \ct{files}.
 
@@ -190,11 +219,126 @@ Our file browser may now be opened by executing \ct{FileBrowser open}. Currently
 %\end{figure}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Enhancing the file browser with actions and icons} \label{sec:enhancing}
+\section{Enhancing the file browser with actions, definitions and icons} \label{sec:enhancing}
 
-A command defines an interaction the user can have with browsed items. All interactions a user can have on the nodes have to be implemented using commands. 
+\subsubsection{Spawning browsers}
 
-@@HERE
+A command defines an interaction the user can have with browsed items. All interactions triggered from a menu have to be implemented using commands. We will define a browser command that spawn a file browser on a selected node. \figref{command} depicts the activation of the contextual menu.
+
+
+\begin{figure}[!ht]
+\begin{center}
+\includegraphics[scale=0.34]{command}
+\caption{The browse command in the filer browser.} \label{fig:command}
+\end{center}
+\end{figure}
+
+
+\ct{BrowseCommand} has to be a subclass of \ct{OBCommand} and must override at least 4 methods in order to be effective. Each command must have a menu item label.
+\begin{code}{}    
+BrowseCommand>>label
+	^ 'browse'
+\end{code}
+
+A command may or may not be active (\ie listed in the contextual menu) depending on some selection or the particular state of the selected item. In our case, we just need to redefine \ct{isActive} to answer whether the node for which the command is triggered is selected. This implementation of \ct{isActive} is very common and you will probably need it for most of your command.
+
+\begin{code}{}    
+BrowseCommand>>isActive
+	^ (requestor isSelected: target)
+\end{code}
+
+The variable \ct{requestor} refers to the column that requested for the command. The \ct{target} refers to the node for which the command has been triggered. 
+
+Command may be also invoked using a particular keystroke. The apple key (on Mac) or alt key (on MS Windows and Linux) has to be combined with the character returned by \ct{keystroke} to activate the command.
+
+\begin{code}{}    
+BrowseCommand>>keystroke
+	^ $b
+\end{code}
+
+The shift key may be added to the keystroke by returning a capital letter instead of a minuscule one. Note that by defining a keystroke, the label is automatically extended with ``\ct{(b)}'' in menus.
+
+The method \ct{execute} is executed when the command is active and triggered by either an appropriate keystroke or a menu selection.
+
+\begin{code}{}    
+BrowseCommand>>execute
+	FileBrowser openOn: target.
+
+FileBrowser class>>openOn: aNode 
+	^ (self root: aNode selection: aNode) open
+\end{code}
+
+The method \ct{openOn:} needs to be added to the class side of \ct{FileBrowser} to open a browser on a given node. 
+
+The very last step is to link \ct{FileBrowser} to \ct{BrowseCommand}. This is done by defining an instance side method that returns the class command (and not an instance of it). This name of the method needs to begin with \ct{cmd}, this is a naming convention similar to testing method names beginning with \ct{test}. The instance side method needs to be defined:
+
+\begin{code}{}    
+FileBrowser>>cmdBrowse
+	^ BrowseCommand
+\end{code}
+
+The command is now fully defined. 
+
+%:===========
+\subsubsection{Creating new files}
+
+The command given above remained quite simple: no list to refresh; no interaction with the user; no automatic node selection. We will cover these importing topics by adding a command to manually create files. Browser column will have to be updated with a new entry (the file recently created), the user will have to enter the name of the file to be created, and the new file will be selected after its creation.
+
+The \ct{NewFileCommand} is define as follows:
+
+\begin{code}{}    
+OBCommand subclass: #NewFileCommand
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'PBE-OmniBrowser'
+
+NewFileCommand>>keystroke
+	^ $n
+
+NewFileCommand>>label
+	^ 'new file'
+\end{code}
+
+We want to have the command activate when right clicking either on a directory (to create the file in it), or on a column. This suggest a slightly more elaborated \ct{isActive} method:
+
+\begin{code}{}    
+NewFileCommand>>isActive
+	^ ((requestor isSelected: target) and: [target isKindOf: DirectoryNode])
+			or: [requestor selectedNode isNil]
+\end{code}
+
+The \obf provides a number of utility classes to ask for user input contained in the package \ct{OmniBrowser-Notifications}. We will use \ct{OBTextRequest} to ask for user input. 
+
+\begin{code}{}    
+NewFileCommand>>execute
+	| filename fullFilename stream |
+	filename := OBTextRequest 
+					prompt: 'Please type the name of the file to create' 
+					template: ''.
+	fullFilename := target path, FileDirectory pathNameDelimiter asString, filename.
+	stream := FileStream newFileNamed: fullFilename.
+	stream close.
+	requestor refreshAll
+\end{code}
+
+The last line of \ct{execute} is important. It signals the column (referenced by \ct{requestor}) to trigger a global refresh. 
+\alex{Check with David about automatic node selection}
+
+
+%:===========
+\subsubsection{Modifying files}
+
+So far, we've seen only how to create empty files. To modify the content of a file, the browser needs to accept user input from the lower text pane and perform an action on it. 
+
+\begin{code}{}    
+OBDefinition subclass: #FileDefinition
+	instanceVariableNames: 'fileNode'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'PBE-OmniBrowser'
+\end{code}
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Graph and Metagraph of a Browser} \label{sec:omnibrowser}
@@ -366,14 +510,6 @@ The root of a metagraph corresponds to the left-most list. The number of lists d
 
 \paragraph{Menus.} A menu can be displayed for each list widget of a browser. Typically such a menu displays a list of actions that can be executed by the user. These actions enable interaction with the domain model, however they do not allow further navigation in the metagraph.
 
-\begin{figure}[!ht]
-\begin{center}
-\includegraphics[scale=0.65]{menu.pdf}
-\caption{Example of menu in the \obf system browser.} \figlabel{menu}
-\end{center}
-\end{figure}
-
-\figref{menu} shows an example of a menu offering actions related to a class. These correspond to the list of commands defined in the class \ct{OBCodeBrowser}.
 
 \paragraph{Definition pane.} When a node is selected in a list, information related to this node is displayed in a text pane. Committing a change in the definition pane sends the message \ct{accept: newText notifying: aController} to the definition shown in this pane. A browser contains only one text pane.
 %\sd{can we have multiple of them? I guess not so we should say it.} 
@@ -395,7 +531,7 @@ The system browser is probably the most important tool offered by the \pharo pro
 
 \begin{figure}[!ht]
 \begin{center}
-\includegraphics[scale=0.50]{obbrowser.pdf}
+\includegraphics[scale=0.30]{obbrowser.png}
 \caption{\ob based \st system browser.} \figlabel{ob}
 \end{center}
 \end{figure}
