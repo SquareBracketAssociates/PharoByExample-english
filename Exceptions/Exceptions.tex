@@ -12,6 +12,7 @@
 % 2009-03-18 - Stef extended
 % 2009-06-17 - Oscar migrated to Pharo
 % 2009-07-16 - Oscar indexing
+% 2009-07-16 - Lukas commenting
 
 %=================================================================
 \ifx\wholebook\relax\else
@@ -80,6 +81,17 @@ Consider the following example, which creates an image file from a screenshot ta
 ]	ensure: [ writer ifNotNil: [ writer close ] ]
 \end{code}
 
+\lr{The typical pattern is like this:}
+
+\begin{code}{}
+| writer |
+writer := GIFReadWriter on: (FileStream newFileNamed: 'Pharo.gif').
+[ writer nextPutImage: (Form fromUser) ]
+	ensure: [ writer close ]
+\end{code}
+
+\lr{This has the exact same semantics as the other implementation, but is much simpler and does not require the nil test. Lint also suggests this variation if you write the above one.}
+
 Since most operating systems limit the number of files that a running application may have open at the same time, opening a file may fail.
 This code ensures that the \ct{writer} file handle will be closed, even if an error occurs while opening it or writing to it.
 
@@ -87,6 +99,8 @@ The \ct{nextPutImage:} method of the class \ct{GIFReadWriter} converts a form (\
 
 Here is another typical use of \ct{ensure:}.
 The mouse cursor should revert to its original shape after the argument block has terminated, even if it fails:
+
+\lr{That code is in \ct{Cursor} not in \ct{Sensor}.}
 
 \needlines{7}
 \begin{code}{}
@@ -139,7 +153,7 @@ Here are some  examples of \lct{ifCurtailed:} usage where the text displayed in 
 [1 / 0] ifCurtailed: [Transcript show: 'This is displayed after selecting Abandon in the debugger'; cr]
 \end{code}
 
-Although \ct{ifCurtailed:} and \ct{ensure:} are implemented as primitives in \pharo, in principle \ct{ifCurtailed:} could be implemented using \ct{ensure:} as follows:
+Although \ct{ifCurtailed:} and \ct{ensure:} are implemented as primitives in \pharo \lr{That's not true, primitive 198 and 199 are no-ops and just act as a markers. Today the same could be done using method annotations, but that was not possible when the exceptions were implemented. The methods \ct{isHandlerContext} and \ct{isUnwindContext} just check for the presence of these marker primitives and are called by \ct{findNextHandlerContextStarting} and \ct{findNextUnwindContextUpTo:} to find the contexts. The two latter methods are primitives for efficiency reasons, but apart from that the complete exception handling is implemented at the Smalltalk level without primitive support.}, in principle \ct{ifCurtailed:} could be implemented using \ct{ensure:} as follows:
 
 \begin{code}{}
 ifCurtailed: curtailBlock
@@ -185,7 +199,7 @@ The code that detects an abnormal situation and signals an exception (\lct{\emph
 The beauty of this mechanism lies in the fact that the receiver code is written as a straightforward flow of control, \emph{without regard to any possible errors}. A single handler block is responsible for taking care of anything that may go wrong.
 
 Consider the following example, where we want to copy the contents of one file to another.
-Although several things could go wrong, with exception handling we simply write a straightforward flow of control, defining a single exception handler for the whole transaction:
+Although several things could go wrong, with exception handling we simply write a straightforward flow of control, defining a single exception handler for the whole transaction: 
 \clsindex{FileStream}
 \clsindex{FileStreamException}
 \clsindex{FileDirectory}
@@ -203,6 +217,21 @@ destination := 'log-backup.txt'.
 fromStream ifNotNil: [fromStream close].
 toStream ifNotNil: [toStream close].
 \end{code}
+
+\lr{That code is not correct. If any other exception than \ct{FileStreamException} happens the files are not properly closed. Following the pattern of the initial example, the code has to be written like this:}
+
+\begin{code}{| source destination fromStream toStream |}
+source := 'log.txt'.
+destination := 'log-backup.txt'.
+[	fromStream := FileDirectory default oldFileNamed: source.
+	[	toStream := FileDirectory default newFileNamed: destination.
+		[ toStream nextPutAll: fromStream contents ]
+			ensure: [ toStream close ] ]
+		ensure: [ fromStream close ] ]
+	on: FileStreamException
+	do: [ :ex | UIManager default inform: 'Copy failed -- ', ex description ].
+\end{code}
+
 If anything goes wrong, we ask the exception object to provide more details about the error.
 We are guaranteed to get to the end of the protected block, at which point we can close the two file streams, if necessary.
 
@@ -398,6 +427,7 @@ At each point in the execution of a program, the method call stack of a program 
 
 %:===> BlockContext -> BlockClosure everywhere? What about MethodContext?
 \on{Fix BlockClontext to BlockClosure. What about MethodContext?}
+\lr{In Pharo there is only the class \ct{MethodContext} used as stack frame, it is created when a \ct{BlockClosure} is activated. The class \ct{BlockContext} is not used.}
 
 Suppose that we attempt to open a \ct{BookMorph} on a non-existent file.
 A \ct{FileDoesNotExistException} will be signaled, and the method call stack will contain the activation contexts created by the methods \ct{openFromFile:}, \ct{oldFileNamed:}, and \ct{signal} (\figref{stack}):
@@ -409,7 +439,7 @@ A \ct{FileDoesNotExistException} will be signaled, and the method call stack wil
 
 Since everything is an object in \st, we should expect activation contexts to also be objects.
 Actually, certain \st dialects and implementations use the native \ind{C} execution stack of the \ind{virtual machine} to avoid creating objects all the time.
-The \pharo virtual machine does not do this, but instead creates the list of activation context objects only on demand, for example, whenever the debugger is started.
+The \pharo virtual machine does not do this, but instead creates the list of activation context objects only on demand, for example, whenever the debugger is started. \lr{This is not true. The Pharo VM does not use the C stack and uses full Smalltalk objects at all times.}
 
 \index{BlockClosure}{on:do:}
 When we send \lct{\emph{aBlock} on: \emph{ExceptionClass} do: \emph{anHandler}}, we associate an exception handler (\lct{\emph{anHandler}}) to a given class of exceptions (\lct{\emph{ExceptionClass}}) for the activation context of the protected block (\lct{\emph{aBlock}}).
@@ -477,7 +507,7 @@ In particular, it may:
 \item[(iii)] \emph{retry} the protected block by sending \ct{retry} or try a different block by sending \ct{retryUsing:};
 \item[(iv)] \emph{resume} the protected block at the failure point by sending \ct{resume} or \ct{resume:};
 \item[(v)] \emph{pass} the caught exception to the enclosing handler by sending \ct{pass}; or
-\item[(vi)] \emph{signal} a different exception by sending \ct{resignalAs:} to the exception.
+\item[(vi)] \emph{signal} a different exception by sending \ct{resignalAs:} to the exception. \lr{I would call this \emph{resignal}, because this is not the same as signaling a new exception using \ct{Exception signal} from within a handler block.}
 \end{itemize}
 
 We will briefly look at the first three possibilities, and then we will take a closer look at the remaining ones.
@@ -592,7 +622,7 @@ Here we can clearly see that the value of \ct{MyResumableTestError signal} is th
 
 The message \ct{resume} is equivalent to \ct{resume: nil}.
 
-The usefulness of resuming a control flow is illustrated by the class \ct{Installer} (an automatic package loading mechanism). When installing packages, warnings may be signaled. Warnings should not be considered fatal errors, so the installer should simply ignore the warning and continue installing.
+The usefulness of resuming a control flow is illustrated by the class \ct{Installer} (an automatic package loading mechanism). When installing packages, warnings may be signaled. Warnings should not be considered fatal errors, so the installer should simply ignore the warning and continue installing. \lr{Maybe better use something from Pharo-Core like \ct{UndeclaredVariableWarning} or \ct{TimedOut}.}
 
 \begin{code}{}
 Installer>>>installQuietly: packageNameCollectionOrDetectBlock 
@@ -737,6 +767,8 @@ Object>>>performAll: selectorCollection
 This has the effect of passing on \clsind{MessageNotUnderstood} errors to the surrounding context when they are not part of the list of messages we are performing. The \ct{pass} message will pass the exception on to the next applicable handler in the run-time stack.
 
 If there is no next handler on the list, the \ct{defaultAction} message is sent to the exception instance. The \ct{pass} action does not modify the sender chain in any way\,---\,but the handler the control is passed to may do so. Like other messages we discussed in this section, \ct{pass} is special\,---\,it never returns to the sender.
+
+\lr{I hope nobody is going to write code like that after reading this section.}
 
 %=================================================================
 \section{Resending exceptions}
