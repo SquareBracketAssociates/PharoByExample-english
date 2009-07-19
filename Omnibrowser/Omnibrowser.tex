@@ -223,7 +223,7 @@ Our file browser may now be opened by executing \ct{FileBrowser open}. Currently
 
 \subsubsection{Spawning browsers}
 
-A command defines an interaction the user can have with browsed items. All interactions triggered from a menu have to be implemented using commands. We will define a browser command that spawn a file browser on a selected node. \figref{command} depicts the activation of the contextual menu.
+A command defines an interaction the user can have with browsed items. All interactions triggered from a menu have to be defined as commands. We will define a browser command that open a second file browser on a selected node. \figref{command} depicts the activation of the contextual menu.
 
 
 \begin{figure}[!ht]
@@ -240,14 +240,14 @@ BrowseCommand>>label
 	^ 'browse'
 \end{code}
 
-A command may or may not be active (\ie listed in the contextual menu) depending on some selection or the particular state of the selected item. In our case, we just need to redefine \ct{isActive} to answer whether the node for which the command is triggered is selected. This implementation of \ct{isActive} is very common and you will probably need it for most of your command.
+A command may or may not be active (\ie listed in the contextual menu) depending on some selection or the particular state of the selected item. In our case, we just need to redefine \ct{isActive} to answer whether the node for which the command is triggered is selected. This implementation of \ct{isActive} is very common and you will probably need it for most of your commands.
 
 \begin{code}{}    
 BrowseCommand>>isActive
 	^ (requestor isSelected: target)
 \end{code}
 
-The variable \ct{requestor} refers to the column that requested for the command. The \ct{target} refers to the node for which the command has been triggered. 
+When these methods get executed, the command already knows the column from which it gets triggered (stored in the instance variable \ct{requestor}) and the target node for which the action has to be exectuted (stored in the instance variable \ct{target}). 
 
 Command may be also invoked using a particular keystroke. The apple key (on Mac) or alt key (on MS Windows and Linux) has to be combined with the character returned by \ct{keystroke} to activate the command.
 
@@ -256,7 +256,7 @@ BrowseCommand>>keystroke
 	^ $b
 \end{code}
 
-The shift key may be added to the keystroke by returning a capital letter instead of a minuscule one. Note that by defining a keystroke, the label is automatically extended with ``\ct{(b)}'' in menus.
+The shift key may be added to the keystroke by returning a capital letter instead of a minuscule one. Note that by defining a keystroke, the label is automatically appended with ``\ct{(b)}'' in menus.
 
 The method \ct{execute} is executed when the command is active and triggered by either an appropriate keystroke or a menu selection.
 
@@ -270,19 +270,19 @@ FileBrowser class>>openOn: aNode
 
 The method \ct{openOn:} needs to be added to the class side of \ct{FileBrowser} to open a browser on a given node. 
 
-The very last step is to link \ct{FileBrowser} to \ct{BrowseCommand}. This is done by defining an instance side method that returns the class command (and not an instance of it). This name of the method needs to begin with \ct{cmd}, this is a naming convention similar to testing method names beginning with \ct{test}. The instance side method needs to be defined:
+The very last step is to link \ct{FileBrowser} to \ct{BrowseCommand}. This is done by defining an instance side method that returns the class command (and not an instance of it). This name of the method needs to begin with ``\ct{cmd}'', this is a naming convention similar to testing method names beginning with ``\ct{test}''. The instance side method needs to be defined:
 
 \begin{code}{}    
 FileBrowser>>cmdBrowse
 	^ BrowseCommand
 \end{code}
 
-The command is now fully defined. 
+The command is now fully defined. Open a new file browser and right click on an item.
 
 %:===========
 \subsubsection{Creating new files}
 
-The command given above remained quite simple: no list to refresh; no interaction with the user; no automatic node selection. We will cover these importing topics by adding a command to manually create files. Browser column will have to be updated with a new entry (the file recently created), the user will have to enter the name of the file to be created, and the new file will be selected after its creation.
+The command given above remains quite simple: no list to refresh; no interaction with the user; no automatic node selection. We will cover these importing topics by adding a command to manually create files. Browser column will have to be updated with a new entry (the file recently created), the user will have to enter the name of the file to be created, and the new file will be selected after its creation.
 
 The \ct{NewFileCommand} is define as follows:
 
@@ -300,7 +300,7 @@ NewFileCommand>>label
 	^ 'new file'
 \end{code}
 
-We want to have the command activate when right clicking either on a directory (to create the file in it), or on a column. This suggest a slightly more elaborated \ct{isActive} method:
+We want to have the command activated when right clicking either on a directory (to create the file in it), or on a column. This suggest a slightly more elaborated \ct{isActive} method:
 
 \begin{code}{}    
 NewFileCommand>>isActive
@@ -311,15 +311,7 @@ NewFileCommand>>isActive
 The \obf provides a number of utility classes to ask for user input contained in the package \ct{OmniBrowser-Notifications}. We will use \ct{OBTextRequest} to ask for user input. 
 
 \begin{code}{}    
-NewFileCommand>>execute
-	| filename fullFilename stream |
-	filename := OBTextRequest 
-					prompt: 'Please type the name of the file to create' 
-					template: ''.
-	fullFilename := target path, FileDirectory pathNameDelimiter asString, filename.
-	stream := FileStream newFileNamed: fullFilename.
-	stream close.
-	requestor refreshAll
+NewFileCommand>>execute	| filename fullFilename stream nodeToSelect |	filename := OBTextRequest 					prompt: 'Please type the name of the file to create' 					template: ''.	fullFilename := target path, FileDirectory pathNameDelimiter asString, filename.	stream := FileStream newFileNamed: fullFilename.	stream close.	nodeToSelect := target files detect: [:fileNode | fileNode name = filename ].	requestor announce: (OBNodeCreated node: nodeToSelect).
 \end{code}
 
 The last line of \ct{execute} is important. It signals the column (referenced by \ct{requestor}) to trigger a global refresh. 
@@ -329,7 +321,9 @@ The last line of \ct{execute} is important. It signals the column (referenced by
 %:===========
 \subsubsection{Modifying files}
 
-So far, we've seen only how to create empty files. To modify the content of a file, the browser needs to accept user input from the lower text pane and perform an action on it. 
+So far, we've seen only how to create empty files. To modify the content of a file, the browser needs to accept user input from the lower text pane and performs an action on it. 
+
+Let's create subclass \ct{OBDefinition}:
 
 \begin{code}{}    
 OBDefinition subclass: #FileDefinition
@@ -339,12 +333,73 @@ OBDefinition subclass: #FileDefinition
 	category: 'PBE-OmniBrowser'
 \end{code}
 
+The variable \ct{fileNode} is intended to refer to the selected file node. This variable will have to be initialized when the definition is instantiated. We need accessors:
+
+\begin{code}{}    
+FileDefinition>>fileNode	^ fileNode
+
+FileDefinition>>fileNode: aFileNode	fileNode := aFileNode
+\end{code}
+
+As we previously saw, the content of the lower text pane is given by the \ct{text} methods defined on \ct{FileNode}. As we now use a definition, \ct{FileNode>>text} is now useless. You can safely remove it and define instead it on \ct{FileDefinition}:
+
+\begin{code}{}
+FileDefinition>>text	"return the first 1000 characters"     ^ ((FileStream readOnlyFileNamed: fileNode path) converter: Latin1TextConverter new;               next: 1000) asString
+\end{code}
+
+The message \ct{text:} is sent to the OB definition when the user presses apple-s  on Mac or alt-s on other platforms. When the content is ``accepted'', we need to open the file, write the content provided by the user into it, and close the file:
+
+\begin{code}{}
+FileDefinition>>text: aText	"return the first 1000 characters"     (FileStream fileNamed: fileNode path) 				nextPutAll: aText asString;				close.	^ true
+\end{code}
+
+\ct{FileDefinition} is currently not linked to the browser. To do so, define the method \ct{definition} in \ct{FileNode}:
+
+\begin{code}{}
+FileNode>>definition	^ FileDefinition new fileNode: self
+\end{code}
+
+Each selected item can have its own definition. 
+
+%:===========
+\subsubsection{Distinguishing folders from plain files}
+
+To visually distinguish files from directories when browsing a directory with our file browser, we will denote directories with a small icon. This section shows how to import new icons into Pharo, then how to associate icons to browsed items.
+
+The first step is to integrate the icon itself into a \pharo image. In the class \ct{OBMorphicIcons} you see some pre-defined icons stored in methods such as \ct{package}. To import an icon stored as an image (\eg as a GIF file), you can use this code:
+
+\begin{code}{}
+| image stream |
+image := ColorForm fromFileNamed: '/path/to/icon.gif'.
+stream := WriteStream with: String new.
+image storeOn: stream.
+stream contents.
+\end{code}
+
+Inspect this whole code listing. In the inspector you see the definition of the color form for the icon. You can now install the content of this \ct{ByteString} as a method in the method protocol \ct{icons} of \ct{OBMorphicIcons} in a method called \ct{folder}. Make sure that you do not return the string, but the code within the string, so that if the method gets invoked a color form for the folder icon is returned. For example, the package icon is defined as:
+
+\begin{code}{}
+OBMorphicIcons>>package    ^(Form	extent: 14@14	depth: 32	fromArray: #( 4294960327 4289901233 .....  4294960327)	offset: 0@0)
+\end{code}
+
+The list of numbers corresponds to the image bit encoding of the icon.
+
+In the second step you can take this icon and display it in the columns for every directory. To achieve this, simply add a method \ct{icon} to the class \ct{DirectoryNode}:
+
+\begin{code}{}
+DirectoryNode >>icon
+	^ #folder  
+\end{code}
+
+If you do not have a .gif under hand, you may replace \ct{#folder} by \ct{#package}. The method \ct{icon} gets executed for every element that is added to a column. If it answers a symbol, then the method of \ct{OBMorphicIcons} with the same name is executed, answering the icon as a color form to be added on the left of the list element, \ie the directory name.
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Graph and Metagraph of a Browser} \label{sec:omnibrowser}
 
+The remaining of this chapter revises the notions already seen so far, but in a more formal fashion. It describes the internal of the framework, which should help the reader to understand when \ob is appropriate for a given task and what are its limitations.
 
-The \obf is structured around (i) an explicit domain model and (ii) a metagraph, a state machine, that specifies the navigation in and interaction with the domain model. The user interface is constructed by the framework, and uses a layout similar to the \st System Browser, with two horizontal parts. The top part is a column-based section where the navigation is done. The bottom half is a text pane.
+The \obf is structured around (i) an explicit domain model and (ii) a metagraph, a state machine, that specifies the navigation and interaction with the domain model. The user interface is constructed by the framework, and uses a layout similar to the code browser, with two horizontal parts. The top part is a column-based section where the navigation is done. The bottom half is a text pane.
 
 %\secref{overview} explains the major classes that make up the \obf. \secref{fileBrowserExample} shows a concrete instantiation to build a file browser. \secref{corebehavior} goes in some more detail and describes the core behavior of the framework. Section~\ref{widgets} explains how the widgets are glued together.
 
@@ -363,108 +418,24 @@ The navigation of this domain graph is specified in a \emph{metagraph}, a state 
 
 \paragraph{Node.} A \emph{node} is a wrapper for a domain object, and has two responsibilities: rendering the domain object, and returning domain nodes.
 
-\on{too much text already without a running example!}
-
 \paragraph{Metagraph.} A browser's \emph{metagraph} specifies the way a user traverses the graph of domain nodes. A metagraph is composed of metanodes and metaedges. A metanode identifies a state in which the browser may be. A metanode may reference a filter (described below)
 %\footnote{In a former version of \ob~\cite{Berg07c}, actors where used to defines actions and where attached to a metanode. In the current version of \ob actors have been replaced by commands.}.
 The metanode does not have the knowledge of the domain nodes, however each node is associated to a metanode. Transitions between meta\-nodes are defined by metaedges. When a metaedge is traversed (\ie result of pressing a button or selecting an entry list), sibling nodes are created from a given node by invoking a method that has the name of the metaedge.
 
 A \emph{metanode} has the ability to be auto selected with the method \lct{Meta\-Node\ct{>>>}autoSelect: aMetaNode}. When a particular child for auto selection is designated, the first node produced by following its metaedge will be selected.
-\on{Why should I care about this now?}
 
 \paragraph{Command.} A \emph{Command} enables interaction and manipulation of the domain graph. Commands may be available through menus and buttons in the browser. They therefore have the ability to render themselves in a user interfaces and are responsible for handling exceptions that may occur when triggered. 
 
 Commands are defined in a non-invasive way: adding and removing commands is done without any method redefinition of the core framework. This enables a smooth gathering of commands independently realized.
 
-A command is defined by subclassing \ct{OBCommand}, then redefining its four main methods with the desired behavior and finally defining a method on the browser class whose name begins with \ct{cmd}. This method has to return a command class. An example is provided in the following subsection.
-
 \paragraph{Filter.} 
-The metagraph describes a state machine. When the browser is in a state in which more than one transition are available, the user decides which transition to follow. To allow that to happen \ob displays the possible transitions  to the user. From all the possible transitions, \obf fetches all the nodes that represent the states the user could arrive at by following those transitions and list them in the next column. Note that the transition is not actually made yet, and the definition pane is still displaying the current definition. \ugh{Once a click is made}, the transition  actually happens, the definition pane is updated (and perhaps other panes such as button bars), and \ob gathers the next round of possible transitions.
+The metagraph describes a state machine. When the browser is in a state in which more than one transition are available, the user decides which transition to follow. To allow that to happen \ob displays the possible transitions  to the user. From all the possible transitions, \obf fetches all the nodes that represent the states the user could arrive at by following those transitions and list them in the next column. Note that the transition is not actually made yet, and the definition pane is still displaying the current definition.Once an item selected, the transition  actually happens, the definition pane is updated (and perhaps other panes such as button bars), and \ob gathers the next round of possible transitions.
 
 %\ab{This was not introduced before, it is not clear to me that people will get this example: for example \ct{\#allCategory} (which will lead to the allMethodCategory state) and\ct{\#categories} (which will lead to the methodCategories state)}
 
 A filter provides a strategy for filtering out some of the nodes from the display. If a node is the starting point of several edges, a filter may be needed to filter out all but one edge to determine which path has to be taken in the metagraph. 
 
 \paragraph{Definition.} While navigating in the domain space, information about the selected node is displayed in a dedicated textual panel. If edition of the text is expected by the browser user, then a definition is necessary to handle modification and commitment (\ie an \emph{accept} in the \st terminology). A definition is produced by a node. 
-
-\ab{@@HERE}
-
-To visually distinguish files from directories when browsing a directory with our file browser, we can add an icon to each element in the list. To illustrate this, we will denote directories with a small folder icon. 
-
-The first step is to integrate the icon itself into a \pharo image. In the class \ct{OBMorphicIcons} you see some pre-defined icons stored in methods such as \ct{arrowUp}. To import an icon stored as an image (\eg as a GIF file), you can use this code:
-
-\begin{code}{}
-| image stream |
-image := ColorForm fromFileNamed: '/path/to/icon.gif'.
-stream := WriteStream with: String new.
-image storeOn: stream.
-stream contents.
-\end{code}
-
-Inspect this whole code listing. In the inspector you see the definition of the color form for the icon. You can now install the content of this \ct{ByteString} as a method in the method protocol \ct{icons} of \ct{OBMorphicIcons} in a method called \ct{folder}. Make sure that you do not return the string, but the code within the string, so that if the method gets invoked a color form for the folder icon is returned. For example, a flag icon is defined as:
-
-\begin{code}{}
-OBMorphicIcons>>flag
-	^ ((ColorForm
-		extent: 12@12
-		depth: 8
-		fromArray: #( 437918234 437918234 437918234 436470535 101584139 387389210 436404481 17105924 303634202 436666638 ...
-\end{code}
-
-In the second step you can take this icon and display it in the columns for every directory. To achieve this, simply add a method \ct{icon} to the class \ct{OBDirectoryNode}:
-
-\begin{code}{}
-OBDirectoryNode >>icon
-	^#folder
-\end{code}
-
-The method \ct{icon} gets executed for every element that is added to a column. If it answers a symbol, then the method of \ct{OBMorphicIcons} with the same name is executed, answering the icon as a color form to be added on the left of the list element, \ie the directory name.
-
-At this stage, we can open a file browser by evaluating \ct{OBFileBrowser open} in a workspace. To allow users to perform actions on a selected file, we add commands to the browser. Note that you will need to open a new browser to see these command in effect. They are implemented with subclasses of \ct{OBCommand}:
-
-\begin{code}{}
-OBCommand subclass: #OBRemoveFileCommand
-     instanceVariableNames: ''
-     classVariableNames: ''
-     poolDictionaries: ''
-     category: 'OBExample-FileBrowser'
-\end{code}
-
-
-The functionality of this command is basically implemented in four methods: 
-
-\begin{itemize}
-\item \ct{isActive} - test condition to determine if this command is active in the current column for the currently selected node 
-\item \ct{keystroke} - a letter used to trigger this command with the keyboard
-\item \ct{label} - the string denoting this command in the command menu
-\item \ct{execute} - holds the functionality to be triggered if the user executes this command
-\end{itemize}
-
-When these methods get executed, the command already knows the column from which it gets triggered (stored in the instance variable \ct{requestor}) and the target node for which the action has to be exectuted (stored in the instance variable \ct{target}). With this information available we can implement these four methods as follows:
-
-\begin{code}{}
-OBRemoveFileCommand>>isActive
-     "only active for files"
-     ^ (target isKindOf: OBFileNode) and: [requestor isSelected: target]
-
-OBRemoveFileCommand>>keystroke
-     ^ $d
-
-OBRemoveFileCommand>>label
-     ^ 'remove file'
-
-OBRemoveFileCommand>>execute
-     FileDirectory deleteFilePath: target path
-\end{code}
-
-To integrate this command the class \ct{OBFileBrowser} has to be extended with a method whose name needs to start with \ct{'cmd'}:
-
-\begin{code}{}
-OBFileBrowser>>cmdRemoveFile
-	^OBRemoveFileCommand
-\end{code}
-
-Open a new browser, then right click on a selected file and you will get a menu that contains this command. Currently, the list of files is not refreshed when files are removed. Refreshing can for instance be done by announcing a \ct{nodeDeleted} announcement in the \ct{execute} method. This can be achieved by inserting the expression \ct{target announce: (OBNodeDeleted node: self)}. Since this is a common operation, an helper is provided for that purpose: simply send the \ct{signalDeletion} message to \ct{target}.
 
 %===============
 \subsection{Core Behavior of the Framework}\label{sec:corebehavior}
@@ -478,7 +449,7 @@ The core of the \ob framework is composed of 8 classes (\figref{core}). We denot
 \end{center}
 \end{figure}
 
-The metaclass of the class \ct{OBBrowser} is \ct{OBBrowser class}. It defines two abstract methods \ct{defaultMetaNode} and \ct{defaultRootNode}. These methods are abstract, they therefore need to be overridden in subclasses. These methods are called when a browser is instantiated. The methods  \ct{defaultMetaNode} and \ct{defaultRootNode} return the root metanode and the root domain node, respectively. A browser is opened by sending the message \ct{open} to an instance of the class \ct{OBBrowser}.
+The metaclass of the class \ct{OBBrowser} is \ct{OBBrowser class}. It defines two abstract methods \ct{defaultMetaNode} and \ct{defaultRootNode}. These methods are abstract, they therefore need to be overridden in subclasses. These methods are called when a browser is instantiated. The methods  \ct{defaultMetaNode} and \ct{defaultRootNode} return the root metanode and the root domain node, respectively. As we already saw, a browser is opened by sending the message \ct{open} to an instance of the class \ct{OBBrowser}.
 
 The navigation graph is built with instances of the class \ct{OBMetaNode}. Transitions are built by sending the message \ct{childAt: selector put: metanode} to a \ct{MetaNode} instance. This has the effect to create a metaedge named \ct{selector} leading away the metanode receiver of the message and \ct{metanode}.
 
@@ -486,8 +457,8 @@ At runtime, the graph traversal is triggered by user actions (\eg pressing a but
 
 The class \ct{OBCommand} is instantiated by the framework and the set of commands for a browser is discovered (through the \st reflection API) when a browser is instantiated. All methods starting with the \ct{cmd} prefix are considered as commands. Each of this method should return the \emph{class} of the command (and not an instance of it).
 
-The class \ct{OBNode} represents an element of the domain graph. Each node has a name. This name is used when lists of nodes are displayed in the navigation columns of the browser. When a node is selected in a list, information related to this node needs to be displayed in the bottom text pane. 
-When the node is not supposed to be edited, the message \ct{text} is sent to it, returning a string  displayed in the bottom pane. When it is editable, the message \ct{definition} is sent and it is expected to return an instance of a subclass of \ct{OBDefinition}. Note that the nodes do not need to be configured to be editable or not. When they implement a method \ct{definition}, this will be used and the node will be editable. If that method is not present, then the method \ct{text} is used. 
+%The class \ct{OBNode} represents an element of the domain graph. Each node has a name. This name is used when lists of nodes are displayed in the navigation columns of the browser. When a node is selected in a list, information related to this node needs to be displayed in the bottom text pane. 
+%When the node is not supposed to be edited, the message \ct{text} is sent to it, returning a string  displayed in the bottom pane. When it is editable, the message \ct{definition} is sent and it is expected to return an instance of a subclass of \ct{OBDefinition}. Note that the nodes do not need to be configured to be editable or not. When they implement a method \ct{definition}, this will be used and the node will be editable. If that method is not present, then the method \ct{text} is used. 
 
 When the browser is in a state where several transitions are available, it displays the navigation possibilities to the user. From all the possible transitions, \obf fetches all the nodes that represent the states the user could arrive at by following those transitions and lists them in the next column. Once a selection is made, the transition  actually happens, the pane definition is updated and the process repeats.
 
@@ -511,8 +482,6 @@ The root of a metagraph corresponds to the left-most list. The number of lists d
 \paragraph{Menus.} A menu can be displayed for each list widget of a browser. Typically such a menu displays a list of actions that can be executed by the user. These actions enable interaction with the domain model, however they do not allow further navigation in the metagraph.
 
 
-\paragraph{Definition pane.} When a node is selected in a list, information related to this node is displayed in a text pane. Committing a change in the definition pane sends the message \ct{accept: newText notifying: aController} to the definition shown in this pane. A browser contains only one text pane.
-%\sd{can we have multiple of them? I guess not so we should say it.} 
 %\sd{how to the notification of events relates to the widgets, I see how it is done but may be we should say it}
 
 % - The toolbar
