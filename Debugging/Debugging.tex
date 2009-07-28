@@ -34,10 +34,6 @@
 \chapter{Debugging }\label{cha:basic}
 
 
-\on{Much of this is already in the Exceptions and Reflection chapters}
-\sd{no and you can trust me on what I want to say}
-
-
 \section{Halt}
 
 \section{Conditional Halt}
@@ -47,6 +43,34 @@
 \ct{self haltIf: [ ... particular test run ... ]}
 
 \section{Halt Once}
+
+On certain occasions, it is impractical to put an halt into a method.
+For example, putting an halt statement into the \ct{MethodReference>>actualClass} method can 
+simply kill the system since the \ct{actualClass} method is invoked by the browser when editing code.
+Now it may be cumbersome to express a condition under which the halt should be raised.
+Pharo offers a one shot halt. 
+
+
+
+\begin{code}
+	anObject setHaltOnce
+	
+	haltOnce
+	inspectOnce
+	
+	anObject clearHaltOnce
+	anObject toggleHaltOnce
+	
+\end{code}
+
+\paragraph
+\begin{code}
+setHaltCountTo: int
+halt: aString onCount: int 
+
+inspectOnCount: int 
+inspectUntilCount: int 
+\end{code}
 
 \section{Pointer Finder}
 
