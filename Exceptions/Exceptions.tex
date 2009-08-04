@@ -895,14 +895,14 @@ BlockContext>>>on: exception do: handlerAction
 	handlerActive := true. 
 	^self value 
 \end{code}
-\on{shouldn't we refer to BlockClosure instead?}
+\on{shouldn't we refer to BlockClosure instead?}\md{yes!}
 
 This code tells us two things: First, this method is implemented as a primitive, which means that  a function defined in the virtual machine is executed, when this method is invoked. Second, the method body simply returns the value of the block receiver and sets the variable \ct{handlerActive} to true. Surprisingly simple. 
 
 A primitive method as \ct{on:do:} has a body and a primitive number. Normally, the method body is not executed since the method is bound to a function written in C. When the method has to be executed, the C function is executed instead. In case of a failure in the C function, the \st method body is executed. The method body is then in charge of taking decisions on how to deal with the failure.
 Here the method \ct{on:do:} is associated with the primitive number 199. This number is important to understand the following. 
 
-So you are puzzled. Where are the arguments of the \ct{on:do:} method stored? Let's look at the instance variables of the class \ct{BlockContext}. 
+So you are puzzled. Where are the arguments of the \ct{on:do:} method stored? Let's look at the instance variables of the class \ct{BlockContext}. \md{here show methodcontext instead}
 
 \begin{code}{}
 ContextPart variableSubclass: #BlockContext
