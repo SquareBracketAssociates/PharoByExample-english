@@ -153,7 +153,7 @@ Here are some  examples of \lct{ifCurtailed:} usage where the text displayed in 
 [1 / 0] ifCurtailed: [Transcript show: 'This is displayed after selecting Abandon in the debugger'; cr]
 \end{code}
 
-Although \ct{ifCurtailed:} and \ct{ensure:} are implemented as primitives in \pharo \lr{That's not true, primitive 198 and 199 are no-ops and just act as a markers. Today the same could be done using method annotations, but that was not possible when the exceptions were implemented. The methods \ct{isHandlerContext} and \ct{isUnwindContext} just check for the presence of these marker primitives and are called by \ct{findNextHandlerContextStarting} and \ct{findNextUnwindContextUpTo:} to find the contexts. The two latter methods are primitives for efficiency reasons, but apart from that the complete exception handling is implemented at the Smalltalk level without primitive support.}, in principle \ct{ifCurtailed:} could be implemented using \ct{ensure:} as follows:
+Although \ct{ifCurtailed:} and \ct{ensure:} are implemented as primitives in \pharo \lr{That's not true, primitive 198 and 199 are no-ops and just act as a markers. Today the same could be done using method annotations, but that was not possible when the exceptions were implemented. The methods \ct{isHandlerContext} and \ct{isUnwindContext} just check for the presence of these marker primitives and are called by \ct{findNextHandlerContextStarting} and \ct{findNextUnwindContextUpTo:} to find the contexts. The two latter methods are primitives for efficiency reasons, but apart from that the complete exception handling is implemented at the Smalltalk level without primitive support.}\sd{exact but this is not wrong ensure: is still a primitive we talk about that at the end of the chapter}, in principle \ct{ifCurtailed:} could be implemented using \ct{ensure:} as follows:
 
 \begin{code}{}
 ifCurtailed: curtailBlock
@@ -427,7 +427,7 @@ At each point in the execution of a program, the method call stack of a program 
 
 %:===> BlockContext -> BlockClosure everywhere? What about MethodContext?
 \on{Fix BlockClontext to BlockClosure. What about MethodContext?}
-\lr{In Pharo there is only the class \ct{MethodContext} used as stack frame, it is created when a \ct{BlockClosure} is activated. The class \ct{BlockContext} is not used.}
+\lr{In Pharo there is only the class \ct{MethodContext} used as stack frame, it is created when a \ct{BlockClosure} is activated. The class \ct{BlockContext} is not used.}\sd{so marcus can you fix the text above?}
 
 Suppose that we attempt to open a \ct{BookMorph} on a non-existent file.
 A \ct{FileDoesNotExistException} will be signaled, and the method call stack will contain the activation contexts created by the methods \ct{openFromFile:}, \ct{oldFileNamed:}, and \ct{signal} (\figref{stack}):
@@ -439,7 +439,7 @@ A \ct{FileDoesNotExistException} will be signaled, and the method call stack wil
 
 Since everything is an object in \st, we should expect activation contexts to also be objects.
 Actually, certain \st dialects and implementations use the native \ind{C} execution stack of the \ind{virtual machine} to avoid creating objects all the time.
-The \pharo virtual machine does not do this, but instead creates the list of activation context objects only on demand, for example, whenever the debugger is started. \lr{This is not true. The Pharo VM does not use the C stack and uses full Smalltalk objects at all times.}
+The \pharo virtual machine does not do this, but instead creates the list of activation context objects only on demand, for example, whenever the debugger is started. \lr{This is not true. The Pharo VM does not use the C stack and uses full Smalltalk objects at all times.}\sd{exact. We can write: the current pharo virtual machine only use activation context objects which are recycled for speed improvements.  }
 
 \index{BlockClosure}{on:do:}
 When we send \lct{\emph{aBlock} on: \emph{ExceptionClass} do: \emph{anHandler}}, we associate an exception handler (\lct{\emph{anHandler}}) to a given class of exceptions (\lct{\emph{ExceptionClass}}) for the activation context of the protected block (\lct{\emph{aBlock}}).
