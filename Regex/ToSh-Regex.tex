@@ -1,0 +1,1281 @@
+% Thomas J. Schrader (ToSh)
+% Layout study on how to make PBE2 more of a textbook
+
+% study --- layout study --- layout study --- layout study --- layout
+%
+% N O T   F O R   P R O D U C T I O N   U S E
+% usage of KOMA script macros instead of standard book
+% run LaTeX twice, at least to get margins right
+%
+% study --- layout study --- layout study --- layout study --- layout
+
+\documentclass[10pt,twoside,chapterprefix=false]{scrbook}
+
+	% well, yes, took measures from some european book
+	% 170mm x 220mm is a standard format, I guess
+	% but i.e. german Spektrum Verlag presents on ~168mm x 240mm
+	% however, I need just under 20mm wider paper than PBE2
+	% and as a learner I *WANT* to write into the margins
+	\usepackage[
+		papersize={168mm,240mm},
+		hmargin={20mm,37mm},
+		vmargin={.75in,1in},
+		ignoreheadfoot]{geometry}
+
+	\input{../common.tex} 
+
+	\graphicspath{{figures/} {../figures/}}
+
+%=============================================================
+%:ToSh colors
+\newcommand{\highlightcolor}{\color{blue!65}}
+\newcommand{\boxcolor}{\color{gray!25}}
+\newcommand{\highlight}[1]{\textcolor{blue!65}{#1}}
+\newcommand{\codecolor}{\color{blue!65}}
+%\setlength{\fboxrule}{2pt}
+\newcommand{\asPict}[1]{%
+	{\Large\highlight{#1}}}
+
+%=============================================================
+%:ToSh Reader cues (DIRTY HACKS - dont know how to do it properly)
+\usepackage{ragged2e}
+\usepackage[top]{mcaption}
+	% ToDo: RaggedRight/-Left should depent on odd-/evenside
+	%\ifthenelse{\isodd{\thepage}}{}{}
+	\addtokomafont{caption}{\RaggedRight\footnotesize\it} 
+	\setcapindent*{0pt} 
+\usepackage{marginnote}
+	\renewcommand*{\marginfont}{\footnotesize}
+
+%=============================================================
+%:ToSh Reader cues - labels
+\newcommand{\MarginLabel}[1]{%
+	\marginnote{\textbf{#1}}}
+
+%=============================================================
+%:ToSh Reader cues - guides
+
+\newcommand{\MarginNote}[1]{%
+	\marginnote{#1}}
+
+\newcommand{\NewTerm}[1]{%
+	\emph{#1}\marginnote{\emph{#1}}}
+
+\newcommand{\NewTermAlt}[2]{%
+	\emph{#1}\marginnote{\emph{#2}}}
+
+\newcommand{\AttentionPlease}[1]{%
+	{\reversemarginpar
+		\marginnote{\asPict{!}}}
+	\marginnote{\highlight{#1}}}
+
+\newcommand{\Resource}[1]{%
+	\marginnote{\scriptsize see: #1}
+	{{\reversemarginpar\marginnote{\asPict{$\circlearrowright$}}}}}
+
+\newcommand{\ResourceURL}[1]{%
+	{{\reversemarginpar\marginnote{\asPict{$\circlearrowright$}}}
+	\marginnote{\scriptsize look at:\\ \url{#1} }}}
+
+\newcommand{\vartriangleout}{\ifthenelse{\isodd{\thepage}}{\vartriangleright}{\vartriangleleft}}
+\renewcommand{\dothis}[1]{%
+	\noindent\par\noindent
+	{\reversemarginpar
+		\marginnote{\fcolorbox{blue!65}{white}{\highlight{$\vartriangleout$}}}}
+	%\MarginLabel{do this}
+	\noindent\emph{#1}
+	\nopagebreak}
+
+%=============================================================
+%:ToSh outline
+
+\newcommand{\ReadStep}[1]{%
+	\noindent\par\noindent
+	{\reversemarginpar
+		\marginnote{\asPict{$\Rsh$}}[0.2em]}
+	\noindent #1
+	\nopagebreak}
+
+\newcommand{\InfoList}[2]{%
+	\noindent\par\noindent
+	{\reversemarginpar
+%		\marginnote{\asPict{$\equiv_{i}$}}}
+		\marginnote{\asPict{$\dot{\imath}$}}}
+	\noindent #2}
+
+\newcommand{\Summary}[1]{%
+	\noindent\par\noindent
+ 	\colorbox{gray!25}{%
+	 	\begin{minipage}{\textwidth}
+	 	{{~\reversemarginpar\marginnote{\asPict{$\sum$}}}}
+ 		{{~\MarginLabel{\hspace*{2ex}lessons learned}}}
+ 		#1\end{minipage}}}
+
+\newcommand{\ChapterAims}[1]{%
+	\noindent\par\noindent
+ 	\colorbox{gray!25}{%
+	 	\begin{minipage}{\textwidth}
+ 		{{~\reversemarginpar\marginnote{\asPict{$\bigoplus$}}}}%
+		#1\end{minipage}}}
+
+%=============================================================
+%:ToSh Listings package configuration
+% \newcommand{\caret}{\makebox{\raisebox{0.4ex}{\footnotesize{$\wedge$}}}}
+\renewcommand{\ct}{\lstinline[mathescape=false,basicstyle={\sffamily\upshape}]}
+\renewcommand{\lct}[1]{{\codecolor\textsf{\textup{#1}}}}
+%=============================================================
+%:ToSh Code environments (method, script ...)
+\lstnewenvironment{ToSh-code}[1]{%
+	\codecolor
+	\lstset{%
+		mathescape=false}}{}
+
+% D U M M Y
+% ToSh: dont know how to get listing caption into margin, oh help!
+\lstnewenvironment{ToSh-example}[2]{%
+	\renewcommand{\lstlistingname}{ToSh-example}
+	\codecolor
+	\marginnote{Example 0.1:\\\it #2}[2em]
+	\lstset{
+		mathescape=false,
+		name={ToSh-example},
+		%caption={\emph{#2}},
+		label={eg:#1}}}{}
+
+% D U M M Y
+% ToSh: still dont know how to get caption into margin, oh help!
+\lstnewenvironment{ToSh-method}[2]{%
+	\renewcommand{\lstlistingname}{ToSh-method}%
+	\codecolor
+	\marginnote{Method 0.1:\\\it #2}[2em]
+	\lstset{
+		mathescape=false,
+		name={ToSh-method},
+		%caption={\emph{#2}},
+		label={mth:#1}}}{}
+
+\pagestyle{headings}
+\begin{document} 
+
+\setlength{\marginparwidth}{1in}
+\sloppy
+
+%:===> To be indexed!
+
+% 
+% DUMMY - dont know, how to change title formatting properly
+% 
+%\chapter{Regular Expressions in \pharo}\label{cha:regex}
+~\\[0mm]{\LARGE\textbf{0. Regular Expressions in \pharo (layout)}\label{cha:regex}}
+
+% 
+% this is for briefing the reader before text starts
+% 
+\ChapterAims{%
+	\highlight{$\blacksquare$} bullet list of this chapters learning aims\\
+	\highlight{$\blacksquare$} more on what this chapter teaches us\\
+	\highlight{$\blacksquare$} what we can also gain by reading this chapter\\
+	\highlight{$\vartriangleright$} what we will learn to practice\\
+	\highlight{$\vartriangleright$} more on what we will learn to practice\\
+	\highlight{$\vartriangleright$} what we also will learn to practice
+}
+
+\ReadStep{[Here should come a list of what to read \textbf{before} one can
+understand this section of the book.]}
+
+\InfoList{hereTOC}{%
+% 
+% DUMMY - dont know how to make local TOC for just one chapter (titletoc)
+% 
+0.1 Tutorial example --- generating a site map\hspace{1em}1\\
+\hspace*{1em}Accessing the web directory\hspace{1em}2\\
+\hspace*{1em}Pattern matching HTML files\hspace{1em}3\\
+\hspace*{1em}...\\
+0.2 Regex syntax\hspace{1em}9\\
+\hspace*{1em}Character classes\hspace{1em}11\\
+\hspace*{1em}Special character classes\hspace{1em}13\\
+\hspace*{1em}...\\
+0.3 Regex API\hspace{1em}14\\
+\hspace*{1em}Matching prefixes and ignoring case\hspace{1em}14\\
+\hspace*{1em}Enumeration interface\hspace{1em}15\\
+\hspace*{1em}...\\
+0.4 Implementation Notes\hspace{1em}20}
+
+A \NewTermAlt{regular expression}{regular expression -- aka. regex} is a template that matches a set of
+strings. For example, the regular expression \ct{'h.*o'} will match the
+the strings \ct{'ho'}, \ct{'hiho'} and \ct{'hello'}, but it will not
+match \ct{'hi'} or \ct{'yo'}. We can see this in \pharo as follows:
+%
+\begin{ToSh-example}{@TEST}{some regular expressions in \pharo}
+'ho' matchesRegex: 'h.*o'     --> true
+'hiho' matchesRegex: 'h.*o'  --> true
+'hello' matchesRegex: 'h.*o' --> true
+'hi' matchesRegex: 'h.*o'      --> false
+'yo' matchesRegex: 'h.*o'     --> false
+\end{ToSh-example}
+
+Regular expressions
+\ResourceURL{http://en.wikipedia.org/wiki/Regular_expression} are widely
+used in many scripting languages such as Perl, Python and Ruby. They are
+useful to identify strings that match a certain pattern, to check that
+input conforms to an expected format, and to rewrite strings to new
+formats. \pharo also supports regular expressions due to the Regex
+package contributed by Vassili Bykov. Regex is installed by default in
+\pharo. If you are using an older image
+\ResourceURL{http://www.squeaksource.com/Regex.html}that does not
+include the Regex package, you can install it yourself from
+SqueakSource.
+
+In this chapter we will start with a small tutorial example in which we
+will develop a couple of classes to generate a very simple site map for
+a web site. We will use regular expressions\\
+(i) to identify HTML files,\\
+(ii) to strip the full path name of a file down to just the file name,\\
+(iii) to extract the title of each web page for the site map, and\\
+(iv) to generate a relative path from the root directory of the web site
+to the HTML files it contains.\\
+After we complete the tutorial example, we will provide
+\Resource{original documentation on the class side of \ct{RxParser}}
+a more complete description of the Regex package, based largely on
+Vassili Bykov's documentation provided in the package.
+
+%=================================================================
+\section{Tutorial example\,---\,generating a site map}
+
+% All the code is in the package SBE2-Regex in http://www.squeaksource.com/SqueakByExample
+
+Our job is to write a simple application that will generate a site map
+for a web site that we have stored locally on our hard drive.  The site
+map will contain links to each of the HTML files in the web site, using
+the title of the document as the text of the link. Furthermore, links
+will be indented to reflect the directory structure of the web site.
+
+%-----------------------------------------------------------------
+\subsection{Accessing the web directory}
+
+\dothis{If you do not have a web site on your machine, copy a few HTML
+files to a local directory to serve as a test bed.}
+
+We will develop two classes, \ct{WebDir} and \ct{WebPage}, to represent
+directories and web pages.  The idea is to create an instance of
+\ct{WebDir} which will point to the root directory containing our web
+site.  When we send it the message
+\NewTermAlt{\ct{makeToc}}{\ct{WebDir>>makeToc}}, it will walk through
+the files and directories inside it to build up the site map.  It will
+then create a new file, called \ct{toc.html}, containing links to all
+the pages in the web site.
+
+One thing we will have to watch out for: each \ct{WebDir} and
+\ct{WebPage} must remember the path to the root of the web site, so it
+can properly generate links relative to the root.
+
+\dothis{Define the class \ct{WebDir} with instance variables \ct{webDir}
+and \ct{homePath}, and define the appropriate initialization method.
+Also define class-side methods to prompt the user for the location of
+the web site on your computer, as follows:}
+
+\begin{ToSh-method}{bla}{some method}
+WebDir>>setDir: dir home: path 
+	webDir := dir.
+	homePath := path
+
+WebDir class>>onDir: dir
+	^ self new setDir: dir home: dir pathName
+
+WebDir class>>selectHome
+	^ self onDir: FileList modalFolderSelector
+\end{ToSh-method}
+
+The last method opens a browser to select the directory to open. Now, if
+you inspect the result of \ct{WebDir selectHome}, you will be prompted
+for the directory containing your web pages, and you will be able to
+verify that \ct{webDir} and \ct{homePath} are properly initialized to
+the directory holding your web site and the full path name of this
+directory.
+
+\begin{figure}[tbh]
+\begin{margincap}{A WebDir instance}
+	\centering
+	\includegraphics[width=0.5\textwidth]{aWebDir}
+	\label{fig:aWebDir}
+\end{margincap}
+\end{figure}
+
+It would be nice to be able to programmatically instantiate a
+\ct{WebDir}, so let's add another creation method.
+
+\dothis{Add the following methods and try it out by inspecting the
+result of \mbox{\lct{WebDir onPath: '\emph{path to your web site}'}}.}
+
+\begin{ToSh-code}{}
+WebDir class>>onPath: homePath
+	^ self onPath: homePath home: homePath
+
+WebDir class>>onPath: path home: homePath
+	^ self new setDir: (FileDirectory on: path) home: homePath
+\end{ToSh-code}
+
+%-----------------------------------------------------------------
+\subsection{Pattern matching HTML files}
+
+So far so good. Now we would like to use regexes to find out which HTML
+files this web site contains.
+
+If we browse the \ct{FileDirectory} class, we find that the method
+\NewTermAlt{\ct{fileNames}}{\ct{FileDirectory>>fileNames}} will list all
+the files in a directory. We want to select just those with the file
+extension \ct{.html}. The regex that we need is \ct{'.*\.html'}. The
+first dot will match any character except a newline:
+
+\begin{ToSh-code}{@TEST}
+'x' matchesRegex: '.' --> true
+' ' matchesRegex: '.'  --> true
+Character cr asString matchesRegex: '.' --> false
+\end{ToSh-code}
+
+The \ct{*} (known as \NewTermAlt{``Kleene star''}{``Kleene star'' aka
+Kleene closure, after Stephen Cole Kleene\\ $\ast$ 1909 in Hartford,
+USA, $\dagger$ 1994 in Madison, USA; pioneer of theoretical computer
+science; best known as a founder of the recursion theory}) is a regex
+operator that will match the preceding regex any number of times
+(including zero).
+
+\begin{ToSh-code}{@TEST}
+'' matchesRegex: 'x*'     --> true
+'x' matchesRegex: 'x*'   --> true
+'xx' matchesRegex: 'x*' --> true
+'y' matchesRegex: 'x*'   --> false
+\end{ToSh-code}
+
+Since the dot is a special character in regexes, if we want to literally
+match a dot, then we must escape it.
+
+\begin{ToSh-code}{@TEST}
+'.' matchesRegex: '.'   --> true
+'x' matchesRegex: '.'  --> true
+'.' matchesRegex: '\.'  --> true
+'x' matchesRegex: '\.' --> false
+\end{ToSh-code}
+
+Now let's check our regex to find HTML files works as expected.
+
+\begin{ToSh-code}{@TEST}
+'index.html' matchesRegex: '.*\.html' --> true
+'foo.html' matchesRegex: '.*\.html'    --> true
+'style.css' matchesRegex: '.*\.html'   --> false
+'index.htm' matchesRegex: '.*\.html' --> false
+\end{ToSh-code}
+
+Looks good. Now let's try it out in our application.
+
+\dothis{Add the following method to \ct{WebDir} and try it out on your test web site.}
+
+\begin{ToSh-code}{}
+WebDir>>htmlFiles
+	^ webDir fileNames select: [ :each | each matchesRegex: '.*\.html' ]
+\end{ToSh-code}
+
+If you send \ct{htmlFiles} to a \ct{WebDir} instance and \menu{print
+it}, you should see something like this:
+
+\begin{ToSh-code}{}
+(WebDir onPath: '...') htmlFiles --> #('index.html' ...)
+\end{ToSh-code}
+
+%-----------------------------------------------------------------
+\subsection{Caching the regex}
+
+Now, if you browse \ct{matchesRegex:}, you will discover that it is an
+extension method of \ct{String} that creates a fresh instance of
+\ct{RxParser} every time it is sent.  That is fine for ad hoc queries,
+but if we are applying the same regex to every file in a web site, it is
+smarter to create just one instance of \ct{RxParser} and reuse it. Let's
+do that.
+
+\dothis{Add a new instance variable \ct{htmlRegex} to \ct{WebDir} and
+initialize it by sending \ct{asRegex} to our regex string.  Modify
+\ct{WebDir>>htmlFiles} to use the same regex each time as follows:}
+
+\begin{ToSh-code}{}
+WebDir>>initialize
+	htmlRegex := '.*\.html' asRegex
+
+WebDir>>htmlFiles
+	^ webDir fileNames select: [ :each | htmlRegex matches: each ]
+\end{ToSh-code}
+
+Now listing the HTML files should work just as it did before, except
+that we reuse the same regex object many times.
+
+%-----------------------------------------------------------------
+\subsection{Accessing web pages}
+
+Accessing the details of individual web pages should be the
+responsibility of a separate class, so let's define it, and let the
+\ct{WebDir} class create the instances.
+
+\dothis{Define a class \ct{WebPage} with instance variables \ct{path},
+to identify the HTML file, and \ct{homePath}, to identify the root
+directory of the web site.  (We will need this to correctly generate
+links from the root of the web site to the files it contains.) Define an
+initialization method on the instance side and a creation method on the
+class side.}
+
+\begin{ToSh-code}{}
+WebPage>>initializePath: filePath homePath: dirPath 
+	path := filePath.
+	homePath := dirPath
+
+WebPage class>>on: filePath forHome: homePath
+	^ self new initializePath: filePath homePath: homePath
+\end{ToSh-code}
+
+A \ct{WebDir} instance should be able to return a list of all the web pages it contains.
+\dothis{Add the following method to \ct{WebDir}, and inspect the return
+value to verify that it works correctly.}
+
+\begin{ToSh-code}{}
+WebDir>>webPages
+	^ self htmlFiles collect: 
+		[ :each | WebPage 
+			on: webDir pathName, '/', each
+			forHome: homePath ]
+\end{ToSh-code}
+
+You should see something like this:
+
+\begin{ToSh-code}{}
+(WebDir onPath: '...') webPages --> an Array(a WebPage a WebPage ...)
+\end{ToSh-code}
+
+%-----------------------------------------------------------------
+\subsection{String substitutions}
+
+That's not very informative, so let's use a regex to get the actual file
+name for each web page. To do this, we want to strip away all the
+characters from the path name up to the last directory. On a Unix file
+system directories end with a slash (\ct{/}), so we need to delete
+everything up to the last slash in the file path.
+
+The \ct{String} extension method \ct{copyWithRegex:matchesReplacedWith:}
+does what we want:
+
+\begin{ToSh-code}{@TEST}
+'hello' copyWithRegex: '[elo]+' matchesReplacedWith: 'i' --> 'hi'
+\end{ToSh-code}
+
+In this example the regex \ct{[elo]} matches any of the characters
+\ct{e}, \ct{l} or \ct{o}. The operator \ct{+} is like the Kleene star,
+but it matches exactly \emph{one} or more instances of the regex
+preceding it. Here it will match the entire substring \ct{'ello'} and
+replay it in a fresh string with the letter \ct{i}.
+
+\dothis{Add the following method and verify that it works as expected.}
+
+\begin{ToSh-code}{}
+WebPage>>fileName
+	^ path copyWithRegex: '.*/' matchesReplacedWith: ''
+\end{ToSh-code}
+
+Now you should see something like this on your test web site:
+
+\begin{ToSh-code}{}
+(WebDir onPath: '...') webPages collect: [:each | each fileName ]
+  --> #('index.html' ...)
+\end{ToSh-code}
+
+%-----------------------------------------------------------------
+\subsection{Extracting regex matches}
+
+Our next task is to extract the title of each HTML page.
+
+First we need a way to get at the contents of each page. This is straightforward.
+
+\dothis{Add the following method and try it out.}
+
+\begin{ToSh-code}{}
+WebPage>>contents
+	^ (FileStream oldFileOrNoneNamed: path) contents
+\end{ToSh-code}
+
+Actually, you might have problems if your web pages contain non-ascii
+characters, in which case you might be better off with the following
+code:
+
+\begin{ToSh-code}{}
+WebPage>>contents
+	^ (FileStream oldFileOrNoneNamed: path)
+		converter: Latin1TextConverter new;
+		contents
+\end{ToSh-code}
+
+You should now be able to see something like this:
+
+\begin{ToSh-code}{}
+(WebDir onPath: '...') webPages first contents --> '<head>
+<title>Home Page</title>
+...
+'
+\end{ToSh-code}
+
+Now let's extract the title. In this case we are looking for the text
+that occurs \emph{between} the HTML tags \ct{<title>} and \ct{</title>}.
+
+What we need is a way to extract \emph{part} of the match of a regular
+expression. \NewTermAlt{Subexpressions}{subexpressions} of regexes are
+delimited by parentheses. Consider the regex
+\ct{([CARETaeiou]+)([aeiou]+)}. It consists of two subexpressions, the
+first of which will match a sequence of one or more non-vowels, and the
+second of which will match one or more vowels. (The operator \ct{CARET}
+\NewTermAlt{}{caret character} at the start of a bracketed set of
+characters negates the set.\AttentionPlease{In \pharo the caret is also
+the return keyword, which we here write as \ct{^}. To avoid confusion,
+we will write \ct{CARET} when we are using the caret within regular
+expressions to negate sets of characters, but you should not forget,
+they are actually the same thing.}) Now we will try to match a
+\emph{prefix} of the string \ct{'pharo'} and extract the submatches:
+
+\begin{ToSh-code}{| re |}
+re := '([CARETaeiou]+)([aeiou]+)' asRegex.
+re matchesPrefix: 'pharo' --> true
+re subexpression: 1         --> 'pha'
+re subexpression: 2         --> 'ph'
+re subexpression: 3         --> 'a'
+\end{ToSh-code}
+
+After successfully matching a regex against a string, you can always
+send it the message \ct{subexpression: 1} to extract the entire match. 
+You can also send \lct{subexpression: $n$} where $n-1$ is the number of
+subexpressions in the regex. The regex above has two subexpressions,
+numbered $2$ and $3$.
+
+We will use the same trick to extract the title from an HTML file.
+
+\dothis{Define the following method:}
+
+\begin{ToSh-code}{}
+WebPage>>title
+	| re |
+	re := '[\w\W]*<title>(.*)</title>' asRegexIgnoringCase.
+	^ (re matchesPrefix: self contents)
+		ifTrue: [ re subexpression: 2 ]
+		ifFalse: [ '(', self fileName, ' -- untitled)' ]
+\end{ToSh-code}
+
+There are a couple of subtle points to notice here.\AttentionPlease{make regex case insensitive for HTML tags}
+First, HTML does not care whether tags are upper or lower case, so we
+must make our regex case insensitive by instantiating it with
+\ct{asRegexIgnoringCase}.
+
+Second, since dot\AttentionPlease{dot does not match newlines} matches any character
+\emph{except a newline}, the regex \mbox{\lct{.*<title>(.*)</title>}}
+will not work as expected if multiple lines appear before the title. The
+regex \ct{\w} matches any alphanumeric, and \ct{\W} will match any
+non-alphanumeric, so \ct{[\w\W]} will match any character
+\emph{including newlines}. (If we expect titles to possible contain
+newlines, we should play the same trick with the subexpression.)
+
+Now we can test our title extractor, and we should see something like this:
+
+\begin{ToSh-code}{}
+(WebDir onPath: '...') webPages first title --> 'Home page'
+\end{ToSh-code}
+
+%-----------------------------------------------------------------
+\subsection{More string substitutions}
+
+In order to generate our site map, we need to generate links to the individual web pages.
+We can use the document title as the name of the link.  We just need to generate the right path to the web page from the root of the web site.
+Luckily this is trivial\,---\,it is simple the full path to the web page minus the full path to the root directory of the web site.
+
+We must only watch out for one thing.  Since the \ct{homePath} variable does not end in a \ct{/}, we must append one, so that relative path does not include a leading \ct{/}. Notice the difference between the following two results:
+
+\begin{ToSh-code}{}
+'/home/testweb/index.html' copyWithRegex: '/home/testweb' matchesReplacedWith: '' --> '/index.html'
+'/home/testweb/index.html' copyWithRegex: '/home/testweb/' matchesReplacedWith: '' -->  'index.html'
+\end{ToSh-code}
+
+The first result would give us an absolute path, which is probably not what we want.
+
+\dothis{Define the following methods:}
+
+\begin{ToSh-code}{}
+WebPage>>relativePath
+	^ path 
+		copyWithRegex: homePath , '/'
+		matchesReplacedWith: ''
+
+WebPage>>link
+	^ '<a href="', self relativePath, '">', self title, '</a>'
+\end{ToSh-code}
+
+You should now be able to see something like this:
+
+\begin{ToSh-code}{}
+(WebDir onPath: '...') webPages first link --> '<a href="index.html">Home Page</a>'
+\end{ToSh-code}
+
+%-----------------------------------------------------------------
+\subsection{Generating the site map}
+
+Actually, we are now done with the regular expressions we need to generate the site map.  We just need a few more methods to complete the application.
+
+\dothis{If you want to see the site map generation, just add the following methods.}
+
+If our web site has subdirectories, we need a way to access them:
+\begin{ToSh-code}{}
+WebDir>>webDirs
+	^ webDir directoryNames
+		collect: [ :each | WebDir onPath: webDir pathName , '/' , each home: homePath ]
+\end{ToSh-code}
+
+We need to generate HTML bullet lists containing links for each web page of a web directory.
+Subdirectories should be indented in their own bullet list.
+\begin{ToSh-code}{}
+WebDir>>printTocOn: aStream 
+	self htmlFiles
+		ifNotEmpty: [
+			aStream nextPutAll: '<ul>'; cr.
+			self webPages
+				do: [:each | aStream nextPutAll: '<li>';
+						 nextPutAll: each link;
+						 nextPutAll: '</li>'; cr].
+			self webDirs
+				do: [:each | each printTocOn: aStream].
+			aStream nextPutAll: '</ul>'; cr]
+\end{ToSh-code}
+
+We create a file called ``toc.html'' in the root web directory and dump the site map there.
+\begin{ToSh-code}{}
+WebDir>>tocFileName
+	^ 'toc.html'
+
+WebDir>>makeToc
+	| tocStream |
+	tocStream := webDir newFileNamed: self tocFileName.
+	self printTocOn: tocStream.
+	tocStream close.
+\end{ToSh-code}
+
+Now we can generate a table of contents for an arbitrary web directory!
+\begin{ToSh-code}{}
+WebDir selectHome makeToc
+\end{ToSh-code}
+
+%:===> Change regex web example to use PBE instead of SBE
+
+\begin{figure}[tbh]
+\begin{margincap}{A small site map}
+	\centering
+	\includegraphics[width=\textwidth]{PBE-toc}
+	\label{fig:SBE-toc}
+\end{margincap}
+\end{figure}
+
+%=================================================================
+\section{Regex syntax}
+
+We will now have a closer look at the syntax of regular expressions as supported by the Regex package.
+
+The simplest regular expression is a single character.  It matches exactly that character. A sequence of characters matches a string with exactly the same sequence of characters:
+\begin{ToSh-code}{@TEST}
+'a' matchesRegex: 'a'                  --> true
+'foobar' matchesRegex: 'foobar'  --> true
+'blorple' matchesRegex: 'foobar' --> false
+\end{ToSh-code}
+
+Operators are applied to regular expressions to produce more complex
+regular expressions. \NewTermAlt{Sequencing}{sequencing regexes}
+(placing expressions one after another) as an operator is, in a certain
+sense, ``invisible''\,---\,yet it is arguably the most common.
+
+We have already seen the Kleene star (\ct{*}) and the \ct{+} operator.
+A regular expression followed by an asterisk matches any number (including 0) of matches of the original expression. For example:
+\begin{ToSh-code}{@TEST}
+'ab' matchesRegex: 'a*b'         --> true
+'aaaaab' matchesRegex: 'a*b' --> true
+'b' matchesRegex: 'a*b'           --> true
+'aac' matchesRegex: 'a*b'	    --> false    "b does not match"
+\end{ToSh-code}
+
+The Kleene start has higher precedence than sequencing. A star applies to the
+shortest possible subexpression that precedes it. For example, \ct{ab*}
+means \ct{a} followed by zero or more occurrences of \ct{b}, not ``zero or more
+occurrences of \ct{ab}'':
+\begin{ToSh-code}{@TEST}
+'abbb' matchesRegex: 'ab*' --> true
+'abab' matchesRegex: 'ab*' --> false
+\end{ToSh-code}
+
+To obtain a regex that matches ``zero or more occurrences of \ct{ab}'', we must enclose \ct{ab} in parentheses:
+\begin{ToSh-code}{@TEST}
+'abab' matchesRegex: '(ab)*'   --> true
+'abcab' matchesRegex: '(ab)*' --> false    "c spoils the fun"
+\end{ToSh-code}
+
+Two other useful operators similar to \ct{*} are \ct{+} and \ct{?}.
+\ct{+} matches one or more instances of the regex it modifies, and \ct{?} will match zero or one instances.
+\begin{ToSh-code}{@TEST}
+'ac' matchesRegex: 'ab*c'	   --> true
+'ac' matchesRegex: 'ab+c'	  --> false    "need at least one b"
+'abbc' matchesRegex: 'ab+c' --> true
+'abbc' matchesRegex: 'ab?c' --> false    "too many b's"
+\end{ToSh-code}
+
+As we have seen, the characters \ct{*}, \ct{+}, \ct{?}, \ct{(}, and \ct{)} have special meaning within regular expressions. If we need to match any of them literally, it should be escaped by preceding it with a backslash \ct{\}. Thus, backslash is also special character, and needs to be escaped for a literal match. The same holds for all further special characters we will see.
+\begin{ToSh-code}{@TEST}
+'ab*' matchesRegex: 'ab*'  --> false    "star in the right string is special"
+'ab*' matchesRegex: 'ab\*' --> true
+'a\c' matchesRegex: 'a\\c'  --> true
+\end{ToSh-code}
+
+The last operator is \ct{|}, which expresses choice between two subexpressions.
+It matches a string if either of the two subexpressions matches the string.
+It has the lowest precedence\,---\,even lower than sequencing. For example, \ct{ab*|ba*} means 'a followed by any number of b's, or b followed by any number of a's':
+\begin{ToSh-code}{@TEST}
+'abb' matchesRegex: 'ab*|ba*'   --> true
+'baa' matchesRegex: 'ab*|ba*'	--> true
+'baab' matchesRegex: 'ab*|ba*' --> false
+\end{ToSh-code}
+
+A bit more complex example is the expression \ct{c(a|d)+r}, which matches the name of any of the Lisp-style car, cdr, caar, cadr, ... functions:
+\begin{ToSh-code}{@TEST}
+'car' matchesRegex: 'c(a|d)+r'   --> true
+'cdr' matchesRegex: 'c(a|d)+r'   --> true
+'cadr' matchesRegex: 'c(a|d)+r' --> true
+\end{ToSh-code}
+
+It is possible to write an expression that matches an empty string, for example the expression \ct{a|} matches an empty string.  However, it is an error to apply \ct{*}, \ct{+}, or \ct{?} to such an expression: \ct{(a|)*} is invalid.
+
+So far, we have used only characters as the \emph{smallest} components of regular expressions. There are other, more interesting, components. A character set is a string of characters enclosed in square brackets. It matches any single character if it appears between the brackets. For example, \ct{[01]} matches either \ct{0} or \ct{1}:
+\begin{ToSh-code}{@TEST}
+'0' matchesRegex: '[01]'   --> true
+'3' matchesRegex: '[01]'   --> false
+'11' matchesRegex: '[01]' --> false  "a set matches only one character"
+\end{ToSh-code}
+
+Using plus operator, we can build the following binary number recognizer:
+\begin{ToSh-code}{@TEST}
+'10010100' matchesRegex: '[01]+' --> true
+'10001210' matchesRegex: '[01]+' --> false
+\end{ToSh-code}
+
+If the first character after the opening bracket is \ct{CARET}, the set is inverted: it matches any single character \emph{not} appearing between the brackets:
+\begin{ToSh-code}{@TEST}
+'0' matchesRegex: '[CARET01]' --> false
+'3' matchesRegex: '[CARET01]' --> true
+\end{ToSh-code}
+
+For convenience, a set may include ranges: pairs of characters separated by a hyphen (\ct{-}). This is equivalent to listing all characters in between: \ct{'[0-9]'} is the same as \ct{'[0123456789]'}.
+Special characters within a set are \ct{CARET}, \ct{-}, and \ct{]}, which closes the set. Below are examples how to literally match them in a set:
+\begin{ToSh-code}{@TEST}
+'CARET' matchesRegex: '[01CARET]'   --> true    "put the caret anywhere except the start"
+'-' matchesRegex: '[01-]' --> true    "put the hyphen at the end"
+']' matchesRegex: '[]01]'   --> true    "put the closing bracket at the start"
+\end{ToSh-code}
+
+Thus, empty and universal sets cannot be specified.
+
+%-----------------------------------------------------------------
+\subsection{Character classes}
+Regular expressions can also include the following backquote escapes to refer to popular classes of characters: \ct{\w} to match alphanumeric characters, \ct{\d} to match digits, and \ct{\s} to match whitespace.
+Their upper-case variants, \ct{\W}, \ct{\D} and \ct{\S}, match the complementary characters (non-alphanumerics, non-digits and non-whitespace).
+We can see a summary of the syntax seen so far in \tabref{regexsyntax}.
+
+\begin{table}
+\begin{margincap}{Regex Syntax in a Nutshell}
+	\centering
+	\begin{tabular}{ll}
+		\toprule
+		Syntax & What it represents \\
+		\midrule
+		\lct{a}				&	literal match of character \lct{a} \\
+		\lct{.}				&	match any char (except newline) \\
+		\lct{($\cdots$)}		&	group subexpression \\
+		\lct{{\escape}}	&	escape following special character \\
+		\midrule
+		\lct{*}				&	Kleene star\,---\,match previous regex zero or more times \\
+		\lct{+}				&	match previous regex one or more times \\
+		\lct{?}				&	match previous regex zero times or once \\
+		\lct{|}				&	match choice of left and right regex \\
+		\midrule
+		\lct{[abcd]}		&	match choice of characters \lct{abcd} \\
+		\lct{[{\caret}abcd]}	&	match negated choice of characters \\
+		\lct{[0-9]}		&	match range of characters \lct{0} to \lct{9} \\
+		\midrule
+		\lct{{\escape}w}			&	match alphanumeric \\
+		\lct{{\escape}W}			&	match non-alphanumeric \\
+		\lct{{\escape}d}			&	match digit \\
+		\lct{{\escape}D}			&	match non-digit \\
+		\lct{{\escape}s}			&	match space \\
+		\lct{{\escape}S}			&	match non-space \\
+		\bottomrule
+	\end{tabular}
+	\label{tab:regexsyntax}
+	\end{margincap}
+\end{table}
+
+
+As mentioned in the introduction, regular expressions are especially useful for validating user input, and character classes turn out to be especially useful for defining such regexes.
+For example, non-negative numbers can be matched with the regex \ct{\d+}:
+
+\begin{ToSh-code}{@TEST}
+'42' matchesRegex: '\d+' --> true
+'-1' matchesRegex: '\d+' --> false
+\end{ToSh-code}
+
+Better yet, we might want to specify that non-zero numbers should not start with the digit 0:
+
+\begin{ToSh-code}{@TEST}
+'0' matchesRegex: '0|([1-9]\d*)'     --> true
+'1' matchesRegex: '0|([1-9]\d*)'     --> true
+'42' matchesRegex: '0|([1-9]\d*)'   --> true
+'099' matchesRegex: '0|([1-9]\d*)' --> false    "leading 0"
+\end{ToSh-code}
+
+We can check for negative and positive numbers as well:
+
+\begin{ToSh-code}{@TEST}
+'0' matchesRegex: '(0|((\+|-)?[1-9]\d*))'     --> true
+'-1' matchesRegex: '(0|((\+|-)?[1-9]\d*))'   --> true
+'42' matchesRegex: '(0|((\+|-)?[1-9]\d*))'   --> true
+'+99' matchesRegex: '(0|((\+|-)?[1-9]\d*))' --> true
+'-0' matchesRegex: '(0|((\+|-)?[1-9]\d*))'   --> false    "negative zero"
+'01' matchesRegex: '(0|((\+|-)?[1-9]\d*))'   --> false    "leading zero"
+\end{ToSh-code}
+
+Floating point numbers should require at least one digit after the dot:
+
+\begin{ToSh-code}{@TEST}
+'0' matchesRegex: '(0|((\+|-)?[1-9]\d*))(\.\d+)?'      --> true
+'0.9' matchesRegex: '(0|((\+|-)?[1-9]\d*))(\.\d+)?'   --> true
+'3.14' matchesRegex: '(0|((\+|-)?[1-9]\d*))(\.\d+)?' --> true
+'-42' matchesRegex: '(0|((\+|-)?[1-9]\d*))(\.\d+)?'  --> true
+'2.' matchesRegex: '(0|((\+|-)?[1-9]\d*))(\.\d+)?'     --> false    "need digits after ."
+\end{ToSh-code}
+
+%Checking if aString is a fixed-point number, with at least one digit is required after a dot:
+%\begin{ToSh-code}{}
+%'' matchesRegex: '(\+|-)?\d+(\.\d+)?'
+%The same, but allow notation like '123.':
+%'' matchesRegex: '(\+|-)?\d+(\.\d*)?'
+%\end{ToSh-code}
+%Recognizer for a string that might be a name: one word with first capital letter, no blanks, no digits.  More traditional:
+%\begin{ToSh-code}{}
+%'' matchesRegex: '[A-Z][A-Za-z]*'
+%more Smalltalkish:
+%'' matchesRegex: ':isUppercase::isAlphabetic:*'
+%\end{ToSh-code}
+%A date in format MMM DD, YYYY with any number of spaces in between, in XX century:
+%\begin{ToSh-code}{}
+%'' matchesRegex: '(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[ ]+(\d\d?)[ ]*,[ ]*19(\d\d)'
+%\end{ToSh-code}
+%Note parentheses around some components of the expression above. As the Usage Section shows, they will allow us to obtain the actual strings that have matched them (\ie month name, day number, and year number).
+
+For dessert, here is a recognizer for a general number format: anything like \ct{999}, or \ct{999.999}, or \ct{-999.999e+21}.
+\begin{ToSh-code}{@TEST}
+'-999.999e+21' matchesRegex: '(\+|-)?\d+(\.\d*)?((e|E)(\+|-)?\d+)?' --> true
+\end{ToSh-code}
+
+Character classes can also include the following grep(1)-compatible elements
+
+\begin{table}[htb]
+\begin{margincap}{Regex character classes}
+	\centering
+	\begin{tabular}{lp{8cm}}
+		\toprule
+		Syntax & What it represents \\
+		\midrule
+
+\lct{[:alnum:]} & any alphanumeric \\
+\lct{[:alpha:]} & any alphabetic character\\
+\lct{[:cntrl:]} & any control character (ascii code is \lct{< 32})\\
+\lct{[:digit:]} & any decimal digit\\
+\lct{[:graph:]} & any graphical character (ascii code \lct{>= 32})\\
+\lct{[:lower:]} & any lowercase character\\
+\lct{[:print:]} & any printable character (here, the same as \lct{[:graph:]})\\
+\lct{[:punct:]} & any punctuation character\\
+\lct{[:space:]} & any whitespace character\\
+\lct{[:upper:]} & any uppercase character\\
+\lct{[:xdigit:]} & any hexadecimal character \\
+
+		\bottomrule
+	\end{tabular}
+	\label{tab:charclasses}
+	\end{margincap}
+\end{table}
+
+Note that these elements are components of the character classes, \ie they have to be enclosed in an extra set of square brackets to form a valid regular expression.  For example, a non-empty string of digits would be represented as \ct{[[:digit:]]+}. The above primitive expressions and operators are common to many implementations of regular expressions.
+
+\begin{ToSh-code}{@TEST}
+'42' matchesRegex: '[[:digit:]]+' --> true
+\end{ToSh-code}
+
+%-----------------------------------------------------------------
+\subsection{Special character classes}
+The next primitive expression is unique to this Smalltalk implementation. A sequence of characters between colons is treated as a unary selector which is supposed to be understood by characters. A character matches such an expression if it answers true to a message with that selector. This allows a more readable and efficient way of specifying character classes. For example, \ct{[0-9]} is equivalent to \ct{:isDigit:}, but the latter is more efficient. Analogously to character sets, character classes can be negated: \ct{:CARETisDigit:} matches a character that answers \ct{false} to \ct{isDigit}, and is therefore equivalent to \ct{[CARET0-9]}.
+
+So far we have seen the following equivalent ways to write a regular expression that matches a non-empty string of digits: \ct{[0-9]+}, \ct{\d+}, \ct{[\d]+}, \ct{[[:digit:]]+}, \ct{:isDigit:+}.
+
+\begin{ToSh-code}{@TEST}
+'42' matchesRegex: '[0-9]+'      --> true
+'42' matchesRegex: '\d+'           --> true
+'42' matchesRegex: '[\d]+'         --> true
+'42' matchesRegex: '[[:digit:]]+' --> true
+'42' matchesRegex: ':isDigit:+'  --> true
+\end{ToSh-code}
+
+%-----------------------------------------------------------------
+\subsection{Matching boundaries}
+The last group of special primitive expressions is shown in \tabref{boundaries}, and is used to match boundaries of strings.
+
+\begin{table}[htb]
+	\begin{margincap}{Primitives to match string boundaries}
+	\centering
+	\begin{tabular}{lp{8cm}}
+		\toprule
+		Syntax & What it represents \\
+		\midrule
+		\lct{\caret} & match an empty string at the beginning of a line\\
+		\lct{\$} & match an empty string at the end of a line\\
+		\lct{{\escape}b} & match an empty string at a word boundary\\
+		\lct{{\escape}B} & match an empty string not at a word boundary\\
+		\lct{{\escape}<} & match an empty string at the beginning of a word\\
+		\lct{{\escape}>} & match an empty string at the end of a word\\
+		\bottomrule
+	\end{tabular}
+	\label{tab:boundaries}
+	\end{margincap}
+\end{table}
+
+\begin{ToSh-code}{@TEST}
+'hello world' matchesRegex: '.*\bw.*' --> true      "word boundary before w"
+'hello world' matchesRegex: '.*\bo.*'  --> false    "no boundary before o"
+\end{ToSh-code}
+
+%=================================================================
+\section{Regex API}
+
+Up to now we have focussed mainly on the syntax of regexes.  Now we will have a closer look at the different messages understood by strings and regexes.
+
+%-----------------------------------------------------------------
+\subsection{Matching prefixes and ignoring case}
+
+So far most of our examples have used the \ct{String} extension method \ct{matchesRegex:}.
+
+Strings also understand the following messages:
+\mthind{String}{prefixMatchesRegex:}, \mthind{String}{matchesRegexIgnoringCase:} and
+\mthind{String}{prefixMatchesRegexIgnoringCase:}.
+
+The message \mthind{String}{prefixMatchesRegex:} is just like \mthind{String}{matchesRegex}, except that the whole receiver is not expected to match the regular expression passed as the argument; matching just a prefix of it is enough.
+\begin{ToSh-code}{@TEST}
+'abacus' matchesRegex: '(a|b)+'                                --> false
+'abacus' prefixMatchesRegex: '(a|b)+'                       --> true
+'ABBA' matchesRegexIgnoringCase: '(a|b)+'            --> true
+'Abacus' matchesRegexIgnoringCase: '(a|b)+'          --> false
+'Abacus' prefixMatchesRegexIgnoringCase: '(a|b)+' --> true
+\end{ToSh-code}
+
+%-----------------------------------------------------------------
+\subsection{Enumeration interface}
+
+Some applications need to access \emph{all} matches of a certain regular
+expression within a string.  The matches are accessible using a protocol
+modeled after the familiar \ct{Collection}-like
+\NewTermAlt{enumeration}{match enumeration} protocol.
+
+\mthind{String}{regex:matchesDo:} evaluates a one-argument \ct{aBlock}
+for every match of the regular expression within the receiver string.
+
+\begin{ToSh-code}{@TEST | list |}
+list := OrderedCollection new.
+'Jack meet Jill' regex: '\w+' matchesDo: [:word | list add: word].
+list --> an OrderedCollection('Jack' 'meet' 'Jill')
+\end{ToSh-code}
+
+\mthind{String}{regex:matchesCollect:} evaluates a one-argument
+\ct{aBlock} for every match of the regular expression within the
+receiver string. It then collects the results and answers them as a
+\clsind{SequenceableCollection}.
+
+\begin{ToSh-code}{@TEST}
+'Jack meet Jill' regex: '\w+' matchesCollect: [:word | word size]                          --> an OrderedCollection(4 4 4)
+\end{ToSh-code}
+
+\mthind{String}{allRegexMatches:} returns a collection of all matches
+(substrings of the receiver string) of the regular expression.
+
+\begin{ToSh-code}{@TEST}
+'Jack and Jill went up the hill' allRegexMatches: '\w+'                                            --> an OrderedCollection('Jack' 'and' 'Jill' 'went' 'up' 'the' 'hill')
+\end{ToSh-code}
+
+%-----------------------------------------------------------------
+\subsection{Replacement and translation}
+
+It is possible to \NewTermAlt{replace}{match replacement} all matches of a
+regular expression with a certain string using the message
+\mthind{String}{copyWithRegex:matchesReplacedWith:}.
+
+\begin{ToSh-code}{@TEST}
+'Krazy hates Ignatz' copyWithRegex: '\<[[:lower:]]+\>' matchesReplacedWith: 'loves' --> 'Krazy loves Ignatz'
+\end{ToSh-code}
+
+A more general substitution is \NewTerm{match translation}. This message evaluates
+a block passing it each match of the regular expression in the receiver
+string and answers a copy of the receiver with the block results spliced
+into it in place of the respective matches.
+
+\begin{ToSh-code}{@TEST}
+'Krazy loves Ignatz' copyWithRegex: '\b[a-z]+\b' matchesTranslatedUsing: [:each | each asUppercase] --> 'Krazy LOVES Ignatz'
+\end{ToSh-code}
+
+All messages of enumeration and replacement protocols perform a case-sensitive match.  Case-insensitive versions are not provided as part of a \ct{String} protocol.  Instead, they are accessible using the lower-level matching interface presented in the following question.
+%-----------------------------------------------------------------
+\subsection{Lower-level interface}
+
+When you send the message \mthind{String}{matchesRegex:} to a string, the following happens:
+
+\begin{enumerate}
+\item A fresh instance of \clsind{RxParser} is created, and the regular expression string is passed to it, yielding the expression's syntax tree.
+\item  The syntax tree is passed as an initialization parameter to an instance of \clsind{RxMatcher}. The instance sets up some data structure that will work as a recognizer for the regular expression described by the tree.
+\item The original string is passed to the \NewTerm{matcher}, and the matcher checks for a match.
+\end{enumerate}
+
+%-----------------------------------------------------------------
+\subsection{The Matcher}
+
+If you repeatedly match a number of strings against the same regular expression using one of the messages defined in \clsind{String}, the regular expression string is parsed and a new matcher is created for every match.  You can avoid this overhead by building a matcher for the regular expression, and then reusing the matcher over and over again. You can, for example, create a matcher at a class or instance initialization stage, and store it in a variable for future use.
+You can create a matcher using one of the following methods:
+
+\begin{itemize}
+\item You can send \ct{asRegex} or \ct{asRegexIgnoringCase} to the string.
+
+\item You can directly invoke the \ct{RxMatcher} constructor methods \ct{forString:} or \ct{forString:ignoreCase:} (which is what the convenience methods above will do).
+%
+%The \mthind{RxMatcher}{forString:} method is equivalent to \mthind{RxMatcher class}{forString: regexString ignoreCase: false}. A more convenient way is using one of the two matcher-created messages understood by \clsind{String}. 	 \cmind{RxMatcher}{regexString asRegex} is equivalent to \mthind{RxMatcher class}{forString: regexString}. 	 \ct{regexString asRegexIgnoringCase} is equivalent to \cmind{RxMatcher class}{forString: regexString ignoreCase: true}.
+
+%\item Sending a \mthind{RxMatcher class}{forString:ignoreCase:} message to \clsind{RxMatcher} class, with the regular expression string and a Boolean indicating whether case is ignored as arguments.
+\end{itemize}
+
+Here we send \ct{matchesIn:} to collect all the matches found in a string:
+
+\begin{ToSh-code}{@TEST | octal hex |}
+octal := '8r[0-9A-F]+' asRegex.
+octal matchesIn: '8r52 = 16r2A' --> an OrderedCollection('8r52')
+
+hex := '16r[0-9A-F]+' asRegexIgnoringCase.
+hex matchesIn: '8r52 = 16r2A'   --> an OrderedCollection('16r2A')
+
+hex := RxMatcher forString: '16r[0-9A-Fa-f]+' ignoreCase: true.
+hex matchesIn: '8r52 = 16r2A'   --> an OrderedCollection('16r2A')
+\end{ToSh-code}
+
+%-----------------------------------------------------------------
+\subsection{Matching}
+
+A matcher understands these messages (all of them return \ct{true} to indicate successful match or search, and false otherwise):
+
+\mthind{RxMatcher}{matches:} -- true if the whole argument string (aString) matches.
+
+\begin{ToSh-code}{@TEST}
+'\w+' asRegex matches: 'Krazy' --> true
+\end{ToSh-code}
+
+
+\mthind{RxMatcher}{matchesPrefix:} -- true if some prefix of the argument string (not necessarily the whole string) matches.
+
+\begin{ToSh-code}{@TEST}
+'\w+' asRegex matchesPrefix: 'Ignatz hates Krazy' --> true
+\end{ToSh-code}
+
+\mthind{RxMatcher}{search: aString} -- Search the string for the first occurrence of a matching substring. (Note that the first two methods only try matching from  the very beginning of the string). Using the above example with a  matcher for \ct{a+}, this method would answer success given a string \ct{'baaa'}, while the previous two would fail.
+
+\begin{ToSh-code}{@TEST}
+'\b[a-z]+\b' asRegex search: 'Ignatz hates Krazy' --> true    "finds 'hates'"
+\end{ToSh-code}
+
+
+The matcher also stores the outcome of the last match attempt and can report it: \mthind{RxMatcher}{lastResult} answers a Boolean: the outcome of the most recent match attempt. If no matches were attempted, the answer is unspecified.
+
+\begin{ToSh-code}{@TEST | number |}
+number := '\d+' asRegex.
+number search: 'Ignatz throws 5 bricks'.
+number lastResult --> true
+\end{ToSh-code}
+
+\mthind{RxMatcher}{matchesStream:}, \mthind{RxMatcher}{matchesStreamPrefix:} and \mthind{RxMatcher}{searchStream:} are analogous to the above three messages, but takes streams as their argument.
+
+\begin{ToSh-code}{@TEST | ignatz |}
+ignatz := ReadStream on: 'Ignatz throws bricks at Krazy'.
+names := '\<[A-Z][a-z]+\>' asRegex.
+names matchesStreamPrefix: ignatz --> true
+\end{ToSh-code}
+
+%-----------------------------------------------------------------
+\subsection{Subexpression matches}
+
+After a successful match attempt, you can query which part of the original string has matched which part of the regex. A subexpression is a parenthesized part of a regular expression, or the whole expression. When a regular expression is compiled, its subexpressions are assigned indices starting from 1, depth-first, left-to-right.
+
+For example, the regex \ct{((\d+)\s*(\w+))} has four subexpressions, including itself.
+\begin{ToSh-code}{}
+1:    ((\d+)\s*(\w+))    "the complete expression"
+2:    (\d+)\s*(\w+)       "top parenthesized subexpression"
+3:    \d+                      "first leaf subexpression"
+4:    \w+                     "second leaf subexpression"
+\end{ToSh-code}
+
+The highest valid index is equal to 1 plus the number of matching parentheses.  (So, 1 is always a valid index, even if there are no parenthesized subexpressions.)
+
+After a successful match, the matcher can report what part of the original string matched what subexpression. It understandards these messages:
+
+\mthind{RxMatcher}{subexpressionCount} answers the total number of subexpressions: the highest value that can be used as a subexpression index with this matcher. This value 	is available immediately after initialization and never changes.
+
+\mthind{RxMatcher}{subexpression:} takes a valid index as its argument, and may be sent only after a successful match attempt. The method answers a substring of the original string the corresponding subexpression has matched to.
+
+\mthind{RxMatcher}{subBeginning:} and \mthind{RxMatcher}{subEnd:} answer the positions within the argument string or stream where the given subexpression match has started and ended, respectively. 
+% This facility provides a convenient way of extracting parts of input strings of complex format.
+
+\begin{ToSh-code}{@TEST | items |}
+items := '((\d+)\s*(\w+))' asRegex.
+items search: 'Ignatz throws 1 brick at Krazy'.
+items subexpressionCount --> 4
+items subexpression: 1      --> '1 brick'    "complete expression"
+items subexpression: 2      --> '1 brick'    "top subexpression"
+items subexpression: 3      --> '1'             "first leaf subexpression"
+items subexpression: 4      --> 'brick'       "second leaf subexpression"
+items subBeginning: 3       --> 14
+items subEnd: 3                 --> 15
+items subBeginning: 4       --> 16
+items subEnd: 4                 --> 21
+\end{ToSh-code}
+
+As a more elaborate example, the following piece of code uses a \ct{MMM DD, YYYY} date format recognizer to convert a date to a three-element array with year, month, and day strings:
+
+\begin{ToSh-code}{@TEST | date result |}
+date := '(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+(\d\d?)\s*,\s*19(\d\d)' asRegex.
+result := (date matches: 'Aug 6, 1996')
+       ifTrue: [{ (date subexpression: 4) .
+				(date subexpression: 2) .
+				(date subexpression: 3) } ]
+        ifFalse: ['no match'].
+result --> #('96' 'Aug' '6')
+\end{ToSh-code}
+
+%-----------------------------------------------------------------
+\subsection{Enumeration and Replacement}
+
+The \ct{String} enumeration and replacement protocols that we saw earlier in this section are actually implemented by the matcher.
+\ct{RxMatcher} implements the following methods for iterating over matches within strings:
+\ct{matchesIn:},
+\ct{matchesIn:do:},
+\ct{matchesIn:collect:},
+\ct{copy:replacingMatchesWith:} and
+\ct{copy:translatingMatchesUsing:}.
+
+\begin{ToSh-code}{@TEST | seuss aWords |}
+seuss := 'The cat in the hat is back'.
+aWords := '\<([^aeiou]|[a])+\>' asRegex.    "match words with 'a' in them"
+aWords matchesIn: seuss                                                                                     --> an OrderedCollection('cat' 'hat' 'back')
+aWords matchesIn: seuss collect: [:each | each asUppercase ]                          --> an OrderedCollection('CAT' 'HAT' 'BACK')
+aWords copy: seuss replacingMatchesWith: 'grinch'                                           --> 'The grinch in the grinch is grinch'
+aWords copy: seuss translatingMatchesUsing: [ :each | each asUppercase ]     --> 'The CAT in the HAT is BACK'
+\end{ToSh-code}
+
+There are also the following methods for iterating over matches within streams:
+\ct{matchesOnStream:},
+\ct{matchesOnStream:do:},
+\ct{matchesOnStream:collect:},
+\ct{copyStream:to:replacingMatchesWith:} and
+\ct{copyStream:to:translatingMatchesUsing:}.
+
+\begin{ToSh-code}{@TEST | in out numMatch |}
+in := ReadStream on: '12 drummers, 11 pipers, 10 lords, 9 ladies, etc.'.
+out := WriteStream on: ''.
+numMatch := '\<\d+\>' asRegex.
+numMatch
+  copyStream: in
+  to: out
+  translatingMatchesUsing: [:each | each asNumber asFloat asString ].
+out close; contents --> '12.0 drummers, 11.0 pipers, 10.0 lords, 9.0 ladies, etc.'
+\end{ToSh-code}
+
+
+%-----------------------------------------------------------------
+\subsection{Error Handling}
+
+Several exceptions may be raised by \ct{RxParser} when building regexes.  The exceptions have the common parent \ct{RegexError}.  You may use the usual Smalltalk exception handling mechanism to catch and handle them.
+
+\begin{itemize}
+
+\item \ct{RegexSyntaxError} is raised if a syntax error is detected while parsing a regex
+
+\item \ct{RegexCompilationError} is raised if an error is detected while building a matcher
+
+\item \ct{RegexMatchingError} is raised if an error occurs while matching (for example, if a bad selector was specified using \ct{':<selector>:'} syntax, or because of the matcher's internal error)
+
+%\item If a syntax error is detected while parsing expression, \cmind{RxParser}{signalSyntaxException:} is raised/signaled;
+
+%\item If an error is detected while building a matcher, \cmind{RxParser}{signalCompilationException:} is raised/signaled;
+
+%\item If an error is detected while matching (for example, if a bad selector was specified using \ct{':<selector>:'} syntax, or because of the matcher's internal error), \cmind{RxParser}{signalMatchException:} is raised.
+\end{itemize}
+
+%The parent class of these three exception is \clsind{RegexError}. Since any of the three signals can be raised within a call to \mthind{matchesRegex:}, it is handy if you want to catch them all.  For example:
+
+\begin{ToSh-code}{@TEST}
+['+' asRegex] on: RegexError do: [:ex | ^ ex printString ]                                        --> 'RegexSyntaxError:  nullable closure'
+\end{ToSh-code}
+%=================================================================
+\section{Implementation Notes by Vassili Bykov}
+% Edited by ON
+
+In \MarginLabel{What to look at first.} 90\% of the cases, the method \cmind{String}{matchesRegex:}  is all you need to access the package.
+
+\clsind{RxParser} accepts a string or a stream of characters with a regular expression, and produces a syntax tree corresponding to the expression. The tree is made of instances of \clsind{Rxs*} classes.
+
+\clsind{RxMatcher}  accepts a syntax tree of a regular expression built by the parser and compiles it into a matcher: a structure made of instances of \clsind{Rxm*} classes. The \clsind{RxMatcher} instance can test whether a string or a positionable stream of characters matches the original regular expression, or it can search a string or a stream for substrings matching the expression. After a match is found, the matcher can report a specific string that matched the whole expression, or any parenthesized subexpression of it. All other classes support the same functionality and are used by \clsind{RxParser}, \clsind{RxMatcher}, or both.
+
+The \MarginLabel{Caveats} matcher is similar in spirit, but \emph{not} in design
+%--let alone the code--
+to Henry Spencer's original regular expression implementation in C.  The focus is on simplicity, not on efficiency. I didn't optimize or profile anything.
+%  I may in future\,---\,or I may not: I do this in my spare time and I don't promise anything. 
+The matcher passes H. Spencer's test suite (see ``test suite'' protocol), with quite a few extra tests added, so chances are good there are not too many bugs.  But watch out anyway.
+
+Since \MarginLabel{Acknowledgments} the first release of the matcher, thanks to the input from several fellow Smalltalkers, I became convinced a native Smalltalk regular expression matcher was worth the effort to keep it alive. For the advice and encouragement that made this release possible, I want to thank: Felix Hack, Eliot Miranda, Robb Shecter, David N. Smith, Francis Wolinski and anyone whom I haven't yet met or heard from, but who agrees this has not been a complete waste of time.
+% (Coding the same ''the hard way'' is an exercise to a curious reader).
+
+%=================================================================
+%\section{Summary}
+\Summary{Regular expressions are an essential tool for
+manipulating strings in a trivial way.
+% whenever one has to deal with strings in a non-trivial way.
+This chapter presented the Regex package for \pharo. The essential points of this chapter are:
+
+\begin{itemize}
+\item For simple matching, just send \ct{matchesRegex:} to a string
+\item When performance matters, send \ct{asRegex} to the string representing the regex, and reuse the resulting matcher for multiple matches
+\item Subexpression of a matching regex may be easily retrieved to an arbitrary depth
+\item A matching regex can also replace or translate subexpressions in a new copy of the string matched
+\item An enumeration interface is provided to access all matches of a certain regular expression
+\item Regexes work with streams as well as with strings.
+\end{itemize}
+}
+
+
+%=============================================================
+\ifx\wholebook\relax\else
+   \bibliographystyle{jurabib}
+   \nobibliography{scg}
+   \end{document}
+\fi
+%=============================================================
+
+
+%-----------------------------------------------------------------
+%%% Local Variables:
+%%% coding: utf-8
+%%% mode: latex
+%%% TeX-master: t
+%%% TeX-PDF-mode: t
+%%% ispell-local-dictionary: "english"
+%%% End:
