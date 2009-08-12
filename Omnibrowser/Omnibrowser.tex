@@ -72,7 +72,7 @@
 In this chapter, we present \ob, a browser framework that supports the definition of browsers based on explicit metamodels. In the \obf, a browser is a graphical list-oriented tool to navigate and edit any arbitrary domain. The most common representative of this category of tools is the \st system browser, which is used to navigate and edit \st source code.
 In \ob, a browser is described by a domain model and a metagraph that specifies how the domain space may be navigated. Widgets, such as list menus and text panels, are used to display information gathered from a particular path in the metagraph. Although widgets are programmatically composed by the framework, \ob allows for interaction with the end user.
 
-\on{It is confusing to talk about the ``\st system browser'' -- in \pharo there is only the OB browser!}
+\on{It is confusing to talk about the ``\st system browser'' -- in \pharo there is only the OB browser!}\alex{I am not sure to understand. Can't we assume that the \st system browser is OB based?}
 
 We look at how to build new browsers from predefined parts and how to easily describe new tools. We will illustrate how to define sophisticated browsers for various domains with the help of three example: a file browser, a remake of the ubiquitous \st system browser, and a coverage browser.
 
@@ -85,7 +85,7 @@ To illustrate how to instantiate the \obf, we describe the implementation of a s
 
 \begin{figure}[!ht]
 \begin{center}
-\includegraphics[scale=0.34]{filebrowser}
+\includegraphics[scale=0.34]{filebrowser.png}
 \caption{A minimal file browser based on OmniBrowser.} \label{fig:filebrowser}
 \end{center}
 \end{figure}
@@ -228,7 +228,7 @@ A command defines an interaction the user can have with browsed items. All inter
 
 \begin{figure}[!ht]
 \begin{center}
-\includegraphics[scale=0.34]{command}
+\includegraphics[scale=0.34]{command.png}
 \caption{The browse command in the filer browser.} \label{fig:command}
 \end{center}
 \end{figure}
@@ -311,7 +311,17 @@ NewFileCommand>>isActive
 The \obf provides a number of utility classes to ask for user input contained in the package \ct{OmniBrowser-Notifications}. We will use \ct{OBTextRequest} to ask for user input. 
 
 \begin{code}{}    
-NewFileCommand>>execute	| filename fullFilename stream nodeToSelect |	filename := OBTextRequest 					prompt: 'Please type the name of the file to create' 					template: ''.	fullFilename := target path, FileDirectory pathNameDelimiter asString, filename.	stream := FileStream newFileNamed: fullFilename.	stream close.	nodeToSelect := target files detect: [:fileNode | fileNode name = filename ].	requestor announce: (OBNodeCreated node: nodeToSelect).
+NewFileCommand>>execute
+	| filename fullFilename stream nodeToSelect |
+	filename := OBTextRequest 
+					prompt: 'Please type the name of the file to create' 
+					template: ''.
+	fullFilename := target path, FileDirectory pathNameDelimiter asString, filename.
+	stream := FileStream newFileNamed: fullFilename.
+	stream close.
+
+	nodeToSelect := target files detect: [:fileNode | fileNode name = filename ].
+	requestor announce: (OBNodeCreated node: nodeToSelect).
 \end{code}
 
 The last line of \ct{execute} is important. It signals the column (referenced by \ct{requestor}) to trigger a global refresh. 
@@ -336,27 +346,38 @@ OBDefinition subclass: #FileDefinition
 The variable \ct{fileNode} is intended to refer to the selected file node. This variable will have to be initialized when the definition is instantiated. We need accessors:
 
 \begin{code}{}    
-FileDefinition>>fileNode	^ fileNode
+FileDefinition>>fileNode
+	^ fileNode
 
-FileDefinition>>fileNode: aFileNode	fileNode := aFileNode
+FileDefinition>>fileNode: aFileNode
+	fileNode := aFileNode
 \end{code}
 
 As we previously saw, the content of the lower text pane is given by the \ct{text} methods defined on \ct{FileNode}. As we now use a definition, \ct{FileNode>>text} is now useless. You can safely remove it and define instead it on \ct{FileDefinition}:
 
 \begin{code}{}
-FileDefinition>>text	"return the first 1000 characters"     ^ ((FileStream readOnlyFileNamed: fileNode path) converter: Latin1TextConverter new;               next: 1000) asString
+FileDefinition>>text
+	"return the first 1000 characters"
+     ^ ((FileStream readOnlyFileNamed: fileNode path) converter: Latin1TextConverter new; 
+              next: 1000) asString
 \end{code}
 
 The message \ct{text:} is sent to the OB definition when the user presses apple-s  on Mac or alt-s on other platforms. When the content is ``accepted'', we need to open the file, write the content provided by the user into it, and close the file:
 
 \begin{code}{}
-FileDefinition>>text: aText	"return the first 1000 characters"     (FileStream fileNamed: fileNode path) 				nextPutAll: aText asString;				close.	^ true
+FileDefinition>>text: aText
+	"return the first 1000 characters"
+     (FileStream fileNamed: fileNode path) 
+				nextPutAll: aText asString;
+				close.
+	^ true
 \end{code}
 
 \ct{FileDefinition} is currently not linked to the browser. To do so, define the method \ct{definition} in \ct{FileNode}:
 
 \begin{code}{}
-FileNode>>definition	^ FileDefinition new fileNode: self
+FileNode>>definition
+	^ FileDefinition new fileNode: self
 \end{code}
 
 Each selected item can have its own definition. 
@@ -379,7 +400,12 @@ stream contents.
 Inspect this whole code listing. In the inspector you see the definition of the color form for the icon. You can now install the content of this \ct{ByteString} as a method in the method protocol \ct{icons} of \ct{OBMorphicIcons} in a method called \ct{folder}. Make sure that you do not return the string, but the code within the string, so that if the method gets invoked a color form for the folder icon is returned. For example, the package icon is defined as:
 
 \begin{code}{}
-OBMorphicIcons>>package    ^(Form	extent: 14@14	depth: 32	fromArray: #( 4294960327 4289901233 .....  4294960327)	offset: 0@0)
+OBMorphicIcons>>package
+    ^(Form
+	extent: 14@14
+	depth: 32
+	fromArray: #( 4294960327 4289901233 .....  4294960327)
+	offset: 0@0)
 \end{code}
 
 The list of numbers corresponds to the image bit encoding of the icon.
@@ -397,7 +423,7 @@ If you do not have a .gif under hand, you may replace \ct{#folder} by \ct{#packa
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Graph and Metagraph of a Browser} \label{sec:omnibrowser}
 
-The remaining of this chapter revises the notions already seen so far, but in a more formal fashion. It describes the internal of the framework, which should help the reader to understand when \ob is appropriate for a given task and what are its limitations.
+The remaining of this chapter revises the notions already seen so far, but in a more formal fashion. It describes the internal of the framework, which should help the reader to understand when \ob is appropriate for a given task and what are its strenghts and limitations.
 
 The \obf is structured around (i) an explicit domain model and (ii) a metagraph, a state machine, that specifies the navigation and interaction with the domain model. The user interface is constructed by the framework, and uses a layout similar to the code browser, with two horizontal parts. The top part is a column-based section where the navigation is done. The bottom half is a text pane.
 
@@ -451,7 +477,7 @@ The core of the \ob framework is composed of 8 classes (\figref{core}). We denot
 
 The metaclass of the class \ct{OBBrowser} is \ct{OBBrowser class}. It defines two abstract methods \ct{defaultMetaNode} and \ct{defaultRootNode}. These methods are abstract, they therefore need to be overridden in subclasses. These methods are called when a browser is instantiated. The methods  \ct{defaultMetaNode} and \ct{defaultRootNode} return the root metanode and the root domain node, respectively. As we already saw, a browser is opened by sending the message \ct{open} to an instance of the class \ct{OBBrowser}.
 
-The navigation graph is built with instances of the class \ct{OBMetaNode}. Transitions are built by sending the message \ct{childAt: selector put: metanode} to a \ct{MetaNode} instance. This has the effect to create a metaedge named \ct{selector} leading away the metanode receiver of the message and \ct{metanode}.
+The navigation graph is built with instances of the class \ct{OBMetaNode.} Transitions are built by sending the message \ct{childAt: selector put: metanode} to a \ct{MetaNode} instance. This has the effect to create a metaedge named \ct{selector} leading away the metanode receiver of the message and \ct{metanode}.
 
 At runtime, the graph traversal is triggered by user actions (\eg pressing a button or selecting a list entry) which send the metaedge's name to the node that is currently selected. The rendering of a node is performed by invoking on the domain node the selector stored in the variable \ct{displaySelector} in the metanode.
 
@@ -475,7 +501,7 @@ From the programmer point of view, creating a new browser implies defining a dom
 
 \paragraph{Lists.} Navigation in \obf is rendered with a set of lists and triggered by selecting one entry in a list. Lists displayed in a browser are ordered and are displayed from left to right. Traversing a new metanode, by selecting a node in a list \textit{A}, triggers the construction of a set of nodes intended to fill a list \textit{B}. List \textit{B} follows list \textit{A}.
 
-The root of a metagraph corresponds to the left-most list. The number of lists displayed is equal to the depth of the metagraph. The depth of the system browser metagraph (\figref{obmetagraph}) is 4, therefore the system browser has 4 lists (\figref{ob}). Because the metagraph of a filesystem may contain cycles (\ie a directory may contain directories, as shown in \figref{graphfs}), the number of lists in the browser increases for each directory selected in the right-most list. Therefore a horizontal scrollbar is used to keep the width of the browser constant, yet displaying a potentially infinite number of lists in the top half.
+The root of a metagraph corresponds to the left-most list. The number of lists displayed is equal to the depth of the metagraph. The depth of the system browser metagraph (as it will see later on in \figref{obmetagraph}) is 4, therefore the system browser has 4 lists (\figref{ob}). Because the metagraph of a filesystem contains a cycle (remember \ct{directory childAt: #directories put: directory} in the file browser meta-graph in \secref{introduction}), the number of lists in the browser increases for each directory selected in the right-most list. Therefore a horizontal scrollbar is used to keep the width of the browser constant, yet displaying a potentially infinite number of lists in the top half.
 
 \paragraph{Radio buttons.} A modal filter in the metagraph is represented in the GUI by a radio button. Each edge leading away from the filter is represented as a button in the radio button. Only one button can be selected at a time in the radio button, and the associated choice is used to determine the outgoing edges. For example, the second list in the system browser contains the three buttons \ct{instance}, \ct{?} and \ct{class} as shown the transition from the environment to the three metanodes class, class comment and metaclass in \figref{ob}.
 
@@ -505,7 +531,6 @@ The system browser is probably the most important tool offered by the \pharo pro
 \end{center}
 \end{figure}
 
-This browser just replicates the traditional four panes system browser discussed in~\secref{problem}.
 The system browser is mainly composed of four lists (upper part) and a panel (lower part). From left to right, the lists represent (i) categories, (ii) classes contained in the selected category, (iii) method categories defined in the selected class to which the \ct{-- all --} category is added, and (iv) the list of methods defined in the selected method category. On \figref{ob}, the class named \ct{Class}, which belongs to the category \ct{Kernel-Classes} is selected. \ct{Class} has three methods categories, plus the \ct{-- all --} one. The method \ct{templateForSubclassOf:category} contained in the \ct{instance creation} method category is selected.
 
 The lower part of the system browser contains a large textual panel displaying information about the current selection in the lists. Selecting a category triggers the display of a class template intended to be filled out to create a new class in the system. If a class is selected, then this panel shows the definition of this class. If a method is selected, then the definition of this method is displayed. The text contained in the panel can be edited. The effect of this is to create a new class, a new methods, or changing the definition of a class (\eg adding a new variable, changing the superclass) or redefining a method.
@@ -572,25 +597,26 @@ OBSystemBrowser class>>defaultRootNode
 \end{code}
 
 
-\paragraph{Ancestry mechanism.} As shown in \figref{obInternal} there is a number of different nodes that are required to implement the system browser, such as class node, metaclass node, method node, method protocol node, class comment node, etc. We do not want to cover all these nodes in detail. Instead we report on an important feature of \obf to locate specific nodes in a large domain graph: the ancestry mechanism. 
+%:\alex{need to work on this ancestry mechanism, what is commented out is really not clear}
+%\paragraph{Ancestry mechanism.} As shown in \figref{obInternal} there is a number of different nodes that are required to implement the system browser, such as class node, metaclass node, method node, method protocol node, class comment node, etc. All these nodes are not covered here in detail. Instead we report on an important feature of \obf to locate specific nodes in a large domain graph: the ancestry mechanism. 
 
-When a target node has to be selected, we start from the root node and traverse the tree down to the target node, remembering all nodes we pass during the traversal. Starting from the root node, we test for all children whether a child is an ancestry of the target node or not. If so, we go one level deeper and test the same for all children of this child, and so on, until we reach the target node. Every metanode, which basically models one level in the domain graph or tree, knows the ancestry selector to be used on this level. For a class node, the ancestrySelector is called \ct{isDescendantOfClass:}. If we search for a class node in the domain tree, we test for every class node if the class to be found is a descendant of that class, \ie if it is the same class as we search for. On the category level, the ancestry selector is called \ct{descendantOfClassCat:}, expecting a category as a parameter. For every category, we test whether the target node is a descendant of the passed category or not. 
+%When a target node is selected, we start from the root node and traverse the tree down to the target node, remembering all nodes we pass during the traversal. Starting from the root node, we test for all children whether a child is an ancestry of the target node or not. If so, we go one level deeper and test the same for all children of this child, and so on, until we reach the target node. Every metanode, which basically models one level in the domain graph or tree, knows the ancestry selector to be used on this level. For a class node, the ancestrySelector is called \ct{isDescendantOfClass:}. If we search for a class node in the domain tree, we test for every class node if the class to be found is a descendant of that class, \ie if it is the same class as we search for. On the category level, the ancestry selector is called \ct{descendantOfClassCat:}, expecting a category as a parameter. For every category, we test whether the target node is a descendant of the passed category or not. 
 
-This method \ct{descendantOfClassCat:} is implemented as follows for a node having a class associated (\eg a class node or a method node):
+%This method \ct{descendantOfClassCat:} is implemented as follows for a node having a class associated (\eg a class node or a method node):
 
-\begin{code}{}
-OBClassAwareNode>>isDescendantOfClassCat: aClassCategoryNode
-    ^(self theNonMetaClass environment organization 
-		listAtCategoryNamed: aClassCategoryNode name)
-			includes: self theNonMetaClassName
-\end{code}
+%\begin{code}{}
+%OBClassAwareNode>>isDescendantOfClassCat: aClassCategoryNode
+%    ^(self theNonMetaClass environment organization 
+%		listAtCategoryNamed: aClassCategoryNode name)
+%			includes: self theNonMetaClassName
+%\end{code}
 
-To define which metanode, \ie which level in the tree, uses which ancestry selector, we just pass this selector when building the metagraph, using the method \ct{ancestrySelector: aSymbol} of \ct{OBMetaNode}.
-With these kind of methods, it is possible to locate any node in the domain tree to \eg jump to it. This is for instance used when opening a browser for a certain node, \eg by using the \ct{OBSystemBrowser} class-side method \ct{openOn: aClass selector: aSymbol}.
+%To define which metanode, \ie which level in the tree, uses which ancestry selector, we just pass this selector when building the metagraph, using the method \ct{ancestrySelector: aSymbol} of \ct{OBMetaNode}.
+%With these kind of methods, it is possible to locate any node in the domain tree to \eg jump to it. This is for instance used when opening a browser for a certain node, \eg by using the \ct{OBSystemBrowser} class-side method \ct{openOn: aClass selector: aSymbol}.
 
 \paragraph{Filtering of nodes.}
 
-In the metagraph we can also define several filters for a metanode, used to filter and otherwise manipulate the nodes represented by this metanode before they get displayed in columns \ab{Is this the same kind of filter we have previously seen?}. For the category metanode, for instance, there are two filters defined: a class sort filter and the modal filter used to select one of the three outgoing metaedges instance, comment or class. 
+In the metagraph we can also define several filters for a metanode, used to filter and otherwise manipulate the nodes represented by this metanode before they get displayed in columns. For the category metanode, for instance, there are two filters defined: a class sort filter and the modal filter used to select one of the three outgoing metaedges instance, comment or class. The modal filter was introduced earlier in the chapter.
 
 Let's have a look at these two filters, starting with the class sort filter implemented in class \ct{OBClassSortFilter}. Its responsibility is to sort and indent all classes of a category according to their position in a class hierarchy. If a category for instance contains two distinct class hierarchies, \eg class C inherits from B, and B and D inherit from A, and E has two subclasses F and G, then the class sort filter sorts and indents these classes as shown in \figref{classSortFilter}.
 
@@ -603,7 +629,7 @@ Let's have a look at these two filters, starting with the class sort filter impl
 
 When a metanode is asked for its children nodes (in method \ct{childrenForNode: aNode}) it asks its associated filters to answer the nodes by invoking their \ct{nodesFrom: aCollection forNode: aNode} method. In the case of the class sort filter, \ct{aNode} refers to the category node and \ct{aCollection} holds all class nodes this category node returns when the message \ct{classes} is sent to it. The class sort filter can now sort the passed class nodes and indent them appropriately in the method \ct{OBClassSortFilter >> nodesFrom:forNode:}.
 
-The other filter defined for a category metanode, \ct{OBModalFilter}, has a different task: It selects one edge of the three outgoing edges from the category metanode, \ie instance, comment or class.  The user of the system browser can select using the switch in the class column (widget E in \figref{miniStBrowser}) whether he wants to see the instance-, the class-side or the comment of the selected class. \ct{OBModalFilter} remembers the selection of the user. Dependent on this selection, it answers the corresponding metaedge to be traversed, \eg the comment metaedge. This is done in the method \ct{edgesFrom: aCollection forNode: aNode}. The metanode, \ie the category metanode, passes all available metaedges to this method, along with the currently selected class node, and the modal filter answers just the metaedge selected by the user. Other filters than a modal filter, such as the class sort filter, typically just return all edges passed to them.
+The other filter defined for a category metanode, \ct{OBModalFilter}, has a different task: It selects one edge of the three outgoing edges from the category metanode, \ie instance, comment or class.  The user of the system browser can select using the switch in the class column whether he wants to see the instance-, the class-side or the comment of the selected class. \ct{OBModalFilter} remembers the selection of the user. Dependent on this selection, it answers the corresponding metaedge to be traversed, \eg the comment metaedge. This is done in the method \ct{edgesFrom: aCollection forNode: aNode}. The metanode, \ie the category metanode, passes all available metaedges to this method, along with the currently selected class node, and the modal filter answers just the metaedge selected by the user. Other filters than a modal filter, such as the class sort filter, typically just return all edges passed to them.
 
 There are two other important tasks performed by filters besides filtering edges and nodes: Manipulating the name of a node to be displayed and defining an icon shown along with a node in the column. The former is handled in the method \ct{displayString: aString forParent: pNode child:}, the latter in \ct{icon: aSymbol forNode: aNode}. Before a node's name gets displayed, all defined filters can manipulate the display of its name, \eg emphasize it in bold. Note that the filter also has access to the parent of a node to be displayed, not the current node alone. There are also filters enriching a node with an icon before display, the \ct{OBInheritanceFilter} for instance adds arrow up, down icons to methods, if a method overrides a method with the same name from a super class or is overridden in subclasses.\ab{how do you do this?}
 
@@ -659,7 +685,7 @@ Each graphical widget composing a browser is a listener and can emit events. Cre
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Evaluation and Discussions} \seclabel{discussion}
 
-Several other browsers such as a browser specifically supporting new language constructs such as Traits have been developed using \obf demonstrating that the framework is mature and extensible. Figure~\ref{browsers} shows some browsers that are based on \obf.
+Several other browsers such as a browser specifically supporting new language constructs such as Traits have been developed using \ob which demonstrate that the framework is mature and extensible. Figure~\ref{browsers} shows some browsers that are based on \obf.
  We now discuss the strengths and limitations of the \obf.
 
 %\paragraph{Explicit state transitions} As metagraph are statically defined and each metaedges describes an action the user can perform on a browser, states a browser can be in are explicit and fully described. 
@@ -799,37 +825,35 @@ Such a situation does not occur in \obf, as metagraphs are declaratively defined
 %A thing is constructed from things objects and constraint objects. Higher-level things can be built out of the lower-level ones. Constraints are either satisfied or they are not satisfied, and they are simple declarative declarations that do not hold state. 
 %Browser navigation can be expressed by constraints between the different elements that composed a browser. But there is no explicit distinction between the domain and its navigation. 
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Chapter Summary}
+
+
+
+\paragraph{Acknowledgment.}  Colin Putney is at the origin of Omnibrowser. A number of contribution were made by the Pharo community. In particular, we gratefully acknowledge David R\"othlisberger for all his devotion and precious work to the \obf.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Conclusion} \seclabel{conclusion}
+%\section{Conclusion} \seclabel{conclusion}
 
-% [RoelSpace :-) ]
-%Just to Remember for some future version:
-%    Meta node -> Navigation Node
-%    Meta edge -> Navigation Edge
-%    Node -> Domain Node
+%%context
+%\st is known for its advanced development environment, featuring advanced browsers that let developers navigate and change code relatively easily.
 
-%Browsers are build by describing the model in term of domain nodes, the navigation with a metagraph and a set of actors to enable interaction between the browser user with the domain browsed. Graphical widgets and their layout are fully abstracted by the Omnibrowser framework, enabling a graphical tool to navigate and edit a domain model without writing any graphical description.
+%
+%%problem
+%Building browsers, however, is a daunting task. The main problem is that every navigation action performed by a user in a widget changes the state of that (and possibly other) widgets. Given the high number of possible navigation actions, the complexity of managing the navigation by managing the states of the browser is a very complex task.
+%This can be seen in most current browser implementations, which are complex and hard to extend because the navigation is implicitly encoded in the management of the state of the widgets.
+% 
 
-%context
-\st is known for its advanced development environment, featuring advanced browsers that let developers navigate and change code relatively easily.
+%%solution
+%To make it easier to build and extend browsers, \ob is a framework for building browsers that is based on modeling user navigation through an explicit graph.
+%In this framework, browsers are built by modeling the domain with \emph{nodes}, expressing the navigation with a \emph{metagraph} and describing the interaction between the browser and the domain through \emph{commands}. 
+%The framework uses these descriptions to construct a graphical application. The top half of the application uses lists that allow the user to navigate the described domain. The bottom half of the window is used to visualize and edit nodes selected in the top half.
 
-
-%problem
-Building browsers, however, is a daunting task. The main problem is that every navigation action performed by a user in a widget changes the state of that (and possibly other) widgets. Given the high number of possible navigation actions, the complexity of managing the navigation by managing the states of the browser is a very complex task.
-This can be seen in most current browser implementations, which are complex and hard to extend because the navigation is implicitly encoded in the management of the state of the widgets.
- 
-
-%solution
-To make it easier to build and extend browsers, \ob is a framework for building browsers that is based on modeling user navigation through an explicit graph.
-In this framework, browsers are built by modeling the domain with \emph{nodes}, expressing the navigation with a \emph{metagraph} and describing the interaction between the browser and the domain through \emph{commands}. 
-The framework uses these descriptions to construct a graphical application. The top half of the application uses lists that allow the user to navigate the described domain. The bottom half of the window is used to visualize and edit nodes selected in the top half.
-
-%validation
-The framework is implemented in \pharo \st and called \ob.
-This Chapter shows three concrete instantiations of the framework: a file browser to navigate a file system, a reimplementation of the ubiquitous \st System Browser, and a code coverage browser.
-Of course, there are more instantiations available than we have not discussed in this chapter.
-The validation shows that the goals of the frameworks are met. Building the System Browser with the \obf shows that the code is much simpler. The Code Coverage browser shows that it is easy to extend an existing browser.
+%%validation
+%The framework is implemented in \pharo \st and called \ob.
+%This Chapter shows three concrete instantiations of the framework: a file browser to navigate a file system, a reimplementation of the ubiquitous \st System Browser, and a code coverage browser.
+%Of course, there are more instantiations available than we have not discussed in this chapter.
+%The validation shows that the goals of the frameworks are met. Building the System Browser with the \obf shows that the code is much simpler. The Code Coverage browser shows that it is easy to extend an existing browser.
 
 %=================================================================
 %\section{Chapter Summary}
