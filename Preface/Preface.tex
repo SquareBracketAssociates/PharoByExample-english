@@ -41,21 +41,23 @@
 %=================================================================
 \section*{What is \pharo?}
 
-%:===> Revise Pharo description!
+\pharo is a modern, open source, fully-featured implementation of the \st programming language and environment. \pharo is derived from \squeak\cite{Inga97a}, a re-implementation of the classic \st-80 system.
+Whereas \squeak was developed mainly as a platform for developing experimental educational software, \pharo strives to offer a lean, open-source platform for professional software development, and a robust and stable platform for research and development into dynamic languages and environments.
+\pharo serves as the reference implementation for the Seaside web development framework.
 
-\on{Add some history --- a few short lines on Squeak. Description of how and when Pharo started. What the project is about.}
+\pharo resolves some licensing issues with \squeak. Unlike \squeak, the \pharo core contains only code that has been contributed under the MIT license.
+The \pharo project started in March 2008 as a fork of \squeak 3.9, and the first 1.0 beta version was released on July 31, 2009.
 
-Started with Squeak 3.9 in March 2008.
-
-\pharo is a modern, open source, fully-featured implementation of the \st programming language and environment. \pharo is derived from \squeak, a re-implementation of the classic \st-80 system.
-
-\on{Stef -- what would you like to say here?}
+Although \pharo removes many packages from \squeak, it also includes numerous features that are optional in \squeak. For example, true type fonts are bundled into \pharo.
+\pharo also include support for true block closures. The user interfaces has been simplified and revised.
 
 \pharo is highly portable --- even its virtual machine is written entirely in \st, making it easy to debug, analyze, and change. \pharo is the vehicle for a wide range of innovative projects from multimedia applications and educational platforms to commercial web development environments. 
 
 %=================================================================
 \section*{Who should read this book?}
 
+This book is based on \emph{Squeak by Example}\footnote{\sbe}, an open-source introduction to \squeak.
+The book has been liberally adapted and revised to reflect the differences between \pharo and \squeak.
 This book presents the various aspects of \pharo, starting with the basics, and proceeding to more advanced topics.
 
 This book will not teach you how to program. The reader should have some familiarity with programming languages. Some background with object-oriented programming would be helpful.
@@ -97,7 +99,7 @@ This book is an open book in the following senses:
 		contact us.  We would like to see this book grow!
 \end{itemize}
 
-For more details, visit the book's web site, \pbe. \on{should be a sub-page}
+For more details, visit \pbe.
 
 %=================================================================
 \section*{The \pharo community}
@@ -110,35 +112,8 @@ Here is a short list of resources that you may find useful:
 environment built on top of \pharo but whose audience is elementary school teachers.)
 
 \item \url{http://www.squeaksource.com} is the equivalent of SourceForge for \pharo projects.
+Many optional packages for \pharo live here.
 \end{itemize}
-
-\on{more?}
-
-%\paragraph{About mailing-lists.} There are a lot of mailing-lists and sometimes they can be just a little bit too active. If you do not want to get flooded by mail but would still like to participate we suggest you to use \url{news.gmane.org} or \url{www.nabble.com/Squeak-f14152.html} to browse the lists.
-
-%You can find the complete list of \pharo mailing-lists at \url{lists.squeakfoundation.org/mailman/listinfo}.
-
-%\begin{itemize}
-%\item Note that \emph{\pharo-dev} refers to the developers' mailing-list, which can be browsed here:\\
-%\url{news.gmane.org/gmane.comp.lang.smalltalk.squeak.general}
-%\item \emph{Newbies} refers to a friendly mailing-list for beginners where any question can be asked:\\
-%\url{news.gmane.org/gmane.comp.lang.smalltalk.squeak.beginners}\\
-%(There is so much to learn that we are all beginners in some aspect of \pharo!)
-%\end{itemize}
-
-%\paragraph{IRC.}
-%Have a question that you need answered quickly? Would you like to meet with other squeakers around the world? A great place to participate in longer-term discussions is the IRC channel on the ``\#squeak'' channel at \url{irc.freenode.net}. Stop by and say ``Hi!''
-
-%\paragraph{Other sites.} There are several websites supporting the \pharo community today in various ways.
-%Here are some of them:
-%\begin{itemize}
-%  \item \url{people.squeakfoundation.org} is the site of SqueakPeople, which is a kind of ``\url{advogato.org}'' for squeakers. It offers articles, diaries and an interesting trust metric system.
-
-%  \item \url{planet.squeak.org} is the site of PlanetSqueak which is an RSS aggregator. It is good place to get a flood of squeaky things. This includes the latest blog entries from developers and others who have an interest in \pharo.
-
-%  \item \url{www.frappr.com/squeak} is a site that tracks \pharo users around the world.
-
-%\end{itemize}
 
 %=================================================================
 \section*{Examples and exercises}
@@ -159,50 +134,21 @@ The second convention that we use is to display the icon \dothisicon{} to indica
 \dothis{Go ahead and read the next chapter!}
 
 %=================================================================
-%\section*{Typographic convention}
-
-%\on{This is repeated in the First Application chapter.  I suggest we remove it from the Preface.}
-
-%Programming in \st means defining classes and methods.
-%Unlike most programming languages where programs sit in files, in \st classes and methods are objects too, and they are edited using a dedicated code browser.
-%The browser will show you the code of a method in the context of the class it belongs to.
-
-%Unfortunately this book is not (yet) interactive, so when we show you the code of a method, it is not always immediately clear for which class it is defined.
-%For example, we cannot immediately tell which class the method \ct{cellsPerSide} belongs to:
-
-%\begin{code}{}
-%cellsPerSide
-%   "The number of cells along each side of the game"
-%   ^ 10
-%\end{code}
-
-%The \st convention to indicate that a method \ct{aMethod} belongs to a class \ct{aClass} is to write its name as \ct{aClass>>>aMethod}.
-%So, if it is not immediately clear from the context which class a method belongs to, we will show it explicitly like this:
-
-%\begin{code}{}
-%SBEGame>>>cellsPerSide
-%   "The number of cells along each side of the game"
-%   ^ 10
-%\end{code}
-
-%Of course, when you actually type the code of the method into the browser, you don't have to type the class name or the \ct{>>>}; instead, you just make sure that the appropriate class is selected in the browser.
-
-%=================================================================
 \section*{Acknowledgments}
+
+We would first like to thank the original developers of \squeak for making this amazing \st development environment available as an open source project.
 
 % We would like to thank various people who have contributed to this book.
 % In particular, we thank
-We would like to thank Hilaire Fernandes and Serge Stinckwich who allowed us to translate parts of their columns on \st, and Damien Cassou for contributing the chapter on streams.
+We would also like to thank Hilaire Fernandes and Serge Stinckwich who allowed us to translate parts of their columns on \st, and Damien Cassou for contributing the chapter on streams.
 
 We especially thank Lukas Renggli and Orla Greevy for their comments on drafts of the first release.
 
 We thank the University of Bern, Switzerland, for graciously supporting this open-source project and for hosting the web site of this book.
 
 We also thank the Squeak community for their enthusiastic support of this project, and for informing us of the errors found in the first edition of this book.
-Finally we thank the team that developed Squeak in the first place for making this amazing development environment available to us.
 
 %:===> Fix acknowledgements
-
 
 %=============================================================
 \ifx\wholebook\relax\else
