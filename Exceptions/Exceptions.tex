@@ -13,6 +13,7 @@
 % 2009-06-17 - Oscar migrated to Pharo
 % 2009-07-16 - Oscar indexing
 % 2009-07-16 - Lukas commenting
+% 2009-08-12 - Oscar fixed Lukas' comments
 
 %=================================================================
 \ifx\wholebook\relax\else
@@ -74,14 +75,14 @@ Consider the following example, which creates an image file from a screenshot ta
 \mthindex{FileStream}{newFileNamed:}
 \mthindex{GIFReadWriter}{nextPutImage:}
 \needlines{4}
-\begin{code}{}
-| writer |
-[	writer := GIFReadWriter on: (FileStream newFileNamed: 'Pharo.gif').
-	writer nextPutImage: (Form fromUser)
-]	ensure: [ writer ifNotNil: [ writer close ] ]
-\end{code}
+%\begin{code}{}
+%| writer |
+%[	writer := GIFReadWriter on: (FileStream newFileNamed: 'Pharo.gif').
+%	writer nextPutImage: (Form fromUser)
+%]	ensure: [ writer ifNotNil: [ writer close ] ]
+%\end{code}
 
-\lr{The typical pattern is like this:}
+%\lr{The typical pattern is like this:}
 
 \begin{code}{}
 | writer |
@@ -90,7 +91,7 @@ writer := GIFReadWriter on: (FileStream newFileNamed: 'Pharo.gif').
 	ensure: [ writer close ]
 \end{code}
 
-\lr{This has the exact same semantics as the other implementation, but is much simpler and does not require the nil test. Lint also suggests this variation if you write the above one.}
+%\lr{This has the exact same semantics as the other implementation, but is much simpler and does not require the nil test. Lint also suggests this variation if you write the above one.}
 
 Since most operating systems limit the number of files that a running application may have open at the same time, opening a file may fail.
 This code ensures that the \ct{writer} file handle will be closed, even if an error occurs while opening it or writing to it.
@@ -100,11 +101,11 @@ The \ct{nextPutImage:} method of the class \ct{GIFReadWriter} converts a form (\
 Here is another typical use of \ct{ensure:}.
 The mouse cursor should revert to its original shape after the argument block has terminated, even if it fails:
 
-\lr{That code is in \ct{Cursor} not in \ct{Sensor}.}
+%\lr{That code is in \ct{Cursor} not in \ct{Sensor}.}
 
 \needlines{7}
 \begin{code}{}
-Sensor>>>showWhile: aBlock 
+Cursor>>>showWhile: aBlock 
 	"While evaluating the argument, aBlock,
 	make the receiver be the cursor shape."
 	| oldcursor |
@@ -205,20 +206,20 @@ Although several things could go wrong, with exception handling we simply write 
 \clsindex{FileDirectory}
 \mthindex{FileDirectory}{oldFileNamed:}
 \mthindex{FileDirectory}{newFileNamed:}
-\begin{code}{| source destination fromStream toStream |}
-source := 'log.txt'.
-destination := 'log-backup.txt'.
-[	fromStream := FileDirectory default oldFileNamed: source.
-	toStream := FileDirectory default newFileNamed: destination.
-	toStream nextPutAll: fromStream contents
-]
-	on: FileStreamException
-	do: [ :ex | UIManager default inform: 'Copy failed -- ', ex description ].
-fromStream ifNotNil: [fromStream close].
-toStream ifNotNil: [toStream close].
-\end{code}
+%\begin{code}{| source destination fromStream toStream |}
+%source := 'log.txt'.
+%destination := 'log-backup.txt'.
+%[	fromStream := FileDirectory default oldFileNamed: source.
+%	toStream := FileDirectory default newFileNamed: destination.
+%	toStream nextPutAll: fromStream contents
+%]
+%	on: FileStreamException
+%	do: [ :ex | UIManager default inform: 'Copy failed -- ', ex description ].
+%fromStream ifNotNil: [fromStream close].
+%toStream ifNotNil: [toStream close].
+%\end{code}
 
-\lr{That code is not correct. If any other exception than \ct{FileStreamException} happens the files are not properly closed. Following the pattern of the initial example, the code has to be written like this:}
+%\lr{That code is not correct. If any other exception than \ct{FileStreamException} happens the files are not properly closed. Following the pattern of the initial example, the code has to be written like this:}
 
 \begin{code}{| source destination fromStream toStream |}
 source := 'log.txt'.
@@ -435,9 +436,12 @@ A \ct{FileDoesNotExistException} will be signaled, and the method call stack wil
 
 Since everything is an object in \st, we should expect activation contexts to also be objects.
 Actually, certain \st dialects and implementations use the native \ind{C} execution stack of the \ind{virtual machine} to avoid creating objects all the time.
-The \pharo virtual machine does not do this, but instead creates the list of activation context objects only on demand, for example, whenever the debugger is started. \lr{This is not true. The Pharo VM does not use the C stack and uses full Smalltalk objects at all times.}\sd{exact. We can write: the current pharo virtual machine only use activation context objects which are recycled for speed improvements.  }
+% The \pharo virtual machine does not do this, but instead creates the list of activation context objects only on demand, for example, whenever the debugger is started.
+% \lr{This is not true. The Pharo VM does not use the C stack and uses full Smalltalk objects at all times.}
+% \sd{exact. We can write: the current pharo virtual machine only use activation context objects which are recycled for speed improvements.  }
+The current \pharo virtual machine only uses activation context objects which are recycled for speed improvements.
 
-\index{BlockClosure}{on:do:}
+\index{BlockClosure!on:do:}
 When we send \lct{\emph{aBlock} on: \emph{ExceptionClass} do: \emph{anHandler}}, we associate an exception handler (\lct{\emph{anHandler}}) to a given class of exceptions (\lct{\emph{ExceptionClass}}) for the activation context of the protected block (\lct{\emph{aBlock}}).
 This information is used to identify and invoke the exception handler whenever an exception is signaled. The handler will be available on the stack, and can be found by traversing the stack starting from the top down to the activation frame where the \ct{on:do:} message has been sent.
 
@@ -503,7 +507,8 @@ In particular, it may:
 \item[(iii)] \emph{retry} the protected block by sending \ct{retry} or try a different block by sending \ct{retryUsing:};
 \item[(iv)] \emph{resume} the protected block at the failure point by sending \ct{resume} or \ct{resume:};
 \item[(v)] \emph{pass} the caught exception to the enclosing handler by sending \ct{pass}; or
-\item[(vi)] \emph{signal} a different exception by sending \ct{resignalAs:} to the exception. \lr{I would call this \emph{resignal}, because this is not the same as signaling a new exception using \ct{Exception signal} from within a handler block.}
+\item[(vi)] \emph{resignal} a different exception by sending \ct{resignalAs:} to the exception.
+% \lr{I would call this \emph{resignal}, because this is not the same as signaling a new exception using \ct{Exception signal} from within a handler block.}
 \end{itemize}
 
 We will briefly look at the first three possibilities, and then we will take a closer look at the remaining ones.
@@ -765,6 +770,7 @@ This has the effect of passing on \clsind{MessageNotUnderstood} errors to the su
 If there is no next handler on the list, the \ct{defaultAction} message is sent to the exception instance. The \ct{pass} action does not modify the sender chain in any way\,---\,but the handler the control is passed to may do so. Like other messages we discussed in this section, \ct{pass} is special\,---\,it never returns to the sender.
 
 \lr{I hope nobody is going to write code like that after reading this section.}
+\on{Well, I certainly don't plan to!}
 
 %=================================================================
 \section{Resending exceptions}
@@ -900,7 +906,11 @@ Here the method \ct{on:do:} is associated with the primitive number 199. This nu
 So you are puzzled. Where are the arguments of the \ct{on:do:} method stored? Let's look at the instance variables of the class \ct{MethodContext}. 
 
 \begin{code}{}
-ContextPart variableSubclass: #MethodContext	instanceVariableNames: 'method closureOrNil receiver'	classVariableNames: ''	poolDictionaries: ''	category: 'Kernel-Methods'
+ContextPart variableSubclass: #MethodContext
+	instanceVariableNames: 'method closureOrNil receiver'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'Kernel-Methods'
 \end{code}
 
 They are neither defined here nor in the superclass. So what is the only solution left? To store the information in the object representing the stack itself. The exception type and the handler are stored in the activation context, in index positions 1 and 2, respectively. To verify this, you can evaluate the following piece of code:
