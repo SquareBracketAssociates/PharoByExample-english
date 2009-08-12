@@ -501,7 +501,7 @@ From the programmer point of view, creating a new browser implies defining a dom
 
 \paragraph{Lists.} Navigation in \obf is rendered with a set of lists and triggered by selecting one entry in a list. Lists displayed in a browser are ordered and are displayed from left to right. Traversing a new metanode, by selecting a node in a list \textit{A}, triggers the construction of a set of nodes intended to fill a list \textit{B}. List \textit{B} follows list \textit{A}.
 
-The root of a metagraph corresponds to the left-most list. The number of lists displayed is equal to the depth of the metagraph. The depth of the system browser metagraph (as it will see later on in \figref{obmetagraph}) is 4, therefore the system browser has 4 lists (\figref{ob}). Because the metagraph of a filesystem contains a cycle (remember \ct{directory childAt: #directories put: directory} in the file browser meta-graph in \secref{introduction}), the number of lists in the browser increases for each directory selected in the right-most list. Therefore a horizontal scrollbar is used to keep the width of the browser constant, yet displaying a potentially infinite number of lists in the top half.
+The root of a metagraph corresponds to the left-most list. The number of lists displayed is equal to the depth of the metagraph. The depth of the system browser metagraph (as it will see later on in \figref{obmetagraph}) is 4, therefore the system browser has 4 lists (\figref{ob}). Because the metagraph of a filesystem contains a cycle (remember \ct{directory childAt: #directories put: directory} in the file browser metagraph in \secref{introduction}), the number of lists in the browser increases for each directory selected in the right-most list. Therefore a horizontal scrollbar is used to keep the width of the browser constant, yet displaying a potentially infinite number of lists in the top half.
 
 \paragraph{Radio buttons.} A modal filter in the metagraph is represented in the GUI by a radio button. Each edge leading away from the filter is represented as a button in the radio button. Only one button can be selected at a time in the radio button, and the associated choice is used to determine the outgoing edges. For example, the second list in the system browser contains the three buttons \ct{instance}, \ct{?} and \ct{class} as shown the transition from the environment to the three metanodes class, class comment and metaclass in \figref{ob}.
 
@@ -631,7 +631,7 @@ When a metanode is asked for its children nodes (in method \ct{childrenForNode: 
 
 The other filter defined for a category metanode, \ct{OBModalFilter}, has a different task: It selects one edge of the three outgoing edges from the category metanode, \ie instance, comment or class.  The user of the system browser can select using the switch in the class column whether he wants to see the instance-, the class-side or the comment of the selected class. \ct{OBModalFilter} remembers the selection of the user. Dependent on this selection, it answers the corresponding metaedge to be traversed, \eg the comment metaedge. This is done in the method \ct{edgesFrom: aCollection forNode: aNode}. The metanode, \ie the category metanode, passes all available metaedges to this method, along with the currently selected class node, and the modal filter answers just the metaedge selected by the user. Other filters than a modal filter, such as the class sort filter, typically just return all edges passed to them.
 
-There are two other important tasks performed by filters besides filtering edges and nodes: Manipulating the name of a node to be displayed and defining an icon shown along with a node in the column. The former is handled in the method \ct{displayString: aString forParent: pNode child:}, the latter in \ct{icon: aSymbol forNode: aNode}. Before a node's name gets displayed, all defined filters can manipulate the display of its name, \eg emphasize it in bold. Note that the filter also has access to the parent of a node to be displayed, not the current node alone. There are also filters enriching a node with an icon before display, the \ct{OBInheritanceFilter} for instance adds arrow up, down icons to methods, if a method overrides a method with the same name from a super class or is overridden in subclasses.\ab{how do you do this?}
+There are two other important tasks performed by filters besides filtering edges and nodes: Manipulating the name of a node to be displayed and defining an icon shown along with a node in the column. The former is handled in the method \ct{displayString: aString forParent: pNode child:}, the latter in \ct{icon: aSymbol forNode: aNode}. Before a node's name gets displayed, all defined filters can manipulate the display of its name, \eg emphasize it in bold. Note that the filter also has access to the parent of a node to be displayed, not the current node alone. There are also filters enriching a node with an icon before display, the \ct{OBInheritanceFilter} for instance adds arrow up, down icons to methods, if a method overrides a method with the same name from a super class or is overridden in subclasses.
 
 A metanode can have arbitrarily many filters, resulting in a chain of filters. However, if several filters do the same kind of task, \eg adding an icon to a node, the last added filter providing this functionality will finally be responsible to define the icon which the node gets. Hence the order in which the filters get added to the metanode is relevant. 
 
@@ -685,8 +685,7 @@ Each graphical widget composing a browser is a listener and can emit events. Cre
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Evaluation and Discussions} \seclabel{discussion}
 
-Several other browsers such as a browser specifically supporting new language constructs such as Traits have been developed using \ob which demonstrate that the framework is mature and extensible. Figure~\ref{browsers} shows some browsers that are based on \obf.
- We now discuss the strengths and limitations of the \obf.
+Several other browsers such as a browser specifically supporting new language constructs such as Traits have been developed using \ob which demonstrate that the framework is mature and extensible. \figref{browsers} shows some browsers that are based on \ob. We now discuss the strengths and limitations of the framework.
 
 %\paragraph{Explicit state transitions} As metagraph are statically defined and each metaedges describes an action the user can perform on a browser, states a browser can be in are explicit and fully described. 
 
@@ -828,9 +827,25 @@ Such a situation does not occur in \obf, as metagraphs are declaratively defined
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Chapter Summary}
 
+This chapter presents the construction of a very simple browser based on the \obf. It also uncover the implementation of the Smalltalk system browser.
 
+\begin{itemize}
+\item A browser is implemented by subclassing the class \ct{OBBrowser}
+\item All the navigation permitted by the browser is defined with its metagraph.
+\item A browser's metagraph is returned by the \ct{defaultMetaNode} class-side method.
+\item A metagraph is made of instances of \ct{OBMetaNode} linked each other by sending the message \ct{childAt: aName put: aMetaNode}.
+\item Domain nodes are implemented by subclassing \ct{OBNode}.
+\item The root domain node is returning from a browser by sending the \ct{defaultRootNode} class-side message.
+\item An action the user can perform is implemented with commands.
+\item A command must subclass \ct{OBCommand} and the methods \ct{label}, \ct{isActive}, \ct{keystroke} and \ct{execute} are usually overridden.
+\item To enable a user to edit the content of the lower text pane, a definition needs to be defined by subclassing \ct{OBDefinition}.
+\item A definition answer \ct{text} to returns a content and \ct{text:} to accept a new content.
+\item A node needs to answer to the \ct{definition} message to enables the user to modify its textual content.
+\item An icon may be added to a node by overriding \ct{OBNode>>icon}.
+\item Filters may be added to introduce panes in order to split the list of elements.
+\end{itemize}
 
-\paragraph{Acknowledgment.}  Colin Putney is at the origin of Omnibrowser. A number of contribution were made by the Pharo community. In particular, we gratefully acknowledge David R\"othlisberger for all his devotion and precious work to the \obf.
+\paragraph{Acknowledgment.}  Colin Putney is at the origin of Omnibrowser. A number of contributions were made by the Pharo community. In particular, we gratefully acknowledge David R\"othlisberger for all his devotion and precious work on Pharo tools.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %\section{Conclusion} \seclabel{conclusion}
