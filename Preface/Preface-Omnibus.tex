@@ -1,0 +1,71 @@
+% $Author: oscar $
+% $Date: 2009-07-06 10:21:47 +0200 (Mon, 06 Jul 2009) $
+% $Revision: 27886 $
+
+% HISTORY:
+% 2009-07-06 - Oscar opened new template (no contents)
+
+%=================================================================
+\ifx\wholebook\relax\else
+% --------------------------------------------
+% Lulu:
+	\documentclass[a4paper,10pt,twoside]{book}
+	\usepackage[
+		papersize={6.13in,9.21in},
+		hmargin={.75in,.75in},
+		vmargin={.75in,1in},
+		ignoreheadfoot
+	]{geometry}
+	\input{../common.tex}
+	\pagestyle{headings}
+	\setboolean{lulu}{true}
+% --------------------------------------------
+% A4:
+%	\documentclass[a4paper,11pt,twoside]{book}
+%	\input{../common.tex}
+%	\usepackage{a4wide}
+% --------------------------------------------
+    \graphicspath{{figures/} {../figures/}}
+	\begin{document}
+	% \renewcommand{\nnbb}[2]{} % Disable editorial comments
+	\sloppy
+	\frontmatter
+\fi
+%=================================================================
+\chapter{Preface to the Omnibus Edition}\label{cha:omnibus}
+
+%:===> Write new Preface for Book 2
+
+\on{Need preface for Omnibus edition}
+
+%=================================================================
+\section*{Acknowledgments}
+
+% We would like to thank various people who have contributed to this book.
+% In particular, we thank
+%We would like to thank Hilaire Fernandes and Serge Stinckwich who allowed us to translate parts of their columns on \st, and Damien Cassou for contributing the chapter on streams.
+
+%We especially thank Lukas Renggli and Orla Greevy for their comments on drafts of the first release.
+
+%We thank the University of Bern, Switzerland, for graciously supporting this open-source project and for hosting the web site of this book.
+
+%We also thank the Squeak community for their enthusiastic support of this project, and for informing us of the errors found in the first edition of this book.
+%Finally we thank the team that developed Squeak in the first place for making this amazing development environment available to us.
+
+%:===> Fix acknowledgements
+\on{Add ACKs for new chapters!}
+\on{pharo cover art: Samuel Morello}
+
+Thanks to the following reviewers:
+Orla Greevy,
+Lukas Renggli.
+
+Thanks to Vassili Bykov for permission to adapt his Regex documentation.
+
+%=============================================================
+\ifx\wholebook\relax\else
+   \bibliographystyle{jurabib}
+   \nobibliography{scg}
+   \end{document}
+\fi
+%=============================================================

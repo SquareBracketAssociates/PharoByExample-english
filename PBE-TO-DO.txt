@@ -9,13 +9,14 @@ WITH: Damien Cassou, Jannick Menanteau, Damien Pollet, David Roethlisberger
 REVIEWERS: Fabrizio Perin, Jorge Ressia, Lukas Renggli
 -----------------------------------------------------------------------------
 TO DO:
-- Freeze Pharo image to use for the book -> STEF
+* Finalize OB and Reflection chapters -> OSCAR
+* Need separate Omnibus Preface
 * index all new chapters -> OSCAR
-* Incorporate Thomas Schrader's formatting suggestions? (See Regex/ToSh-Regex.tex)
+- Freeze Pharo image to use for the book -> STEF
+- Incorporate Thomas Schrader's formatting suggestions? (See Regex/ToSh-Regex.tex)
 -----------------------------------------------------------------------------
 TO DO for old chapters
 ----------------------
-* Fix Makefile for PBE1, PBE2; separate Prefaces for each book
 All chapters fixed except:
 * Preface: revise to provide description of Pharo [1st draft done -- Stef to check]
 - Quick Tour -- adapt to final PBE image, if necessary; Pref Browser?
@@ -37,8 +38,7 @@ STATUS OF NEW CHAPTERS
 - Draft or less
 
 [SW Development]
-+ Monticello -- OSCAR ported to Pharo -> STEF?
-  Not ready for public release
++ Monticello -- pharo-ready -> STEF should check this?
 - Debugging (outline only!) -> STEF
 - Profiling -- Short draft. To be rewritten. -> ALEX * ANDREW
 - Installer and other cool packages: STEF has a draft (should continue)
@@ -54,7 +54,7 @@ STATUS OF NEW CHAPTERS
 + Exceptions -- stable -- do we need to replace BlockContext by BlockClosure? What about MethodContext?
 - Concurrency -- To do -> STEF
 - Announcements (dependency mechanism) -- To do -> STEF (STEF wrote a first little draft)
-* Reflection -- stable draft, pharo-ready -> LUKAS, ALEX, MARCUS
+* Reflection -- stable draft, pharo-ready -> OSCAR to fix and index
 
 --- ABOVE: some stuff exists ; BELOW: not yet ---
 
