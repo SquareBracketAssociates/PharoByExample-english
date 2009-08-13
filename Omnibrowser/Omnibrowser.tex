@@ -112,7 +112,7 @@ FileBrowser class>>title
 
 
 %\paragraph{Metagraph Definition.} 
-A filesystem encompasses basically two kind of entities, files and directories. 
+For keeping this example simple, we will assume a filesystem encompasses only two kind of entities, files and directories. 
 \ob uses a \emph{metagraph} to model different navigation paths that a user may take by clicking on browser's items. 
 
 \begin{code}{}
@@ -129,7 +129,7 @@ FileBrowser class>>defaultMetaNode
 \end{code}
 
 A metagraph is composed of metanodes, a metanode representing one particular set of selected items.
-To model the navigation of a filesystem we thus need two metanodes in the metagraph, \ct{Directory} and \ct{File}. Within any directory of a filesystem, we can again find files and other directories, hence there are two kind of transitions outgoing from a directory metanode, named \ct{files} and \ct{directories} in the metagraph. 
+To model the navigation of a filesystem we thus need two metanodes in the metagraph, \ct{Directory} and \ct{File}. Within any directory of a filesystem, we can again find files and other directories, hence there are two kinds of transitions outgoing from a directory metanode, named \ct{files} and \ct{directories} in the metagraph. 
 
 The subsequent step is to create class nodes that will model browser items. For that purpose, we define two subclasses of \ct{OBNode}:
 
@@ -223,9 +223,10 @@ Our file browser may now be opened by executing \ct{FileBrowser open}. Currently
 
 \subsubsection{Spawning browsers}
 
-A command defines an interaction the user can have with browsed items. All interactions triggered from a menu have to be defined as commands. We will define a browser command that open a second file browser on a selected node. \figref{command} depicts the activation of the contextual menu.
+A command defines an interaction the user can have with browsed items. All interactions triggered from a menu have to be defined as commands. We will define a browser command that opens a second file browser on a selected node. \figref{command} depicts the activation of the contextual menu.
 
 
+%Note that this figure use a filter, this is used later on
 \begin{figure}[!ht]
 \begin{center}
 \includegraphics[scale=0.34]{command}
@@ -282,7 +283,7 @@ The command is now fully defined. Open a new file browser and right click on an 
 %=============================================================
 \subsubsection{Creating new files}
 
-The command given above remains quite simple: no list to refresh; no interaction with the user; no automatic node selection. We will cover these importing topics by adding a command to manually create files. Browser column will have to be updated with a new entry (the file recently created), the user will have to enter the name of the file to be created, and the new file will be selected after its creation.
+The command given above remains quite simple: no list to refresh; no interaction with the user; no automatic node selection. We will cover these important topics by adding a command for creating files. Browser column will have to be updated with a new entry (the file recently created), the user will have to enter the name of the file to be created\alex{Need for David help to add ``, and the new file will be selected after its creation''}.
 
 The \ct{NewFileCommand} is define as follows:
 
@@ -300,7 +301,7 @@ NewFileCommand>>label
 	^ 'new file'
 \end{code}
 
-We want to have the command activated when right clicking either on a directory (to create the file in it), or on a column. This suggest a slightly more elaborated \ct{isActive} method:
+We want to have the command activated when right clicking either on a directory (to create the file in it), or on a column. This suggests a slightly more elaborated \ct{isActive} method:
 
 \begin{code}{}    
 NewFileCommand>>isActive
@@ -353,7 +354,7 @@ FileDefinition>>fileNode: aFileNode
 	fileNode := aFileNode
 \end{code}
 
-As we previously saw, the content of the lower text pane is given by the \ct{text} methods defined on \ct{FileNode}. As we now use a definition, \ct{FileNode>>text} is now useless. You can safely remove it and define instead it on \ct{FileDefinition}:
+As we previously saw, the content of the lower text pane is given by the \ct{text} methods defined on \ct{FileNode}. As we now use a definition, \ct{FileNode>>text} is now useless. You can safely remove it and define it on \ct{FileDefinition} instead:
 
 \begin{code}{}
 FileDefinition>>text
@@ -417,8 +418,19 @@ DirectoryNode >>icon
 	^ #folder  
 \end{code}
 
-If you do not have a .gif under hand, you may replace \ct{#folder} by \ct{#package}. The method \ct{icon} gets executed for every element that is added to a column. If it answers a symbol, then the method of \ct{OBMorphicIcons} with the same name is executed, answering the icon as a color form to be added on the left of the list element, \ie the directory name.
+If you do not have a .gif under hand, you may replace \ct{#folder} by \ct{#package}, since a package icon is available. The method \ct{icon} gets executed for every element that is added to a column. If it answers a symbol, then the method of \ct{OBMorphicIcons} with the same name is executed, answering the icon as a color form to be added on the left of the list element, \ie the directory name.
 
+Another way to distinguish files from directory is to keep them separated in different tabs. 
+\figref{command} illustrates this. This is simply done by adding a filter on the \ct{directory} metanode when defining the metagraph:
+
+\begin{code}{}
+FileBrowser class>>defaultMetaNode
+    ...
+    directory           childAt: #directories put: directory;          childAt: #files put: file; 		   "Change the period for a semi-column"	addFilter: OBModalFilter new.	 "Line to add"
+    ...    
+\end{code}
+
+The effect of adding a filter on a metanode is to let the user select the metaedge to follow. One button is created for each of the metaedge. Without filter, all edges are used to compute of the next list as we previously saw.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Graph and Metagraph of a Browser} \label{sec:omnibrowser}
@@ -827,19 +839,19 @@ Such a situation does not occur in \obf, as metagraphs are declaratively defined
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Chapter Summary}
 
-This chapter presents the construction of a very simple browser based on the \obf. It also uncover the implementation of the Smalltalk system browser.
+This chapter presents the construction of a very simple browser based on the \obf. It also uncover the design and implementation of a complex tool, the Smalltalk system browser.
 
 \begin{itemize}
-\item A browser is implemented by subclassing the class \ct{OBBrowser}
-\item All the navigation permitted by the browser is defined with its metagraph.
+\item A browser is implemented by subclassing the class \ct{OBBrowser}.
+\item All the navigation permitted by the browser for a given domain is defined with a metagraph.
 \item A browser's metagraph is returned by the \ct{defaultMetaNode} class-side method.
-\item A metagraph is made of instances of \ct{OBMetaNode} linked each other by sending the message \ct{childAt: aName put: aMetaNode}.
+\item A metagraph is made of instances of \ct{OBMetaNode} linked each other by sending the message \ct{childAt: aName put: aMetaNode}. The symbol \ct{aName} is then used as a message sent to a node to obtain the nodes to populate the following node.
 \item Domain nodes are implemented by subclassing \ct{OBNode}.
 \item The root domain node is returning from a browser by sending the \ct{defaultRootNode} class-side message.
-\item An action the user can perform is implemented with commands.
+\item An action the user can perform is implemented with a command.
 \item A command must subclass \ct{OBCommand} and the methods \ct{label}, \ct{isActive}, \ct{keystroke} and \ct{execute} are usually overridden.
 \item To enable a user to edit the content of the lower text pane, a definition needs to be defined by subclassing \ct{OBDefinition}.
-\item A definition answer \ct{text} to returns a content and \ct{text:} to accept a new content.
+\item A definition answers to \ct{text} to returns a textual content and \ct{text:} to accept a new content.
 \item A node needs to answer to the \ct{definition} message to enables the user to modify its textual content.
 \item An icon may be added to a node by overriding \ct{OBNode>>icon}.
 \item Filters may be added to introduce panes in order to split the list of elements.
