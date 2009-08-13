@@ -279,7 +279,7 @@ FileBrowser>>cmdBrowse
 
 The command is now fully defined. Open a new file browser and right click on an item.
 
-%:===========
+%=============================================================
 \subsubsection{Creating new files}
 
 The command given above remains quite simple: no list to refresh; no interaction with the user; no automatic node selection. We will cover these importing topics by adding a command to manually create files. Browser column will have to be updated with a new entry (the file recently created), the user will have to enter the name of the file to be created, and the new file will be selected after its creation.
@@ -328,7 +328,7 @@ The last line of \ct{execute} is important. It signals the column (referenced by
 \alex{Check with David about automatic node selection}
 
 
-%:===========
+%=============================================================
 \subsubsection{Modifying files}
 
 So far, we've seen only how to create empty files. To modify the content of a file, the browser needs to accept user input from the lower text pane and performs an action on it. 
@@ -382,7 +382,7 @@ FileNode>>definition
 
 Each selected item can have its own definition. 
 
-%:===========
+%=============================================================
 \subsubsection{Distinguishing folders from plain files}
 
 To visually distinguish files from directories when browsing a directory with our file browser, we will denote directories with a small icon. This section shows how to import new icons into Pharo, then how to associate icons to browsed items.
