@@ -65,7 +65,6 @@ There are three parts that you will need to download, consisting of four files (
 \centerline {\includegraphics[width=\textwidth]{annotatedDownload}}
 \caption{The \pharo download files.\figlabel{download}}
 \end{figure}
-%:===> Instructions which image to use! (dedicated image?)
 
 \begin{enumerate}
 
@@ -102,7 +101,7 @@ Do whatever works best for your style of working and your operating system.
 %-----------------------------------------------------------------
 \begin{figure}[htb]
 % \centerline {\includegraphics[width=0.6\textwidth]{download}}
-\centerline {\includegraphics[width=0.8\textwidth]{startup}}
+\centerline {\includegraphics[width=\textwidth]{startup}}
 \caption{A fresh \pbe image.\figlabel{startup}}
 \end{figure}
 
@@ -173,7 +172,7 @@ Now we will activate \metaclick{ing}.
 \dothis{Open the preference browser (\menu{System {\ldots\go} Preferences {\ldots\go} Preference Browser\ldots}) and find the \menu{halosEnabled} option using the search box.}
 
 \begin{figure}[htb]
-\centerline{\includegraphics[width=0.8\textwidth]{PreferenceBrowser}}
+\centerline{\includegraphics[width=\textwidth]{PreferenceBrowser}}
 \caption{The Preference Browser.\figlabel{prefBrowser}}
 \end{figure}
 
@@ -215,9 +214,7 @@ BouncingAtomsMorph new openInWorld
 \dothis{Now \actclick. A menu should appear. Select \menu{do it (d)}. (See \figref{doit}.)}
 
 \begin{figure}[htb]
-\ifluluelse
-	{\centerline {\includegraphics[width=0.7\textwidth]{Doit}}}
-	{\centerline {\includegraphics[width=0.7\textwidth]{Doit}}}
+\centerline {\includegraphics[width=0.8\textwidth]{Doit}}
 \caption{``Doing'' an expression\figlabel{doit}}
 \end{figure}
 
@@ -320,7 +317,7 @@ Do it again.
 (The \menu{(d)} in the menu item \menu{do it (d)} tells you that the keyboard shortcut to \emph{do it} is \short{d}. More on this in the next section!)
 
 \begin{figure}[htb]
-\centerline {\includegraphics[width=0.6\textwidth]{HelloWorld}}
+\centerline {\includegraphics[width=\textwidth]{HelloWorld}}
 \caption{Overlapping windows. The workspace is active.\figlabel{helloworld}}
 \end{figure}
 
@@ -345,7 +342,7 @@ This time we see the result we expect (\figref{printit}).
 
 \begin{figure}[htb]
 % \centerline {\includegraphics[width=0.4\textwidth]{PrintIt}}
-\centerline {\includegraphics[width=0.7\textwidth]{PrintIt}}
+\centerline {\includegraphics[width=0.8\textwidth]{PrintIt}}
 \caption{``Print it'' rather than ``do it''. \figlabel{printit}}
 \end{figure}
 
@@ -365,7 +362,7 @@ The left panel allows us to browse the instance variables of an object, the valu
 The bottom panel can be used to write expressions to send messages to the object.
 
 \begin{figure}[htb]
-\centerline {\includegraphics[width=0.7\textwidth]{InspectIt}}
+\centerline {\includegraphics[width=0.8\textwidth]{InspectIt}}
 \caption{Inspecting an object. \figlabel{inspectit}}
 \end{figure}
 
@@ -521,9 +518,7 @@ An asterisk at the beginning of a line in the right pane of the method finder in
 So, the asterisk in front of \ct{String asUppercase} lets us know that the method \mthind{String}{asUppercase} defined on the class \clsind{String} was executed and returned the result we wanted. The methods that do not have an asterisk are just the other methods that have the same name as the ones that returned the expected result. So \cmind{Character}{asUppercase} was not executed on our example, because \ct{'eureka'} is not a \clsind{Character} object.
 
 \begin{figure}[hbt]
-\ifluluelse
-	{\centerline {\includegraphics[width=0.9\textwidth]{MethodFinder-example1}}}
-	{\centerline {\includegraphics[width=0.7\textwidth]{MethodFinder-example1}}}
+\centerline {\includegraphics[width=\textwidth]{MethodFinder-example1}}
 \caption{Finding a method by example.
 \figlabel{methodFinder-example1}}
 \end{figure}
@@ -560,9 +555,7 @@ How do we create a new method in \pharo?   First, we have to decide which class 
 In this case, the \ct{shout} method that we are testing will go in class \clsind{String}, so the corresponding test will, by convention, go in a class called \clsind{StringTest}.
 
 \begin{figure}[hbt]
-\ifluluelse
-	{\centerline {\includegraphics[width=\textwidth]{StringTest-newMethodTemplate}}}
-	{\centerline {\includegraphics[width=0.7\textwidth]{StringTest-newMethodTemplate}}}
+\centerline {\includegraphics[width=\textwidth]{StringTest-newMethodTemplate}}
 \caption{The new method template in class \ct{StringTest}.
 \figlabel{newMethodTemplate}}
 \end{figure}
@@ -590,12 +583,12 @@ This can be quite useful if you have merely made a typing mistake, but in this c
 
 \begin{figure}[htb]
 \begin{minipage}[b]{0.48\textwidth}
-\centerline {\includegraphics[width=0.6\textwidth]{initials}}
+\centerline {\includegraphics[width=0.8\textwidth]{initials}}
 \caption{Entering your initials.\figlabel{initials}}
 \end{minipage}
 \hfill
 \begin{minipage}[b]{0.48\textwidth}
-\centerline {\includegraphics[width=0.9\textwidth]{testShoutConfirm}}
+\centerline {\includegraphics[width=\textwidth]{testShoutConfirm}}
 \caption{Accepting the \ct{StringTest} method \ct{testShout}.\figlabel{testShoutConfirm}}
 \end{minipage}
 \end{figure}
@@ -616,7 +609,7 @@ The leftmost two panes are a bit like the top panes in the browser.  The left pa
 \dothis{Select \scat{CollectionsTests-Text} and the pane to the right will show all of the test classes in that category, which includes the class \ct{StringTest}.  The names of the classes are already selected, so \click \menu{Run Selected} to run all these tests.}
 
 \begin{figure}[hbt]
-\centerline {\includegraphics[width=0.8\textwidth]{testRunnerOnStringTest}}
+\centerline {\includegraphics[width=\textwidth]{testRunnerOnStringTest}}
 \caption{Running the String tests.
 \figlabel{testRunnerTestShout}}
 \end{figure}
@@ -632,9 +625,7 @@ The window that opens with the error message is the \st debugger (see \figref{pr
 We will look at the \ind{debugger} and how to use it in \charef{env}.
 
 \begin{figure}[hbt]
-\ifluluelse
-	{\centerline {\includegraphics[width=\textwidth]{Predebugger}}}
-	{\centerline {\includegraphics[width=0.7\textwidth]{Predebugger}}}
+\centerline {\includegraphics[width=\textwidth]{Predebugger}}
 \caption{The (pre-)debugger.}
 \figlabel{predebugger}
 \end{figure}

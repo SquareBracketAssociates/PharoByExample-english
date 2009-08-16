@@ -96,7 +96,7 @@ The \MC Browser can be launched from the \emph{World} menu by selecting \menu{op
 \index{Monticello!browser}
 
 \begin{figure}[ht]\centering
-	\includegraphics[width=0.8\textwidth]{monticelloBrowser}
+	\includegraphics[width=\textwidth]{monticelloBrowser}
 	\caption{The \MC Browser.\figlabel{monticelloMain}}
 \end{figure}
 
@@ -117,7 +117,7 @@ We would like to version our \ct{PerfectTest} class. The right way to do this is
 \emph{Voil\`a!} You have just created the \pkg{Perfect} \MC package. 
 
 \begin{figure}[ht]\centering
-	\includegraphics[width=0.8\textwidth]{perfectPackage}
+	\includegraphics[width=\textwidth]{perfectPackage}
 	\caption{Creating the Perfect package.\figlabel{perfect}}
 \end{figure}
 
@@ -152,7 +152,7 @@ To add a new repository to a selected package, we can simply press the \button{+
 \dothis{Select the directory repository named \lct{package cache}, press \button{Save}, enter an appropriate comment, and \button{Accept} to commit the changes.}
 
 \begin{figure}[ht]\centering
-	\includegraphics[width=.55\textwidth]{saving}
+	\includegraphics[width=.6\textwidth]{saving}
 	\caption{You may set a new version name and a comment when you commit.\figlabel{saving}}
 \end{figure}
 
@@ -200,7 +200,7 @@ Modifying the code in a package with any of the development tools makes that pac
 This means that the version package in the image is different from the version that has been saved or loaded. 
 
 \begin{figure}[ht]\centering
-	\includegraphics[width=0.8\textwidth]{dirty}
+	\includegraphics[width=\textwidth]{dirty}
 	\caption{Modifying our Perfect package will ``dirty'' it.\figlabel{dirty}}
 \end{figure}
 
@@ -224,7 +224,7 @@ Information about the content of a repository can be explored using a \RI, which
 \dothis{Select the \ct{package-cache} repository of the \ct{Perfect} package and open it. You should see something like \figref{repositoryinspector}.}
 
 \begin{figure}[ht]\centering
-	\includegraphics[width=.8\textwidth]{{repositoryinspector}}
+	\includegraphics[width=\textwidth]{{repositoryinspector}}
 	\caption{A \RI.\figlabel{repositoryinspector}}
 \end{figure}
 
@@ -257,7 +257,7 @@ At present we have two versions of the \ct{Perfect} package stored safely in our
 \dothis{Select the \ct{Perfect} package and its repository in the \MCB. \Actclick on the package name and select \menu{unload package}.}
 
 \begin{figure}[ht]\centering
-	\includegraphics[width=.8\textwidth]{{unload}}
+	\includegraphics[width=\textwidth]{{unload}}
 	\caption{Unloading a package.\figlabel{unload}}
 \end{figure}
 
@@ -268,7 +268,7 @@ Scroll down and select the \ct{Perfect} package. It should be displayed in a nor
 Now select version 1 of the package and \button{Load} it.}
 
 \begin{figure}[ht]\centering
-	\includegraphics[width=.8\textwidth]{{loading}}
+	\includegraphics[width=\textwidth]{{loading}}
 	\caption{Loading an earlier version.\figlabel{loading}}
 \end{figure}
 
@@ -312,7 +312,7 @@ Once again the tests should be green, though our implementation of perfect numbe
 Now you should get a warning that you have unsaved changes.
 
 \begin{figure}[ht]\centering
-	\includegraphics[width=.5\textwidth]{{unsavedWarning}}
+	\includegraphics[width=.8\textwidth]{{unsavedWarning}}
 	\caption{Unsaved changes warning.\figlabel{unsavedWarning}}
 \end{figure}
 
@@ -322,14 +322,14 @@ Select \menu{Yes}, enter your comments, and \button{Accept} the new version.
 }
 
 \begin{figure}[ht]\centering
-	\includegraphics[width=.8\textwidth]{{newerWarning}}
+	\includegraphics[width=\textwidth]{{newerWarning}}
 	\caption{Newer versions warning.\figlabel{newerWarning}}
 \end{figure}
 
 Congratulations! You have now created a new branch of the \ct{Perfect} package.
 
 \begin{figure}[ht]\centering
-	\includegraphics[width=.8\textwidth]{{branch}}
+	\includegraphics[width=\textwidth]{{branch}}
 	\caption{Versions 2 and 3 are separate branches of version 1.\figlabel{branch}}
 \end{figure}
 
@@ -374,7 +374,7 @@ At this point we realize that there are changes in version 2 that we would like 
 %\end{figure}
 
 \begin{figure}[ht]\centering
-	\includegraphics[width=.60\textwidth]{mergeButton}
+	\includegraphics[width=\textwidth]{mergeButton}
 	\caption{Select a separate branch (in bold) to be merged.\figlabel{mergeButton}}
 \end{figure}
 
@@ -383,7 +383,7 @@ At this point we realize that there are changes in version 2 that we would like 
 The merge tool is a tool that allows for fine-grained package version merging. Elements contained in the package to-be-merged are listed in the upper text pane. The lower text pane shows the definition of a selected element. 
 
 \begin{figure}[ht]\centering
-	\includegraphics[width=.55\textwidth]{mergeTool}
+	\includegraphics[width=.8\textwidth]{mergeTool}
 	\caption{Version 2 of the \ct{Perfect} package being merged with the current version 3.
 	\on{This is a major fail! The old merge tool used to show deleted text striked through.
 	Now, colour blind people will see no difference at all!}
@@ -404,7 +404,7 @@ A method or a class is in conflict if its definition has been altered. \figref{m
 \end{description}
 
 \begin{figure}[ht]\centering
-	\includegraphics[width=.55\textwidth]{keepReject}
+	\includegraphics[width=.8\textwidth]{keepReject}
 	\caption{Keeping and rejecting changes.
 	\figlabel{keepReject}}
 \end{figure}
@@ -416,7 +416,7 @@ Note that the merge tool offers buttons to select all newer or all older changes
 \on{Something is wrong here -- it complains that version 3 might be newer. When I saved it however everything seems fine.}
 
 \begin{figure}[ht]\centering
-	\includegraphics[width=.8\textwidth]{merged}
+	\includegraphics[width=0.8\textwidth]{merged}
 	\caption{All older versions are now ancestors of merged version 4.
 	\figlabel{merged}}
 \end{figure}
@@ -441,7 +441,7 @@ The advantage of the snapshot browser over the browser is its ability to display
 
 \begin{figure}[ht]
 \centering
-	\includegraphics[width=.8\textwidth]{{packageviewer}}
+	\includegraphics[width=\textwidth]{{packageviewer}}
 	\caption{The snapshot browser reveals that the \ct{Perfect} package extends the class \ct{Integer} with 2 methods.\figlabel{packageviewer}}
 \end{figure}
 
@@ -475,7 +475,7 @@ PerfectTest>>>testPerfectTo1000
 \end{code}
 
 \begin{figure}[ht]\centering
-	\includegraphics[width=.75\textwidth]{{patchbrowser}}
+	\includegraphics[width=\textwidth]{{patchbrowser}}
 	\caption{The patch browser shows the difference between the code in the image and the most recently committed version.\figlabel{patchbrowser}}
 \end{figure}
 
@@ -493,7 +493,7 @@ while information about the selected version is displayed on the right.
 \dothis{Select the \ct{Perfect} package and click the \button{History} button.}
 
 \begin{figure}[ht]\centering
-	\includegraphics[width=.75\textwidth]{{historyviewer}}
+	\includegraphics[width=\textwidth]{{historyviewer}}
 	\caption{The version history viewer provides information about the various versions of a package.\figlabel{historyviewer}}
 \end{figure}
 
@@ -523,7 +523,7 @@ Conny can continue to further develop her independent branch C.
 
 \begin{figure}[ht]
 \centering
-	\includegraphics[width=0.8\textwidth]{{backport}}
+	\includegraphics[width=\textwidth]{{backport}}
 	\caption{Change X is backported from version C to version A, producing a new branch D. D can then be merged into B, without affecting C.\figlabel{backport}}
 \end{figure}
 
@@ -537,7 +537,7 @@ Let us see how this works in practice. Recall that we earlier rejected the imple
 
 \begin{figure}[ht]
 \centering
-	\includegraphics[width=0.55\textwidth]{{changes}}
+	\includegraphics[width=0.8\textwidth]{{changes}}
 	\caption{Backporting changes from version 3 to version 1 of the \ct{Perfect} package.\figlabel{changes}}
 \end{figure}
 
@@ -565,7 +565,7 @@ It requires \ct{Pier-Blog}, \ct{Pier-Caching} and all the other Pier packages.
 
 \begin{figure}[ht]
 \centering
-	\includegraphics[width=0.8\textwidth]{{dependencies}}
+	\includegraphics[width=\textwidth]{{dependencies}}
 	\caption{Dependencies in Pier.\figlabel{dependencies}}
 \end{figure}
 
@@ -594,7 +594,7 @@ Note that when \ct{NewPerfect-All} is selected in the \MCB, the dependent packag
 
 \begin{figure}[ht]
 \centering
-	\includegraphics[width=0.8\textwidth]{{perfectDependencies}}
+	\includegraphics[width=\textwidth]{{perfectDependencies}}
 	\caption{\ct{NewPerfect-All} requires \ct{NewPerfect-Extensions} and \ct{NewPerfect-Tests}.\figlabel{perfectDependencies}}
 \end{figure}
 
@@ -739,7 +739,7 @@ It's a read-write repository, so it makes a good ``working'' repository where ve
 \indmain{\sqsrc} is a online repository that you can use to store your \MC packages. An instance is running and accessible from \url{http://www.squeaksource.com}. At the time this chapter is being written, over 1500 projects are registered on \sqsrc and nearly 2000 people have an account. \figref{squeaksource} shows the main web page.  
 
 \begin{figure}[ht]\centering
-	\includegraphics[width=.75\textwidth]{squeaksource2}
+	\includegraphics[width=\textwidth]{squeaksource2}
 	\caption{\sqsrc, the online \MC code repository.\figlabel{squeaksource}}
 \end{figure}
 
@@ -761,7 +761,7 @@ Once you are a member, \link{Register Project} allows you to create a new projec
 
 
 \begin{figure}[ht]\centering
-	\includegraphics[width=.80\textwidth]{squeaksourcesetting}
+	\includegraphics[width=\textwidth]{squeaksourcesetting}
 	\caption{Repositories under \sqsrc are highly configurable.\figlabel{squeaksourcesetting}}
 \end{figure}
 

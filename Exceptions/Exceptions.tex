@@ -289,7 +289,7 @@ Not only must we check error codes at each point that something might go wrong, 
 Exceptions are organized in a class hierarchy. Conceptually, the exceptions \clsind{FileDoesNotExistException}, \clsind{FileExistsException} and \clsind{CannotDeleteFileException} are specializations of \clsind{FileStreamException}. This notion of ``specialization'' enables an exception handler to be associated to a more general abnormal situation (\figref{hierarchy}).
 
 \begin{figure}[ht]\centering
-        \includegraphics[width=.5\linewidth]{SimpleHierarchy}
+        \includegraphics[width=.8\linewidth]{SimpleHierarchy}
         \caption{A small part of the \pharo exception hierarchy.\figlabel{hierarchy}}
 \end{figure}
 
@@ -430,7 +430,7 @@ Suppose that we attempt to open a \ct{BookMorph} on a non-existent file.
 A \ct{FileDoesNotExistException} will be signaled, and the method call stack will contain the activation contexts created by the methods \ct{openFromFile:}, \ct{oldFileNamed:}, and \ct{signal} (\figref{stack}):
 
 \begin{figure}[ht]\centering
-        \includegraphics[width=.9\linewidth]{Stack}
+        \includegraphics[width=\linewidth]{Stack}
         \caption{A \pharo method call stack.\figlabel{stack}}
 \end{figure}
 
@@ -680,7 +680,7 @@ When the message \ct{upTo:} is sent, if the \ct{showDeprecationWarnings} prefere
 
 
 \begin{figure}[ht]\centering
-        \includegraphics[width=.8\linewidth]{Deprecation}
+        \includegraphics[width=\linewidth]{Deprecation}
         \caption{Sending a deprecated message.\figlabel{deprecation}}
 \end{figure}
 
