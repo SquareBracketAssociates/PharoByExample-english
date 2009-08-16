@@ -247,11 +247,11 @@ It is not the singleton array comprising 3."
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Brace Arrays}
-\label{sec:brace}
+\seclabel{brace}
 Because arrays defined using \ct{#()} are constants, 
 to create arrays containing objects other than literals we have to add the individual elements as shown in the \egref{boring} which is boring to type and, more importantly, hard to read. 
 
-\begin{script}{Traditional Array Creation}\label{eg:boring}
+\begin{script}{Traditional Array Creation}\eglabel{boring}
 | ar | 
 ar := Array new: 2. 
 ar at: 1 put: (Date today).
@@ -372,7 +372,7 @@ identifier :=  expression
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Control structures}
-\label{sec:control}
+\seclabel{control}
 
 \on{check if this is already in basic classes}
 
@@ -382,7 +382,7 @@ to express them.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Conditional control structures (receiver is a boolean)}
-\label{sec:conditional}
+\seclabel{conditional}
 There are four methods defined on the classes \lct{Boolean}, \lct{True}, and \lct{False} that define conditional execution: \index{ifTrue:ifFalse:}\lct{ifTrue:ifFalse:}, \index{ifFalse:ifTrue:}\lct{ifFalse:ifTrue:}, \index{ifTrue:}\lct{ifTrue:}, and \index{ifFalse:}\lct{ifFalse:}. 
 
 These methods have the following behavior:
@@ -418,7 +418,7 @@ and \index{xor}\lct{xor: aBlock}\index{exclusive or}(exclusive or) (see \charef{
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Iterative conditional structures (receiver is aBlockContext)}
-\label{sec:loopCondition}
+\seclabel{loopCondition}
 Besides conditional expressions, the class \lct{BlockContext} defines the following methods that implement  iterative conditional control structures: \index{whileTrue}  \index{whileTrue:} \index{whileFalse} \index{whileFalse:} \lct{whileTrue},  \lct{whileTrue:}, \lct{whileFalse}, and  \lct{whileFalse:}.
 
 These methods have the following behavior: 
@@ -428,7 +428,7 @@ These methods have the following behavior:
 \item \lct{whileFalse} and \lct{whileFalse:} 
 \end{itemize}
 
-\begin{script}[xxx]{xxx}\label{eg:whileloop}
+\begin{script}[xxx]{xxx}\eglabel{whileloop}
 |counter |
 counter := 0.
 [counter < 100] whileTrue: 
@@ -438,7 +438,7 @@ counter := 0.
 
 The definition of the methods \lct{whileTrue:} and \lct{whileTrue} is another example of use of conditional loops (see \mthref{while}). Note again that for the methods \lct{whileTrue} and \lct{whileTrue:} the compiler heavily optimizes their  invocation to the point that they are not executed in this current form. 
 
-\begin{method}[xxx]{xxx}\label{mth:while}
+\begin{method}[xxx]{xxx}\mthlabel{while}
 BlockClosure>>whileTrue: aBlock
    ^ self value 
         ifTrue:	
@@ -451,7 +451,7 @@ BlockClosure>>whileTrue
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Enumeration control structures (receiver is anInteger)}
-\label{sec:loopInteger}
+\seclabel{loopInteger}
 The class \lct{Integer} defines the following  unconditional loops \index{timesRepeat:}\lct{timesRepeat:}, 
 \index{to:do:} \lct{to:do:}, and \index{to:by:do:} \lct{to:by:do:} that have the following 
 behavior: 
@@ -470,7 +470,7 @@ behavior:
 "This sends #do: to the Interval given by evaluating '1 to: 3'"
 \end{script}
 
-\begin{script}{factorial?}\label{eg:fact}
+\begin{script}{factorial?}\eglabel{fact}
 | tmp |
 tmp := 1.
 2 to: self do: [:i | tmp := tmp * i].
@@ -479,7 +479,7 @@ tmp
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Enumeration control structures (receiver is Collection)}
-\label{sec:loopCollection}
+\seclabel{loopCollection}
 \st also defines extremely powerful methods for iterating over collections that have copied 
 in other languages, namely \index{do:} \index{collect:}
 \index{select:} \index{reject:} \index{detect:}
@@ -563,7 +563,7 @@ The browsers compile a method in the class in which the method is defined. Note 
 Methods always return a value; there is an implicit \lct{\^\  self} at the end of every method to make sure that this is the case. In the method \mthref{lineCount2} (from \lct{String}) the method returns explicitly a value while in the method~\mthref{openbrowser} defined on the class \lct{Browser} there is no
 explicit return so the method returns self which here represents the class itself as the method is a class method. 
 
-\begin{method}[xxx]{xxx}\label{mth:lineCount2}
+\begin{method}[xxx]{xxx}\mthlabel{lineCount2}
 lineCount
    "Answer the number of lines represented by the receiver, where every
    cr adds one line."
@@ -576,7 +576,7 @@ lineCount
    ^ count
 \end{method}
 
-\begin{method}[xxx]{xxx}\label{mth:openbrowser}
+\begin{method}[xxx]{xxx}\mthlabel{openbrowser}
 openBrowser
    "Create and schedule a BrowserView with default browser label. The
    view consists of five subviews, starting with the list view of system
@@ -600,7 +600,7 @@ Before going in the details of the syntax we present two scripts.
 \paragraph{Image Capture.}
 \sq allows the handling of bitmaps (classes \lct{BitBlt} and \lct{WarpBlt}) as well as common image formats like GIF, JPEG, and PNG. \scrref{capt} captures a part of the screen and saves it in a file.
 
-\begin{script}{Capturing an Image}\label{scr:capt}
+\begin{script}{Capturing an Image}\scrlabel{capt}
 | im |
 im := Form fromUser.
 GIFReadWriter putForm: im onFileNamed: 'test.gif'
@@ -612,14 +612,14 @@ and includes the two colons. \lct{im} and \lct{'test.gif'} are the arguments.
 
 \begin{figure}
 \begin{center}\includegraphics[scale=0.7]{rotated}\end{center}
-\caption{Rotating and zooming a part of the screen.\label{fig:rotated}}
+\caption{Rotating and zooming a part of the screen.\figlabel{rotated}}
 \end{figure}
 
 \paragraph{Image Transformations.}
 All image formats are internally translated into instances of the class \lct{Form}. A Form allows multiple transformations such as flip, rotation, and zoom. The \scrref{rotate} shows you how to rotate and zoom 
 the portion of the screen that surrounds the mouse, as illustrated in \figref{rotated}.
 
-\begin{script}{Playing with images}\label{scr:rotate}
+\begin{script}{Playing with images}\scrlabel{rotate}
 | angle form rotatingForm |
 form := Form fromDisplay: (0@0 extent: 300@300).
 angle := 0.

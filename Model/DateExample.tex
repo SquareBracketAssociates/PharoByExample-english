@@ -47,7 +47,7 @@ In fact, such information is shared by all the instances of the class and is the
 \clsref{cls:dateclass}.
 
 
-\begin{classdef}{}\label{cls:dateclass}
+\begin{classdef}{}\clslabel{dateclass}
 Magnitude subclass: \#Date
    instanceVariableNames: 'julianDayNumber '
    \ct{classVariableNames: 'DaysInMonth FirstDayOfMonth MonthNames 
@@ -61,7 +61,7 @@ All instance methods of the class \ct{Date} (and subclasses) can directly access
 \ct{Date}, as shown by Method \ct{mth:monthName}, where the method \ct{monthName} accesses the class variable
 \ct{MonthNames}.
 
-\begin{method}{}\label{mth:monthName}
+\begin{method}{}\mthlabel{monthName}
 Date>>>monthName
    "Answer the name of the month in which the receiver falls."
 
@@ -71,7 +71,7 @@ Date>>>monthName
 In a similar fashion, all class methods can access class variables. The class \mthref{nameOfDay} \ct{nameOfDay:} 
 accesses the class variable \ct{WeekDayNames}.
 
-\begin{method}{}\label{mth:nameOfDay}
+\begin{method}{}\mthlabel{nameOfDay}
 Date class>>>nameOfDay: dayIndex 
    "Answer a symbol representing the name of the day indexed by dayIndex, 1-7."
 

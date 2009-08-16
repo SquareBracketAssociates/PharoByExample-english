@@ -9,9 +9,7 @@ WITH: Damien Cassou, Jannick Menanteau, Damien Pollet, David Roethlisberger
 REVIEWERS: Fabrizio Perin, Jorge Ressia, Lukas Renggli
 -----------------------------------------------------------------------------
 TO DO:
-*** OB chapter is missing embedded fonts!
 * Finalize OB and Reflection chapters -> OSCAR
-* Need separate Omnibus Preface
 * index all new chapters -> OSCAR
 - Freeze Pharo image to use for the book -> STEF
 - Incorporate Thomas Schrader's formatting suggestions? (See Regex/ToSh-Regex.tex)
@@ -19,9 +17,8 @@ TO DO:
 TO DO for old chapters
 ----------------------
 All chapters fixed except:
-* Preface: revise to provide description of Pharo [1st draft done -- Stef to check]
-- Quick Tour -- adapt to final PBE image, if necessary; Pref Browser?
-- First App -- fix pretty-print instructions; file-out package
+* Quick Tour -- adapt to final PBE image, if necessary; Pref Browser?
+* First App -- fix pretty-print instructions; file-out package
 * Environment -- Debugger context is broken! see section 1.5
 -----------------------------------------------------------------------------
 Check/report these pharo bugs ...
@@ -49,7 +46,7 @@ STATUS OF NEW CHAPTERS
 - Magma (STEF ported the first version of the tutorial with the rights;
   to be rewritten with Chris Muller's help)
 + RegEx -- stable, stable, pharo-ready
-* OmniBrowser -- Large pass was done -> ALEX will revise & add new examples
++ OmniBrowser -- stable
 
 [Language]
 + Exceptions -- stable -- do we need to replace BlockContext by BlockClosure? What about MethodContext?

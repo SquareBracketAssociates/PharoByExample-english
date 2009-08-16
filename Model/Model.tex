@@ -39,32 +39,32 @@
 \fi
 %=================================================================
 \chapter{The \st object model}
-\label{cha:model}
+\chalabel{model}
 
 \st's programming model is simple and uniform: everything is an object, and objects communicate only by sending each other messages.
 However, this simplicity and uniformity can be a source of difficulty for programmers used to other languages. In this chapter we present the core concepts of the \st object model; in particular we discuss the consequences of representing classes as objects.
 
 %=========================================================
 \section{The rules of the model}
-\label{sec:rules}
+\seclabel{rules}
 
 The \st object model is based on a set of simple 
 rules that are applied \emph{uniformly}. The rules are as follows:
 
 \begin{enumerate}[label={\textbf{Rule \arabic{*}}.}, ref={Rule \arabic{*}}, leftmargin=*]
-\item{} \label{rule:everything}
+\item{} \rulelabel{everything}
 	Everything is an object.
 
-\item{} \label{rule:instance}
+\item{} \rulelabel{instance}
 	Every object is an instance of a class.
 
-\item{}  \label{rule:inheritance}
+\item{}  \rulelabel{inheritance}
 	Every class has a superclass.
 
-\item{}  \label{rule:message}
+\item{}  \rulelabel{message}
 	Everything happens by sending messages.
 
-\item{}  \label{rule:lookup}
+\item{}  \rulelabel{lookup}
 	Method lookup follows the inheritance chain.
 
 \end{enumerate}
@@ -196,7 +196,7 @@ However, this is largely irrelevant to you as a programmer: you are concerned wi
 \caption{Browsing a class and its metaclass.
 % \sd{Do we use Key everywhere in the picture as a legend indicator?}
 % \on{sure, wherever appropriate}
-\label{fig:Buttons}}
+\figlabel{Buttons}}
 \end{center}
 \end{figure}
 
@@ -634,7 +634,7 @@ Morph>>>openInWorld
 \ifluluelse
 	{\includegraphics[width=\textwidth]{openInWorldLookup}}
 	{\includegraphics[width=0.8\textwidth]{openInWorldLookup}}
-\caption{Method lookup follows the inheritance hierarchy.\label{fig:openInWorldLookup}}
+\caption{Method lookup follows the inheritance hierarchy.\figlabel{openInWorldLookup}}
 \end{center}
 \end{figure}
 
@@ -738,7 +738,7 @@ as shown in \figref{constructorStringLookup}.
 \ifluluelse
 	{\includegraphics[width=\textwidth]{constructorStringLookup}}
 	{\includegraphics[width=0.8\textwidth]{constructorStringLookup}}
-\caption{\self and \super sends\label{fig:constructorStringLookup}}
+\caption{\self and \super sends\figlabel{constructorStringLookup}}
 \end{center}
 \end{figure}
 
@@ -792,7 +792,7 @@ When this method is not found, the \ind{virtual machine} will cause the object t
 \ifluluelse
 	{\includegraphics[width=\textwidth]{fooNotFound}}
 	{\includegraphics[width=0.8\textwidth]{fooNotFound}}
-\caption{Message \lct{foo} is not understood\label{fig:fooNotFound}}
+\caption{Message \lct{foo} is not understood\figlabel{fooNotFound}}
 \end{center}
 \end{figure}
 
@@ -888,7 +888,7 @@ The usual way to define a global is just to \menu{do it} on an assignment to a c
 
 %---------------------------------------------------------
 \subsection{Class variables}
-\label{sec:classVars}
+\seclabel{classVars}
 
 Sometimes we need to share some data amongst all the instances of a 
 class and the class itself.
@@ -904,7 +904,7 @@ Indeed, a better name would have been \emph{shared variables} since this express
 	{\includegraphics[width=\textwidth]{privateSharedVarColor}}
 	{\includegraphics[width=0.7\textwidth]{privateSharedVarColor}}
 \caption{Instance and class methods accessing different 
-variables.\label{fig:privateSharedVar}}
+variables.\figlabel{privateSharedVar}}
 \end{center}
 \end{figure}
 
@@ -917,7 +917,7 @@ In fact, not only may all instances of \ct{Color} access these shared variables,
 Both instance methods and class methods can access these shared variables.
 
 %\begin{figure}
-%\begin{center}\includegraphics[width=6cm]{dateToday}\caption{A date is an object that  represents only anumber of days; all the information about month names, day names, etc.\ is shared among all the instances \label{fig:dateToday}}\end{center}.
+%\begin{center}\includegraphics[width=6cm]{dateToday}\caption{A date is an object that  represents only anumber of days; all the information about month names, day names, etc.\ is shared among all the instances \figlabel{dateToday}}\end{center}.
 %\end{figure}
 
 A class \subind{class}{variable} is declared in the class definition template.

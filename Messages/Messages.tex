@@ -35,7 +35,7 @@
 \fi
 %=================================================================
 \chapter{Understanding message syntax}
-\label{cha:understanding}
+\chalabel{understanding}
 
 Although \st's message syntax is extremely simple, it is unconventional and can take some time getting used to.
 This chapter offers some guidance to help you get acclimatized to this special syntax for sending messages.
@@ -63,7 +63,7 @@ As most computation in \st is done by message passing, correctly identifying mes
 \begin{minipage}{0.53\textwidth}
 	\begin{center}
 	\includegraphics[width=0.95\textwidth]{message}
-	\caption{Two messages composed of a receiver, a method selector, and a set of arguments.\label{fig:firstScriptMessage}}\end{center}
+	\caption{Two messages composed of a receiver, a method selector, and a set of arguments.\figlabel{firstScriptMessage}}\end{center}
 \end{minipage}
 \hfill
 \begin{minipage}{0.43\textwidth}
@@ -71,7 +71,7 @@ As most computation in \st is done by message passing, correctly identifying mes
 	\ifluluelse
 		{\includegraphics[width=0.9\textwidth]{uKeyUnOne}}
 		{\includegraphics[width=6cm]{uKeyUnOne}}
-	\caption{\ct{aMorph color: Color yellow} is composed of two message sends: \ct{Color yellow} and \ct{aMorph color: Color yellow}.\label{fig:ellipse}}
+	\caption{\ct{aMorph color: Color yellow} is composed of two message sends: \ct{Color yellow} and \ct{aMorph color: Color yellow}.\figlabel{ellipse}}
 	\end{center}
 \end{minipage}
 \end{figure}
@@ -79,7 +79,7 @@ As most computation in \st is done by message passing, correctly identifying mes
 %\begin{figure}[ht]
 %\begin{center}
 %\includegraphics[width=0.5\textwidth]{message}
-%\caption{Two messages composed of a receiver, a method selector, and a set of arguments.\label{fig:firstScriptMessage}}\end{center}
+%\caption{Two messages composed of a receiver, a method selector, and a set of arguments.\figlabel{firstScriptMessage}}\end{center}
 %\end{figure}
 
 \important{A message is always sent to a receiver, which can be a single literal, a block or a variable or the result of evaluating another message.}
@@ -92,7 +92,7 @@ We will also surround each message send with an ellipse and number message sends
 %\begin{center}
 %\includegraphics[width=6cm]{uKeyUnOne}
 %\end{center}
-%\caption{\ct{aMorph color: Color yellow} is composed of two expressions: \ct{Color yellow} and \ct{aMorph color: Color yellow}.\label{fig:ellipse}}
+%\caption{\ct{aMorph color: Color yellow} is composed of two expressions: \ct{Color yellow} and \ct{aMorph color: Color yellow}.\figlabel{ellipse}}
 %\end{figure}
 
 \figref{ellipse} represents two message sends, \ct{Color yellow} and \ct{aMorph color: Color yellow}, hence there are two ellipses. The message send \ct{Color yellow} is executed first so its ellipse is numbered \ct{1}.  There are two receivers: \ct{aMorph} which receives the message \ct{color: ...} and \ct{Color} which receives the message \ct{yellow}. Both receivers are underlined.
@@ -130,7 +130,7 @@ A receiver can be the first element of a message, such as \ct{100} in the messag
 		\\
 		\bottomrule
 	\end{tabularx}
-	\caption{Examples of Message Sends and their Types}\label{tab:messageExamples}
+	\caption{Examples of Message Sends and their Types}\tablabel{messageExamples}
 \end{table}
 
 \tabref{messageExamples} shows several examples of message sends.
@@ -225,7 +225,7 @@ These rules lead to a very natural reading order. Now if you want to be sure tha
 \ifluluelse
 	{\centerline{\includegraphics[width=0.9\textwidth]{uKeyUn}} }
 	{\centerline{\includegraphics[width=10cm]{uKeyUn}} }
-\caption{Unary messages are sent first so \ct{Color yellow} is sent. This returns a color object which is passed as argument of the message \ct{aPen color:}.\label{fig:uKeyUn}}
+\caption{Unary messages are sent first so \ct{Color yellow} is sent. This returns a color object which is passed as argument of the message \ct{aPen color:}.\figlabel{uKeyUn}}
 \end{figure}
 
 %---------------------------------------------------------
@@ -299,7 +299,7 @@ In the message \ct{aPen color: Color yellow}, there is one \emph{unary} message 
 	\ifluluelse
 		{\centerline{\includegraphics[width=0.9\textwidth]{uKeyBin}}}
 		{\centerline{\includegraphics[width=6cm]{uKeyBin}}}
-	\caption{Binary messages are sent before keyword messages.\label{fig:uKeyBin}}
+	\caption{Binary messages are sent before keyword messages.\figlabel{uKeyBin}}
 \end{minipage}
 \hfill
 \begin{minipage}{0.48\textwidth}
@@ -307,14 +307,14 @@ In the message \ct{aPen color: Color yellow}, there is one \emph{unary} message 
 	\ifluluelse
 		{\includegraphics[width=0.9\textwidth]{uunKeyBin}}
 		{\includegraphics[width=6cm]{uunKeyBin}}
-\caption{Decomposing \ct{Pen new go: 100 + 20}}\label{fig:unKeyBin}
+\caption{Decomposing \ct{Pen new go: 100 + 20}}\figlabel{unKeyBin}
 \end{center}
 \end{minipage}
 \end{figure}
 
 %\begin{figure}[ht]
 %\centerline{\includegraphics[width=6cm]{uKeyBin}} 
-%\caption{Unary messages are sent first so \ct{Color yellow} is sent. This returns a color object which is passed as argument of the message \ct{aPen color:}.\label{fig:uKeyBin}}
+%\caption{Unary messages are sent first so \ct{Color yellow} is sent. This returns a color object which is passed as argument of the message \ct{aPen color:}.\figlabel{uKeyBin}}
 %\end{figure}
 
 %\paragraph{Example 3.}
@@ -325,7 +325,7 @@ In the message \ct{aPen color: Color yellow}, there is one \emph{unary} message 
 % penSize does not exist on Pen
 %\
 
-%\begin{scriptfigwithsize}[0.65]{\includegraphics[width=6cm]{uKeyUnBin}}{Decomposing \ct{ aPen penSize: aPen penSize + 2}}\label{scr:decpen}
+%\begin{scriptfigwithsize}[0.65]{\includegraphics[width=6cm]{uKeyUnBin}}{Decomposing \ct{ aPen penSize: aPen penSize + 2}}\scrlabel{decpen}
 %      aPen penSize: aPen penSize + 2
 %(1)                        aPen penSize            "unary"
 %                              $\arrow$  aNumber
@@ -340,7 +340,7 @@ In the message \ct{aPen color: Color yellow}, there is one \emph{unary} message 
 %\begin{figure}[ht]
 %\begin{center}
 %\includegraphics[width=8cm]{uunKeyBin}
-%\caption{Decomposing \ct{Pen new go: 100 + 20}}\label{fig:unKeyBin}
+%\caption{Decomposing \ct{Pen new go: 100 + 20}}\figlabel{unKeyBin}
 %\end{center}
 %\end{figure}
 
@@ -395,7 +395,7 @@ Now we know how messages of different kinds or priorities are handled. The final
 
 %\begin{figure}
 %\centerline{\includegraphics[width=8cm]{ucompoUn}} 
-%\caption{The message \ct{Pen new east} is composed of two unary messages. Therefore the leftmost one, \ct{new},  is sent and it returns a new robot to which the second message \ct{east} is sent. \label{fig:compoUn}}
+%\caption{The message \ct{Pen new east} is composed of two unary messages. Therefore the leftmost one, \ct{new},  is sent and it returns a new robot to which the second message \ct{east} is sent. \figlabel{compoUn}}
 %\end{figure}
 
 \paragraph{Example.} In the message sends \ct{Pen new down} all messages are unary messages, so the leftmost one, \ct{Pen new}, is sent first. This returns a newly created pen to which the second message \ct{down} is sent, as shown in \figref{unaryMessages}.
@@ -403,7 +403,7 @@ Now we know how messages of different kinds or priorities are handled. The final
 \begin{figure}
 	\centering
 	\includegraphics[width=8cm]{ucompoUn}
-	\caption{Decomposing \ct{Pen new down}\label{fig:unaryMessages}}
+	\caption{Decomposing \ct{Pen new down}\figlabel{unaryMessages}}
 \end{figure}
 
 %-------------------------------------------------------------
@@ -464,7 +464,7 @@ As shown in \egref{binaryMessages1} the result of this message send is not \ct{3
 	{\includegraphics[width=\textwidth]{uunKeyBinPar}}
 	{\includegraphics[width=10cm]{uunKeyBinPar}}
 \end{center}
-\caption{Equivalent messages using parentheses. \label{fig:uKeyUnBinPar}}
+\caption{Equivalent messages using parentheses. \figlabel{uKeyUnBinPar}}
 \end{figure}
 
 Note that the first rule stating that unary messages are sent prior to binary and keyword messages avoids the need to put explicit parentheses around them. \tabref{expressions} shows message sends written following the rules and equivalent message sends if the rules would not exist. Both message sends result in the same effect or return the same value. 
@@ -488,7 +488,7 @@ Note that the first rule stating that unary messages are sent prior to binary an
 		\\
 	\bottomrule
 	\end{tabular}
-	\caption{Message sends and their fully parenthesized equivalents\label{tab:expressions}}
+	\caption{Message sends and their fully parenthesized equivalents\tablabel{expressions}}
 \end{figure}
 
 %=============================================================

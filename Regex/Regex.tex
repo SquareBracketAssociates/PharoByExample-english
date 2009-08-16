@@ -37,7 +37,7 @@
 %\renewcommand{\nnbb}[2]{} % Disable editorial comments
 \sloppy
 %=================================================================
-\chapter{Regular Expressions in \pharo}\label{cha:regex}
+\chapter{Regular Expressions in \pharo}\chalabel{regex}
 
 \indexmain{Regular expressions|see{Regex}}
 Regular expressions are widely used in many scripting languages such as \ind{Perl}, \ind{Python} and \ind{Ruby}.
@@ -103,7 +103,7 @@ Now, if you inspect the result of \ct{WebDir selectHome}, you will be prompted f
 \begin{center}
 \includegraphics[width=0.5\textwidth]{aWebDir}
 \caption{A WebDir instance}
-\label{fig:aWebDir}
+\figlabel{aWebDir}
 \end{center}
 \end{figure}
 
@@ -423,7 +423,7 @@ WebDir selectHome makeToc
 \begin{center}
 \includegraphics[width=\textwidth]{PBE-toc}
 \caption{A small site map}
-\label{fig:PBE-toc}
+\figlabel{PBE-toc}
 \end{center}
 \end{figure}
 
@@ -577,7 +577,7 @@ We can see a summary of the syntax seen so far in \tabref{regexsyntax}.
 		\lct{{\escape}S}			&	match non-space \\
 		\bottomrule
 	\end{tabular}
-	\caption{Regex Syntax in a Nutshell\label{tab:regexsyntax}}
+	\caption{Regex Syntax in a Nutshell\tablabel{regexsyntax}}
 \end{table}
 
 
@@ -664,7 +664,7 @@ Character classes can also include the grep(1)-compatible elements listed in \ta
 \lct{[:xdigit:]} & any hexadecimal character \\
 		\bottomrule
 	\end{tabular}
-	\caption{Regex character classes\label{tab:charclasses}}
+	\caption{Regex character classes\tablabel{charclasses}}
 \end{table}
 
 Note that these elements are components of the character classes, \ie they have to be enclosed in an extra set of square brackets to form a valid regular expression.  For example, a non-empty string of digits would be represented as \ct{[[:digit:]]+}. The above primitive expressions and operators are common to many implementations of regular expressions.
@@ -706,7 +706,7 @@ The last group of special primitive expressions is shown in \tabref{boundaries},
 		\lct{{\escape}>} & match an empty string at the end of a word\\
 		\bottomrule
 	\end{tabular}
-	\caption{Primitives to match string boundaries\label{tab:boundaries}}
+	\caption{Primitives to match string boundaries\tablabel{boundaries}}
 \end{table}
 
 \begin{code}{@TEST}

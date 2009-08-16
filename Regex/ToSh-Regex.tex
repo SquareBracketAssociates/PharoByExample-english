@@ -163,8 +163,8 @@
 % 
 % DUMMY - dont know, how to change title formatting properly
 % 
-%\chapter{Regular Expressions in \pharo}\label{cha:regex}
-~\\[0mm]{\LARGE\textbf{0. Regular Expressions in \pharo (layout)}\label{cha:regex}}
+%\chapter{Regular Expressions in \pharo}\chalabel{regex}
+~\\[0mm]{\LARGE\textbf{0. Regular Expressions in \pharo (layout)}\chalabel{regex}}
 
 % 
 % this is for briefing the reader before text starts
@@ -295,7 +295,7 @@ directory.
 \begin{margincap}{A WebDir instance}
 	\centering
 	\includegraphics[width=0.5\textwidth]{aWebDir}
-	\label{fig:aWebDir}
+	\figlabel{aWebDir}
 \end{margincap}
 \end{figure}
 
@@ -664,7 +664,7 @@ WebDir selectHome makeToc
 \begin{margincap}{A small site map}
 	\centering
 	\includegraphics[width=\textwidth]{PBE-toc}
-	\label{fig:SBE-toc}
+	\figlabel{SBE-toc}
 \end{margincap}
 \end{figure}
 
@@ -807,7 +807,7 @@ We can see a summary of the syntax seen so far in \tabref{regexsyntax}.
 		\lct{{\escape}S}			&	match non-space \\
 		\bottomrule
 	\end{tabular}
-	\label{tab:regexsyntax}
+	\tablabel{regexsyntax}
 	\end{margincap}
 \end{table}
 
@@ -897,7 +897,7 @@ Character classes can also include the following grep(1)-compatible elements
 
 		\bottomrule
 	\end{tabular}
-	\label{tab:charclasses}
+	\tablabel{charclasses}
 	\end{margincap}
 \end{table}
 
@@ -940,7 +940,7 @@ The last group of special primitive expressions is shown in \tabref{boundaries},
 		\lct{{\escape}>} & match an empty string at the end of a word\\
 		\bottomrule
 	\end{tabular}
-	\label{tab:boundaries}
+	\tablabel{boundaries}
 	\end{margincap}
 \end{table}
 

@@ -40,7 +40,7 @@
 \fi
 %=================================================================
 \chapter{Seaside by Example}
-\label{cha:seaside}
+\chalabel{seaside}
 
 %=================================================================
 
@@ -102,7 +102,7 @@ This will prompt you for a new name and password.
 \includegraphics[width=\textwidth]{seasideStartup}
 \caption{Starting up Seaside
 }
-\label{fig:seasideStartup}
+\figlabel{seasideStartup}
 \end{center}
 \end{figure}
 
@@ -119,7 +119,7 @@ You should see a web page that looks like \figref{seasideStartup}.
 \begin{center}
 \includegraphics[width=0.8\textwidth]{counter}
 \caption{The counter.}
-\label{fig:counter}
+\figlabel{counter}
 \end{center}
 \end{figure}
 
@@ -150,7 +150,7 @@ We can explore components and their classes from the \pharo image, or directly f
 \begin{center}
 \includegraphics[width=\textwidth]{counterHalos}
 \caption{Halos}
-\label{fig:counterHalos}
+\figlabel{counterHalos}
 \end{center}
 \end{figure}
 
@@ -172,7 +172,7 @@ However, when you are first developing a Seaside application, the server will be
 \begin{center}
 \includegraphics[width=0.7\textwidth]{haltingCounter}
 \caption{Halting the counter}
-\label{fig:haltingCounter}
+\figlabel{haltingCounter}
 \end{center}
 \end{figure}
 
@@ -189,7 +189,7 @@ Seaside components can be instantiated multiple times and in different contexts.
 \begin{center}
 \includegraphics[width=\textwidth]{multiCounterHalos}
 \caption{Independent subcomponents}
-\label{fig:multiCounterHalos}
+\figlabel{multiCounterHalos}
 \end{center}
 \end{figure}
 
@@ -221,7 +221,7 @@ Use the same configuration interface to remove this entry point.
 \begin{center}
 \includegraphics[width=0.8\textwidth]{counter2}
 \caption{Configuring a new application}
-\label{fig:counter2}
+\figlabel{counter2}
 \end{center}
 \end{figure}
 
@@ -246,7 +246,7 @@ If you remove the ``config'' application, you can get it back by evaluating
 
 %=================================================================
 \section{Seaside components}
-\label{sec:components}
+\seclabel{components}
 
 %\ab{This section was too long\,---\,18 pages.  It also contained several self-references (``see section 1.3''). So I broke into smaller sections, by promoting some of the subsections and subsubsections.}
 
@@ -289,7 +289,7 @@ That's it!  You should see a web page like \figref{WAHelloWorld}.}
 \begin{center}
 \includegraphics[width=\textwidth]{WAHelloWorld}
 \caption{``Hello World'' in Seaside}
-\label{fig:WAHelloWorld}
+\figlabel{WAHelloWorld}
 \end{center}
 \end{figure}
 
@@ -298,13 +298,13 @@ That's it!  You should see a web page like \figref{WAHelloWorld}.}
 %{Simple and nested components}
 
 The ``counter'' application is only slightly more complex than the ``hello world'' application.
-\label{sec:backtracking}
+\seclabel{backtracking}
 
 \begin{figure}[ht]
 \begin{center}
 \includegraphics[width=\textwidth]{WACounter}
 \caption{The \ct{WACounter} class, which implements the \emph{counter} application.  Methods with underlined names are on the class-side; those with plain-text names are on the instance side.}
-\label{fig:WACounter}
+\figlabel{WACounter}
 \end{center}
 \end{figure}
 
@@ -364,7 +364,7 @@ Aside from instance and class-side initialization methods, there is nothing else
 \begin{center}
 \includegraphics[width=\textwidth]{WAMultiCounter}
 \caption{WAMultiCounter}
-\label{fig:WAMultiCounter}
+\figlabel{WAMultiCounter}
 \end{center}
 \end{figure}
 
@@ -389,7 +389,7 @@ The message \ct{render: anyObject} can be sent to an html canvas to render \ct{a
 this is what happens in the multi-counter (see \figref{WAMultiCounter}).
 
 \subsection{Using Brushes}
-\label{sec:brushes}
+\seclabel{brushes}
 
 A canvas provides a number of \emphind{brushes} that can be used to render (\ie ``paint'') content on the canvas.
 There are brushes for every kind of XHTML element\,---\,paragraphs, tables, lists, and so on.
@@ -406,7 +406,7 @@ html horizontalRule.
 \begin{center}
 \includegraphics[width=\textwidth]{RenderingDemo}
 \caption{RenderingDemo}
-\label{fig:RenderingDemo}
+\figlabel{RenderingDemo}
 \end{center}
 \end{figure}
 
@@ -588,7 +588,7 @@ Don't forget, if you \button{Toggle Halos}, you can browse the source code of th
 
 %-----------------------------------------------------------------
 \section{CSS: Cascading style sheets}
-\label{sec:css}
+\seclabel{css}
 
 %\ab{I think that it just needs a few paragraphs telling the reader the key ideas behind CSS, and the new terminology that the CSS folks introduce, before going in to the details of how you define their "thingies".  Now I have forgotten what they call their "thingies" --- I know that there are effectively paragraph styles (divs) and character styles (spans), but I've forgotten what they call them.  So, I think that the text needs to tell the reader, for each thingie, (1) the CSS concept behind the thingie, (2) what it looks like in a CSS style sheet , (3) what it looks like in html, and (4) how to do it in Seaside.   Maybe (3) can be omitted, because it's not needed to use Seaside.}
 % \on{I think we do most of that already.}
@@ -648,7 +648,7 @@ td {
 '
 \end{code}
 \caption{\lct{SeasideDemoWidget} common style sheet.
-\label{fig:democss}}
+\figlabel{democss}}
 \end{figure}
 \figref{democss} illustrates a simple style sheet for the rendering demo shown earlier in \figref{RenderingDemo}.
 The first rule specifies a preference for the fonts to use for the \ct{body} of the web page.
@@ -682,7 +682,7 @@ There are basically two mechanisms that you can use:
   The caller is usually \ct{self}, but could also be any other currently visible component.
 
   \item A workflow can be be defined as a \emphsubind{Seaside}{task}.
-  This is a special kind of component that subclasses \clsind{WATask} (instead of \clsind{WAComponent}). \label{sec:task}
+  This is a special kind of component that subclasses \clsind{WATask} (instead of \clsind{WAComponent}). \seclabel{task}
   Instead of defining \ct{renderContentOn:}, it defines no content of its own, but rather defines a \ct{go} method that sends a series of \ct{call:} messages to activate various subcomponents in turn.
 \end{enumerate}
 \index{Seaside!control flow}
@@ -748,7 +748,7 @@ We can see these convenience methods being used within \ct{SeasideDialogDemo>>>r
 \begin{center}
 \includegraphics[width=\textwidth]{dialogs}
 \caption{Some standard dialogs}
-\label{fig:dialogs}
+\figlabel{dialogs}
 \end{center}
 \end{figure}
 
@@ -843,7 +843,7 @@ The generated dialogues are shown in \figref{chooseCheese}.
 \begin{center}
 \includegraphics[width=0.8\textwidth]{chooseCheese}
 \caption{A simple task}
-\label{fig:chooseCheese}
+\figlabel{chooseCheese}
 \end{center}
 \end{figure}
 
@@ -865,7 +865,7 @@ The corresponding pages are \emph{invalidated}, and any attempt to go back to th
 \begin{center}
 \includegraphics[width=\textwidth]{sushiStore}
 \caption{The Sushi Store}
-\label{fig:sushiStore}
+\figlabel{sushiStore}
 \end{center}
 \end{figure}
 
@@ -965,7 +965,7 @@ The calculator with the two display options is shown in \figref{stackMachine}.
 \begin{center}
 \includegraphics[width=0.8\textwidth]{stackMachine}
 \caption{RPN calculator and its stack machine}
-\label{fig:stackMachine}
+\figlabel{stackMachine}
 \end{center}
 \end{figure}
 
@@ -1083,7 +1083,7 @@ If you toggle the halos, you should see something like this:
 \begin{center}
 \includegraphics[width=0.7\textwidth]{firstStackDisplay}
 \caption{Displaying the top of the stack}
-\label{fig:firstStackDisplay}
+\figlabel{firstStackDisplay}
 \end{center}
 \end{figure}
 
@@ -1332,7 +1332,7 @@ MyCalculator class>>>initialize
 \begin{center}
 \includegraphics[width=\textwidth]{ajax-processing}
 \caption{Seaside AJAX processing (simplified)}
-\label{fig:ajax-processing}
+\figlabel{ajax-processing}
 \end{center}
 \end{figure}
 

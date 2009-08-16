@@ -36,7 +36,7 @@
 \fi
 %=================================================================
 \chapter{Basic Classes}
-\label{cha:basic}
+\chalabel{basic}
 
 Most of the magic of Smalltalk is not in the language but in the class libraries. To program effectively with Smalltalk, you need to learn how the class libraries support the language and environment. The class libraries are entirely written in Smalltalk and can easily be extended since a package may add new functionality to a class even if it does not define this class. 
 
@@ -424,12 +424,12 @@ This means that simply by overriding the \ct{initialize} \ind{hook method}, new 
 
 %=================================================================
 \section{Numbers}
-\label{sec:Number}
+\seclabel{Number}
 Remarkably, numbers in Smalltalk are not primitive data values but true objects. Of course numbers are implemented efficiently in the virtual machine, but the \clsindmain{Number} hierarchy is as perfectly accessible and extensible as any other portion of the Smalltalk class hierarchy.
 
 \begin{figure}[ht]
 \centerline {\includegraphics[width=8cm]{NumberHierarchy}}
-\caption{The Number Hierarchy \label{fig:numbers}}
+\caption{The Number Hierarchy \figlabel{numbers}}
 \end{figure}
 
 Numbers are found in the \scatind{Kernel-Numbers} category. The abstract root of this hierarchy is \clsind{Magnitude}, which represents all kinds of classes supporting comparision operators. \ct{Number} adds various arithmetic and other operators as mostly abstract methods. \clsind{Float} and \clsind{Fraction} represent, respectively, floating point numbers and fractional values.  \clsind{Integer} is also abstract, thus distinguishing between subclasses \clsind{SmallInteger}, \clsind{LargePositiveInteger} and \clsind{LargeNegativeInteger}. For the most part users do not need to be aware of the difference between the three \ct{Integer} classes, as values are automatically converted as needed.
@@ -608,7 +608,7 @@ The \clsindmain{String} class is also defined in the category \scatind{Collectio
 \ifluluelse
 	{\centerline {\includegraphics[width=0.5\textwidth]{StringHierarchy}}}
 	{\centerline {\includegraphics[width=6cm]{StringHierarchy}}}
-\caption{The String Hierarchy \label{fig:strings}}
+\caption{The String Hierarchy \figlabel{strings}}
 \end{figure}
 
 In fact, \ct{String} is abstract and Squeak \ct{Strings} are actually instances of the concrete class \clsindmain{ByteString}.
@@ -670,7 +670,7 @@ The class \clsindmain{Boolean} offers a fascinating insight into how much of the
 \ifluluelse
 	{\centerline {\includegraphics[width=0.6\textwidth]{BooleanHierarchy}}}
 	{\centerline {\includegraphics[width=6cm]{BooleanHierarchy}}}
-\caption{The Boolean Hierarchy \label{fig:booleans}}
+\caption{The Boolean Hierarchy \figlabel{booleans}}
 \end{figure}
 
 Most of the behaviour of \ct{Boolean}s can be understood by considering the method \mthind{Boolean}{ifTrue:ifFalse:}, which takes two \ct{Blocks} as arguments.

@@ -36,7 +36,7 @@
 \fi
 %=================================================================
 \chapter{SUnit}
-\label{cha:SUnit}
+\chalabel{SUnit}
 
 %=================================================================
 \section{Introduction}
@@ -108,7 +108,7 @@ Finally, we look at the implementation of \sunit, so that you can understand how
 
 %=================================================================
 \section{Why testing is important}
-\label{sec:why}
+\seclabel{why}
 
 Unfortunately, many developers believe that tests are a waste of their time.  
 After all, \emph{they} do not write bugs\,---\,only \emph{other} programmers do that.
@@ -330,7 +330,7 @@ The test methods will be flagged red or green, depending on whether they pass or
   \begin{center}
 	\includegraphics[width=\linewidth]{browser-tests}
 	\caption{Running \sunit tests from the browser}
-	\label{fig:browser-tests}
+	\figlabel{browser-tests}
   \end{center}
 \end{figure}
 
@@ -343,7 +343,7 @@ Abstract classes are italicized, and the test class hierarchy is shown by indent
   \begin{center}
 	\includegraphics[width=\linewidth]{test-runner}
 	\caption{The \pharo \sunit Test Runner}
-	\label{fig:test-runner}
+	\figlabel{test-runner}
   \end{center}
 \end{figure}
 
@@ -489,7 +489,7 @@ each test.
 		{\includegraphics[width=\textwidth]{sunit-classes}}
 		{\includegraphics[width=0.7\textwidth]{sunit-classes}}
 	\caption{The four classes representing the core of \SUnit}
-	\label{fig:sunit-classes}
+	\figlabel{sunit-classes}
   \end{center}
 \end{figure}
 
@@ -529,7 +529,7 @@ the number of tests failed, and the number of errors raised.
 
 %---------------------------------------------------------
 \subsection{TestResource}
-\label{sec:resource}
+\seclabel{resource}
 
 One of the important  features of a suite of tests is that they should be independent of each other: the failure of one test should not cause an avalanche of failures of other tests that depend upon it, nor should the order in which the tests are run matter.
 Performing \ct{setUp} before each test and \ct{tearDown} afterwards helps to reinforce this independence. 
@@ -598,7 +598,7 @@ description strings, logging support, and resumable test failures.
 
 %---------------------------------------------------------
 \subsection{Assertion description strings}
-\label{sec:descriptionStrings}
+\seclabel{descriptionStrings}
 
 The \ct{TestCase} assertion protocol includes a
 number of methods that allow the programmer to supply a description of the assertion.  The description is a \ct{String}; if the test case
@@ -679,7 +679,7 @@ To execute one test, we evaluate the expression
 		{\includegraphics[width=0.7\textwidth]{sunit-scenario}}
 		{\includegraphics[width=0.5\textwidth]{sunit-scenario}}
 	\caption{Running one test}
-	\label{fig:sunit-scenario}
+	\figlabel{sunit-scenario}
   \end{center}
 \end{figure}
 
@@ -883,7 +883,7 @@ Never get yourself into a situation where you don't want to run your unit test s
 \end{description}
 
 %\section{Extending \SUnit}
-%\label{sec:extending}
+%\seclabel{extending}
 
 %In this section we will explain how to extend \sunit so that it uses
 %a \ct{setUp} and \ct{tearDown} that are shared by all of the

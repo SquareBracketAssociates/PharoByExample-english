@@ -41,7 +41,7 @@
 \fi
 %=================================================================
 \chapter{A first application}
-\label{cha:firstApp}
+\chalabel{firstApp}
 
 
 %:===> Check usage of "category" vs "package"
@@ -59,14 +59,14 @@ This is partly because the Smalltalk language is very simple, and partly because
 %	\vskip -\baselineskip
 %	\centerline{\includegraphics[width=.8\linewidth]{GameBoard}}
 %	\caption{The Lights Out game board. The user has just clicked the mouse as shown by the cursor.
-%	\label{fig:gameBoard}}
+%	\figlabel{gameBoard}}
 %\end{wrapfigure}
 
 \begin{figure}[ht]
 	\vskip -\baselineskip
 	\centerline{\includegraphics[width=.3\linewidth]{GameBoard}}
 	\caption{The Lights Out game board. The user has just clicked the mouse as shown by the cursor.
-	\label{fig:gameBoard}}
+	\figlabel{gameBoard}}
 \end{figure}
 
 To show you how to use \pharo's programming tools, we will build a simple game called \emph{Lights Out}.  The game board is shown in \figref{gameBoard}; it consists of rectangular array of light yellow \emph{cells}.  When you click on one of the cells with the mouse, the four surrounding cells turn blue.  \Click again, and they toggle back to light yellow.  The object of the game is to turn blue as many cells as possible.
@@ -91,7 +91,7 @@ Select \menu{create package}.}
 	{\centerline {\includegraphics[width=0.9\textwidth]{AddPackage}}}
 	{\centerline {\includegraphics[scale=0.7]{AddPackage}}}
 	\caption{Adding a package.
-	\label{fig:addPackage}}
+	\figlabel{addPackage}}
 \end{minipage}
 \hfill
 \begin{minipage}[b]{0.48\textwidth}
@@ -99,7 +99,7 @@ Select \menu{create package}.}
 	{\centerline {\includegraphics[width=0.8\textwidth]{ClassTemplate}}}
 	{\centerline {\includegraphics[scale=0.6]{ClassTemplate}}}
 	\caption{The class template.
-	\label{fig:classTemplate}}
+	\figlabel{classTemplate}}
 \end{minipage}
 \end{figure}
 
@@ -113,7 +113,7 @@ As yet there are  of course no classes in the new package. However, the main edi
 This template shows us a \st expression that sends a message to a class called \ct{Object}, asking it to create a subclass called \ct{NameOfSubClass}.  The new class has no variables, and should belong to the category \scat{PBE-LightsOut}.
 
 \subsection{On Categories and Packages}
-\label{sec:categoriesPackages}
+\seclabel{categoriesPackages}
 
 Historically, \st only knows about \emph{categories}, not packages.
 You may well ask, what is the difference?
@@ -163,7 +163,7 @@ To actually send this message, you must \menu{accept} it.
 	{\centerline {\includegraphics[width=\textwidth]{AcceptClassDef}}}
 	{\centerline {\includegraphics[scale=0.7]{AcceptClassDef}}}
 \caption{The class-creation Template.
-\label{fig:acceptClassDef}}
+\figlabel{acceptClassDef}}
 \end{figure}
 
 \dothis{Accept the new class definition.}
@@ -182,7 +182,7 @@ Smalltalkers put a very high value on the readability of their code, and detaile
 \ifluluelse
 	{\centerline {\includegraphics[width=\textwidth]{LOCell}}}
 	{\centerline {\includegraphics[scale=0.7]{LOCell}}}
-\caption{The newly-created class \ct{LOCell}\label{fig:LOCell}}
+\caption{The newly-created class \ct{LOCell}\figlabel{LOCell}}
 \end{figure}
 
 %=================================================================
@@ -267,7 +267,7 @@ You can test the effect of the code you have written by creating a new \ct{LOCel
 \begin{figure}[htbp]
    \centering
    \includegraphics[scale=0.5]{LOCellInspector} 
-   \caption{The inspector used to examine a LOCell object.\label{fig:LOCellInspector}}
+   \caption{The inspector used to examine a LOCell object.\figlabel{LOCellInspector}}
 \end{figure}
 
 The left-hand pane of the \ind{inspector} shows a list of instance variables; if you select one (try \mbox{\ct{bounds}),} the value of the \ind{instance variable} is shown in the right pane.
@@ -293,7 +293,7 @@ Notice how the bounds reported by the inspector also change.
 \ifluluelse
 	{\includegraphics[width=\textwidth]{LOCellResize} }
 	{\includegraphics[scale=0.7]{LOCellResize} }
-\caption{Resizing the cell.\label{fig:cellresize}}
+\caption{Resizing the cell.\figlabel{cellresize}}
 \end{figure}
 
 \dothis{Delete the cell by clicking on the \ct{x} in the pink handle.}
@@ -348,7 +348,7 @@ initialize
 	\ifluluelse
 		{\includegraphics[width=\textwidth]{UnknownSelector}}
 		{\includegraphics[scale=0.7]{UnknownSelector}}
-	\caption{\pharo detecting an unknown selector.\label{fig:unknownSelector}}
+	\caption{\pharo detecting an unknown selector.\figlabel{unknownSelector}}
 \end{minipage}
 \hfill
 \begin{minipage}{0.48\textwidth}
@@ -356,7 +356,7 @@ initialize
 	\ifluluelse
 		{\includegraphics[width=\textwidth]{DeclareInstanceVar}}
 		{\includegraphics[scale=0.7]{DeclareInstanceVar}}
-	\caption{Declaring a new instance variable.\label{fig:declareInstance}}
+	\caption{Declaring a new instance variable.\figlabel{declareInstance}}
 \end{minipage}
 \end{figure}
 
@@ -428,7 +428,7 @@ This is why the browser also offers us the \prot{-{}-all-{}-} virtual protocol, 
 \begin{figure}[htbp]
    \centering
    \includegraphics[width=0.7\textwidth]{Categorize} 
-   \caption{Automatically categorize all uncategorized methods.\label{fig:categorize}}
+   \caption{Automatically categorize all uncategorized methods.\figlabel{categorize}}
 \end{figure}
 
 If you have followed along with this example, the third pane may well contain the protocol \protind{as yet unclassified}.
@@ -501,7 +501,7 @@ To move the method, you can simply click on its name and drag it to the newly-cr
    \ifluluelse
 		{\includegraphics[width=\textwidth]{DragMethod} }
 		{\includegraphics[scale=0.7]{DragMethod} }
-   \caption{Drag a method to a protocol.\label{fig:dragMethod}}
+   \caption{Drag a method to a protocol.\figlabel{dragMethod}}
 \end{figure}
 
 To complete the Lights Out game, we need to define two more methods in class \ct{LOCell} to handle mouse events.
@@ -564,7 +564,7 @@ As depicted in \figref{lightsOutError}, it says \ct{MessageNotUnderstood: LOGame
 	{\centerline{\includegraphics[width=\textwidth]{Error}}}
 	{\centerline{\includegraphics[scale=0.7]{Error}}}
 \caption{There is a bug in our game when a cell is clicked!
-\label{fig:lightsOutError}}
+\figlabel{lightsOutError}}
 \end{figure}
 
 \noindent
@@ -583,7 +583,7 @@ The debugger will show you the \ind{execution context} within this method where 
 	{\centerline {\includegraphics[width=\textwidth]{Debugger}}}
 	{\centerline {\includegraphics[scale=0.7]{Debugger}}}
 \caption{The debugger, with the method \ct{toggleNeighboursOfCell:at:}  selected.
-\label{fig:debugToggle}}
+\figlabel{debugToggle}}
 \end{figure}
 
 At the bottom of the debugger are two small inspector windows.  On the left, you can inspect the object that is the receiver of the message that caused the selected method to execute, so you can look here to see the values of the instance variables.
@@ -637,7 +637,7 @@ Now the game should work properly.
 
 %=================================================================
 \section{Saving and sharing Smalltalk code}
-\label{sec:Monticello}
+\seclabel{Monticello}
 
 Now that you have the Lights Out game working, you probably want to save it somewhere so that you can share it with your friends. Of course, you can save your whole \pharo image, and show off your first program by running it, but your friends probably have their own code in their images, and don't want to give that up to use your image.
 What you need is a way of getting source code out of your \pharo image so that other programmers can bring it into theirs.
@@ -668,7 +668,7 @@ Verify that the game now works in the new image.}
 \begin{figure}[ht]
 \centerline {\includegraphics[width=\textwidth]{FileIn}}
 \caption{Filing in \pharo source code.
-\label{fig:filein}}
+\figlabel{filein}}
 \end{figure}
 
 \subsection{Monticello packages}
@@ -696,7 +696,7 @@ In the right-hand pane of the browser (see \figref{monticello1}) is a list of Mo
 	{\centerline {\includegraphics[width=\textwidth]{MonticelloBrowser}}}
 	{\centerline {\includegraphics[scale=0.7]{MonticelloBrowser}}}
 \caption{The Monticello browser.
-\label{fig:monticello1}}
+\figlabel{monticello1}}
 \end{figure}
 
 At the top of the list in the Monticello browser is a repository in a local directory called the \emphind{package cache}, which caches copies of the packages that you have loaded or published over the network. This local cache is really handy because it lets you keep your own local history; it also allows you to work in places where you do not have internet access, or where access is slow enough that you do not want to save to a remote repository very frequently.
@@ -755,7 +755,7 @@ Once you have accepted this template, your new repository should be listed on th
 	{\centerline {\includegraphics[width=\textwidth]{BrowseRepository}}}
 	{\centerline {\includegraphics[scale=0.7]{BrowseRepository}}}
 \caption{Browsing a Monticello Repository
-\label{fig:monticello3}}
+\figlabel{monticello3}}
 \end{figure}
 
 \dothis{Click on the \button{Save} button to save a first version of your Lights Out game on \sqsrc.}

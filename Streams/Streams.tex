@@ -37,7 +37,7 @@
 	\sloppy
 \fi
 %=================================================================
-\chapter{Streams}\label{cha:streams}
+\chapter{Streams}\chalabel{streams}
 
 \clsindexmain{Stream}
 Streams are used to iterate over sequences of elements such as sequenced
@@ -60,7 +60,7 @@ For this reason, most of the \clsind{Stream} classes are subclasses of \clsind{P
 \begin{figure}[ht]
 \centerline{\includegraphics[scale=0.5]{_abcdeStef}}
 \caption{A stream positioned at its beginning.}
-\label{fig:_abcde}
+\figlabel{_abcde}
 \vspace{.2in}
 \end{figure}
 
@@ -70,7 +70,7 @@ element sequence. After having read one element using the message \ct{next}, the
 \begin{figure}[ht]
 \centerline{\includegraphics[scale=0.5]{a_bcdeStef}}
 \caption{The same stream after the execution of the method \ct{next}: the character \ct{a} is ``in the past'' whereas \ct{b}, \ct{c}, \ct{d} and \ct{e} are ``in the future''.}
-\label{fig:a_bcde}
+\figlabel{a_bcde}
 \vspace{.2in}
 \end{figure}
 
@@ -79,7 +79,7 @@ Writing an element means replacing the first element of the future sequence by t
 \begin{figure}[h!t]
 \centerline{\includegraphics[scale=0.5]{ax_cdeStef}}
 \caption{The same stream after having written an \ct{x}.}
-\label{fig:ax_cde}
+\figlabel{ax_cde}
 \vspace{.2in}
 \end{figure}
 
@@ -231,7 +231,7 @@ stream peek --> $c
 \begin{figure}[h!t]
 \centerline{\includegraphics[scale=0.5]{ab_cdeStef}}
 \caption{A stream at position 2}
-\label{fig:ab_cde}
+\figlabel{ab_cde}
 \vspace{.2in}
 \end{figure}
 
@@ -330,7 +330,7 @@ string := String streamContents:
 string. -->   '#(1 2 3) size = 3'
 \end{code}
 
-The method \mthind{SequenceableCollection class}{streamContents:} \label{sec:streamContents} creates a collection and a stream on
+The method \mthind{SequenceableCollection class}{streamContents:} \seclabel{streamContents} creates a collection and a stream on
 that collection for you. It then executes the block you gave passing
 the stream as a parameter. When the block ends, \ct{streamContents:}
 returns the content of the collection.
@@ -400,49 +400,49 @@ A history would react as in figures from \ref{fig:emptyStream} to
 \begin{figure}[!ht]
 \centerline{\includegraphics[scale=0.5]{emptyStef}}
 \caption{A new history is empty. Nothing is displayed in the web browser.}
-\label{fig:emptyStream}
+\figlabel{emptyStream}
 \vspace{.2in}
 \end{figure}
 
 \begin{figure}[!ht]
 \centerline{\includegraphics[scale=0.5]{page1Stef}}
 \caption{The user opens to page 1.}
-\label{fig:page1}
+\figlabel{page1}
 \vspace{.2in}
 \end{figure}
 
 \begin{figure}[!ht]
 \centerline{\includegraphics[scale=0.5]{page2Stef}}
 \caption{The user clicks on a link to page 2.}
-\label{fig:page2}
+\figlabel{page2}
 \vspace{.2in}
 \end{figure}
 
 \begin{figure}[!ht]
 \centerline{\includegraphics[scale=0.5]{page3Stef}}
 \caption{The user clicks on a link to page 3.}
-\label{fig:page3}
+\figlabel{page3}
 \vspace{.2in}
 \end{figure}
 
 \begin{figure}[!ht]
 \centerline{\includegraphics[scale=0.5]{page2_Stef}}
 \caption{The user clicks on the back button. He is now viewing page 2 again.}
-\label{fig:page2_}
+\figlabel{page2_}
 \vspace{.2in}
 \end{figure}
 
 \begin{figure}[!ht]
 \centerline{\includegraphics[scale=0.5]{page1_Stef}}
 \caption{The user clicks again the back button. Page 1 is now displayed.}
-\label{fig:page1_}
+\figlabel{page1_}
 \vspace{.2in}
 \end{figure}
 
 \begin{figure}[!ht]
 \centerline{\includegraphics[scale=0.5]{page4Stef}}
 \caption{From page 1, the user clicks on a link to page 4. The history forgets pages 2 and 3.}
-\label{fig:page4}
+\figlabel{page4}
 \vspace{.2in}
 \end{figure}
 
@@ -544,7 +544,7 @@ There are several different ways to create file streams, as we shall now see.
 
 %-----------------------------------------------------------------
 \subsection{Creating file streams}
-\label{sec:creat-file-stre}
+\seclabel{creat-file-stre}
 
 To create file streams, you will have to use one of the following
 instance creation methods offered by the class \clsindmain{FileStream}:
@@ -635,7 +635,7 @@ the content of the file and put it in the variable \ct{string}.
 
 %-----------------------------------------------------------------
 \subsection{Binary streams}
-\label{sec:binary-streams}
+\seclabel{binary-streams}
 
 By default, created streams are text-based which means you will read
 and write characters. If your stream must be binary, you have to send
@@ -690,7 +690,7 @@ This creates a 4x4 checkerboard as shown in \figref{checkerboard4x4}.
 \begin{figure}[!ht]
 \centerline{\includegraphics[width=0.25\textwidth]{checkerboard4x4}}
 \caption{A 4x4 checkerboard you can draw using binary streams.}
-\label{fig:checkerboard4x4}
+\figlabel{checkerboard4x4}
 \vspace{.2in}
 \end{figure}
 

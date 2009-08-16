@@ -37,7 +37,7 @@
 \fi
 %=================================================================
 \chapter{The Pharo programming environment}
-\label{cha:env}
+\chalabel{env}
 
 The goal of this chapter is to show you how to develop programs in the \pharo programming environment.
 You have already seen how to define methods and classes using the browser; this chapter will show you more of the features of the browser, and introduce you to some of the other browsers.
@@ -57,7 +57,7 @@ The new way of doing this in \pharo is to upload your code to a versioned reposi
 
 %=========================================================
 \section{Overview}
-\label{sec:overview}
+\seclabel{overview}
 
 Smalltalk and modern graphical interfaces were developed together.
 Even before the first public release of Smalltalk in 1983, Smalltalk had a self-hosting graphical development environment, and all Smalltalk development was taking place in it.
@@ -94,7 +94,7 @@ The \menu{Debugger} has an obvious role, but you will discover that it has a mor
 
 %=========================================================
 \section{The Browser}
-\label{sec:browser}
+\seclabel{browser}
 
 Many different class browsers have been developed over the years for \st.
 \pharo simplifies this story by offering a single browser that integrates various views.
@@ -106,7 +106,7 @@ Many different class browsers have been developed over the years for \st.
 	 {\includegraphics[width=\textwidth]{SystemBrowser0} }
 	 {\includegraphics[width=0.7\textwidth]{SystemBrowser0} }
    \caption{The Browser}
-   \label{fig:SystemBrowser0}
+   \figlabel{SystemBrowser0}
 \end{figure}
 
 The four small panes at the top of the browser represent a hierarchic view of the methods in the system, much in the same way as the \ind{NeXTstep} \textit{File Viewer} and the Mac OS X \textit{Finder} in column mode provide a view of the files on the disk.
@@ -119,7 +119,7 @@ The leftmost pane lists \emph{packages} of classes; select one (say \scat{Kernel
 	   {\includegraphics[width=\textwidth]{SystemBrowser1} }
 	   {\includegraphics[width=.7\textwidth]{SystemBrowser1} }
    \caption{Browser with the class \ct{Model} selected
-   \label{fig:SystemBrowserModel}}
+   \figlabel{SystemBrowserModel}}
 \end{figure}
 
 Similarly, if you select one of the classes in the second pane, say, \menu{Model} (see  \figref{SystemBrowserModel}), the third pane will show all of the \emph{protocols} defined for that class, as well as a virtual protocol \prot{-{}-all-{}-}, which is selected by default. 
@@ -136,7 +136,7 @@ If you select class \menu{Model},  protocol \protind{dependents} and the method 
 	   {\includegraphics[width=\textwidth]{SystemBrowserMyDependents}}
 	   {\includegraphics[width=0.7\textwidth]{SystemBrowserMyDependents}}
    \caption{Browser showing the \ct{myDependents} method in class \ct{Model}
-   \label{fig:SystemBrowserMyDependents}}
+   \figlabel{SystemBrowserMyDependents}}
 \end{figure}
 
 Unlike directories in the Mac OS X \emph{Finder}, the four top panes of the browser are not quite equal.  
@@ -153,7 +153,7 @@ Enter the name of the new thing in the dialog, and you are done: there is nothin
 	   {\includegraphics[width=\textwidth]{SystemBrowserClassCreation}}
 	   {\includegraphics[width=0.7\textwidth]{SystemBrowserClassCreation}}
    \caption{Browser showing the class-creation template
-   \label{fig:SystemBrowserClassCreation}}
+   \figlabel{SystemBrowserClassCreation}}
 \end{figure}
 
 In contrast, to create a new class or a new method, you will actually
@@ -191,7 +191,7 @@ The process of creating a new method is similar.  First select the class in whic
 	   {\includegraphics [width=\textwidth]{SystemBrowserMethodTemplate}}
 	   {\includegraphics[width=0.7\textwidth]{SystemBrowserMethodTemplate}}
    \caption{Browser showing the method-creation template
-   \label{fig:SystemBrowserMethodTemplate}}
+   \figlabel{SystemBrowserMethodTemplate}}
 \end{figure}
 
 %---------------------------------------------------------
@@ -201,7 +201,7 @@ The browser provides several tools for exploring and analysing code.
 These tools can be accessed by \actclick{ing} in the various contextual menus, or, in the case of the most frequently used tools, by means of keyboard shortcuts.
 
 \subsubsection{Opening a new browser window}
-\label{sec:browsing}
+\seclabel{browsing}
 
 Sometimes you want to open multiple browser windows.
 When you are writing code you will almost certainly need at least two: one for the method that you are typing, and another to browse around the system to see how things work.
@@ -212,7 +212,7 @@ You can open a browser on a class named by any selected text using the \short{b}
 \dothis{Try this: in a workspace window, type the name of a class (for instance \ct{ScaleMorph}), select it, and then press \short{b}. This trick is often useful; it works in any text window.}
 
 \subsubsection{Senders and implementors of a message}
-\label{sec:sendersImplementors}
+\seclabel{sendersImplementors}
 
 \index{browser!senders}
 \Actclick{ing} \menu{browse \ldots \go senders (n)} in the method pane will bring up a list of all methods that may use the selected method. With the browser open on \ct{Morph}, click on the \mthind{Morph}{drawOn:} method in the method pane; the body of \ct{drawOn:} displays in the bottom part of the browser. If you now select \menu{senders (n)} (\figref{SendersOfDrawOn}), a menu will appear with \ct{drawOn:} as the topmost item, and below it, all the messages that \ct{drawOn:} sends (\figref{SendersOfDrawOn2}).  Selecting an item in this menu will open a browser with the list of all methods in the image that send the selected message (\figref{CanvasDraw}).
@@ -220,12 +220,12 @@ You can open a browser on a class named by any selected text using the \short{b}
 \begin{figure}[htb]
 \begin{minipage}[b]{0.74\textwidth}
 \centerline {\includegraphics[width=\textwidth]{SendersOfDrawOn}}
-\caption{The \menu{senders (n)} menu item.\label{fig:SendersOfDrawOn}}
+\caption{The \menu{senders (n)} menu item.\figlabel{SendersOfDrawOn}}
 \end{minipage}
 \hfill
 \begin{minipage}[b]{0.24\textwidth}
 \centerline {\includegraphics[width=\textwidth]{SendersOfDrawOn2}}
-\caption{Choose senders of which message.\label{fig:SendersOfDrawOn2}}
+\caption{Choose senders of which message.\figlabel{SendersOfDrawOn2}}
 \end{minipage}
 \end{figure}
 
@@ -239,7 +239,7 @@ The ``n'' in \menu{senders (n)} tells you that the keyboard shortcut for finding
 		{\includegraphics[width=\textwidth]{CanvasDraw}}
 		{\includegraphics[width=0.7\textwidth]{CanvasDraw}}
 	\end{center}
-	\caption{The Senders Browser showing that the \ct{Canvas>>>draw} method sends the \ct{drawOn:} message to its argument.	\label{fig:CanvasDraw}}
+	\caption{The Senders Browser showing that the \ct{Canvas>>>draw} method sends the \ct{drawOn:} message to its argument.	\figlabel{CanvasDraw}}
 \end{figure}
 
 If you look at the senders of \ct{drawOn:} in \ct{AtomMorph>>>drawOn:}, you will see that it is a super \subind{super}{send}.  So we know that the method that will be executed will be in \ct{AtomMorph}'s superclass.  What class is that?  \Actclick ~ \menu{browse \go hierarchy implementors} and you will see that it is \ct{EllipseMorph}. 
@@ -259,7 +259,7 @@ You should get a method list window showing a scrolling list of the 90-odd class
 It shouldn't be all that surprising that so many classes implement this method: \ct{drawOn:} is the message that is understood by every object that is capable of drawing itself on the screen.
 
 \subsubsection{Versions of a method}
-\label{sec:versions}
+\seclabel{versions}
 
 When you save a new \subind{method}{version} of a method, the old one is not lost.  \pharo keeps all of the old versions, and allows you to compare different versions and to go back (``revert'') to an old version.
 \begin{figure}[btp]
@@ -268,7 +268,7 @@ When you save a new \subind{method}{version} of a method, the old one is not los
 	   {\includegraphics[width=\textwidth]{Versions} }
 	   {\includegraphics[width=0.7\textwidth]{Versions} }
    \caption{The \ind{versions browser} showing two versions of the \ct{TheWorldMenu>>>buildWorldMenu:} method}
-   \label{fig:buildWorldMenuVersions}
+   \figlabel{buildWorldMenuVersions}
 \end{figure}
 The \menu{browse \go versions (v)} menu item gives access to the successive modifications made to the selected method.
 In \figref{buildWorldMenuVersions} we can see two versions of the \ct{buildWorldMenu:} method.
@@ -287,7 +287,7 @@ Smalltalkers rate code readability extremely highly.
 The change set browser is described in \secref{env:changeSet}}
 
 \subsubsection{Method overridings}
-\label{sec:overriding}
+\seclabel{overriding}
 
 The inheritance browser displays all the methods overridden by the displayed method. 
 To see how it works, select the \cmind{ImageMorph}{drawOn:} method in the browser.
@@ -303,11 +303,11 @@ The inheritance browser shows you the hierarchy of overridden methods (see \figr
 		{\includegraphics[width=0.7\textwidth]{OBInheritanceOverriding}}
 	\end{center}
 	\caption{\ct{ImageMorph>>>drawOn:} and the methods that it overrides. The siblings of the selected methods are shown in the scrolling lists.}
-	\label{fig:OBinheritanceBrowser}
+	\figlabel{OBinheritanceBrowser}
 \end{figure}
 
 \subsubsection{The Hierarchy view}
-\label{sec:hierarchy}
+\seclabel{hierarchy}
 
 By default, the browser presents a list of packages in the leftmost pane.
 However it is possible to switch to a class hierarchy view.
@@ -328,11 +328,11 @@ In \figref{hierarchyBrowser}, the hierarchy browser reveals that the direct supe
 		{\includegraphics[width=0.7\textwidth]{hierarchyBrowser}}
 	\end{center}
 	\caption{A hierarchy view of \ct{ImageMorph}.}
-	\label{fig:hierarchyBrowser}
+	\figlabel{hierarchyBrowser}
 \end{figure}
 
 \subsubsection{Finding variable references}
-\label{sec:variables}
+\seclabel{variables}
 
 \index{browser!variables}
 By \actclick{ing} on a class in the class pane, and selecting \menu{browse \go chase variables}, you can find out where an instance variable or a class variable is used.
@@ -345,7 +345,7 @@ You will be presented with a \emph{chasing browser} that will allow you to walk 
 		{\includegraphics[width=0.7\textwidth]{chasingBrowser}}
 	\end{center}
 	\caption{A chasing browser for \ct{Morph}.}
-	\label{fig:chasingBrowser}
+	\figlabel{chasingBrowser}
 \end{figure}
 
 % The menu also includes \menu{inst var defs}, which shows the subset of the instance variable references that assign to the variable. 
@@ -354,7 +354,7 @@ You will be presented with a \emph{chasing browser} that will allow you to walk 
 %Also available by \actclick{ing} the class pane is \menu{class vars}, which opens an inspector showing the class variables of the current class \emph{and their values}, and \menu{class refs (N)} which displays a list of all of the methods that directly reference the current class.
 
 \subsubsection{Source}
-\label{sec:sources}
+\seclabel{sources}
 
 \index{browser!view}
 The \menu{various \go view \ldots} menu item brings up the ``what to show'' menu, which allows you to choose what the browser shows in the source pane.  Options include the \menu{source} code, \menu{prettyPrint}ed source code, \menu{byteCode} and source code \menu{decompile}d from the byte codes.
@@ -383,7 +383,7 @@ Refactoring was formerly available only in a special browser called the refactor
 		{\includegraphics[width=0.7\textwidth]{refactoring}}
 	\end{center}
 	\caption{Refactoring operations.}
-	\label{fig:refactoring}
+	\figlabel{refactoring}
 \end{figure}
 
 %---------------------------------------------------------
@@ -448,7 +448,7 @@ However, Monticello has many more features than were discussed there.
 Because Monticello manages \emph{packages}, before telling you more about Monticello, it's important that we first explain exactly what a \ind{package} is.
 
 %---------------------------------------------------------
-\subsection{Packages: declarative categorization of \pharo code}\label{sec:packages}
+\subsection{Packages: declarative categorization of \pharo code}\seclabel{packages}
 
 We have pointed out earlier, in \secref{categoriesPackages} that packages are more or less equivalent to categories. Now we will see exactly what the relationship is.
 The package system is a simple, lightweight way of organizing Smalltalk source code that exploits a simple naming convention for categories and protocols.
@@ -479,7 +479,7 @@ To be precise, the rules for what goes in a package are as follows.
 
 A package named \ct{Foo} contains:
 
-\begin{enumerate}		\label{sec:packageRules}
+\begin{enumerate}		\seclabel{packageRules}
 	\item{} all \emph{class definitions} of classes in the category \scat{Foo}, or in categories with names starting with \scat{Foo-}, and
 	\item{} \label{env:extensions} all \emph{methods} in \emph{any class} in protocols named \prot{*Foo} or \prot{*foo}\footnote{When performing this comparison, the case of the letters in the names is ignored.}, or whose name starts with \prot{*Foo-} or \prot{*foo-}, and
 	\item{} all \emph{methods} in classes in the category \scat{Foo}, or in a category whose name starts with \scat{Foo-}, \emph{except} for those methods in protocols whose names start with \prot{*}.
@@ -519,7 +519,7 @@ Packages are a relatively new addition to \pharo, but since the package naming c
 		{\includegraphics[width=0.7\textwidth]{freshMonticello}}
 	\end{center}
 	\caption{The Monticello browser.}
-	\label{fig:freshMonticello}
+	\figlabel{freshMonticello}
 \end{figure}
 
 When you open the Monticello browser, you will see two list panes and a row of buttons, as shown in \figref{freshMonticello}.
@@ -552,7 +552,7 @@ MCHttpRepository
 		{\includegraphics[width=0.7\textwidth]{SqueakSource-PBE}}
 	\end{center}
 	\caption{A Repository browser.}
-	\label{fig:SqueakSource:PBE}
+	\figlabel{SqueakSource:PBE}
 \end{figure}
 \noindent
 Then click on \button{Open} to open a repository browser on this repository.  You should see something like \figref{SqueakSource:PBE}.  On the left is a list of all of the packages in the repository; if you select one, then the pane on the right will show all of the versions of the selected package in this repository. 
@@ -572,7 +572,7 @@ To create a package with Monticello, you have to do two things: write some code,
 		{\includegraphics[width=0.7\textwidth]{MCnewcategory}}
 	\end{center}
 	\caption{Two classes in the ``PBE'' package.}
-	\label{fig:MCnewcategory}
+	\figlabel{MCnewcategory}
 \end{figure}
 
 \begin{figure}[btp]
@@ -582,7 +582,7 @@ To create a package with Monticello, you have to do two things: write some code,
 		{\includegraphics[width=0.7\textwidth]{MCnewmethod}}
 	\end{center}
 	\caption{An extension method that will also be in the ``PBE'' package.}
-	\label{fig:MCnewmethod}
+	\figlabel{MCnewmethod}
 \end{figure}
 
 To tell Monticello about your package, click on \button{+Package}, and type the name of the package, in this case ``PBE''.  Monticello will add \ct{PBE} to its list of packages; the package entry will be marked with an asterisk to show that the version in the image has not yet been written to any repository. Note that you now should have two packages in Monticello, one called \ct{PBE} and another called \ct{PBE-Monticello}. That's alright because \ct{PBE} will contain \ct{PBE-Monticello}, and any other packages starting with \ct{PBE-}.
@@ -600,7 +600,7 @@ You can of course save the new version to the repository too; once you \button{R
 		\includegraphics[width=\textwidth]{MC+PBE}
 	\end{center}
 	\caption{The as-yet-unsaved PBE package in Monticello.}
-	\label{fig:MC+SBE}
+	\figlabel{MC+SBE}
 \end{figure}
 
 \begin{figure}[tbp]
@@ -610,7 +610,7 @@ You can of course save the new version to the repository too; once you \button{R
 		{\includegraphics[width=0.7\textwidth]{PBE-on}}
 	\end{center}
 	\caption{Providing a log message for a new version of a package.}
-	\label{fig:PBE-on}
+	\figlabel{PBE-on}
 \end{figure}
 
 \begin{figure}[tbp]
@@ -620,7 +620,7 @@ You can of course save the new version to the repository too; once you \button{R
 		{\includegraphics[width=0.8\textwidth]{package-cache-browser}}
 	\end{center}
 	\caption{Two versions of our package are now in the package cache.}
-	\label{fig:package-cache-browser}
+	\figlabel{package-cache-browser}
 \end{figure}
 
 To save the new package to a repository other than the package cache, you need to first make sure that Monticello knows about the repository, adding it if necessary.  
@@ -637,7 +637,7 @@ This is especially useful as a mechanism to share your code with friends, or if 
 		\includegraphics[width=\textwidth]{MCaddToPackage}
 	\end{center}
 	\caption{Adding a repository to the set of repositories associated with a package.}
-	\label{fig:associateRepository}
+	\figlabel{associateRepository}
 \end{figure}
 
 If you do try and save to a repository where you don't have write permission, a version will nevertheless be written to the package-cache.  
@@ -645,7 +645,7 @@ So you can recover by editing the repository information (\actclick in the Monti
 
 %=========================================================
 \section{The Inspector and the Explorer}
-\label{sec:inspector} % (fold)
+\seclabel{inspector} % (fold)
 
 One of the things that makes \st so different from many other programming environments is that it is provides you with a window onto a world of live objects, not a world of static code.
 Any of those objects can be examined by the programmer, and even changed\,---\,although some care is necessary when changing the basic objects that support the system.  
@@ -665,7 +665,7 @@ You can also type \short{i} for \menu{\textbf{i}nspect it}.)
 		\includegraphics[width=0.5\textwidth]{inspectTimeNow1}
 	\end{center}
 	\caption{Inspecting \ct{TimeStamp now}}
-	\label{fig:inspectTimeNow1}
+	\figlabel{inspectTimeNow1}
 \end{figure}
 
 A window like that shown in \figref{inspectTimeNow1} will appear.   
@@ -708,7 +708,7 @@ To see the difference, we'll \emph{explore} the same object that we were just in
 		{\includegraphics[width=0.7\textwidth]{exploreTimeStampNow}}
 	\end{center}
 	\caption{Exploring \ct{TimeStamp now}}
-	\label{fig:exploreTimeStampNow}
+	\figlabel{exploreTimeStampNow}
 \end{minipage}
 \hfill
 \begin{minipage}{0.48\textwidth}
@@ -718,7 +718,7 @@ To see the difference, we'll \emph{explore} the same object that we were just in
 		{\includegraphics[width=0.7\textwidth]{exploreTimeStampNow2}}
 	\end{center}
 	\caption{Exploring the instance variables}
-	\label{fig:exploreTimeStampNow2}
+	\figlabel{exploreTimeStampNow2}
 \end{minipage}
 \end{figure}
 
@@ -743,7 +743,7 @@ Note that you can navigate directly to the objects representing the method dicti
 		\includegraphics[width=0.5\textwidth]{ExploreObject}
 	\end{center}
 	\caption{Exploring a \ct{ExploreObject}}
-	\label{fig:ExploreObject}
+	\figlabel{ExploreObject}
 \end{figure}
 
 %\dothis{Open a browser, and \metaclick five times on the method pane to bring-up the Morphic halo on the \ct{OBPluggableListMorph} that is used to represent the list of messages. 
@@ -756,12 +756,12 @@ Note that you can navigate directly to the objects representing the method dicti
 %		\includegraphics[width=0.7\textwidth]{explorePluggableListMorph}
 %	\end{center}
 %	\caption{Exploring a \ct{PluggableListMorph}}
-%	\label{fig:explorePluggableListMorph}
+%	\figlabel{explorePluggableListMorph}
 %\end{figure}
 
 %=========================================================
 \section{The Debugger}
-\label{sec:debugger} % (fold)
+\seclabel{debugger} % (fold)
 
 The \ind{debugger} is arguably the most powerful tool in the \pharo tool suite.  It is used not just for debugging, but also for writing new code.
 To demonstrate the debugger, let's start by creating a bug!
@@ -789,7 +789,7 @@ What a surprise!  Instead of getting the expected answer \ct{'txt'}, a \clsind{P
 		{\includegraphics[width=0.7\textwidth]{PreDebugWindow}}
 	\end{center}
 	\caption{A \ct{PreDebugWindow} notifies us of a bug.}
-	\label{fig:PreDebugWindow}
+	\figlabel{PreDebugWindow}
 \end{figure}
 
 The \ct{PreDebugWindow} has a title-bar that tells us what error occurred, and shows us a \emphind{stack trace} of the messages that led up to the error. 
@@ -806,7 +806,7 @@ Working up the stack, we can see that \ct{suffix} sent \ct{detect:}\ldots and ev
 		{\includegraphics[width=0.7\textwidth]{debuggerDetectIfNone}}
 	\end{center}
 	\caption{The debugger.}
-	\label{fig:debuggerDetectIfNone}
+	\figlabel{debuggerDetectIfNone}
 \end{figure}
 
 To find out \emph{why} the dot was not found, we need the debugger itself, so click on \button{Debug}.
@@ -858,7 +858,7 @@ The blue highlight shows that the next message to be sent will be {\ct{do:}} (se
 		{\includegraphics[width=0.7\textwidth]{RestartDetectIfNone}}
 	\end{center}
 	\caption{The debugger after restarting the \ct{detect: ifNone:} method}
-	\label{fig:RestartDetectIfNone}
+	\figlabel{RestartDetectIfNone}
 \end{figure}
 
 The \button{Into} and \button{Over} buttons give us two different ways to step through the execution.  If you click \button{Over}, \pharo executes the current message-send (in this case the \ct{do:}) in one step, unless there is an error.  
@@ -886,7 +886,7 @@ To see what is going wrong, go \button{Into} the execution of \ct{value:} as ill
 	\end{center}
 	\caption{The debugger after stepping \lct{Through} the \ct{do:} method several times.
 	\on{FIX: context vars are mixed up}}
-	\label{fig:steppingIntoValue}
+	\figlabel{steppingIntoValue}
 \end{figure}
 
 %:===> Debugger context is broken!
@@ -909,7 +909,7 @@ And now you see why they are not equal: the seventh character of \ct{'readme.txt
 		{\includegraphics[width=0.7\textwidth]{dotIsAString}}
 	\end{center}
 	\caption{The debugger showing why \ct{'readme.txt' at: 7} is not equal to \ct{dot}}
-	\label{fig:dotIsAString}
+	\figlabel{dotIsAString}
 \end{figure}
 
 Now that we see the bug, the fix is obvious: we have to convert \ct{dot} to a character before starting to search for it.  
@@ -921,7 +921,7 @@ Now that we see the bug, the fix is obvious: we have to convert \ct{dot} to a ch
 %		{\includegraphics[width=0.7\textwidth]{revertDialog}}
 %	\end{center}
 %	\caption{Changing the \ct{suffix} method in the debugger: asking for confirmation of the exit from an inner block}
-%	\label{fig:revertDialog}
+%	\figlabel{revertDialog}
 %\end{figure}
 
 \dothis{Change the code right in the debugger so that the assignment reads \ct{dot := FileDirectory dot first} and \menu{accept} the change.}
@@ -952,7 +952,7 @@ It is then only  a second of work to click on the \button{Run Failures} button i
 		\includegraphics[width=\textwidth]{fixOffByOne}
 	\end{center}
 	\caption{Changing the \ct{suffix} method in the debugger: fixing the off-by-one error after an \sunit assertion failure}
-	\label{fig:fixOffByOne}
+	\figlabel{fixOffByOne}
 \end{figure}
 
 Here is a better test:
@@ -1015,7 +1015,7 @@ In the future the \pharo virtual machine may take advantage of multiprocessors w
 		{\includegraphics[width=0.7\textwidth]{processBrowser}}
 	\end{center}
 	\caption{The Process Browser}
-	\label{fig:processBrowser}
+	\figlabel{processBrowser}
 \end{figure}
 
 The process \subind{process}{browser} is a cousin of the debugger that lets you look at the various processes running inside \pharo.
@@ -1032,7 +1032,7 @@ The process browser is not equipped with mini-inspectors for \self and \lct{this
 
 %=========================================================
 \section{Finding methods}
-\label{sec:methodFinder} 
+\seclabel{methodFinder} 
 
 There are two tools in \pharo to help you find messages.
 They differ in both interface and functionality.
@@ -1048,7 +1048,7 @@ This can quickly become overwhelming.
 		{\includegraphics[width=0.7\textwidth]{methodNamesRandom}}
 	\end{center}
 	\caption{The message names browser showing all methods containing the substring \ct{random} in their selectors.}
-	\label{fig:methodNamesRandom} % should be *message* names!
+	\figlabel{methodNamesRandom} % should be *message* names!
 \end{figure}
 
 \index{message names browser}
@@ -1062,7 +1062,7 @@ As with the browser, the message names browser has a button bar that can be used
 
 %=========================================================
 \section{Change sets and the Change Sorter}
-\label{sec:env:changeSet} % (fold)
+\seclabel{env:changeSet} % (fold)
 
 Whenever you are working in \pharo, any changes that you make to methods and classes are recorded in a \ct{change set}.
 This includes creating new classes, re-naming classes, changing categories, adding methods to existing classes\,---\,just about everything of significance.  
@@ -1077,7 +1077,7 @@ You can see which change set is current and can examine all of the change sets u
 		\includegraphics[width=\linewidth]{changeSorter}
 	\end{center}
 	\caption{The Change Sorter}
-	\label{fig:changeSorter}
+	\figlabel{changeSorter}
 \end{figure}
 
 \figref{changeSorter} shows this browser.  The title bar shows which change set is current, and this change set is selected when the change sorter opens. 
@@ -1136,7 +1136,7 @@ This requires the use of another tool, the file list browser.
 		{\includegraphics[width=0.7\textwidth]{fileList}}
 	\end{center}
 	\caption{A file list browser}
-	\label{fig:fileList}
+	\figlabel{fileList}
 \end{figure}
 
 The \ind{file list browser} is in fact a general-purpose tool for browsing the file system (and also FTP servers) from \pharo. 
@@ -1165,7 +1165,7 @@ Instead it just checks for potential problems in the file that might indicate th
 		{\includegraphics[width=0.7\textwidth]{fileContentsBrowser}}
 	\end{center}
 	\caption{A File Contents Browser}
-	\label{fig:fileContentsBrowser}
+	\figlabel{fileContentsBrowser}
 \end{figure}
 
 Because the choice of buttons to display depends on the file's \emph{name}, and not on its contents, sometimes the button that you want won't be on the screen.  
@@ -1180,7 +1180,7 @@ Contextual menu items in each of the top four panes will also let you file in th
 
 %=========================================================
 \section{In Smalltalk, you can't lose code}
-\label{sec:cantLoseCode} % (fold)
+\seclabel{cantLoseCode} % (fold)
 
 It is quite possible to crash \pharo: as an experimental system, \pharo lets you change anything, including things that are vital to make \pharo work! 
 

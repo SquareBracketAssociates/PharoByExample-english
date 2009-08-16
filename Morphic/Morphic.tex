@@ -67,7 +67,7 @@ A simple example of this is that you can detach a menu item and keep it as a but
 		{\centerline{\includegraphics[width=0.25\textwidth]{detachingMenu}}}
 		{\centerline{\includegraphics[width=0.25\textwidth]{detachingMenu}}}
 	\caption{Detaching a morph, here the \menu{Workspace} menu item, to make it an independent button.
-		\label{fig:detachingMenu}}
+		\figlabel{detachingMenu}}
 \end{figure}
 
 All of the objects that you see on the screen when you run \pharo are \emph{Morphs}, that is, they are instances of subclasses of class \ct{Morph}.
@@ -172,7 +172,7 @@ to center the star inside joe, execute \ct{star} \mthind{Morph}{center:} \ct{joe
 \begin{figure}[ht]
 	\centerline{\includegraphics{joeStar}}
 	\caption{The star is contained inside joe, the translucent blue morph.
-		\label{fig:joeStar}}
+		\figlabel{joeStar}}
 \end{figure}
 
 If you now try to grab the star with the mouse, you will find that you actually grab joe, and the two morphs move together: the star is \emph{embedded} inside joe.
@@ -229,7 +229,7 @@ drawOn: aCanvas
 		{\centerline{\includegraphics[width=0.3\textwidth]{NewCross}}}
 		{\centerline{\includegraphics{NewCross}}}
 	\caption{A \ct{CrossMorph} with its halo; you can resize it as you wish.
-		\label{fig:cross}}
+		\figlabel{cross}}
 \end{figure}
 
 
@@ -308,7 +308,7 @@ This doesn't matter when we fill the cross with an opaque colour, but the bug be
 		{\centerline{\includegraphics[scale=0.6]{overdrawBug}}}
 		{\centerline{\includegraphics{overdrawBug}}}
 	\caption{The center of the cross is filled twice with the colour.
-		\label{fig:overdrawBug}}
+		\figlabel{overdrawBug}}
 \end{minipage}
 \hfill
 \begin{minipage}{0.48\textwidth}
@@ -316,7 +316,7 @@ This doesn't matter when we fill the cross with an opaque colour, but the bug be
 		{\centerline{\includegraphics[scale=0.6]{hairlineBug}}}
 		{\centerline{\includegraphics{bug}}}
 	\caption{The cross-shaped morph, showing a row of unfilled pixels.
-		\label{fig:bug}}
+		\figlabel{bug}}
 \end{minipage}
 \end{figure}
 
@@ -378,7 +378,7 @@ verticalBar
 %\begin{figure}[ht]
 %	\centerline{\includegraphics[width=0.25\textwidth]{labeler}}
 %	\caption{The sticker label morph.
-%		\label{fig:labeler}}
+%		\figlabel{labeler}}
 %\end{figure}
 
 %\begin{example}[labeler]{Creating a sticker label}{}
@@ -395,7 +395,7 @@ verticalBar
 %\begin{figure}[ht]
 %	\centerline{\includegraphics{pyramid}}
 %	\caption{The number pyramid morph.
-%		\label{fig:pyramid}}
+%		\figlabel{pyramid}}
 %\end{figure}
 
 %\begin{example}[pyramid]{Manipulating the number pyramid}{}
@@ -546,7 +546,7 @@ For instance, the \mthind{FillInTheBlank}{request:initialAnswer:} method returns
 		{\centerline{\includegraphics[scale=0.65]{dialog}}}
 		{\centerline{\includegraphics[width=5cm]{dialog}}}
 	\caption{Dialog displayed by \ct{FillInTheBlank request: 'What''s your name?' initialAnswer: 'no name'}.
-		\label{fig:dialogName}}
+		\figlabel{dialogName}}
 \end{minipage}
 \hfill
 \begin{minipage}{0.38\textwidth}
@@ -563,7 +563,7 @@ For instance, the \mthind{FillInTheBlank}{request:initialAnswer:} method returns
 %\begin{figure}[ht]
 %	\centerline{\includegraphics[width=5cm]{dialog}}
 %	\caption{Dialog displayed by \ct{FillInTheBlank request: 'What''s your name?' initialAnswer: 'no name'}.
-%		\label{fig:dialogName}}
+%		\figlabel{dialogName}}
 %\end{figure}
 
 To display a pop-up menu, use the \clsind{PopupMenu} class:
@@ -680,7 +680,7 @@ Let's design a morph to roll a die\footnote{NB: One die, two dice.}. Clicking on
 \begin{figure}[ht]
 	\centerline{\includegraphics[scale=0.65]{die}}
 	\caption{The die in Morphic.
-		\label{fig:dialogDie}}
+		\figlabel{dialogDie}}
 \end{figure}
 
 \dothis{Define the die as a subclass of \clsind{BorderedMorph} instead of \ct{Morph}, because we will make use of the border.}
@@ -860,7 +860,7 @@ That's all you need to do!
 \begin{figure}[ht]
 	\centerline{\includegraphics[scale=0.7]{multiMorphs}}
 	\caption{The die displayed with alpha-transparency.
-		\label{fig:multiMorphs}}
+		\figlabel{multiMorphs}}
 \end{figure}
 
 % ON: This appears to be broken:

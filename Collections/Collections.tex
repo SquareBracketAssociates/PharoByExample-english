@@ -36,7 +36,7 @@
 \fi
 %=================================================================
 \chapter{Collections}
-\label{cha:collections}
+\chalabel{collections}
 
 % \ab{ The material here is based on a section that Andrew wrote for the \st Collections refactoring paper. It's not necessarily all appropriate for the book, but much of it is, I think, useful.}
 %\on{recycled some material from \url{https://www.iam.unibe.ch/scg/svn_repos/Lectures/ST-H07/03StandardClasses.ppt}}
@@ -72,7 +72,7 @@ These 57 classes respond to 794 messages and define a total of 1549 methods!
 %\caption{The collection classes in \pharo. Indentation indicates subclassing.
 %\textit{\textsf{Italicized}} classes are abstract.
 %{\textbf{Bold}} classes are described in the ``Blue Book".}
-%\label{fig:CollClassesList}
+%\figlabel{CollClassesList}
 %\end{center}
 %\end{figure}
 
@@ -90,13 +90,13 @@ Streams will be discussed separately in \charef{streams}.
 	{\includegraphics[width=\textwidth]{CollectionHierarchy}}
 	{\includegraphics[width=0.8\textwidth]{CollectionHierarchy}}
 \caption{Some of the key collection classes in \pharo.}
-\label{fig:CollClassesTree}
+\figlabel{CollClassesTree}
 \end{center}
 \end{figure}
 
 %=========================================================
 \section{The varieties of collections}
-\label{sec:varieties}
+\seclabel{varieties}
 
 To make good use of the collection classes, the reader needs at least a superficial knowledge of the wide variety of collections that they implement, and their commonalities and differences.
 
@@ -148,14 +148,14 @@ These methods are defined, redefined, optimized or occasionally even forbidden b
 & \lct{with:with:with:with:}, \lct{withAll: \emph{aCollection}}	\\
 \hline
 \end{tabular}
-\caption{Standard Collection protocols\label{fig:protocols}}
+\caption{Standard Collection protocols\figlabel{protocols}}
 \end{center}
 \end{figure*}
 
 %\begin{figure*}
 %\begin{center}
 %\includegraphics[width=\textwidth]{CollectionsBySeq}
-%\caption{Collections can be categorized according to whether or not they are sequenceable, \ie whether there are clearly defined first and last elements. All of the sequenceable collections except linked lists can also be indexed by an integer key. Of the non-sequenceable collections, dictionaries can be accessed by an arbitrary key, such as a string, while sets and bags cannot.\label{fig:CollsBySeq}}%
+%\caption{Collections can be categorized according to whether or not they are sequenceable, \ie whether there are clearly defined first and last elements. All of the sequenceable collections except linked lists can also be indexed by an integer key. Of the non-sequenceable collections, dictionaries can be accessed by an arbitrary key, such as a string, while sets and bags cannot.\figlabel{CollsBySeq}}%
 %\end{center}
 %\end{figure*}
 %\on{A useless diagram -- refer to the class hierarchy instead!}
@@ -208,13 +208,13 @@ Let us briefly survey some of the key differences:
 
 %=========================================================
 \section{Implementations of collections}
-\label{sec:implementation}
+\seclabel{implementation}
 
 \begin{figure*}
 \begin{center}
 \includegraphics[width=\textwidth]{CollectionsByImpl}
 \caption{Some collection classes categorized by implementation technique.
-    \label{fig:collsByImpl}}
+    \figlabel{collsByImpl}}
 \end{center}
 \end{figure*}
 
@@ -727,7 +727,7 @@ See also \charef{basic} for more about \clsind{String} and \clsind{Symbol}.
 
 %=========================================================
 \section{Collection iterators}
-\label{sec:iterators}
+\seclabel{iterators}
 
 In \st loops and conditionals are simply messages sent to collections or other objects such as integers or blocks (see also \charef{syntax}). In addition to low-level messages such as \ct{to:do:} which evaluates a block with an argument ranging from an initial to a final number, the \st collection hierarchy offers various high-level iterators. Using such iterators will make your code more robust and compact. 
 \index{Collection!iteration}

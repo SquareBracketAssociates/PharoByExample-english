@@ -36,7 +36,7 @@
 \fi
 %=================================================================
 \chapter{Classes and metaclasses}
-\label{cha:metaclasses}
+\chalabel{metaclasses}
 
 \on{The section on responsibilities of Class, Behavior and Metaclass are weak, and need to be fleshed out with convincing examples. Marcus, can you help?}
 
@@ -56,26 +56,26 @@ To refresh your memory, here are the rules of the object model that we explored 
 
 \begin{enumerate}[label={\textbf{Rule \arabic{*}}.}, ref={Rule \arabic{*}}, leftmargin=*, widest=10]
 % NB: rule labels must not be multiply defined across chapters!
-\item{} % \label{rule:everything}
+\item{} % \rulelabel{everything}
 	Everything is an object.
 
-\item{} % \label{rule:instance}
+\item{} % \rulelabel{instance}
 	Every object is an instance of a class.
 
-\item{} % \label{rule:inheritance}
+\item{} % \rulelabel{inheritance}
 	Every class has a superclass.
 
-\item{} % \label{rule:message}
+\item{} % \rulelabel{message}
 	Everything happens by sending messages.
 
-\item{} % \label{rule:lookup}
+\item{} % \rulelabel{lookup}
 	Method lookup follows the inheritance chain.
 
 \end{enumerate}
 
 As we mentioned in the introduction to this chapter, a consequence of \ref{rule:everything} is that \emph{classes are objects too}, so \ref{rule:instance} tells us that classes must also be instances of classes.
 The class of a class is called a \emph{metaclass}.
-\label{sec:metaclassIntro}
+\seclabel{metaclassIntro}
 A \indmain{metaclass} is created automatically for you whenever you create a class.
 Most of the time you do not need to care or think about metaclasses.
 However, every time that you use the browser to browse the ``\subind{browser}{class side}'' of a class, it is helpful to recall that you are actually browsing a different class.
@@ -85,19 +85,19 @@ To properly explain classes and metaclasses, we need to extend the rules from \c
 
 \begin{enumerate}[label={\textbf{Rule \arabic{*}}.}, ref={Rule \arabic{*}}, leftmargin=*, widest=10]
 \setcounter{enumi}{5}
-\item{} \label{rule:metaclass}
+\item{} \rulelabel{metaclass}
 	Every class is an instance of a metaclass.
 
-\item{} \label{rule:parallelhierarchy}
+\item{} \rulelabel{parallelhierarchy}
 	The metaclass \subind{metaclass}{hierarchy} parallels the class hierarchy.
 
-\item{} \label{rule:behavior}
+\item{} \rulelabel{behavior}
 	Every metaclass inherits from \clsind{Class} and \clsind{Behavior}.
 
-\item{} \label{rule:metaclassclass}
+\item{} \rulelabel{metaclassclass}
 	Every metaclass is an instance of \clsind{Metaclass}.
 
-\item{} \label{rule:metaclassmetaclass}
+\item{} \rulelabel{metaclassmetaclass}
 	The metaclass of \ct{Metaclass} is an instance of \ct{Metaclass}.
 
 \end{enumerate}
@@ -141,7 +141,7 @@ You can see the effect in \figref{translucentEllipse}.
 \ifluluelse
 	{\centerline {\includegraphics[scale=0.7]{TranslucentEllipse}}}
 	{\centerline {\includegraphics[width=8cm]{TranslucentEllipse}}}
-\caption{A translucent ellipse\label{fig:translucentEllipse}}
+\caption{A translucent ellipse\figlabel{translucentEllipse}}
 \end{figure}
 \end{center}
 
@@ -162,7 +162,7 @@ Method lookup follows the inheritance chain (\ref{rule:lookup}), so when we send
 \ifluluelse
 	{\centerline{\includegraphics[width=\textwidth]{TranslucentClassMessage}}}
 	{\centerline{\includegraphics[width=0.8\textwidth]{TranslucentClassMessage}}}
-\caption{Sending a message to a translucent color\label{fig:classmessage}}
+\caption{Sending a message to a translucent color\figlabel{classmessage}}
 \end{figure}
 \end{center}
 
@@ -203,7 +203,7 @@ Object class --> Object class
 \ifluluelse
 	{\centerline {\includegraphics[width=\textwidth]{TranslucentMetaclasses}}}
 	{\centerline {\includegraphics[width=0.8\textwidth]{TranslucentMetaclasses}}}
-\caption{The metaclasses of Translucent and its superclasses\label{fig:translucentmetaclasses}}
+\caption{The metaclasses of Translucent and its superclasses\figlabel{translucentmetaclasses}}
 \end{figure}
 \end{center}
 
@@ -242,7 +242,7 @@ This is what we mean by the metaclass \subindmain{metaclass}{hierarchy} being pa
 \ifluluelse
 	{\centerline {\includegraphics[width=\textwidth]{TranslucentMetaclassHierarchy}}}
 	{\centerline {\includegraphics[width=0.8\textwidth]{TranslucentMetaclassHierarchy}}}
-\caption{The metaclass hierarchy parallels the class hierarchy.\label{fig:parallelHierarchies}}
+\caption{The metaclass hierarchy parallels the class hierarchy.\figlabel{parallelHierarchies}}
 \end{figure}
 \end{center}
 
@@ -272,7 +272,7 @@ Note that we get as a result an ordinary \ct{Color blue}, and not a translucent 
 \ifluluelse
 	{\centerline {\includegraphics[width=\textwidth]{TranslucentColorBlue}}}
 	{\centerline {\includegraphics[width=0.8\textwidth]{TranslucentColorBlue}}}
-\caption{Message lookup for classes is the same as for ordinary objects.\label{fig:metaclasslookup}}
+\caption{Message lookup for classes is the same as for ordinary objects.\figlabel{metaclasslookup}}
 \end{figure}
 \end{center}
 
@@ -296,7 +296,7 @@ The inspector on \ct{Color} allows you to see the superclass, instance variables
 \ifluluelse
 	{\centerline{\includegraphics[width=\textwidth]{InspectingColor}}}
 	{\centerline{\includegraphics[width=10cm]{InspectingColor}}}
-\caption{Classes are objects too.\label{fig:inspectingColor}}
+\caption{Classes are objects too.\figlabel{inspectingColor}}
 \end{figure}
 \end{center}
 
@@ -314,7 +314,7 @@ We can see the complete picture in \figref{inheritbehavior}.
 \ifluluelse
 	{\centerline{\includegraphics[width=\textwidth]{TranslucentBehavior}}}
 	{\centerline{\includegraphics[width=0.8\textwidth]{TranslucentBehavior}}}
-\caption{Metaclasses inherit from \lct{Class} and \lct{Behavior}\label{fig:inheritbehavior}}
+\caption{Metaclasses inherit from \lct{Class} and \lct{Behavior}\figlabel{inheritbehavior}}
 \end{figure}
 \end{center}
 
@@ -334,7 +334,7 @@ TranslucentColor new class --> TranslucentColor    "not Behavior!"
 \ifluluelse
 	{\centerline{\includegraphics[width=\textwidth]{TranslucentSendingNew}}}
 	{\centerline{\includegraphics[width=0.8\textwidth]{TranslucentSendingNew}}}
-\caption{\lct{new} is an ordinary message looked up in the metaclass chain.\label{fig:sendingnew}}
+\caption{\lct{new} is an ordinary message looked up in the metaclass chain.\figlabel{sendingnew}}
 \end{figure}
 \end{center}
 
@@ -386,7 +386,7 @@ has exactly one instance, which is a class.
 \ifluluelse
 	{\centerline{\includegraphics[width=\textwidth]{TranslucentMetaclassClass}}}
 	{\centerline{\includegraphics[width=0.8\textwidth]{TranslucentMetaclassClass}}}
-\caption{Every metaclass is a \lct{Metaclass}.\label{fig:metaclassclass}}
+\caption{Every metaclass is a \lct{Metaclass}.\figlabel{metaclassclass}}
 \end{figure}
 \end{center}
 
@@ -414,7 +414,7 @@ The answer is simple: it is a metaclass, so it must be an instance of \ct{Metacl
 \ifluluelse
 	{\centerline{\includegraphics[width=\textwidth]{TranslucentMetaclassClassClass}}}
 	{\centerline{\includegraphics[width=0.8\textwidth]{TranslucentMetaclassClassClass}}}
-\caption{All metaclasses are instances of the class \lct{Metaclass}, even the metaclass of \lct{Metaclass}.\label{fig:metaclassclassclass}}
+\caption{All metaclasses are instances of the class \lct{Metaclass}, even the metaclass of \lct{Metaclass}.\figlabel{metaclassclassclass}}
 \end{figure}
 \end{center}
 

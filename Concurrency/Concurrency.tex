@@ -32,7 +32,7 @@
 %\renewcommand{\nnbb}[2]{} % Disable editorial comments
 \sloppy
 %=================================================================
-\chapter{Concurrency}\label{cha:basic}
+\chapter{Concurrency}\chalabel{basic}
 
 \pharo as any Smalltalk is a sequential language since at one point in time there is only 
 one computation carried on. However, Smalltalk has the ability to run programs concurrently by interleaving their executions. The idea behind Smalltalk was to propose a complete OS and as such a Smalltalk run-time offers the possibility to execute different processes (or threads) that are scheduled by the Smalltalk process scheduler. 
@@ -88,7 +88,7 @@ From the description above we can see that a process can be in four different st
 \begin{figure}
 \begin{center}
 \includegraphics[width=6cm]{ProcessState}
-\caption{Process possible states.\label{fig:processState}}
+\caption{Process possible states.\figlabel{processState}}
 \end{center}
 \end{figure}
 
@@ -110,7 +110,7 @@ From the description above we can see that a process can be in four different st
 \begin{figure}
 \begin{center}
 \includegraphics[width=10cm]{ProcessStateInContext}
-\caption{Process possible states in context.\label{fig:processStateInContext}}
+\caption{Process possible states in context.\figlabel{processStateInContext}}
 \end{center}
 \end{figure}
 
@@ -196,7 +196,7 @@ Nous faisons l'hypothèse que monCompte est une variable qui référence un comp
 
 
 
-\section{Semaphore Basic Principle}\label{sec:semaphore}
+\section{Semaphore Basic Principle}\seclabel{semaphore}
 A semaphore is a basic mechanism for synchronizing processes.  A semaphore will either suspend or resume processes depending on its internal state. It has a list of waiting processes. 
 When a process sends the message \ct{wait} to a semaphore, depending on the internal state of the semaphore, the calling process is put on wait (the process is added to the process waiting list of the semaphore). When a process has finished --- to use the resource for example, it signals it to the semaphore, which resumes one of its waiting processes. \sd{check the phrasing of xavier for this part}
 
@@ -205,7 +205,7 @@ Figure~\ref{fig:sema} shows a semaphore which is associated with a resource. The
 \begin{figure}
 \begin{center}
 \includegraphics[width=6cm]{ASemaphoreAndProcesses}
-\caption{ A process is using a resource, the other processes are waiting in a semaphore list of suspended processes. \label{fig:sema}}
+\caption{ A process is using a resource, the other processes are waiting in a semaphore list of suspended processes. \figlabel{sema}}
 \end{center}
 \end{figure}
 
@@ -234,7 +234,7 @@ When \ct{P0} has finished to work with the resource, it notifies the resource wh
 \begin{figure}
 \begin{center}
 \includegraphics[width=6cm]{SemaphoreSendingWait2}
-\caption{A new process wants to access the resources, it is suspended and added to the wait list of the semaphore. \label{fig:SemaphoreSendingWait}}
+\caption{A new process wants to access the resources, it is suspended and added to the wait list of the semaphore. \figlabel{SemaphoreSendingWait}}
 \end{center}
 \end{figure}
 
@@ -242,7 +242,7 @@ When \ct{P0} has finished to work with the resource, it notifies the resource wh
 \begin{figure}
 \begin{center}
 \includegraphics[width=5.5cm]{SemaphoreSendingSignal}\includegraphics[width=3.5cm]{ProcessToInSchedulerQueue}\includegraphics[width=3.5cm]{SemaphoreResuming}
-\caption{  process terminates, a suspended process is resumed (added to the scheduler list).\label{fig:ProcessToInSchedulerQueue}}
+\caption{  process terminates, a suspended process is resumed (added to the scheduler list).\figlabel{ProcessToInSchedulerQueue}}
 \end{center}
 \end{figure}
 
@@ -353,7 +353,7 @@ CompteBancaireCourant subclass: #CompteSynchronise
 \end{tabular}
 }
     \caption{Définition de la classe {\tt CompteSynchronise}}
-     \label{fig:compteSynchronise}
+     \figlabel{compteSynchronise}
    \end{center}
 \end{figure}
 

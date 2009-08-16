@@ -42,13 +42,13 @@ Knowing that the message \ct{+} when sent to a point with a point returns a poin
 \begin{figure}[ht]
 % MISSING FIGURE
 % \centerline{\includegraphics[width=5cm]{ucompoBinBracket}} 
-\caption{Another example of using parentheses to control the way messages are executed.\label{fig:compoBinBracket}}
+\caption{Another example of using parentheses to control the way messages are executed.\figlabel{compoBinBracket}}
 \end{figure}
 
 \begin{figure}[ht]
 % MISSING FIGURE
 % \centerline{\includegraphics[width=5cm]{ucompoBinNoBracket}} 
-\caption{As the message \ct{@} when sent to a \textit{point} returns a B3DVector, the expression does not return a simple point but a B3DPoint.  \label{fig:compoBinNoBracket}}
+\caption{As the message \ct{@} when sent to a \textit{point} returns a B3DVector, the expression does not return a simple point but a B3DPoint.  \figlabel{compoBinNoBracket}}
 \end{figure}
 
 
@@ -79,7 +79,7 @@ Turtle new east
 
 As we already mentioned, messages can have multiple arguments. In such a case, keyword-based messages are used. A keyword-based message can be composed of several words terminated by the character \ct{:}. In \tscrref{scr:longkey} the message \ct{between:and:} is sent to 1. This message can be written on two different lines without problem. This message contains two \ct{:} so it requires two arguments. In fact a keyword-based message is the longest sequence of words terminated by \ct{:} that is not interrupted by the characters \ct{.} or \ct{;}.
 
-\begin{script}{Examples of long keyword based messages}\label{scr:longkey}
+\begin{script}{Examples of long keyword based messages}\scrlabel{longkey}
 1 !\textbf{between:}! 5 !\textbf{and:}! 10.
 
 1 !\textbf{between:}! 5 
@@ -89,7 +89,7 @@ As we already mentioned, messages can have multiple arguments. In such a case, k
 In fact this is a bit more complex. The characters \ct{[}, \ct{]}, and \ct{(}, \ct{)} delimit distinct areas. In such an area, a keyword-based message is the longest sequence  of words terminated by \ct{:} that is not cut by the characters \ct{.},  or \ct{;}.  \Tscrref{scr:keywordComplex} illustrates this point.
 We use different style (italic, bold...) to group together the words belonging to a same keyword-based message.
 
-\begin{script}{Identifying keyword-based messages}\label{scr:keywordComplex}
+\begin{script}{Identifying keyword-based messages}\scrlabel{keywordComplex}
 1   | dist| 
 2   dist := self !\textit{distanceBetween:}! (World bounds !\textbf{centeredBy:}! self topLeft)
 3                !\textit{and:}! self position.
@@ -102,7 +102,7 @@ We use different style (italic, bold...) to group together the words belonging t
 
 \Tscrref{scr:keywordComplex} can be seen as \tscrref{scr:keywordComplex2} where we replaced the first level areas by \ct{xxx}. 
 
-\begin{script}{Identifying keyword-based messages}\label{scr:keywordComplex2}
+\begin{script}{Identifying keyword-based messages}\scrlabel{keywordComplex2}
 1   | dist| 
 2   dist := self !\textit{distanceBetween:}! xxx
 3                !\textit{and:}! self position.
@@ -139,7 +139,7 @@ When the characters \ct{[}, \ct{]}, and \ct{(}, \ct{)} surround some words, thes
 The problem is that when we compose two keyword-based messages sometimes we want to say
 that the message is \textit{not} the longuest sequence of words. For example in \tscrref{scr:withParenthesis2}  we want to send a rectangle the message \ct{containsPoint:} and not \ct{containsPoint:ifTrue:} which does not exist. For this reason we put parenthesis around the message \lct{aRect \textbf{containsPoint:} aTurtle center}. This creates a new area and distinguish the message \ct{containsPoint:} and \ct{ifTrue:} as two complete keyword-based messages. 
 
-\begin{script}{Conditional Requiring Parenthesis}\label{scr:withParenthesis2}
+\begin{script}{Conditional Requiring Parenthesis}\scrlabel{withParenthesis2}
 | aRect aTurtle |
 aTurtle := Turtle new.
 aRect := Rectangle origin: 100@200 corner: 300@400.

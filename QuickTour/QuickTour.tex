@@ -44,7 +44,7 @@
 		\includegraphics[width=1em]{cloverleafKey}}}
 %=================================================================
 \chapter{A quick tour of \pharo}
-\label{cha:quick}
+\chalabel{quick}
 
 %:===> Check sizes of all images for Lulu version!
 
@@ -63,7 +63,7 @@ There are three parts that you will need to download, consisting of four files (
 
 \begin{figure}[htb]
 \centerline {\includegraphics[width=\textwidth]{annotatedDownload}}
-\caption{The \pharo download files.\label{fig:download}}
+\caption{The \pharo download files.\figlabel{download}}
 \end{figure}
 %:===> Instructions which image to use! (dedicated image?)
 
@@ -81,7 +81,7 @@ Actually, we will use a slightly different image in this book. \on{fix the figur
 \dothis{Download and install \pharo on your computer.}
 We recommend that you use the image provided on the \pharo by Example web page.\footnote{\pbe}
 \index{download}
-\label{sec:sbeImage}
+\seclabel{sbeImage}
 
 Most of the introductory material in this book will work with any version, so if you already have one installed, you may as well continue to use it.
 However, if you notice differences between the appearance or behaviour of your system and what is described here, do not be surprised. 
@@ -103,7 +103,7 @@ Do whatever works best for your style of working and your operating system.
 \begin{figure}[htb]
 % \centerline {\includegraphics[width=0.6\textwidth]{download}}
 \centerline {\includegraphics[width=0.8\textwidth]{startup}}
-\caption{A fresh \pbe image.\label{fig:startup}}
+\caption{A fresh \pbe image.\figlabel{startup}}
 \end{figure}
 
 \index{launching \pharo}
@@ -125,13 +125,13 @@ A good place to get started is the \ind{world menu} shown in \figref{threeButton
 
 \begin{figure}[tbh]
 	\centering
-	\subfigure[The world menu]{\label{fig:threeButtons:click}% click
+	\subfigure[The world menu]{\figlabel{threeButtons:click}% click
 		\includegraphics[width=0.25\linewidth]{worldMenu}}\hfill
-	\subfigure[The contextual menu]{\label{fig:threeButtons:actclick}% action click
+	\subfigure[The contextual menu]{\figlabel{threeButtons:actclick}% action click
 		\includegraphics[width=0.35\linewidth]{yellowButtonMenuOnWorkspace}}\hfill
-	\subfigure[The morphic halo]{\label{fig:threeButtons:metaclick}% meta click
+	\subfigure[The morphic halo]{\figlabel{threeButtons:metaclick}% meta click
 		\includegraphics[width=0.35\linewidth]{morphicHaloOnWorkspace}}% these braces needed (else no whitespace at end of line)
-	\caption{The world menu (brought up \click{ing}), a contextual menu (\actclick{ing}), and a morphic \subind{Morphic}{halo} (\metaclick{ing}).\label{fig:threeButtons}}
+	\caption{The world menu (brought up \click{ing}), a contextual menu (\actclick{ing}), and a morphic \subind{Morphic}{halo} (\metaclick{ing}).\figlabel{threeButtons}}
 \end{figure}
 \seeindex{morphic halo}{Morphic}
 
@@ -143,7 +143,7 @@ A good place to get started is the \ind{world menu} shown in \figref{threeButton
 %% Inside the wrapfig environment, linewidth is special --- the width of the figure.
 %\includegraphics[width=0.95\linewidth]{colouredMouse}
 %\caption{The author's mouse. \click{ing} the scroll wheel activates the blue button.}
-%\label{fig:colouredMouse}
+%\figlabel{colouredMouse}
 %\end{wrapfigure}
 
 \st was originally designed for a computer with a \ind{three button mouse}.  If your mouse has fewer than three buttons, you will have to press extra keys while \click{ing} the mouse to simulate the extra buttons.  A two-button mouse works quite well with \pharo, but if you have only a single-button mouse, you should seriously consider buying a two-button mouse with a clickable scroll wheel: it will make working with \pharo much more pleasant.
@@ -174,7 +174,7 @@ Now we will activate \metaclick{ing}.
 
 \begin{figure}[htb]
 \centerline{\includegraphics[width=0.8\textwidth]{PreferenceBrowser}}
-\caption{The Preference Browser.\label{fig:prefBrowser}}
+\caption{The Preference Browser.\figlabel{prefBrowser}}
 \end{figure}
 
 \dothis{Now you should be able to \metaclick on the workspace. (See \figref{threeButtons:metaclick}.)
@@ -218,7 +218,7 @@ BouncingAtomsMorph new openInWorld
 \ifluluelse
 	{\centerline {\includegraphics[width=0.7\textwidth]{Doit}}}
 	{\centerline {\includegraphics[width=0.7\textwidth]{Doit}}}
-\caption{``Doing'' an expression\label{fig:doit}}
+\caption{``Doing'' an expression\figlabel{doit}}
 \end{figure}
 
 A window containing a large number of bouncing atoms should open in the top left of the \pharo image.
@@ -241,12 +241,12 @@ The object, not you, selects the appropriate method for responding to your messa
 \begin{figure}[htb]
 \begin{minipage}[b]{0.48\textwidth}
 \centerline {\includegraphics[width=0.7\textwidth]{atoms}}
-\caption{A \bam.\label{fig:atoms}}
+\caption{A \bam.\figlabel{atoms}}
 \end{minipage}
 \hfill
 \begin{minipage}[b]{0.48\textwidth}
 \centerline {\includegraphics[width=0.7\textwidth]{saveAs}}
-\caption{The \menu{save as \ldots} dialogue.\label{fig:saveas}}
+\caption{The \menu{save as \ldots} dialogue.\figlabel{saveas}}
 \end{minipage}
 \end{figure}
 
@@ -284,7 +284,7 @@ Click in the pink handle containing the cross; the \bam should go away.
 
 %=================================================================
 \section{Workspaces and Transcripts}
-\label{sec:transcript}
+\seclabel{transcript}
 
 \dothis{Close all open windows. Open a \ind{transcript} and a \ind{workspace}. (The transcript can be opened from the \menu{World{\go}Tools ...} submenu.)}
 
@@ -321,7 +321,7 @@ Do it again.
 
 \begin{figure}[htb]
 \centerline {\includegraphics[width=0.6\textwidth]{HelloWorld}}
-\caption{Overlapping windows. The workspace is active.\label{fig:helloworld}}
+\caption{Overlapping windows. The workspace is active.\figlabel{helloworld}}
 \end{figure}
 
 %=================================================================
@@ -346,7 +346,7 @@ This time we see the result we expect (\figref{printit}).
 \begin{figure}[htb]
 % \centerline {\includegraphics[width=0.4\textwidth]{PrintIt}}
 \centerline {\includegraphics[width=0.7\textwidth]{PrintIt}}
-\caption{``Print it'' rather than ``do it''. \label{fig:printit}}
+\caption{``Print it'' rather than ``do it''. \figlabel{printit}}
 \end{figure}
 
 \needlines{3}
@@ -366,7 +366,7 @@ The bottom panel can be used to write expressions to send messages to the object
 
 \begin{figure}[htb]
 \centerline {\includegraphics[width=0.7\textwidth]{InspectIt}}
-\caption{Inspecting an object. \label{fig:inspectit}}
+\caption{Inspecting an object. \figlabel{inspectit}}
 \end{figure}
 
 \dothis{Type \ct{self squared} in the bottom panel of the inspector on \ct{7} and \menu{print it}.}
@@ -382,7 +382,7 @@ Click on the triangle to open it up (\figref{exploreit}).
 
 \begin{figure}[htb]
 \centerline {\includegraphics[width=0.7\textwidth]{ExploreIt}}
-\caption{Exploring \ct{Object}. \label{fig:exploreit}}
+\caption{Exploring \ct{Object}. \figlabel{exploreit}}
 \end{figure}
 
 The explorer is similar to the inspector, but it offers a tree view of a complex object.
@@ -405,7 +405,7 @@ As we shall see, there are several interesting browsers available for \pharo, bu
 	{\centerline {\includegraphics[width=\textwidth]{ClassBrowser1}}}
 	{\centerline {\includegraphics[width=0.7\textwidth]{ClassBrowser1}}}
 \caption{The browser showing the \ct{printString} method of class object.
-\label{fig:classBrowser}}
+\figlabel{classBrowser}}
 \end{figure}
 
 We can see a browser in \figref{classBrowser}.
@@ -453,7 +453,7 @@ select the name and type \short{b}.
 \begin{figure}[hbt]
 \centerline {\includegraphics[width=\textwidth]{Kernel-objects-boolean}}
 \caption{The browser showing the definition of class Boolean.
-\label{fig:browseBoolean}}
+\figlabel{browseBoolean}}
 \end{figure}
 
 Notice that when the \ct{Boolean} class is selected but no protocol or method is selected, instead of the source code of a method, we see a \emph{class definition} (\figref{browseBoolean}).
@@ -465,7 +465,7 @@ If you \click on the \button{?} at the bottom of the class pane, you can see the
 \begin{figure}[hbt]
 \centerline {\includegraphics[width=\textwidth]{classComment}}
 \caption{The class comment for \ct{Boolean}.
-\label{fig:classComment}}
+\figlabel{classComment}}
 \end{figure}
 
 Often, the fastest way to find a class is to search for it by name.  For example, suppose that you are looking for some unknown class that represents dates and times.
@@ -483,14 +483,14 @@ You will be presented with a list of classes whose names contain ``time'' (see \
 	\includegraphics[width=0.45\textwidth]{TimeClasses}
 }
 \caption{Searching for a class by name.
-\label{fig:findit}}
+\figlabel{findit}}
 \end{figure}
 
 Note that if you type the complete (and correctly capitalized) name of a class in the find dialog, the browser will go directly to that class without showing you the list of options.
 
 %=================================================================
 \section{Finding methods}
-\label{sec:quick:methodFinder}
+\seclabel{quick:methodFinder}
 
 Sometimes you can guess the name of a method, or at least part of the name of a method, more easily than the name of a class.  For example, if you are interested in the current time, you might expect that there would be a method called ``now'', or containing ``now'' as a substring.   But where might it be?
 The \emphind{method finder} can help you.
@@ -505,7 +505,7 @@ To scroll to \ct{now} itself, move the cursor to the list and type ``\ct{n}''; t
 \begin{figure}[hbt]
 \centerline {\includegraphics[width=0.7\textwidth]{methodFinder-now}}
 \caption{The method finder showing all classes defining a method named \ct{now}.
-\label{fig:MethodFinder}}
+\figlabel{MethodFinder}}
 \end{figure}
 
 At other times you may have a good idea that a method exists, but will have no idea what it might be called.
@@ -525,7 +525,7 @@ So, the asterisk in front of \ct{String asUppercase} lets us know that the metho
 	{\centerline {\includegraphics[width=0.9\textwidth]{MethodFinder-example1}}}
 	{\centerline {\includegraphics[width=0.7\textwidth]{MethodFinder-example1}}}
 \caption{Finding a method by example.
-\label{fig:methodFinder-example1}}
+\figlabel{methodFinder-example1}}
 \end{figure}
 
 You can also use the method finder for methods with arguments; for example, if you are looking for a method that will find the greatest common factor of two integers, you might try \ct{25. 35. 5} as an example.  You can also give the method finder multiple examples to narrow the search space; the help text in the bottom pane explains how.
@@ -564,7 +564,7 @@ In this case, the \ct{shout} method that we are testing will go in class \clsind
 	{\centerline {\includegraphics[width=\textwidth]{StringTest-newMethodTemplate}}}
 	{\centerline {\includegraphics[width=0.7\textwidth]{StringTest-newMethodTemplate}}}
 \caption{The new method template in class \ct{StringTest}.
-\label{fig:newMethodTemplate}}
+\figlabel{newMethodTemplate}}
 \end{figure}
 
 \dothis{Open a browser on the class \ct{StringTest}, and select an appropriate protocol for our method, in this case \menu{tests - converting}, as shown in \figref{newMethodTemplate}.
@@ -581,7 +581,7 @@ If this is the first time you have accepted any code in your image, you will lik
 %\begin{figure}[hbt]
 %\centerline {\includegraphics[width=0.35\textwidth]{initials}}
 %\caption{Entering your initials.
-%\label{fig:initials}}
+%\figlabel{initials}}
 %\end{figure}
 
 Because there is as yet no method called \ct{shout}, the browser will ask you to confirm that this is the name that you really want\,---\,and it will suggest some other names that you might have intended (\figref{testShoutConfirm}).
@@ -591,12 +591,12 @@ This can be quite useful if you have merely made a typing mistake, but in this c
 \begin{figure}[htb]
 \begin{minipage}[b]{0.48\textwidth}
 \centerline {\includegraphics[width=0.6\textwidth]{initials}}
-\caption{Entering your initials.\label{fig:initials}}
+\caption{Entering your initials.\figlabel{initials}}
 \end{minipage}
 \hfill
 \begin{minipage}[b]{0.48\textwidth}
 \centerline {\includegraphics[width=0.9\textwidth]{testShoutConfirm}}
-\caption{Accepting the \ct{StringTest} method \ct{testShout}.\label{fig:testShoutConfirm}}
+\caption{Accepting the \ct{StringTest} method \ct{testShout}.\figlabel{testShoutConfirm}}
 \end{minipage}
 \end{figure}
 
@@ -606,7 +606,7 @@ This can be quite useful if you have merely made a typing mistake, but in this c
 %	{\centerline {\includegraphics[width=\textwidth]{testShoutConfirm}}}
 %	{\centerline {\includegraphics[width=0.7\textwidth]{testShoutConfirm}}}
 %\caption{Accepting the \ct{StringTest} method \ct{testShout}.
-%\label{fig:testShoutConfirm}}
+%\figlabel{testShoutConfirm}}
 %\end{figure}
 
 \dothis{Run your newly created test: open the \ind{SUnit} \emphind{TestRunner} from the \menu{World} menu.}
@@ -618,7 +618,7 @@ The leftmost two panes are a bit like the top panes in the browser.  The left pa
 \begin{figure}[hbt]
 \centerline {\includegraphics[width=0.8\textwidth]{testRunnerOnStringTest}}
 \caption{Running the String tests.
-\label{fig:testRunnerTestShout}}
+\figlabel{testRunnerTestShout}}
 \end{figure}
 
 You should see a message like that shown in \figref{testRunnerTestShout}, which indicates that there was an error in running the tests.  The list of tests that gave rise to errors is shown in the bottom right pane; as you can see, \ct{StringTest>>>#testShout} is the culprit.
@@ -636,7 +636,7 @@ We will look at the \ind{debugger} and how to use it in \charef{env}.
 	{\centerline {\includegraphics[width=\textwidth]{Predebugger}}}
 	{\centerline {\includegraphics[width=0.7\textwidth]{Predebugger}}}
 \caption{The (pre-)debugger.}
-\label{fig:predebugger}
+\figlabel{predebugger}
 \end{figure}
 
 The error is, of course, exactly what we expected:  running the test generates an error because we haven't yet written a method that tells strings how to \ct{shout}.  
@@ -673,7 +673,7 @@ So do that right now!
 	{\centerline{\includegraphics[width=\textwidth]{String-Shout}}}
 	{\centerline{\includegraphics[width=0.7\textwidth]{String-Shout}}}
 \caption{The \ct{shout} method defined on class \ct{String}.
-\label{fig:String-shout}}
+\figlabel{String-shout}}
 \end{figure}
 
 %=================================================================

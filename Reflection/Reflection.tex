@@ -14,7 +14,7 @@
 % 2009-06-17 - Alexandre completed revision
 % 2009-06-19 - Lukas comments
 % 2009-07-07 - Oscar migrated to Pharo; fixed broken tests
-% 
+% 2009-08-16 - Oscar indexing and cleaning up loose ends
 
 %=================================================================
 \ifx\wholebook\relax\else
@@ -45,26 +45,26 @@
 %:===> To be indexed!
 
 %=================================================================
-\chapter{Reflection}\label{cha:reflection}
+\chapter{Reflection}\chalabel{reflection}
 
-\alex{I addressed lukas comments using editorial macros. Please, if you read this, remove this comment and remove the editorial macros, else their purpose is diminished}
+%\alex{I addressed lukas comments using editorial macros. Please, if you read this, remove this comment and remove the editorial macros, else their purpose is diminished}
 
 \lr{A section on pragmas/method annotations is missing. This is a very common and very practical application of reflection.}\alex{I agree on this, I will give a try in the next few days}
 
-
-
+\indexmain{reflection}
 \st is a reflective programming language.
-In a nutshell, this means that programs are able to ``reflect'' on their own execution \ins{and structure}. \lr{not only on execution, also on the static model}
-More technically, this means that the \emph{metaobjects} of the runtime system can be \emph{reified} as ordinary objects, which can be queried and inspected.
+In a nutshell, this means that programs are able to ``reflect'' on their own execution and structure.
+% \lr{not only on execution, also on the static model}
+More technically, this means that the \emphind{metaobjects} of the runtime system can be \emph{reified} as ordinary objects, which can be queried and inspected.
 The metaobjects in \st are classes, metaclasses, method dictionaries, compiled methods, the run-time stack, and so on.
-This form of reflection is also called \emph{introspection}, and is supported by many modern programming languages.
+This form of reflection is also called \emphind{introspection}, and is supported by many modern programming languages.
 
 \begin{figure}[ht]\centering
 	\includegraphics[width=0.8\linewidth]{reflect}
-	\caption{Reification and reflection.\label{fig:reflect}\lr{not referenced, not sure if I understand it}}
+	\caption{Reification and reflection.\figlabel{reflect}\lr{not referenced, not sure if I understand it}}
 \end{figure}
 
-Conversely, it is possible in \st to modify reified metaobjects and \emph{reflect} these changes back to the runtime system.
+Conversely, it is possible in \st to modify reified metaobjects and \emph{reflect} these changes back to the runtime system (see \figref{reflect}).
 This is also called \emph{intercession}, and is supported mainly by dynamic programming languages, and only to a very limited degree by static languages.
 
 A program that manipulates other programs (or even itself) is a \emph{metaprogram}.
@@ -94,7 +94,7 @@ The \ct!contents! instance variable represents whatever the workspace is display
 
 \begin{figure}[ht]\centering
 	\includegraphics[width=\linewidth]{workspaceInspector}
-	\caption{Inspecting a \ct!Workspace!.\label{fig:workspaceInspector}}
+	\caption{Inspecting a \ct!Workspace!.\figlabel{workspaceInspector}}
 \end{figure}
 
 \dothis{Now type \ct!'hello'! in place of that empty string, then \emph{accept} it.}
@@ -137,7 +137,7 @@ Although it is possible to modify the code of primitive methods, beware that thi
 
 \begin{figure}[ht]\centering
 	\includegraphics[width=0.8\linewidth]{allInstanceVariables}
-	\caption{Displaying all instance variables of a \ct!Workspace!.\label{fig:allInstanceVariables}}
+	\caption{Displaying all instance variables of a \ct!Workspace!.\figlabel{allInstanceVariables}}
 \end{figure}
 
 \figref{allInstanceVariables} shows how to display the values of the instance variables of an arbitrary instance (\ct!w!) of class \ct!Workspace!.
@@ -314,7 +314,7 @@ SystemNavigation default browseAllImplementorsOf: #ifTrue:
 
 \begin{figure}[ht]\centering
 	\includegraphics[width=\linewidth]{implementors}
-	\caption{Browse all implementations of \ct!\#ifTrue:!.\label{fig:implementors}}
+	\caption{Browse all implementations of \ct!\#ifTrue:!.\figlabel{implementors}}
 \end{figure}
 
 Particularly useful are the methods \ct{browseAllSelect:} and \lct{browseMethodsWithSourceString:}.  Here are two different ways to browse all methods in the system that perform super sends (the first way is rather brute force; the second way is better and eliminates some false positives):
@@ -336,7 +336,7 @@ The selector \ct{#*} points to the decompiled bytecode of \ct!Point>>>*!.
 
 \begin{figure}[ht]\centering
 	\includegraphics[width=.5\linewidth]{CompiledMethod}
-	\caption{Explorer class \ct!Point! and the bytecode of its \ct!\#*! method.\label{fig:CompiledMethod}}
+	\caption{Explorer class \ct!Point! and the bytecode of its \ct!\#*! method.\figlabel{CompiledMethod}}
 \end{figure}
 
 Let us consider the relationship between classes and methods.
@@ -347,7 +347,7 @@ In \figref{CompiledMethod} we can even see that this is stored in an association
 
 \begin{figure}[ht]\centering
 	\includegraphics[width=0.8\linewidth]{MethodsAsObjects}
-	\caption{Classes, method dictionaries and compiled methods\label{fig:MethodsAsObjects}}
+	\caption{Classes, method dictionaries and compiled methods\figlabel{MethodsAsObjects}}
 \end{figure}
 
 We can exploit the relationships between classes and methods to pose queries about the system.
@@ -409,7 +409,7 @@ Navigate to \menu{Lint checks>Possible bugs>Sends different super message} and \
 In \figref{sendDifferentSuper} we can see that 19 such methods have been found within the \ct{Collection} hierarchy, including \ct{Collection>>>printNameOn:}, which sends \ct{super printOn:}.
 \begin{figure}[ht]\centering
 	\includegraphics[width=\linewidth]{sendDifferentSuper}
-	\caption{Finding methods that send a different super message.\label{fig:sendDifferentSuper}}
+	\caption{Finding methods that send a different super message.\figlabel{sendDifferentSuper}}
 \end{figure}
 
 Browser environments can also be created programmatically.
@@ -469,7 +469,7 @@ Integer>>>factorial
 
 \begin{figure}[ht]\centering
 	\includegraphics[width=\linewidth]{exploringThisContext}
-	\caption{Exploring \lct{thisContext}.\label{fig:exploringThisContext}}
+	\caption{Exploring \lct{thisContext}.\figlabel{exploringThisContext}}
 \end{figure}
 
 Welcome to the poor-man's debugger!
@@ -556,7 +556,7 @@ It is also possible to supply a boolean or a boolean block as an argument to \ct
 
 %======================================
 \section{Intercepting messages not understood}
-\label{sec:msgnotunderstood}
+\seclabel{msgnotunderstood}
 
 So far we have used the reflective features of \st mainly to query and explore objects, classes, methods and the run-time stack. Now we will look at how to use our knowledge of the \st system structure to intercept messages and modify behaviour at run-time.
 
@@ -700,7 +700,7 @@ Let us step through what happens the first time the message \ct{x} is sent to ou
 
 \begin{figure}[ht]\centering
 	\includegraphics[width=\linewidth]{DynamicAccessors}
-	\caption{Dynamically creating accessors.\label{fig:DynamicAccessors} \alex{not sure whether the figure is highly necessary. The code is rather simple and the figure complete to follow in my opinion.}}
+	\caption{Dynamically creating accessors.\figlabel{DynamicAccessors} \alex{not sure whether the figure is highly necessary. The code is rather simple and the figure complete to follow in my opinion.}}
 \end{figure}
 
 (1) We send \ct{x} to \ct{myDA}, (2) the message is looked up in the class, and (3) not found in the class hierarchy. (4) This causes \ct{self doesNotUnderstand: #x} to be sent back to the object, (5) triggering a new lookup. This time \ct{doesNotUnderstand:} is found immediately in \ct{DynamicAccessors}, (6) which asks its class to compile the string \ct{'x ^ x'}. The \ct{compile} method is looked up (7), and (8) finally found in \ct{Behavior}, which (9-10) adds the new compiled method to the method dictionary of \ct{DynamicAccessors}. Finally, (11-13) the message is resent, and this time it is found.
@@ -717,7 +717,7 @@ Note the use of \ct{Object>>>perform:} in step (13) which can be used to send me
 
 %======================================
 \section{Objects as method wrappers}
-\label{sec:wrapper}
+\seclabel{wrapper}
 
 We have already seen that compiled methods are ordinary objects in \st, and they support a number of methods that allow the programmer to query the run-time system.
 What is perhaps a bit more surprising, is that \emph{any object} can play the role of a compiled method. All it has to do is respond to the method \ct{run:with:in:} and a few other important messages.

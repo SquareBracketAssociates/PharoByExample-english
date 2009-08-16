@@ -81,16 +81,16 @@ In \ob, a browser is described by a domain model and a \ind{metagraph} that spec
 We will look at how to build new browsers from predefined parts and how to easily describe new tools. We will illustrate how to define sophisticated browsers for various domains with the help of three examples: a file browser, a remake of the ubiquitous \st system browser, and a coverage browser.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Building a simple browser step by step}\label{sec:introduction}
+\section{Building a simple browser step by step}\seclabel{introduction}
 
-%\subsection{Building a File Browser}\label{sec:fileBrowserExample}
+%\subsection{Building a File Browser}\seclabel{fileBrowserExample}
 
 To illustrate how to instantiate the \obf, we describe the implementation of a simple file browser supporting navigation of directories and files.
 
 \begin{figure}[!ht]
 \begin{center}
 \includegraphics[width=\textwidth]{filebrowser}
-\caption{A minimal file browser based on OmniBrowser.} \label{fig:filebrowser}
+\caption{A minimal file browser based on OmniBrowser.} \figlabel{filebrowser}
 \end{center}
 \end{figure}
 
@@ -226,7 +226,7 @@ Our file browser may now be opened by executing \ct{FileBrowser open}. Currently
 %\end{figure}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Enhancing the file browser with actions, definitions and icons} \label{sec:enhancing}
+\section{Enhancing the file browser with actions, definitions and icons} \seclabel{enhancing}
 
 \subsubsection{Spawning browsers}
 
@@ -237,7 +237,7 @@ A command defines how the user can interact with browsed items. All interactions
 \begin{figure}[!ht]
 \begin{center}
 \includegraphics[width=0.5\textwidth]{command}
-\caption{The browse command in the filer browser.} \label{fig:command}
+\caption{The browse command in the filer browser.} \figlabel{command}
 \end{center}
 \end{figure}
 
@@ -445,7 +445,7 @@ FileBrowser class>>>defaultMetaNode
 The effect of adding a filter to a metanode is to let the user select the metaedge to follow. One button is created for each metaedge. Without any filter, all edges are used to compute of the next list as we previously saw.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Graph and Metagraph of a Browser} \label{sec:omnibrowser}
+\section{Graph and Metagraph of a Browser} \seclabel{omnibrowser}
 
 The remainder of this chapter reviews the notions introduced so far, but in a more formal fashion. We describe the internals of the framework, which should help the reader to understand when \ob is appropriate for a given task and what are its strengths and limitations.
 
@@ -453,7 +453,7 @@ The \obf is structured around (i) an explicit domain model and (ii) a metagraph,
 
 %\secref{overview} explains the major classes that make up the \obf. \secref{fileBrowserExample} shows a concrete instantiation to build a file browser. \secref{corebehavior} goes in some more detail and describes the core behavior of the framework. Section~\ref{widgets} explains how the widgets are glued together.
 
-\subsection{Overview of the \obf}\label{sec:overview}
+\subsection{Overview of the \obf}\seclabel{overview}
 The major classes that make up the \obf are presented in \figref{core}, and explained briefly in the rest of this section. %After an example, Section~\ref{sec:corebehavior} discusses the core behavior of the classes in more detail.
 
 \begin{figure}[!ht]
@@ -488,7 +488,7 @@ A \emphind{filter} provides a strategy for filtering out some of the nodes from 
 \paragraph{Definition.} While navigating in the domain space, information about the selected node is displayed in a dedicated textual panel. If the text is expected to be edited by the browser user, then a \emphind{definition} is needed to handle modification and commitment (\ie an \emph{accept} in the \st terminology). A definition is produced by a node. 
 
 %===============
-\subsection{Core Behavior of the Framework}\label{sec:corebehavior}
+\subsection{Core Behavior of the Framework}\seclabel{corebehavior}
 
 The core of the \ob framework is composed of 8 classes (\figref{core}).
 % We denote the \st metaclass hierarchy by a dashed arrow. 
@@ -718,7 +718,7 @@ Several other browsers supporting new language constructs such as Traits have be
 \begin{figure}
 \begin{center}
 \includegraphics[width=8cm]{BrowserFamily}
-\caption{Some code browsers developed using \obf.}\label{fig:browsers}
+\caption{Some code browsers developed using \obf.}\figlabel{browsers}
 \end{center}
 \end{figure}
 
