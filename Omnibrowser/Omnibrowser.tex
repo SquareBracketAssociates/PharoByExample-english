@@ -6,6 +6,9 @@
 % 2008-01-19 - Alex first draft
 % 2008-03-31 - David Roethlisberger reviewed and extended
 % 2009-06-29 - Oscar Nierstrasz reviewing
+% 2009-08-16 - Oscar revised and indexed
+
+%:===> Needs a hands-on review
 
 %=================================================================
 
@@ -69,31 +72,32 @@
 %\st is not only an object-oriented programming language; it is also known for its extensive integrated development environment supporting interactive and dynamic programming. While the default tools are adequate for browsing the code and developing applications, it is often cumbersome to extend the environment to support new language constructs or to build additional tools supporting new ways of navigating and presenting source code. 
 
 \noindent
-In this chapter, we present \ob, a browser framework that supports the definition of browsers based on explicit metamodels. In the \obf, a browser is a graphical list-oriented tool to navigate and edit any arbitrary domain. The most common representative of this category of tools is the \st system browser, which is used to navigate and edit \st source code.
-In \ob, a browser is described by a domain model and a metagraph that specifies how the domain space may be navigated. Widgets, such as list menus and text panels, are used to display information gathered from a particular path in the metagraph. Although widgets are programmatically composed by the framework, \ob allows for interaction with the end user.
+In this chapter, we present \ob, a browser framework that supports the definition of browsers based on explicit metamodels. In the \obf, a browser is a graphical list-oriented tool to navigate and edit an arbitrary domain. The most common representative of this category of tools is the \st system browser, which is used to navigate and edit \st source code.
+In \ob, a browser is described by a domain model and a \ind{metagraph} that specifies how the domain space may be navigated. Widgets, such as list menus and text panels, are used to display information gathered from a particular path in the metagraph. Although widgets are programmatically composed by the framework, \ob allows for interaction with the end user.
+\indexmain{\ob}
 
-\on{It is confusing to talk about the ``\st system browser'' -- in \pharo there is only the OB browser!}\alex{I am not sure to understand. Can't we assume that the \st system browser is OB based?}
+%\on{It is confusing to talk about the ``\st system browser'' -- in \pharo there is only the OB browser!}\alex{I am not sure to understand. Can't we assume that the \st system browser is OB based?}
 
-We look at how to build new browsers from predefined parts and how to easily describe new tools. We will illustrate how to define sophisticated browsers for various domains with the help of three example: a file browser, a remake of the ubiquitous \st system browser, and a coverage browser.
+We will look at how to build new browsers from predefined parts and how to easily describe new tools. We will illustrate how to define sophisticated browsers for various domains with the help of three examples: a file browser, a remake of the ubiquitous \st system browser, and a coverage browser.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Building a simple browser step by step}\label{sec:introduction}
 
 %\subsection{Building a File Browser}\label{sec:fileBrowserExample}
 
-To illustrate how to instantiate the \obf, we describe the implementation of a simple file browser supporting the navigation in directories and files.
+To illustrate how to instantiate the \obf, we describe the implementation of a simple file browser supporting navigation of directories and files.
 
 \begin{figure}[!ht]
 \begin{center}
-\includegraphics[scale=0.34]{filebrowser}
+\includegraphics[width=\textwidth]{filebrowser}
 \caption{A minimal file browser based on OmniBrowser.} \label{fig:filebrowser}
 \end{center}
 \end{figure}
 
 \figref{filebrowser} shows the file browser in action. The navigation columns in the case of a file browser are used to navigate through directories, where every column lists the contents of the directory selected in its left column, similar to the \emph{Column View} of the Finder in the Mac OS-X operating system.
-Note that we can have an infinite numbers of panes navigating through the file system. The horizontal scrollbar lets the user browse the directory structure. A text panel below the columns displays additional properties of the currently selected directory or file and provides means to manipulate these properties.
+Note that we can have an arbitrary number of panes navigating through the file system. The horizontal scrollbar lets the user browse the directory structure. A text panel below the columns displays additional properties of the currently selected directory or file and provides means to manipulate these properties.
 
-The class describing a browser must inherit from the class \ct{OBBrowser}. The class \ct{FileBrowser} may be defined as follows:
+The class describing a browser must inherit from the class \clsind{OBBrowser}. The class \ct{FileBrowser} may be defined as follows:
 
 \begin{code}{}
 OBBrowser subclass: #FileBrowser
@@ -106,17 +110,17 @@ OBBrowser subclass: #FileBrowser
 The default browser title may be overridden by redefining the class method \ct{title}:
 
 \begin{code}{}
-FileBrowser class>>title
+FileBrowser class>>>title
 	^ 'FileBrowser for PBE'
 \end{code}
 
 
 %\paragraph{Metagraph Definition.} 
-For keeping this example simple, we will assume a filesystem encompasses only two kind of entities, files and directories. 
-\ob uses a \emph{metagraph} to model different navigation paths that a user may take by clicking on browser's items. 
+\ob uses a \emphind{metagraph} to model different navigation paths that a user may follow by clicking on browser items. 
+To keep this example simple, we will assume that a file system contains only two kind of entities, files and directories. 
 
 \begin{code}{}
-FileBrowser class>>defaultMetaNode
+FileBrowser class>>>defaultMetaNode
      "returns the directory metanode that acts as the root metanode"
  
      | directory file |
@@ -128,10 +132,11 @@ FileBrowser class>>defaultMetaNode
      ^ directory
 \end{code}
 
-A metagraph is composed of metanodes, a metanode representing one particular set of selected items.
-To model the navigation of a filesystem we thus need two metanodes in the metagraph, \ct{Directory} and \ct{File}. Within any directory of a filesystem, we can again find files and other directories, hence there are two kinds of transitions outgoing from a directory metanode, named \ct{files} and \ct{directories} in the metagraph. 
+\index{metanode}
+A metagraph is composed of metanodes, each of which represents one particular set of selected items.
+To model the navigation of a file system we thus need two metanodes in the metagraph, \ct{Directory} and \ct{File}. Within any directory of a file system, we can navigate to further files and other directories, hence we need two kinds of transitions out of a directory metanode, which will be labelled \ct{files} and \ct{directories} in the metagraph. 
 
-The subsequent step is to create class nodes that will model browser items. For that purpose, we define two subclasses of \ct{OBNode}:
+The next step is to create class nodes that will model browser items. For that purpose, we define two subclasses of \clsind{OBNode}:
 
 \begin{code}{}
 OBNode subclass: #FileNode
@@ -147,23 +152,23 @@ FileNode subclass: #DirectoryNode
 	category: 'PBE-Omnibrowser'
 \end{code}
 
-Instances of \ct{FileNode} and \ct{DirectoryNode} will represent files and directory, the domain being navigated through. 
+Instances of \ct{FileNode} and \ct{DirectoryNode} will represent files and directories of the domain being navigated. 
 Nodes wrap objects of the browsed domain. First the class \ct{FileNode}, a subclass of \ct{OBNode}, has to be defined. Instances of this class will represent concrete files. A file node is identified by a full path name, stored in a variable. A directory is another entity in our model that contains directories and files. A directory can be simply modeled as a special kind of file. The only difference between a file and a directory node is that for a directory the path variable points to a directory, not to a file. 
 
 The \ct{path} variable needs accessors:
 
 \begin{code}{}    
-FileNode>>path
+FileNode>>>path
 	^ path
 
-FileNode>>path: aString
+FileNode>>>path: aString
 	path := aString
 \end{code}
 
-A node needs to answer to the message \ct{name}, which returns the title used in the browser:
+A node needs to answer to the message \ct{name} and return the title used in the browser:
 
 \begin{code}{}    
-FileNode>>name
+FileNode>>>name
 	"return the name of a file"
 	^ (self path subStrings: '/') last
 \end{code}
@@ -171,50 +176,52 @@ FileNode>>name
 When selected, a node may provide a character string used to fill the lower text pane. In our situation, clicking on a file node should display the content of the selected file. The method \ct{text} has to be defined. 
 
 \begin{code}{}    
-FileNode>>text
+FileNode>>>text
 	"return the first 1000 characters"
      ^ ((FileStream readOnlyFileNamed: path) converter: Latin1TextConverter new; 
               next: 1000) asString
 \end{code}
 
-Note that this method \ct{text} has to be used when no further interaction is expected by the end-user. For example, if one wish to modify the content of a file by modifying the text in the lower pane, a \emph{definition} must be used, as we shall see later.
+Note that the method \ct{text} provides a purely read-only view of the node.
+If we want to be able to edit the contents of a file, then we need to take a different approach, as we will see later on.
+% Note that this method \ct{text} has to be used when no further interaction is expected by the end-user. For example, if one wishes to modify the content of a file by modifying the text in the lower pane, a \emph{definition} must be used, as we shall see later.
 
-Each node is displayed in a column, and when selected, it provides the list of nodes used to fill the next column. Clicking on a directory must display the list of files and folders in the column located on the right hand side. The methods \ct{directories} and \ct{files} have to be defined:
+Each node is displayed in a column, and when selected, it provides the list of nodes used to fill the next column. Clicking on a directory must cause the list of contained files and folders to be displayed in the column located to the right. The transitions \ct{directories} and \ct{files} have to be defined as methods:
 
 \begin{code}{}    
-DirectoryNode>>directories
+DirectoryNode>>>directories
      | dir | 
      dir := FileDirectory on: path.
      ^ dir directoryNames collect: [:each | 
                             DirectoryNode new path: (dir fullNameFor: each)]
 
-DirectoryNode>>files
+DirectoryNode>>>files
     | dir | 
      dir := FileDirectory on:  path.
      ^ dir fileNames collect: [:each | 
                             FileNode new path: (dir fullNameFor: each)]
 \end{code}
 
-The name \ct{directories} and \ct{files} are also the names of the link between the \ct{Directory} and \ct{File} meta nodes. A formal explanation for this is: when one of the two \ct{#directories} and \ct{#files} metaedges is traversed, the name of this metaedge is used as a message name sent to the metanode's node. The two methods are invoked when a directory node is selected.
+The name \ct{directories} and \ct{files} are also the names of the transitions between the \ct{Directory} and \ct{File} meta nodes. When one of the two \ct{#directories} and \ct{#files} metaedges is traversed, the name of this \ind{metaedge} is used as a message name sent to the metanode's node. The two methods are invoked when a directory node is selected.
 
 The implementation of \ct{FileNode} and \ct{DirectoryNode} shows the two responsibilities of a node: rendering itself (implemented in the \ct{text} method), and calculating the nodes reachable from a node (in the \ct{directories} and \ct{files} methods). As there is no further navigation leaving a file node, such a node does not have to define navigation methods such as \ct{directories} or \ct{files}.
 
 
-The file browser is opened for a given directory, \eg the root directory of the filesystem. Thus the metagraph's root metanode represents a directory. The default root node is given by the class method \ct{defaultRootNode}:
+The file browser is opened for a given directory, \eg the root directory of the file system. Thus the metagraph's root metanode represents a directory. The default root node is given by the class method \ct{defaultRootNode}:
 
 \begin{code}{}    
-FileBrowser class>>defaultRootNode
+FileBrowser class>>>defaultRootNode
      ^ DirectoryNode new path: '/'
 \end{code}
 
 Our file browser may now be opened by executing \ct{FileBrowser open}. Currently, no much can be done. Only navigating through directories and displaying file contents. In the subsequent sections, we will see how commands and icons may be added.
 
-%For every metanode in the metagraph we also need a concrete node class in our model, in this case we need two node classes, one representing a directory, the other a file. As the root metanode in the graph represents a directory, the concrete node in the model has to be a concrete directory node, eg. representing the root directory of the filesystem. This default root node is answered by the class-side method \ct{defaultRootNode} of \ct{OBFileBrowser}: 
+%For every metanode in the metagraph we also need a concrete node class in our model, in this case we need two node classes, one representing a directory, the other a file. As the root metanode in the graph represents a directory, the concrete node in the model has to be a concrete directory node, eg. representing the root directory of the file system. This default root node is answered by the class-side method \ct{defaultRootNode} of \ct{OBFileBrowser}: 
 
 %\begin{figure}[!ht]
 %\begin{center}
-%\includegraphics[scale=0.55]{metagraph-fs}
-%\caption{A filesystem as a graph (a) and its corresponding metagraph (b).} \figlabel{graphfs}
+%\includegraphics[width=\textwidth]{metagraph-fs}
+%\caption{A file system as a graph (a) and its corresponding metagraph (b).} \figlabel{graphfs}
 %\end{center}
 %\end{figure}
 
@@ -223,49 +230,50 @@ Our file browser may now be opened by executing \ct{FileBrowser open}. Currently
 
 \subsubsection{Spawning browsers}
 
-A command defines an interaction the user can have with browsed items. All interactions triggered from a menu have to be defined as commands. We will define a browser command that opens a second file browser on a selected node. \figref{command} depicts the activation of the contextual menu.
+A command defines how the user can interact with browsed items. All interactions triggered from a menu have to be defined as commands. We will define a browser command that opens a second file browser on a selected node. \figref{command} depicts the activation of the contextual menu.
 
 
 %Note that this figure use a filter, this is used later on
 \begin{figure}[!ht]
 \begin{center}
-\includegraphics[scale=0.34]{command}
+\includegraphics[width=0.5\textwidth]{command}
 \caption{The browse command in the filer browser.} \label{fig:command}
 \end{center}
 \end{figure}
 
 
-\ct{BrowseCommand} has to be a subclass of \ct{OBCommand} and must override at least 4 methods in order to be effective. Each command must have a menu item label.
+\ct{BrowseCommand} has to be a subclass of \clsind{OBCommand} and must override at least 4 methods in order to be effective. Each command must have a menu item label.
+\mthindex{OBCommand}{vs}
 \begin{code}{}    
-BrowseCommand>>label
+BrowseCommand>>>label
 	^ 'browse'
 \end{code}
 
 A command may or may not be active (\ie listed in the contextual menu) depending on some selection or the particular state of the selected item. In our case, we just need to redefine \ct{isActive} to answer whether the node for which the command is triggered is selected. This implementation of \ct{isActive} is very common and you will probably need it for most of your commands.
-
+\mthindex{OBCommand}{isActive}
 \begin{code}{}    
-BrowseCommand>>isActive
+BrowseCommand>>>isActive
 	^ (requestor isSelected: target)
 \end{code}
 
-When these methods get executed, the command already knows the column from which it gets triggered (stored in the instance variable \ct{requestor}) and the target node for which the action has to be exectuted (stored in the instance variable \ct{target}). 
+When these methods are evaluated, the command already knows the column from which it gets triggered (stored in the instance variable \ct{requestor}) and the target node for which the action has to be exectuted (stored in the instance variable \ct{target}). 
 
-Command may be also invoked using a particular keystroke. The apple key (on Mac) or alt key (on MS Windows and Linux) has to be combined with the character returned by \ct{keystroke} to activate the command.
-
+A command may be also invoked using a particular keystroke. The apple key (on Mac) or alt key (on MS Windows and Linux) has to be combined with the character returned by \ct{keystroke} to activate the command.
+\mthindex{OBCommand}{keystroke}
 \begin{code}{}    
-BrowseCommand>>keystroke
+BrowseCommand>>>keystroke
 	^ $b
 \end{code}
 
 The shift key may be added to the keystroke by returning a capital letter instead of a minuscule one. Note that by defining a keystroke, the label is automatically appended with ``\ct{(b)}'' in menus.
 
-The method \ct{execute} is executed when the command is active and triggered by either an appropriate keystroke or a menu selection.
-
+The method \ct{execute} is evaluated when the command is active and triggered by either an appropriate keystroke or a menu selection.
+\mthindex{OBCommand}{execute}
 \begin{code}{}    
-BrowseCommand>>execute
+BrowseCommand>>>execute
 	FileBrowser openOn: target.
 
-FileBrowser class>>openOn: aNode 
+FileBrowser class>>>openOn: aNode 
 	^ (self root: aNode selection: aNode) open
 \end{code}
 
@@ -274,7 +282,7 @@ The method \ct{openOn:} needs to be added to the class side of \ct{FileBrowser} 
 The very last step is to link \ct{FileBrowser} to \ct{BrowseCommand}. This is done by defining an instance side method that returns the class command (and not an instance of it). This name of the method needs to begin with ``\ct{cmd}'', this is a naming convention similar to testing method names beginning with ``\ct{test}''. The instance side method needs to be defined:
 
 \begin{code}{}    
-FileBrowser>>cmdBrowse
+FileBrowser>>>cmdBrowse
 	^ BrowseCommand
 \end{code}
 
@@ -283,7 +291,8 @@ The command is now fully defined. Open a new file browser and right click on an 
 %=============================================================
 \subsubsection{Creating new files}
 
-The command given above remains quite simple: no list to refresh; no interaction with the user; no automatic node selection. We will cover these important topics by adding a command for creating files. Browser column will have to be updated with a new entry (the file recently created), the user will have to enter the name of the file to be created\alex{Need for David help to add ``, and the new file will be selected after its creation''}.
+Our browse command is very simple: there is no list to refresh; no interaction with the user; no automatic node selection. We will cover these important topics by adding a command for creating files. The browser column will have to be updated with a new entry (the file recently created), and the user will have to enter the name of the file to be created.
+\alex{Need for David help to add ``, and the new file will be selected after its creation'' ...}
 
 The \ct{NewFileCommand} is define as follows:
 
@@ -294,25 +303,25 @@ OBCommand subclass: #NewFileCommand
 	poolDictionaries: ''
 	category: 'PBE-OmniBrowser'
 
-NewFileCommand>>keystroke
+NewFileCommand>>>keystroke
 	^ $n
 
-NewFileCommand>>label
+NewFileCommand>>>label
 	^ 'new file'
 \end{code}
 
-We want to have the command activated when right clicking either on a directory (to create the file in it), or on a column. This suggests a slightly more elaborated \ct{isActive} method:
+The command should be activated when we right click either on a directory (to create the file in it), or on a column. This suggests a slightly more elaborate \ct{isActive} method:
 
 \begin{code}{}    
-NewFileCommand>>isActive
+NewFileCommand>>>isActive
 	^ ((requestor isSelected: target) and: [target isKindOf: DirectoryNode])
 			or: [requestor selectedNode isNil]
 \end{code}
 
-The \obf provides a number of utility classes to ask for user input contained in the package \ct{OmniBrowser-Notifications}. We will use \ct{OBTextRequest} to ask for user input. 
+The \obf provides a number of utility classes to ask for user input. These class are in the package \ct{OmniBrowser-Notifications}. We will use \clsind{OBTextRequest} to ask for user input. 
 
 \begin{code}{}    
-NewFileCommand>>execute
+NewFileCommand>>>execute
 	| filename fullFilename stream nodeToSelect |
 	filename := OBTextRequest 
 					prompt: 'Please type the name of the file to create' 
@@ -332,9 +341,9 @@ The last line of \ct{execute} is important. It signals the column (referenced by
 %=============================================================
 \subsubsection{Modifying files}
 
-So far, we've seen only how to create empty files. To modify the content of a file, the browser needs to accept user input from the lower text pane and performs an action on it. 
+So far, we've only seen how to create empty files. To modify the content of a file, the browser needs to accept user input from the lower text pane and perform an action on it. 
 
-Let's create subclass \ct{OBDefinition}:
+Let's subclass \clsind{OBDefinition}:
 
 \begin{code}{}    
 OBDefinition subclass: #FileDefinition
@@ -347,17 +356,17 @@ OBDefinition subclass: #FileDefinition
 The variable \ct{fileNode} is intended to refer to the selected file node. This variable will have to be initialized when the definition is instantiated. We need accessors:
 
 \begin{code}{}    
-FileDefinition>>fileNode
+FileDefinition>>>fileNode
 	^ fileNode
 
-FileDefinition>>fileNode: aFileNode
+FileDefinition>>>fileNode: aFileNode
 	fileNode := aFileNode
 \end{code}
 
-As we previously saw, the content of the lower text pane is given by the \ct{text} methods defined on \ct{FileNode}. As we now use a definition, \ct{FileNode>>text} is now useless. You can safely remove it and define it on \ct{FileDefinition} instead:
+As we saw previously, the content of the lower text pane is given by the \ct{text} methods defined on \ct{FileNode}. As we now use a definition, \ct{FileNode>>>text} is now useless. You can safely remove it and define it on \ct{FileDefinition} instead:
 
 \begin{code}{}
-FileDefinition>>text
+FileDefinition>>>text
 	"return the first 1000 characters"
      ^ ((FileStream readOnlyFileNamed: fileNode path) converter: Latin1TextConverter new; 
               next: 1000) asString
@@ -366,7 +375,7 @@ FileDefinition>>text
 The message \ct{text:} is sent to the OB definition when the user presses apple-s  on Mac or alt-s on other platforms. When the content is ``accepted'', we need to open the file, write the content provided by the user into it, and close the file:
 
 \begin{code}{}
-FileDefinition>>text: aText
+FileDefinition>>>text: aText
 	"return the first 1000 characters"
      (FileStream fileNamed: fileNode path) 
 				nextPutAll: aText asString;
@@ -377,7 +386,7 @@ FileDefinition>>text: aText
 \ct{FileDefinition} is currently not linked to the browser. To do so, define the method \ct{definition} in \ct{FileNode}:
 
 \begin{code}{}
-FileNode>>definition
+FileNode>>>definition
 	^ FileDefinition new fileNode: self
 \end{code}
 
@@ -388,7 +397,7 @@ Each selected item can have its own definition.
 
 To visually distinguish files from directories when browsing a directory with our file browser, we will denote directories with a small icon. This section shows how to import new icons into Pharo, then how to associate icons to browsed items.
 
-The first step is to integrate the icon itself into a \pharo image. In the class \ct{OBMorphicIcons} you see some pre-defined icons stored in methods such as \ct{package}. To import an icon stored as an image (\eg as a GIF file), you can use this code:
+The first step is to integrate the icon itself into a \pharo image. In the class \clsind{OBMorphicIcons} you can see some pre-defined icons stored in methods such as \ct{package}. To import an icon stored as an image (\eg as a GIF file), you can use this code:
 
 \begin{code}{}
 | image stream |
@@ -401,7 +410,7 @@ stream contents.
 Inspect this whole code listing. In the inspector you see the definition of the color form for the icon. You can now install the content of this \ct{ByteString} as a method in the method protocol \ct{icons} of \ct{OBMorphicIcons} in a method called \ct{folder}. Make sure that you do not return the string, but the code within the string, so that if the method gets invoked a color form for the folder icon is returned. For example, the package icon is defined as:
 
 \begin{code}{}
-OBMorphicIcons>>package
+OBMorphicIcons>>>package
     ^(Form
 	extent: 14@14
 	depth: 32
@@ -414,30 +423,33 @@ The list of numbers corresponds to the image bit encoding of the icon.
 In the second step you can take this icon and display it in the columns for every directory. To achieve this, simply add a method \ct{icon} to the class \ct{DirectoryNode}:
 
 \begin{code}{}
-DirectoryNode >>icon
+DirectoryNode >>>icon
 	^ #folder  
 \end{code}
 
-If you do not have a .gif under hand, you may replace \ct{#folder} by \ct{#package}, since a package icon is available. The method \ct{icon} gets executed for every element that is added to a column. If it answers a symbol, then the method of \ct{OBMorphicIcons} with the same name is executed, answering the icon as a color form to be added on the left of the list element, \ie the directory name.
+If you do not have a .gif under hand, you may replace \ct{#folder} by \ct{#package}, since a package icon is available. The method \ct{icon} is evaluated for every element that is added to a column. If it answers a symbol, then the method of \ct{OBMorphicIcons} with the same name is evaluated, answering the icon as a color form to be added on the left of the list element, \ie the directory name.
 
-Another way to distinguish files from directory is to keep them separated in different tabs. 
-\figref{command} illustrates this. This is simply done by adding a filter on the \ct{directory} metanode when defining the metagraph:
+Another way to distinguish files from directories is to keep them separated in different tabs. 
+\figref{command} illustrates this. This is done by simply adding a filter to the \ct{directory} metanode when defining the metagraph:
 
 \begin{code}{}
-FileBrowser class>>defaultMetaNode
+FileBrowser class>>>defaultMetaNode
     ...
-    directory           childAt: #directories put: directory;          childAt: #files put: file; 		   "Change the period for a semi-column"	addFilter: OBModalFilter new.	 "Line to add"
+    directory 
+          childAt: #directories put: directory;
+          childAt: #files put: file; 		   "Change the period for a semi-column"
+	addFilter: OBModalFilter new.	 "Line to add"
     ...    
 \end{code}
 
-The effect of adding a filter on a metanode is to let the user select the metaedge to follow. One button is created for each of the metaedge. Without filter, all edges are used to compute of the next list as we previously saw.
+The effect of adding a filter to a metanode is to let the user select the metaedge to follow. One button is created for each metaedge. Without any filter, all edges are used to compute of the next list as we previously saw.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Graph and Metagraph of a Browser} \label{sec:omnibrowser}
 
-The remaining of this chapter revises the notions already seen so far, but in a more formal fashion. It describes the internal of the framework, which should help the reader to understand when \ob is appropriate for a given task and what are its strenghts and limitations.
+The remainder of this chapter reviews the notions introduced so far, but in a more formal fashion. We describe the internals of the framework, which should help the reader to understand when \ob is appropriate for a given task and what are its strengths and limitations.
 
-The \obf is structured around (i) an explicit domain model and (ii) a metagraph, a state machine, that specifies the navigation and interaction with the domain model. The user interface is constructed by the framework, and uses a layout similar to the code browser, with two horizontal parts. The top part is a column-based section where the navigation is done. The bottom half is a text pane.
+The \obf is structured around (i) an explicit domain model and (ii) a metagraph, a state machine, that specifies the navigation and interaction with the domain model. The user interface is constructed by the framework, and uses a layout similar to the code browser, with two horizontal parts. The top part is a column-based section which supports navigation. The bottom half is a text pane.
 
 %\secref{overview} explains the major classes that make up the \obf. \secref{fileBrowserExample} shows a concrete instantiation to build a file browser. \secref{corebehavior} goes in some more detail and describes the core behavior of the framework. Section~\ref{widgets} explains how the widgets are glued together.
 
@@ -446,59 +458,60 @@ The major classes that make up the \obf are presented in \figref{core}, and expl
 
 \begin{figure}[!ht]
 \begin{center}
-\includegraphics[scale=0.59]{CoreOnly}
+\includegraphics[width=\textwidth]{CoreOnly}
 \caption{Core of the \obf. } \figlabel{core}
 \end{center}
 \end{figure}
 
-\paragraph{Browser.} A \emph{browser} is a graphical tool to navigate and edit a domain space. This domain has to be described in terms of a directed cyclic graph (DCG). It is cyclic because for example file systems or structural meta models of programming languages (\ie packages, classes, methods...) contain cycles, and we need to be able to model these. The domain graph has to have an entry point, its root. The path from this root to a particular node corresponds to a state of the browser defined by a particular combination of user actions (such as menu selections or button presses).
+\paragraph{Browser.} A \emphind{browser} is a graphical tool to navigate and edit a domain space. This domain has to be described in terms of a directed cyclic graph (DCG). It is cyclic because, for example, file systems or structural meta models of programming languages (\ie packages, classes, methods...) contain cycles, and we need to be able to model these. The domain graph has to have an entry point, its root. The path from this root to a particular node corresponds to a state of the browser defined by a particular combination of user actions (such as menu selections or button presses).
 The navigation of this domain graph is specified in a \emph{metagraph}, a state machine describing the states and their possible transitions.
 
-\paragraph{Node.} A \emph{node} is a wrapper for a domain object, and has two responsibilities: rendering the domain object, and returning domain nodes.
+\paragraph{Node.} A \emphind{node} is a wrapper for a domain object, and has two responsibilities: rendering the domain object, and returning domain nodes.
 
-\paragraph{Metagraph.} A browser's \emph{metagraph} specifies the way a user traverses the graph of domain nodes. A metagraph is composed of metanodes and metaedges. A metanode identifies a state in which the browser may be. A metanode may reference a filter (described below)
+\paragraph{Metagraph.} A browser's \emphind{metagraph} specifies the way a user traverses the graph of domain nodes. A metagraph is composed of metanodes and metaedges. A metanode identifies a state in which the browser may be. A metanode may reference a filter (described below)
 %\footnote{In a former version of \ob~\cite{Berg07c}, actors where used to defines actions and where attached to a metanode. In the current version of \ob actors have been replaced by commands.}.
 The metanode does not have the knowledge of the domain nodes, however each node is associated to a metanode. Transitions between meta\-nodes are defined by metaedges. When a metaedge is traversed (\ie result of pressing a button or selecting an entry list), sibling nodes are created from a given node by invoking a method that has the name of the metaedge.
 
-A \emph{metanode} has the ability to be auto selected with the method \lct{Meta\-Node\ct{>>>}autoSelect: aMetaNode}. When a particular child for auto selection is designated, the first node produced by following its metaedge will be selected.
+A \emphind{metanode} has the ability to be auto selected with the method \lct{Meta\-Node\ct{>>>}autoSelect: aMetaNode}. When a particular child for auto selection is designated, the first node produced by following its metaedge will be selected.
 
-\paragraph{Command.} A \emph{Command} enables interaction and manipulation of the domain graph. Commands may be available through menus and buttons in the browser. They therefore have the ability to render themselves in a user interfaces and are responsible for handling exceptions that may occur when triggered. 
+\paragraph{Command.} A \emphind{command} enables interaction with and manipulation of the domain graph. Commands may be available through menus and buttons in the browser. They therefore have the ability to render themselves in a user interface and are responsible for handling exceptions that may be raised when they are executed. 
 
-Commands are defined in a non-invasive way: adding and removing commands is done without any method redefinition of the core framework. This enables a smooth gathering of commands independently realized.
+Commands are defined in a non-invasive way: commands are added and removed without redefining any method of the core framework. This enables a smooth gathering of independently realized commands.
 
 \paragraph{Filter.} 
-The metagraph describes a state machine. When the browser is in a state in which more than one transition are available, the user decides which transition to follow. To allow that to happen \ob displays the possible transitions  to the user. From all the possible transitions, \obf fetches all the nodes that represent the states the user could arrive at by following those transitions and list them in the next column. Note that the transition is not actually made yet, and the definition pane is still displaying the current definition.Once an item selected, the transition  actually happens, the definition pane is updated (and perhaps other panes such as button bars), and \ob gathers the next round of possible transitions.
+The metagraph describes a state machine. When the browser is in a state in which more than one transition is available, the user decides which transition to follow. To allow that to happen \ob displays the possible transitions  to the user. From all the possible transitions, the \obf fetches all the nodes that represent the states the user could arrive at by following those transitions and list them in the next column. Note that the transition is not actually made yet, and the definition pane is still displaying the current definition. Once an item selected, the transition  actually occurs, the definition pane is updated (and perhaps other panes such as button bars), and \ob gathers the next round of possible transitions.
 
 %\ab{This was not introduced before, it is not clear to me that people will get this example: for example \ct{\#allCategory} (which will lead to the allMethodCategory state) and\ct{\#categories} (which will lead to the methodCategories state)}
 
-A filter provides a strategy for filtering out some of the nodes from the display. If a node is the starting point of several edges, a filter may be needed to filter out all but one edge to determine which path has to be taken in the metagraph. 
+A \emphind{filter} provides a strategy for filtering out some of the nodes from the display. If a node is the starting point of several edges, a filter may be needed to filter out all but one edge to determine which path has to be taken in the metagraph. 
 
-\paragraph{Definition.} While navigating in the domain space, information about the selected node is displayed in a dedicated textual panel. If edition of the text is expected by the browser user, then a definition is necessary to handle modification and commitment (\ie an \emph{accept} in the \st terminology). A definition is produced by a node. 
+\paragraph{Definition.} While navigating in the domain space, information about the selected node is displayed in a dedicated textual panel. If the text is expected to be edited by the browser user, then a \emphind{definition} is needed to handle modification and commitment (\ie an \emph{accept} in the \st terminology). A definition is produced by a node. 
 
 %===============
 \subsection{Core Behavior of the Framework}\label{sec:corebehavior}
 
-The core of the \ob framework is composed of 8 classes (\figref{core}). We denote the \st metaclass hierarchy by a dashed arrow. 
+The core of the \ob framework is composed of 8 classes (\figref{core}).
+% We denote the \st metaclass hierarchy by a dashed arrow. 
 
 \begin{figure}[!ht]
 \begin{center}
-\includegraphics[scale=0.52]{Core}
+\includegraphics[width=\textwidth]{Core}
 \caption{Core of the \obf and its extension for the file browser.} \figlabel{coreextend}
 \end{center}
 \end{figure}
 
-The metaclass of the class \ct{OBBrowser} is \ct{OBBrowser class}. It defines two abstract methods \ct{defaultMetaNode} and \ct{defaultRootNode}. These methods are abstract, they therefore need to be overridden in subclasses. These methods are called when a browser is instantiated. The methods  \ct{defaultMetaNode} and \ct{defaultRootNode} return the root metanode and the root domain node, respectively. As we already saw, a browser is opened by sending the message \ct{open} to an instance of the class \ct{OBBrowser}.
+The metaclass of the class \clsind{OBBrowser} is \clsind{OBBrowser class}. It defines two abstract methods \mthind{OBBrowser class}{defaultMetaNode} and \mthind{OBBrowser class}{defaultRootNode}. These methods are abstract, they therefore need to be overridden in subclasses. These methods are called when a browser is instantiated. The methods  \ct{defaultMetaNode} and \ct{defaultRootNode} return the root metanode and the root domain node, respectively. As we already saw, a browser is opened by sending the message \ct{open} to an instance of the class \ct{OBBrowser}.
 
-The navigation graph is built with instances of the class \ct{OBMetaNode.} Transitions are built by sending the message \ct{childAt: selector put: metanode} to a \ct{MetaNode} instance. This has the effect to create a metaedge named \ct{selector} leading away the metanode receiver of the message and \ct{metanode}.
+The navigation graph is built with instances of the class \clsind{OBMetaNode.} Transitions are built by sending the message \ct{childAt: selector put: metanode} to a \ct{MetaNode} instance. This has the effect to create a metaedge named \ct{selector} leading away the metanode receiver of the message and \ct{metanode}.
 
 At runtime, the graph traversal is triggered by user actions (\eg pressing a button or selecting a list entry) which send the metaedge's name to the node that is currently selected. The rendering of a node is performed by invoking on the domain node the selector stored in the variable \ct{displaySelector} in the metanode.
 
-The class \ct{OBCommand} is instantiated by the framework and the set of commands for a browser is discovered (through the \st reflection API) when a browser is instantiated. All methods starting with the \ct{cmd} prefix are considered as commands. Each of this method should return the \emph{class} of the command (and not an instance of it).
+The class \clsind{OBCommand} is instantiated by the framework and the set of commands for a browser is discovered (through the \st reflection API) when a browser is instantiated. All methods starting with the \ct{cmd} prefix are considered to be commands. Each of this method should return the \emph{class} of the command (and not an instance of it).
 
 %The class \ct{OBNode} represents an element of the domain graph. Each node has a name. This name is used when lists of nodes are displayed in the navigation columns of the browser. When a node is selected in a list, information related to this node needs to be displayed in the bottom text pane. 
 %When the node is not supposed to be edited, the message \ct{text} is sent to it, returning a string  displayed in the bottom pane. When it is editable, the message \ct{definition} is sent and it is expected to return an instance of a subclass of \ct{OBDefinition}. Note that the nodes do not need to be configured to be editable or not. When they implement a method \ct{definition}, this will be used and the node will be editable. If that method is not present, then the method \ct{text} is used. 
 
-When the browser is in a state where several transitions are available, it displays the navigation possibilities to the user. From all the possible transitions, \obf fetches all the nodes that represent the states the user could arrive at by following those transitions and lists them in the next column. Once a selection is made, the transition  actually happens, the pane definition is updated and the process repeats.
+When the browser is in a state where several transitions are available, it displays the navigation possibilities to the user. From all the possible transitions, the \obf fetches all the nodes that represent the states the user could arrive at by following those transitions and lists them in the next column. Once a selection is made, the transition  actually occurs, the pane definition is updated and the process repeats.
 
 As explained before, a filter or modal filter can be used to select only a number of outgoing edges when not all of them need to be shown to the user. This is useful for instance to display the instance side, comments, or class side of a particular class in the classic standard system browser (cf. \secref{codebrowser}). Class \ct{OBFilter} is responsible for filtering nodes in the graph. The method \ct{nodesForParent:} computes a transition in the domain metagraph. This method returns a list of nodes obtained from a given node passed as argument. The class \ct{OBFilter} is subclassed into \ct{OBModalFilter}, a handy filter that represents transitions in the metagraph that can be traversed by using a radio button in the GUI.
 
@@ -513,11 +526,11 @@ From the programmer point of view, creating a new browser implies defining a dom
 
 \paragraph{Lists.} Navigation in \obf is rendered with a set of lists and triggered by selecting one entry in a list. Lists displayed in a browser are ordered and are displayed from left to right. Traversing a new metanode, by selecting a node in a list \textit{A}, triggers the construction of a set of nodes intended to fill a list \textit{B}. List \textit{B} follows list \textit{A}.
 
-The root of a metagraph corresponds to the left-most list. The number of lists displayed is equal to the depth of the metagraph. The depth of the system browser metagraph (as it will see later on in \figref{obmetagraph}) is 4, therefore the system browser has 4 lists (\figref{ob}). Because the metagraph of a filesystem contains a cycle (remember \ct{directory childAt: #directories put: directory} in the file browser metagraph in \secref{introduction}), the number of lists in the browser increases for each directory selected in the right-most list. Therefore a horizontal scrollbar is used to keep the width of the browser constant, yet displaying a potentially infinite number of lists in the top half.
+The root of a metagraph corresponds to the left-most list. The number of lists displayed is equal to the depth of the metagraph. The depth of the system browser metagraph (as it will see later on in \figref{obmetagraph}) is 4, therefore the system browser has 4 lists (\figref{ob}). Because the metagraph of a file system contains a cycle (remember \ct{directory childAt: #directories put:} \lct{directory} in the file browser metagraph in \secref{introduction}), the number of lists in the browser increases for each directory selected in the right-most list. Therefore a horizontal scrollbar is used to keep the width of the browser constant, yet displaying a potentially infinite number of lists in the top half.
 
 \paragraph{Radio buttons.} A modal filter in the metagraph is represented in the GUI by a radio button. Each edge leading away from the filter is represented as a button in the radio button. Only one button can be selected at a time in the radio button, and the associated choice is used to determine the outgoing edges. For example, the second list in the system browser contains the three buttons \ct{instance}, \ct{?} and \ct{class} as shown the transition from the environment to the three metanodes class, class comment and metaclass in \figref{ob}.
 
-\paragraph{Menus.} A menu can be displayed for each list widget of a browser. Typically such a menu displays a list of actions that can be executed by the user. These actions enable interaction with the domain model, however they do not allow further navigation in the metagraph.
+\paragraph{Menus.} A menu can be displayed for each list widget of a browser. Typically such a menu displays a list of actions that can be evaluated by the user. These actions enable interaction with the domain model, however they do not allow further navigation in the metagraph.
 
 
 %\sd{how to the notification of events relates to the widgets, I see how it is done but may be we should say it}
@@ -538,7 +551,7 @@ The system browser is probably the most important tool offered by the \pharo pro
 
 \begin{figure}[!ht]
 \begin{center}
-\includegraphics[scale=0.30]{obbrowser}
+\includegraphics[width=\textwidth]{obbrowser}
 \caption{\ob based \st system browser.} \figlabel{ob}
 \end{center}
 \end{figure}
@@ -569,7 +582,7 @@ The \ob-based implementation of the \pharo system browser is composed of 17 clas
 
 \begin{figure}[!ht]
 \begin{center}
-\includegraphics[scale=0.55]{obInternal}
+\includegraphics[width=\textwidth]{obInternal}
 \caption{Extension of the \obf to define the system browser.} \figlabel{obInternal}
 \end{center}
 \end{figure}
@@ -579,17 +592,17 @@ Compared to the default implementation of the \pharo System Browser this is less
 
 \begin{figure}[!ht]
 \begin{center}
-\includegraphics[scale=0.55]{ob-graph}
+\includegraphics[width=\textwidth]{ob-graph}
 \caption{Metagraph of the system browser.} \figlabel{obmetagraph}
 \end{center}
 \end{figure}
 
 \figref{obmetagraph} depicts the metagraph of the system browser. The metanode \ct{environment} contains information about categories. The filter is used to select what has to be displayed from the selected class (\ie the class definition, its comment or the metaclass definition). A class and a metaclass have a list of method categories, including the \ct{-- all --} method category that shows a list of all methods.
 
-As in the file browser example, we implement a method \ct{defaultMetaNode} on the class side of the browser class, \ie \ct{OBSystemBrowser}, returning the root metanode of the metagraph. This method reads:
-
+As in the file browser example, we implement a method \ct{defaultMetaNode} on the class side of the browser class, \ie \clsind{OBSystemBrowser}, returning the root metanode of the metagraph. This method reads:
+\needlines{8}
 \begin{code}{}
-OBSystemBrowser class>>defaultMetaNode
+OBSystemBrowser class>>>defaultMetaNode
 	| env classCategory |
 	env := OBMetaNode named: 'Environment'.
 	classCategory := OBMetaNode named: 'ClassCategory'.
@@ -599,12 +612,12 @@ OBSystemBrowser class>>defaultMetaNode
 	^env
 \end{code}
 
-There is a dedicated utility class called \ct{OBMetagraphBuilder} to create the complex metagraph of the system browser. The method \ct{defaultMetaNode} outsources most parts of the metagraph building to this class. \ct{OBMetagraphBuilder} implements its functionality in several small methods, \ie for every metanode of the metagraph there is a method holding all code to create this metanode and the outgoing edges, hence it is easily possible to adapt the metagraph by providing a dedicated subclass overriding the appropriate methods to change the right metanodes. 
+There is a dedicated utility class called \clsind{OBMetagraphBuilder} to create the complex metagraph of the system browser. The method \ct{defaultMetaNode} outsources most parts of the metagraph building to this class. \ct{OBMetagraphBuilder} implements its functionality in several small methods, \ie for every metanode of the metagraph there is a method holding all code to create this metanode and the outgoing edges, hence it is easily possible to adapt the metagraph by providing a dedicated subclass overriding the appropriate methods to change the right metanodes. 
 
 The root node of the domain graph is answered by the method \ct{defaultRootNode}. For the system browser, the root node is the environment node:
 
 \begin{code}{}
-OBSystemBrowser class>>defaultRootNode
+OBSystemBrowser class>>>defaultRootNode
 	^OBEnvironmentNode forImage
 \end{code}
 
@@ -617,7 +630,7 @@ OBSystemBrowser class>>defaultRootNode
 %This method \ct{descendantOfClassCat:} is implemented as follows for a node having a class associated (\eg a class node or a method node):
 
 %\begin{code}{}
-%OBClassAwareNode>>isDescendantOfClassCat: aClassCategoryNode
+%OBClassAwareNode>>>isDescendantOfClassCat: aClassCategoryNode
 %    ^(self theNonMetaClass environment organization 
 %		listAtCategoryNamed: aClassCategoryNode name)
 %			includes: self theNonMetaClassName
@@ -630,18 +643,18 @@ OBSystemBrowser class>>defaultRootNode
 
 In the metagraph we can also define several filters for a metanode, used to filter and otherwise manipulate the nodes represented by this metanode before they get displayed in columns. For the category metanode, for instance, there are two filters defined: a class sort filter and the modal filter used to select one of the three outgoing metaedges instance, comment or class. The modal filter was introduced earlier in the chapter.
 
-Let's have a look at these two filters, starting with the class sort filter implemented in class \ct{OBClassSortFilter}. Its responsibility is to sort and indent all classes of a category according to their position in a class hierarchy. If a category for instance contains two distinct class hierarchies, \eg class C inherits from B, and B and D inherit from A, and E has two subclasses F and G, then the class sort filter sorts and indents these classes as shown in \figref{classSortFilter}.
+Let's have a look at these two filters, starting with the class sort filter implemented in class \clsind{OBClassSortFilter}. Its responsibility is to sort and indent all classes of a category according to their position in a class hierarchy. If a category for instance contains two distinct class hierarchies, \eg class C inherits from B, and B and D inherit from A, and E has two subclasses F and G, then the class sort filter sorts and indents these classes as shown in \figref{classSortFilter}.
 
 \begin{figure}[!ht]
 \begin{center}
-\includegraphics[scale=1]{classSortFilter}
+\includegraphics[width=0.2\textwidth]{classSortFilter}
 \caption{How OBClassSortFilter sorts and indents two distinct class hierarchies in one category.} \figlabel{classSortFilter}
 \end{center}
 \end{figure}
 
-When a metanode is asked for its children nodes (in method \ct{childrenForNode: aNode}) it asks its associated filters to answer the nodes by invoking their \ct{nodesFrom: aCollection forNode: aNode} method. In the case of the class sort filter, \ct{aNode} refers to the category node and \ct{aCollection} holds all class nodes this category node returns when the message \ct{classes} is sent to it. The class sort filter can now sort the passed class nodes and indent them appropriately in the method \ct{OBClassSortFilter >> nodesFrom:forNode:}.
+When a metanode is asked for its children nodes (in method \ct{childrenForNode: aNode}) it asks its associated filters to answer the nodes by invoking their \ct{nodesFrom: aCollection forNode: aNode} method. In the case of the class sort filter, \ct{aNode} refers to the category node and \ct{aCollection} holds all class nodes this category node returns when the message \ct{classes} is sent to it. The class sort filter can now sort the passed class nodes and indent them appropriately in the method \ct{OBClassSortFilter>>>nodesFrom:forNode:}.
 
-The other filter defined for a category metanode, \ct{OBModalFilter}, has a different task: It selects one edge of the three outgoing edges from the category metanode, \ie instance, comment or class.  The user of the system browser can select using the switch in the class column whether he wants to see the instance-, the class-side or the comment of the selected class. \ct{OBModalFilter} remembers the selection of the user. Dependent on this selection, it answers the corresponding metaedge to be traversed, \eg the comment metaedge. This is done in the method \ct{edgesFrom: aCollection forNode: aNode}. The metanode, \ie the category metanode, passes all available metaedges to this method, along with the currently selected class node, and the modal filter answers just the metaedge selected by the user. Other filters than a modal filter, such as the class sort filter, typically just return all edges passed to them.
+The other filter defined for a category metanode, \clsind{OBModalFilter}, has a different task: It selects one edge of the three outgoing edges from the category metanode, \ie instance, comment or class.  The user of the system browser can select using the switch in the class column whether he wants to see the instance-, the class-side or the comment of the selected class. \ct{OBModalFilter} remembers the selection of the user. Dependent on this selection, it answers the corresponding metaedge to be traversed, \eg the comment metaedge. This is done in the method \ct{edgesFrom: aCollection forNode: aNode}. The metanode, \ie the category metanode, passes all available metaedges to this method, along with the currently selected class node, and the modal filter answers just the metaedge selected by the user. Other filters than a modal filter, such as the class sort filter, typically just return all edges passed to them.
 
 There are two other important tasks performed by filters besides filtering edges and nodes: Manipulating the name of a node to be displayed and defining an icon shown along with a node in the column. The former is handled in the method \ct{displayString: aString forParent: pNode child:}, the latter in \ct{icon: aSymbol forNode: aNode}. Before a node's name gets displayed, all defined filters can manipulate the display of its name, \eg emphasize it in bold. Note that the filter also has access to the parent of a node to be displayed, not the current node alone. There are also filters enriching a node with an icon before display, the \ct{OBInheritanceFilter} for instance adds arrow up, down icons to methods, if a method overrides a method with the same name from a super class or is overridden in subclasses.
 
@@ -670,7 +683,7 @@ A metanode can have arbitrarily many filters, resulting in a chain of filters. H
 
 %The method \ct{indent} computes how deep a class is in the superiors, which corresponds to the class hierarchy, then it builds a white character text, appended before the name of the class (cf. method \ct{indentedName}).
 
-\paragraph{Widgets notification.} Widgets like menu lists and text panels interact with each other by triggering events and receiving notifications. Each browser has a dispatcher (referenced by the variable \ct{dispatcher} in the class \ct{Browser}) to conduct events passing between widgets of a browser. The vocabulary of events is the following one:
+\paragraph{Widget notification.} Widgets like menu lists and text panels interact with each other by triggering events and receiving notifications. Each browser has a dispatcher (referenced by the variable \ct{dispatcher} in the class \ct{Browser}) to conduct events passing between widgets of a browser. The vocabulary of events is the following one:
 \begin{itemize}
 \item \ct{refresh} is emitted when a complete refresh of the browser is necessary. For instance, if a change happens in the system, this event is triggered to trigger a complete redraw.
 
@@ -685,7 +698,7 @@ A metanode can have arbitrarily many filters, resulting in a chain of filters. H
 
 Each graphical widget composing a browser is a listener and can emit events. Creation and registration of widgets as listeners and event emitters is completely transparent to the end user.
 
-\paragraph{State of the browser.} Contrary to the original \pharo system browser where each widget state is contained in a dedicated variable, the state of a \obf-based browser is defined as a path in the metagraph starting from the root metanode. Each metanode taking part of this path is associated to a domain node. This preserves the synchronization between different graphical widgets of a browser.
+\paragraph{State of the browser.} Contrary to the original \pharo system browser where each widget state is contained in a dedicated variable, the state of a \obf-based browser is defined as a path in the metagraph starting from the root metanode. Each metanode taking part in this path is associated to a domain node. This preserves the synchronization between different graphical widgets of a browser.
 
 %\sd{would be nice to add that taken from colin email: but I do not completely understand it. Alex do you get it? ----
 %you wrote in your nodes: New nodes can be created by subclassing \ct{Node}. When a \textit{find class} operation is performed, the method \ct{ancestrySelector} can be overridden to specify the ancestry relationship. 
@@ -697,7 +710,7 @@ Each graphical widget composing a browser is a listener and can emit events. Cre
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Evaluation and Discussions} \seclabel{discussion}
 
-Several other browsers such as a browser specifically supporting new language constructs such as Traits have been developed using \ob which demonstrate that the framework is mature and extensible. \figref{browsers} shows some browsers that are based on \ob. We now discuss the strengths and limitations of the framework.
+Several other browsers supporting new language constructs such as Traits have been developed using \ob, which demonstrate that the framework is mature and extensible. \figref{browsers} shows some browsers that are based on \ob. We now discuss the strengths and limitations of the framework.
 
 %\paragraph{Explicit state transitions} As metagraph are statically defined and each metaedges describes an action the user can perform on a browser, states a browser can be in are explicit and fully described. 
 
@@ -713,7 +726,8 @@ Several other browsers such as a browser specifically supporting new language co
 \subsection{Strengths}
 
 \paragraph{Ease of use.}
-As any good framework, extending it following the framework intention makes it easy to specify advanced browsers. The fact that the browser navigation is explicitly defined in one place lets the programmer easily understand and control the tool navigation and user interaction. The programmer does not have the burden to explicitly create and glue together the UI widgets and their specific layout. To add additional custom widgets in a concrete browser, the developer can simply define a class implementing this widget and add an object of this class to the list of widgets used during the creation of the browser. This list is defined on the class-side of \ct{OBBrowser} in the method \ct{panels}. Still the programmer focuses on the key domain of the browser: its navigation and the interaction with the user. 
+% \on{bleh!} As any good framework, extending it following the framework intention makes it easy to specify advanced browsers.
+The fact that the browser navigation is explicitly defined in one place lets the programmer easily understand and control the tool navigation and user interaction. The programmer does not have the burden to explicitly create and glue together the UI widgets and their specific layout. To add additional custom widgets in a concrete browser, the developer can simply define a class implementing this widget and add an object of this class to the list of widgets used during the creation of the browser. This list is defined on the class-side of \ct{OBBrowser} in the method \ct{panels}. Still the programmer focuses on the key domain of the browser: its navigation and the interaction with the user. 
 
 \paragraph{Explicit state transitions.} Maintaining coherence among different widgets and keeping them synchronized is a non-trival issue that, while well supported by GUI frameworks,  is often not well used. For instance, in the original \pharo browser, methods are scattered with checks for nil or 0 values. For instance, the method \ct{classComment: aText notifying: aPluggableTextMorph}, which is called by the text pane (F widget) to assign a new comment to the selected class (B widget), is:
 
@@ -724,7 +738,7 @@ Browser\sep{}classComment: aText notifying: aPluggableTextMorph
         ifNotNil: [ ... ]
 \end{code}
 
-The code above copes with the fact that when pressing on the class comment button, there is no warranty that a class is selected. In a good UI design, the comment class button should have been disabled, however there are still checks done whether a class is selected or not. Among the 438 accessible methods in the non \ob-based \pharo class \ct{Browser}, 63 of them invoke \ct{ifNil:} to test whether a list is selected or not and 62 of them send the message \ct{ifNotNil:}. Those are not isolated \st examples. The code that describes some GUI present in the JHotDraw framework also contains the pattern checking for a nil value of variables that may reference graphical widgets. 
+The code above copes with the fact that when pressing on the class comment button, there is no guarantee that a class has been selected. In a good UI design, the comment class button should have been disabled, however there are still checks done whether a class is selected or not. Among the 438 accessible methods in the non \ob-based \pharo class \ct{Browser}, 63 of them invoke \ct{ifNil:} to test whether a list is selected or not and 62 of them send the message \ct{ifNotNil:}. Those are not isolated \st examples. The code that describes some GUI present in the JHotDraw framework also contains the pattern checking for a nil value of variables that may reference graphical widgets. 
 
 Such a situation does not occur in \obf, as metagraphs are declaratively defined, and each metaedge describes an action the user can perform on a browser, states a browser can be in are explicit and fully described.
 
@@ -732,7 +746,7 @@ Such a situation does not occur in \obf, as metagraphs are declaratively defined
 
 \subsection{Limitations} 
 
-\paragraph{Hardcoded flow.} As any framework, \obf constraints the space of its own extension. \obf does not support well the definition of navigation not following the left  to right list construction (the result of the selection creates a new pane to the right of the current one and  the text pane is displayed). For example, building a browser such as Whiskers that displays multiple methods at the same time would require to deeply change the text pane state to keep the status of the currently edited methods. 
+\paragraph{Hardcoded flow.} As any framework, the \obf constrains the space of its own extension. The \obf does not support well the definition of navigation that does not follow the strict left  to right list construction (the result of the selection creates a new pane to the right of the current one and  the text pane is displayed). For example, building a browser such as Whiskers that displays multiple methods at the same time would require to deeply change the text pane state to keep the status of the currently edited methods. 
 
 %\paragraph{Currently selected item} The \obf does not easily support the building of advanced browsing facilities such as the one of the VisualWorks standard browser. In VisualWorks, it is possible to select a package, then select one class of this package and as third step see the inheritance hierarchy of this class within the context of the previously selected package. The problem is that conceptually the selected item is not part of the state representation. It is possible using UI events passing among the widgets to implement \dr{what?} \ab{I do not remember what I wanted to say here.}
 
@@ -839,7 +853,7 @@ Such a situation does not occur in \obf, as metagraphs are declaratively defined
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Chapter Summary}
 
-This chapter presents the construction of a very simple browser based on the \obf. It also uncover the design and implementation of a complex tool, the Smalltalk system browser.
+This chapter presents the construction of a very simple browser based on the \obf. It also presents the design and implementation of a complex tool, the Smalltalk system browser.
 
 \begin{itemize}
 \item A browser is implemented by subclassing the class \ct{OBBrowser}.
@@ -853,11 +867,14 @@ This chapter presents the construction of a very simple browser based on the \ob
 \item To enable a user to edit the content of the lower text pane, a definition needs to be defined by subclassing \ct{OBDefinition}.
 \item A definition answers to \ct{text} to returns a textual content and \ct{text:} to accept a new content.
 \item A node needs to answer to the \ct{definition} message to enables the user to modify its textual content.
-\item An icon may be added to a node by overriding \ct{OBNode>>icon}.
+\item An icon may be added to a node by overriding \ct{OBNode>>>icon}.
 \item Filters may be added to introduce panes in order to split the list of elements.
 \end{itemize}
 
-\paragraph{Acknowledgment.}  Colin Putney is at the origin of Omnibrowser. A number of contributions were made by the Pharo community. In particular, we gratefully acknowledge David R\"othlisberger for all his devotion and precious work on Pharo tools.
+\paragraph{Acknowledgment.}
+% Colin Putney is at the origin of Omnibrowser. \on{wtf?}
+Colin Putney developed the original Omnibrowser.
+A number of contributions were made by the Pharo community. In particular, we gratefully acknowledge David R\"othlisberger for his devotion and valued work on the Pharo tools.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %\section{Conclusion} \seclabel{conclusion}
