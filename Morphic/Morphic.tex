@@ -95,6 +95,7 @@ So, for example, \ct{Color tan asMorph} returns a StringMorph labeled with the r
 Let's change this so that we get a coloured rectangle instead.
 
 \dothis{Open a browser on the \ct{Color} class and add the following method to it:}
+\needlines{2}
 \begin{method}{Getting a morph for an instance of \ct{Color}.}
 Color>>>asMorph
 	^ Morph new color: self

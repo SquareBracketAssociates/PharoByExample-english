@@ -43,26 +43,18 @@ We should also try to mine more from newbies.}
 %=================================================================
 \section{Getting started}
 \begin{faq}
-Where do I get the latest Squeak?
+Where do I get the latest Pharo?
 \end{faq}
 \answer
-\url{ftp.squeak.org/current_development}
+\url{http://www.pharo-project.org/}
 \index{download}
 
 \begin{faq}
-Which \squeak image should I use with this book?
+Which \pharo image should I use with this book?
 \end{faq}
 \answer
-We recommend that you use the image provided on the Squeak by Example web page.
-Visit \url{http://SqueakByExample.org} and look for ``Download Squeak'' in the sidebar.
+You should be able to use any \pharo image, but we recommend you to use the prepared image on the \pharo by Example web site: {\pbe}.
 You should also be able to use most other images, but you may find that the hands-on exercises behave differently in surprising ways.
-
-%\begin{faq}
-%Where is the Squeak ``Development Image''?
-%\end{faq}
-%\answer
-%\url{www.squeaksource.com/ImageForDevelopers}
-%This is a specially-prepared image including lots of useful packages pre-installed for developers.
 
 %=================================================================
 \section{Collections}
@@ -186,12 +178,12 @@ Smalltalk allClasses select: [:each | each hasTraitComposition and: [each traitC
 \section{Using Monticello and SqueakSource}
 
 \begin{faq}
-How do I load a \ind{Squeaksource} project?
+How do I load a \ind{SqueakSource} project?
 \index{Monticello}
 \end{faq}
 \answer
 \begin{enumerate}
-  \item Find the project you want in \url{squeaksource.com}
+  \item Find the project you want in \url{http://squeaksource.com}
   \item Copy the registration code snippet
   \item Select \menu{open \go Monticello browser}
   \item Select \menu{+Repository \go HTTP}
@@ -205,7 +197,7 @@ How do I create a SqueakSource project?
 \end{faq}
 \answer
 \begin{enumerate}
-  \item Go to \url{squeaksource.com}
+  \item Go to \url{http://squeaksource.com}
   \item Register yourself as a new member
   \item Register a project (name = category)
   \item Copy the Registration code snippet
@@ -238,8 +230,8 @@ Where can I find the \ind{Refactoring Browser}?
 \end{faq}
 \answer
 Load AST then Refactoring Engine from squeaksource.com:
-\url{www.squeaksource.com/AST}
-\url{www.squeaksource.com/RefactoringEngine}
+\url{http://www.squeaksource.com/AST}
+\url{http://www.squeaksource.com/RefactoringEngine}
 
 \begin{faq}
 How do I register the browser that I want to be the default?
@@ -257,9 +249,9 @@ How can I work with regular expressions?
 \answer
 \ifluluelse
 	{Load Vassili Bykov's RegEx package from: \\
-	\url{www.squeaksource.com/Regex.html}}
+	\url{http://www.squeaksource.com/Regex.html}}
 	{Load Vassili Bykov's RegEx package from:
-	\url{www.squeaksource.com/Regex.html}}
+	\url{http://www.squeaksource.com/Regex.html}}
 \index{Bykov, Vassili}
 
 \begin{faq}
@@ -274,9 +266,9 @@ Are there tools for writing parsers?
 \answer
 Use \ind{SmaCC}\,---\,the Smalltalk Compiler Compiler.
 You should install at least SmaCC-lr.13.
-Load it from \url{www.squeaksource.com/SmaccDevelopment.html}.
+Load it from \url{http://www.squeaksource.com/SmaccDevelopment.html}.
 There is a nice tutorial online:
-\url{www.refactory.com/Software/SmaCC/Tutorial.html}
+\url{http://www.refactory.com/Software/SmaCC/Tutorial.html}
 
 \begin{faq}
 Which packages should I load from SqueakSource SmaccDevelopment to write parsers?

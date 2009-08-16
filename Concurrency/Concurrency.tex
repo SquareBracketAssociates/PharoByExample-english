@@ -271,10 +271,10 @@ Semaphore>>>wait
 		ifTrue: [excessSignals := excessSignals-1]  
 		ifFalse: [self addLastLink: Processor activeProcess suspend]
 \end{code}
-% For all intents and purposes, \clsindmain{Object} is the root of the inheritance hierarchy. Actually, in Squeak the true root of the hierarchy is \clsind{ProtoObject}, which is used to define minimal entities that masquerade as objects, but we can ignore this point for the time being.
+% For all intents and purposes, \clsindmain{Object} is the root of the inheritance hierarchy. Actually, in \pharo the true root of the hierarchy is \clsind{ProtoObject}, which is used to define minimal entities that masquerade as objects, but we can ignore this point for the time being.
 % % (more on this later in the chapter on reflection).
 % 
-% \ct{Object} can be found in the \scatind{Kernel-Objects} category. Astonishingly, there are some 400 methods to be found here (including extensions).  In other words, every class that you define will automatically provide these 400 methods, whether you know what they do or not. Note that some of the methods should be removed and new versions of Squeak may remove some of the superfluous methods. 
+% \ct{Object} can be found in the \scatind{Kernel-Objects} category. Astonishingly, there are some 400 methods to be found here (including extensions).  In other words, every class that you define will automatically provide these 400 methods, whether you know what they do or not. Note that some of the methods should be removed and new versions of \pharo may remove some of the superfluous methods. 
 % 
 % \sd{I do not like to quote something that can change and that people can find simply in the image but let us keep it for now.}
 % The class comment for the \ct{Object} states:
@@ -320,7 +320,7 @@ Semaphore>>>wait
 \section{Protocol}
 
 
-Squeak comme tous les Smalltalks offre la possibilité d'exécuter différents programmes en parallele. 
+\pharo comme tous les Smalltalks offre la possibilité d'exécuter différents programmes en parallele. 
 La concurrence en Smalltalk est préemptive et collaborative. Préemptive car les processus de priorité superieure 
 prennent précédence sur ceux de priorité inferieure. Collaborative car pourqu'un processus ait une chance de s'executer alors qu'un processus de meme priorité est deja entrain de s'executer, celui-ci doit explicitement relacher le contrôle. Dans cet article nous montrons les élements de base et dans un prochain article nous montrerons les abstractions essentielles telleque Monitor, Delay.
 
@@ -378,11 +378,6 @@ Les objets les plus prioritaires sont les premiers à être extraits de la file.
 Liens 
 [BLUEB] Smalltalk-80: The Language and its Implementation : http://stephane.ducasse.free.fr/FreeBooks/BlueBook/ 
 
-Le site officiel : http://www.squeak.org/
-Le Wiki de la communauté française : http://community.ofset.org/wiki/Squeak
-Le groupe des utilisateurs européens de Smalltalk (European Smalltalk User Group). L'adhésion est gratuite : http://www.esug.org/
-Des livres gratuits en ligne sur Smalltalk et Squeak : http://stephane.ducasse.free.fr/FreeBooks.html
-Un livre sur Squeak en français: http://stephane.ducasse.free.fr/Books.html : Squeak,  X. Briffault et S. Ducasse, Eyrolles, 2002. 
 
 \section{semaphore}
 	Boolean vs integer

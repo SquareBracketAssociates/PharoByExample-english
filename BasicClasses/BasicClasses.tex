@@ -40,10 +40,10 @@
 
 Most of the magic of Smalltalk is not in the language but in the class libraries. To program effectively with Smalltalk, you need to learn how the class libraries support the language and environment. The class libraries are entirely written in Smalltalk and can easily be extended since a package may add new functionality to a class even if it does not define this class. 
 
-Our goal here is not to present in tedious detail the whole of the Squeak class library, but rather to point out the key classes and methods that you will need to use or override to program effectively. In this chapter we cover the basic classes that you will need for nearly every application: \ct{Object}, \ct{Number} and its subclasses, \ct{Character}, \ct{String}, \ct{Symbol} and \ct{Boolean}.
+Our goal here is not to present in tedious detail the whole of the \pharo class library, but rather to point out the key classes and methods that you will need to use or override to program effectively. In this chapter we cover the basic classes that you will need for nearly every application: \ct{Object}, \ct{Number} and its subclasses, \ct{Character}, \ct{String}, \ct{Symbol} and \ct{Boolean}.
 
 \md{Here are some comments:\\
-- copying: Good question... the copying in Squeak is much too complicated... there is for one the "old" smalltalk way of
+- copying: Good question... the copying in \pharo is much too complicated... there is for one the "old" smalltalk way of
   overrifing postCopy, and then the "automatic" deepCopy... which is quite complex and (I think) was no good idea...
  (see class comment in  DeepCopier)\\
 - Debugging: Yes, needs its own chapter. We should talk about haltIf, haltOnce...\\
@@ -53,10 +53,10 @@ Our goal here is not to present in tedious detail the whole of the Squeak class 
 
 %=================================================================
 \section{Object}
-For all intents and purposes, \clsindmain{Object} is the root of the inheritance hierarchy. Actually, in Squeak the true root of the hierarchy is \clsind{ProtoObject}, which is used to define minimal entities that masquerade as objects, but we can ignore this point for the time being.
+For all intents and purposes, \clsindmain{Object} is the root of the inheritance hierarchy. Actually, in \pharo the true root of the hierarchy is \clsind{ProtoObject}, which is used to define minimal entities that masquerade as objects, but we can ignore this point for the time being.
 % (more on this later in the chapter on reflection).
 
-\ct{Object} can be found in the \scatind{Kernel-Objects} category. Astonishingly, there are some 400 methods to be found here (including extensions).  In other words, every class that you define will automatically provide these 400 methods, whether you know what they do or not. Note that some of the methods should be removed and new versions of Squeak may remove some of the superfluous methods. 
+\ct{Object} can be found in the \scatind{Kernel-Objects} category. Astonishingly, there are some 400 methods to be found here (including extensions).  In other words, every class that you define will automatically provide these 400 methods, whether you know what they do or not. Note that some of the methods should be removed and new versions of \pharo may remove some of the superfluous methods. 
 
 \sd{I do not like to quote something that can change and that people can find simply in the image but let us keep it for now.}
 The class comment for the \ct{Object} states:
@@ -112,7 +112,9 @@ $a           --> $a
 Color red --> Color red
 \end{code}
 
-Note that some objects such as arrays are self-evaluating or not depending on the objects they contain. For example, an array of booleans is self-evaluating whereas an array of persons is not. In Squeak 3.9, a mechanism was introduced (via the message \mthind{Object}{isSelfEvaluating}) to print collections in their self-evaluating forms as much as possible and this is especially true for brace arrays. The following example shows that a \subind{Array}{dynamic} array is self-evaluating only if its elements are:
+Note that some objects such as arrays are self-evaluating or not depending on the objects they contain. For example, an array of booleans is self-evaluating whereas an array of persons is not.
+% In 3.9, a mechanism was introduced (via the message \mthind{Object}{isSelfEvaluating}) to print collections in their self-evaluating forms as much as possible and this is especially true for brace arrays.
+The following example shows that a \subind{Array}{dynamic} array is self-evaluating only if its elements are:
 \begin{code}{@TEST}
 {10@10 . 100@100}          --> {10@10 . 100@100}
 {Browser new . 100@100} --> an Array(a Browser 100@100)
@@ -200,7 +202,7 @@ Complex>>>hash
 
 Although you should override \ct{=} and \ct{hash} together, you should \emph{never} override \ct{==}. (The semantics of object identity is the same for all classes.)  \ct{==} is a primitive method of \clsind{ProtoObject}.
 
-Note that Squeak has some strange behaviour compared to other Smalltalks: for example a symbol and a string can be equal. (We consider this be a bug, not a feature.)
+Note that \pharo has some strange behaviour compared to other Smalltalks: for example a symbol and a string can be equal. (We consider this be a bug, not a feature.)
 
 \begin{code}{@TEST}
 #'lulu' = 'lulu' --> true
@@ -409,7 +411,7 @@ ProtoObject>>>initialize
     "Subclasses should redefine this method to perform initializations on instance creation"
 \end{method}
 
-The reason this is important is that in Squeak as of version 3.9, the default \mthind{Behavior}{new} method defined for every class in the system will send \ct{initialize} to newly created instances.
+The reason this is important is that in \pharo, the default \mthind{Behavior}{new} method defined for every class in the system will send \ct{initialize} to newly created instances.
 
 \begin{method}{\lct{new} as a class-side template method}
 Behavior>>>new
@@ -555,7 +557,7 @@ n --> 256
 %=================================================================
 \section{Characters}
 
-\clsindmain{Character} is defined in the \scatind{Collections-Strings} category as a subclass of \clsind{Magnitude}. Printable characters are represented in Squeak as \lct{\$$\langle$\emph{char}$\rangle$}.  For example:
+\clsindmain{Character} is defined in the \scatind{Collections-Strings} category as a subclass of \clsind{Magnitude}. Printable characters are represented in \pharo as \lct{\$$\langle$\emph{char}$\rangle$}.  For example:
 
 \begin{code}{@TEST}
 $a < $b --> true
@@ -611,7 +613,7 @@ The \clsindmain{String} class is also defined in the category \scatind{Collectio
 \caption{The String Hierarchy \figlabel{strings}}
 \end{figure}
 
-In fact, \ct{String} is abstract and Squeak \ct{Strings} are actually instances of the concrete class \clsindmain{ByteString}.
+In fact, \ct{String} is abstract and \pharo \ct{Strings} are actually instances of the concrete class \clsindmain{ByteString}.
 
 \begin{code}{@TEST}
 'hello world' class --> ByteString

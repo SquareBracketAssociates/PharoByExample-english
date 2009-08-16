@@ -127,35 +127,12 @@ Why it's impossible to subclass SmallInteger.
 
 \chapter{Exceptions}
 
-Stef sez: see the test cases
-
-%	For exceptions
-%	--------------
-%	On Oct 26, 2006, at 9:23, stephane ducasse wrote:
-
-%	BTW oscar if you want to have fun look at the test for the exception in Squeak.
-%	They are excellent. I was planning to use them to illustrate exception
-%	(and understand myself deeply) in a separate chapter.
-
-%	I mean
-
-%		on:do:
-%		
-%	Look at the classes in the category Exceptions-Tests.
-%	You have all the possible scenario on what we can do with exception in smalltalk
-%	and this is impressive.
-
-%	ExceptionTests  uses ExceptionTester to check all the possible combinations and
-%	semantical points. I just read everything once just to learn.
-%	Now I would like to remember it and I guess that writing it down would be the best
-%	(No time for that so far)
-
 %	Stef
 \chapter{Concurrency}
 Processes and friends.
 
 \chapter{Dependency Mechanisms}
-Stef sez: we need on overview on publish/subscribe and the dependency mechanisms in squeak.
+Stef sez: we need on overview on publish/subscribe and the dependency mechanisms in pharo.
 
 \chapter{Common Errors}
 The last chapter of Smalltalk with Style is a good source.
@@ -165,10 +142,10 @@ Time.
 
 \section{XML processing :)}
 
-\section{How make an image self executable with Squeak}
+\section{How make an image self executable with Pharo}
 We save an image with our main application window already opened, and unwanted things disabled (halos, alt-., menus, etc). Additionally, we have a class-side \#startUp: method to initialize what's necessary on startup, like re-reading config files etc.
 
-The image is started automatically when double-clicking  "plopp.exe", or rather a short-cut in the program menu placed there by the installer. This exe is nothing more than a renamed Squeak.exe, with a different icon patched in using a resource editor. There is a VM config file "plopp.ini", which most importantly contains the path to the image to load (see http://minnow.cc.gatech.edu/squeak/3274).
+The image is started automatically when double-clicking  "plopp.exe", or rather a short-cut in the program menu placed there by the installer. This exe is nothing more than a renamed Pharo.exe, with a different icon patched in using a resource editor. There is a VM config file "plopp.ini", which most importantly contains the path to the image to load (see http://minnow.cc.gatech.edu/squeak/3274).
 
 The exe along with the needed plugins, the image and other data files is installed in the "programs" directory by a regular Windows installer (InstallShield).
 

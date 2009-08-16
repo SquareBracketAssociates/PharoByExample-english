@@ -398,12 +398,6 @@ This means that they are objects, so they can be assigned to variables and passe
 % MARCUS sez: I would just delete the sentence. There is nothing optimized, accessign outer temps is as fast as inner, so the only reason to avoid accessing outer temps would be that the code is easier to understand. But that's a relatively weak argument, I think.
 % However, the ability to refer (``capture'') non-local variables can be very powerful when it is needed. 
 
-\emph{Caveat:}
-In the current version (3.9), \pharo does not actually support true block-closures, since block arguments are actually simulated as temporary variables of the enclosing method. There is a new compiler that supports full block closures, but it is still being worked on and is not used by default.
-In somewhat obscure situations this problem can lead to naming conflicts.
-This situation arises because \pharo is based on an early implementation of \st.
-If you encounter this problem, have a look at the senders of the method \mthind{BlockClosure}{fixTemps}, or load the \emphind{Closure Compiler}.
-
 %\paragraph{Really important.} \^\ acts as an escaping mechanism. 
 %Return expressions inside a nested block expression will terminate the enclosing method.
 %In the example 
