@@ -71,7 +71,7 @@ BOOK2 : clean examples2
 index1 :
 	makeindex ${BOOK1}
 
-complete1 : BOOK1 index1
+pbe1 : BOOK1 index1
 	time ${PDFLATEX} ${BOOK1}
 
 
@@ -79,7 +79,7 @@ complete1 : BOOK1 index1
 index2 :
 	makeindex ${BOOK2}
 
-complete2 : BOOK2 index2
+pbe2 : BOOK2 index2
 	time ${PDFLATEX} ${BOOK2}
 
 
@@ -87,7 +87,7 @@ complete2 : BOOK2 index2
 index :
 	makeindex ${OMNIBUS}
 
-complete : OMNIBUS index
+omnibus : OMNIBUS index
 	time ${PDFLATEX} ${OMNIBUS}
 
 examples :
