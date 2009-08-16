@@ -238,7 +238,7 @@ It is the unique instance of the class \clsind{UndefinedObject}.
 Instance variables, class variables and local variables are initialized to \ct{nil}.
 
 \ct{thisContext} is a pseudo-variable that represents the top frame of the run-time stack.
-In other words, it represents the currently executing \clsind{MethodContext} or \clsind{BlockContext}.
+In other words, it represents the currently executing \clsind{MethodContext} or \clsind{BlockClosure}.
 \ct{thisContext} is normally not of interest to most programmers, but it is essential for implementing development tools like the debugger and it is also used to implement exception handling and continuations.
 
 %=================================================================
@@ -392,7 +392,7 @@ x := 1.
 [ :y | x + y ] value: 2 --> 3
 \end{code}
 
-Blocks are instances of the class \clsind{BlockContext}.
+Blocks are instances of the class \clsind{BlockClosure}.
 This means that they are objects, so they can be assigned to variables and passed as arguments just like any other object.
 % For both understandability and performance, it is better for blocks to refer only to their parameters and local variables; blocks that do not refer external variables are optimized by the compiler.
 % MARCUS sez: I would just delete the sentence. There is nothing optimized, accessign outer temps is as fast as inner, so the only reason to avoid accessing outer temps would be that the code is easier to understand. But that's a relatively weak argument, I think.

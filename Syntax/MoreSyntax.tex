@@ -99,7 +99,7 @@ SuperClass variableWordSubclass: #NameOfClass
    do: [:ex |  ]
 \end{script}
 
-The most important messages defined on the class \lct{BlockContext} are: 
+The most important messages defined on the class \lct{BlockClosure} are: 
 \lct{ensure: aTerminationBlock} which evaluates aTerminationBlock after evaluating the receiver, regardless of whether the receiver's evaluation completes, \lct{ifCurtailed: aTerminationBlock} which evaluate the receiver. If it terminates abnormally, evaluates aTerminationBlock, and \lct{on: exception do: handlerActionBlock} which evaluates the receiver in the scope of an exception handler, \lct{handlerActionBlock}.
 
 \begin{script}[xxx]{xxx}
@@ -417,9 +417,9 @@ Boolean classes also defines methods to compose boolean expressions:
 and \index{xor}\lct{xor: aBlock}\index{exclusive or}(exclusive or) (see \charef{boolean}. 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Iterative conditional structures (receiver is aBlockContext)}
+\subsection{Iterative conditional structures (receiver is a BlockClosure)}
 \seclabel{loopCondition}
-Besides conditional expressions, the class \lct{BlockContext} defines the following methods that implement  iterative conditional control structures: \index{whileTrue}  \index{whileTrue:} \index{whileFalse} \index{whileFalse:} \lct{whileTrue},  \lct{whileTrue:}, \lct{whileFalse}, and  \lct{whileFalse:}.
+Besides conditional expressions, the class \lct{BlockClosure} defines the following methods that implement  iterative conditional control structures: \index{whileTrue}  \index{whileTrue:} \index{whileFalse} \index{whileFalse:} \lct{whileTrue},  \lct{whileTrue:}, \lct{whileFalse}, and  \lct{whileFalse:}.
 
 These methods have the following behavior: 
 \begin{itemize}
