@@ -49,6 +49,39 @@
 
 \on{Instead of a chapter on Installer, wouldn't a short section on Scripting Monticello suffice?}
 
+
+\lr{
+Subject: Re: [Pharo-project] Create a changeset for an entire package?\\
+Reply-To: Pharo-project@lists.gforge.inria.fr\\
+a) I don't wan't to include everything I changed from the package.
+There are some things that I changed for debugging. So, I can't
+fileout everything and I don't know if monticello will let me do
+what I want.\\
+It is possible, but it requires some manual work to get a custom
+change-set from A to B:\\
+1. Make sure that both versions A and B are stored as Monticello
+Packages (probably to a local directory).\\
+2. Load version A.\\
+3. Load version B.\\
+4. In the changes-browser there is now a new change-set named A->B.\\
+5. Open a change browser on it and edit it as you like.\\
+6. File-out the change-set.\\
+What I usually do is different and I think goes better with the whole
+workflow of Monticello:\\
+1. In an image where I have the modified code I display the changes
+between the previous version (A) and the current image (B).\\
+2. Then I selectively revert the changes that I don't want to go into B.\\
+3. And commit the package B.\\
+b) Supose the change includes 3 separate packages, that should be
+seen as a one. Loading only one package only would break things, so
+I'd like the change to include all 3 in one operation.\\
+It is possible to create custom PackageInfo subclasses (Seaside <= 2.8
+did this), but I have rarely seen this and don't find it particularly
+useful. I would stick to the original packages to make merging for the
+maintainers easy.\\
+Lukas
+}
+
 A versioning system helps you to store and log multiple versions of your code. In addition it may help you to manage concurrent accesses to a common source code repository. It keeps track of all changes to a set of documents and enables several developers to collaborate. As soon as the size of your software increases beyond a few classes, you probably need a versioning system.
 
 Many different versioning systems are available. \ind{CVS}\footnote{\url{http://www.nongnu.org/cvs}} and \ind{Subversion}\footnote{\url{http://subversion.tigris.org}} are probably the most popular.
