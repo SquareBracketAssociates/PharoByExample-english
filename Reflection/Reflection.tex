@@ -640,7 +640,8 @@ LoggingProxy>>>doesNotUnderstand: aMessage
 \end{code}
 
 Here comes a bit of magic.
-We create a new \ct{Point} object and a new \ct{LoggingProxy} object, and then we tell the proxy to \ct{become:} the point object:
+We create a new \ct{Point} object and a new \ct{LoggingProxy} object, and then we tell the proxy to \mthind{ProtoObject}{become:} the point object:
+\seeindex{\ct{become:}}{\ct{ProtoObject>>>become:}}
 \begin{code}{}
 point := 1@2.
 LoggingProxy new !\underline{become:}! point.
@@ -941,24 +942,24 @@ Reflection refers to the ability to query, examine and even modify the metaobjec
 \fi
 %=========================================================
 
-Other stuff:
-- anonymous classes (uses compile: and primitiveChangeClassTo:) ???
-- collect direct senders; class collaborations
-- Object primitiveChangeClassTo: become: and becomeForward: (see tests and slides with minimal object example)
-- PointerFinder?
-- anonymous classes (see slides) ?
+%Other stuff:
+%- anonymous classes (uses compile: and primitiveChangeClassTo:) ???
+%- collect direct senders; class collaborations
+%- Object primitiveChangeClassTo: become: and becomeForward: (see tests and slides with minimal object example)
+%- PointerFinder?
+%- anonymous classes (see slides) ?
 
-Test  Coverage using ObjectsAsMethodsWrap package:
-\begin{code}{}
-category := 'SCGPier'.
-w := (ObjectAsOneTimeMethodWrapper installOnClassCategory: category).
-tr := TestRunner new.
-ToolBuilder open: tr.
-[tr
-	categoryAt: (tr categoryList indexOf: 'SCGPier') put: true;
-	selectAllClasses;
-	runAll.]
-ensure: [[w do: [:each| each uninstall ]] valueUnpreemptively].
-((w select: [:each | each executed not ])
-	collect: [:each | each wrappedClass name, '>>', each selector name ]) explore.
-\end{code}
+%Test  Coverage using ObjectsAsMethodsWrap package:
+%\begin{code}{}
+%category := 'SCGPier'.
+%w := (ObjectAsOneTimeMethodWrapper installOnClassCategory: category).
+%tr := TestRunner new.
+%ToolBuilder open: tr.
+%[tr
+%	categoryAt: (tr categoryList indexOf: 'SCGPier') put: true;
+%	selectAllClasses;
+%	runAll.]
+%ensure: [[w do: [:each| each uninstall ]] valueUnpreemptively].
+%((w select: [:each | each executed not ])
+%	collect: [:each | each wrappedClass name, '>>', each selector name ]) explore.
+%\end{code}
