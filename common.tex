@@ -331,6 +331,7 @@ Damien Pollet},
 % \newcommand{\caret}{\makebox{\raisebox{0.4ex}{\footnotesize{$\wedge$}}}}
 \newcommand{\caret}{\^\,}
 \newcommand{\escape}{{\sf \textbackslash}}
+\definecolor{source}{gray}{0.95}
 \usepackage{listings}
 \lstdefinelanguage{Smalltalk}{
 %  morekeywords={self,super,true,false,nil,thisContext}, % This is overkill
@@ -364,12 +365,13 @@ Damien Pollet},
 	keepspaces=true,
 	breaklines=true,
 	breakautoindent=true,
+	backgroundcolor=\color{source},
 	lineskip={-1pt}, % Ugly hack
 	upquote=true, % straight quote; requires textcomp package
 	columns=fullflexible} % no fixed width fonts
 % In-line code (literal)
 % Normally use this for all in-line code:
-\newcommand{\ct}{\lstinline[mathescape=false,basicstyle={\sffamily\upshape}]}
+\newcommand{\ct}{\lstinline[mathescape=false,backgroundcolor=\color{white},basicstyle={\sffamily\upshape}]}
 % apb 2007.8.28 added the \upshape declaration to avoid getting italicized code in \dothis{ } sections.
 % In-line code (latex enabled)
 % Use this only in special situations where \ct does not work
@@ -384,7 +386,9 @@ Damien Pollet},
 % Only code and example environments may be tests
 \lstnewenvironment{code}[1]{%
 	\lstset{%
-		frame=lines,
+		% frame=lines,
+		frame=single,
+		framerule=0pt,
 		mathescape=false
 	}
 }{}
@@ -396,7 +400,9 @@ Damien Pollet},
 \lstnewenvironment{example}[3][defaultlabel]{%
 	\renewcommand{\lstlistingname}{Example}%
 	\lstset{
-		frame=lines,
+		% frame=lines,
+		frame=single,
+		framerule=0pt,
 		mathescape=false,
 		caption={\emph{#2}},
 		label={eg:#1}
@@ -405,7 +411,9 @@ Damien Pollet},
 \lstnewenvironment{script}[2][defaultlabel]{%
 \renewcommand{\lstlistingname}{Script}%
 	\lstset{
-		frame=lines,
+		% frame=lines,
+		frame=single,
+		framerule=0pt,
 		mathescape=false,
 		name={Script},
 		caption={\emph{#2}},
@@ -415,7 +423,9 @@ Damien Pollet},
 \lstnewenvironment{method}[2][defaultlabel]{%
 	\renewcommand{\lstlistingname}{Method}%
 	\lstset{
-		frame=lines,
+		% frame=lines,
+		frame=single,
+		framerule=0pt,
 		mathescape=false,
 		name={Method},
 		caption={\emph{#2}},
@@ -425,7 +435,9 @@ Damien Pollet},
 \lstnewenvironment{methods}[2][defaultlabel]{% just for multiple methods at once
 	\renewcommand{\lstlistingname}{Methods}%
 	\lstset{
-		frame=lines,
+		% frame=lines,
+		frame=single,
+		framerule=0pt,
 		mathescape=false,
 		name={Method},
 		caption={\emph{#2}},
@@ -437,7 +449,9 @@ Damien Pollet},
 	\lstset{
 		numbers=left,
 		numberstyle={\tiny\sffamily},
-		frame=lines,
+		% frame=lines,
+		frame=single,
+		framerule=0pt,
 		mathescape=false,
 		name={Method},
 		caption={\emph{#2}},
@@ -447,7 +461,9 @@ Damien Pollet},
 \lstnewenvironment{classdef}[2][defaultlabel]{%
 	\renewcommand{\lstlistingname}{Class}%
 	\lstset{
-		frame=lines,
+		% frame=lines,
+		frame=single,
+		framerule=0pt,
 		mathescape=false,
 		name={Class},
 		caption={\emph{#2}},
