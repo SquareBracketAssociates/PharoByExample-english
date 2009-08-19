@@ -1,0 +1,40 @@
+Search for: \alex{Check with David ab
+And add at the end of the NewFileCommand>>execute method the following line:
+"
+self select: nodeToSelect with: requestor announcer.
+"
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+Just before "\section{Graph and Metagraph of a Browser} \seclabel{omnibrowser}"
+Add 
+
+%=============================================================
+\subsubsection{Coloring and font selection}
+
+Item names in a menu may be colored or use font modifier such as italic and bold effect. This is useful to distinguish some items from others. Font particularization is achieved by returning instance of \ct{Text} instead of a simple string when overriding \ct{OBNode>>name}.
+
+\begin{code}{}
+FileNode>>>name	"return the name of a file"		^ Text string: ((self path subStrings: '/') last) attribute: TextColor blue
+
+DirectoryNode>>>name
+	"return the name of a directory"
+	^ Text string: ((self path subStrings: '/') last) attribute: TextColor gray
+\end{code}
+
+Simple files are now in blue and directories listed using the gray color. 
+
+A number of emphasizes are available: \ct{bold}, \ct{italic}, \ct{underlined}, and \ct{barred}. The attribute corresponding to the emphasis is obtained by sending a message to the \ct{TextEmphasis} class.
+
+Attributes may be combined by being added to a text using \ct{addAttribute:}. For example, the following \ct{name} definition makes directory appears in gray and underlined:
+
+\begin{code}{}
+DirectoryNode>>>name	^ (Text fromString: ((self path subStrings: '/') last))		addAttribute: TextEmphasis underlined;		addAttribute: TextColor gray
+\end{code}
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
