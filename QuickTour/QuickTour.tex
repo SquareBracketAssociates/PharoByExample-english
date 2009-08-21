@@ -46,8 +46,6 @@
 \chapter{A quick tour of \pharo}
 \chalabel{quick}
 
-%:===> Check sizes of all images for Lulu version!
-
 In this chapter we will give you a high-level tour of \pharo to help you get comfortable with the environment.
 There will be plenty of opportunities to try things out, so it would be a good idea if you have a computer handy when you read this chapter.
 
@@ -158,33 +156,38 @@ Since many users will use various modifiers keys (\emph{control}, \emph{ALT}, \e
 \item [\actclick:] this is the next most used button; it is used to bring up a contextual menu, that is, a menu that offers different sets of actions depending on where the mouse is pointing; see \figref{threeButtons:actclick}. If you do not have a multi-button mouse, then normally you will configure the \emph{control} modifier key to \actclick with the mouse button.
 \item [\metaclick:] Finally, you may \metaclick on any object displayed in the image to activate the ``morphic \subind{Morphic}{halo}'', an array of handles that are used to perform operations on the on-screen objects themselves, such as rotating them or resizing them; see \figref{threeButtons:metaclick}.\footnote{Note that the morphic handles are usually inactive in \pharo, but you can turn them on using the Preferences Browser, which we will see shortly.}
 If you let the mouse linger over a handle, a help balloon will explain its function.
-Typically you will use a third modifier key, such as \emph{command} or \emph{meta} to \metaclick.
+In \pharo, you can \metaclick by holding {\sc shift} \emph{ctrl} or {\sc shift} \emph{alt} while clicking.
+% Typically you will use a third modifier key, such as \emph{command} or \emph{meta} to \metaclick.
 \end{description}
-
-%:===> Fix instructions for Halos/Preference Browser (shift key? -- or PB removed entirely?)
 
 \dothis{Type \ct{Time now} in the workspace.
 Now \actclick in the workspace.
 Select \menu{print it}.}
 
-Now we will activate \metaclick{ing}.
+%Now we will activate \metaclick{ing}.
 
-\dothis{Open the preference browser (\menu{System {\ldots\go} Preferences {\ldots\go} Preference Browser\ldots}) and find the \menu{halosEnabled} option using the search box.}
+%\dothis{Open the preference browser (\menu{System {\ldots\go} Preferences {\ldots\go} Preference Browser\ldots}) and find the \menu{halosEnabled} option using the search box.}
+
+%\begin{figure}[htb]
+%\centerline{\includegraphics[width=\textwidth]{PreferenceBrowser}}
+%\caption{The Preference Browser.\figlabel{prefBrowser}}
+%\end{figure}
+
+%\dothis{Now you should be able to \metaclick on the workspace. (See \figref{threeButtons:metaclick}.)
+%Grab the blue \raisebox{-0.4ex}{\includegraphics[width=1em]{morphicRotate}} handle near the bottom left corner and drag it to rotate the workspace.}
+
+We recommend that right-handed people configure their mouse to \click with the left button, \actclick with the right button, and \metaclick with the  clickable scroll wheel, if one is available.  If you don't have a clickable scroll wheel, then you can get the Morphic halo by holding down the \ct{alt} or \ct{option} key while \click{ing}.  If you are using a Macintosh without a second mouse button, you can simulate one by holding down the \clover{} key while \click{ing} the mouse.  However, if you are going to be using \pharo at all often, we recommend investing in a mouse with at least two buttons.
+
+You can configure your mouse to work the way you want by using the preferences of your operating system and mouse driver.
+\pharo has some preferences for customising the mouse and the meta keys on your keyboard.
+In the preference browser (\menu{System {\ldots\go} Preferences {\ldots\go} Preference Browser\ldots}), the \menu{keyboard} category contains an option \menu{swapControlAndAltKeys} that switches the \actclick and \metaclick functions.
+There are also options to duplicate the various command keys.   
 
 \begin{figure}[htb]
 \centerline{\includegraphics[width=\textwidth]{PreferenceBrowser}}
 \caption{The Preference Browser.\figlabel{prefBrowser}}
 \end{figure}
 
-\dothis{Now you should be able to \metaclick on the workspace. (See \figref{threeButtons:metaclick}.)
-Grab the blue \raisebox{-0.4ex}{\includegraphics[width=1em]{morphicRotate}} handle near the bottom left corner and drag it to rotate the workspace.}
-
-We recommend that right-handed people configure their mouse to \click with the left button, \actclick with the right button, and \metaclick with the  clickable scroll wheel, if one is available.  If you don't have a clickable scroll wheel, then you can get the Morphic halo by holding down the \ct{alt} or \ct{option} key while \click{ing}.  If you are using a Macintosh without a second mouse button, you can simulate one by holding down the \clover{} key while \click{ing} the mouse.  However, if you are going to be using \pharo at all often, we recommend investing in a mouse with at least two buttons.
-
-You can configure your mouse to work the way you want by using the preferences of your operating system and mouse driver.
-\pharo has some preferences for customising the mouse and the meta keys on your keyboard.
-In the preference browser, the \menu{keyboard} category contains an option \menu{swapMouseButtons} that switches the \actclick and \metaclick functions.
-There are also options to duplicate the various command keys.   
 
 %=================================================================
 \section{The World menu}
@@ -394,8 +397,7 @@ In this book we will simply use the term ``browser'', or, in case of ambiguity, 
 As we shall see, there are several interesting browsers available for \pharo, but this is the basic one you will find in any image.
 \seeindex{class browser}{browser}
 
-%:===> Change World menu item for browser?
-\dothis{Open a browser by selecting \menu{World \go Class browser}.}
+\dothis{Open a browser by selecting \menu{World \go Class browser}.\footnote{If the browser you get does not look like the one shown in \figref{classBrowser}, then you may need to change the default browser.  See \faqref{packagebrowser}.}}
 
 \begin{figure}[htb]
 \ifluluelse
@@ -569,7 +571,7 @@ So select \menu{accept (s)} by \actclick{ing} in the bottom pane, or just type \
 \index{keyboard shortcut!accept}
 \seeindex{accept it}{keyboard shortcut, accept}
 
-If this is the first time you have accepted any code in your image, you will likely be prompted to enter your initials. Since many people have contributed code to the image, it is important to keep track of everyone who creates or modifies methods. Simply enter an unambiguous identifier, such as your first initial and last name, or first and last names separated by a dot.
+If this is the first time you have accepted any code in your image, you will likely be prompted to enter your name. Since many people have contributed code to the image, it is important to keep track of everyone who creates or modifies methods. Simply enter your first and last names, without any spaces, or separated by a dot.
 
 %\begin{figure}[hbt]
 %\centerline {\includegraphics[width=0.35\textwidth]{initials}}
@@ -583,8 +585,8 @@ This can be quite useful if you have merely made a typing mistake, but in this c
 
 \begin{figure}[htb]
 \begin{minipage}[b]{0.48\textwidth}
-\centerline {\includegraphics[width=0.8\textwidth]{initials}}
-\caption{Entering your initials.\figlabel{initials}}
+\centerline {\includegraphics[width=0.9\textwidth]{name}}
+\caption{Entering your name.\figlabel{name}}
 \end{minipage}
 \hfill
 \begin{minipage}[b]{0.48\textwidth}
