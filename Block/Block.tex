@@ -1,0 +1,229 @@
+% $Author: oscar $
+% $Date: 2009-08-16 16:37:09 +0200 (Sun, 16 Aug 2009) $
+% $Revision: 28477 $
+
+% HISTORY:
+% 2008-01-19 - Stef started
+% 2008-12-26 - Jannick Menanteau added text
+
+%=================================================================
+\ifx\wholebook\relax\else
+% --------------------------------------------
+% Lulu:
+	\documentclass[a4paper,10pt,twoside]{book}
+	\usepackage[
+		papersize={6.13in,9.21in},
+		hmargin={.75in,.75in},
+		vmargin={.75in,1in},
+		ignoreheadfoot
+	]{geometry}
+	\input{../common.tex}
+	\setboolean{lulu}{true}
+% --------------------------------------------
+% A4:
+%	\documentclass[a4paper,11pt,twoside]{book}
+%	\input{../common.tex}
+%	\usepackage{a4wide}
+% --------------------------------------------
+    \graphicspath{{figures/} {../figures/}}
+	\begin{document}
+\fi
+%=================================================================
+%\renewmessage{\nnbb}[2]{} % Disable editorial comments
+\sloppy
+%=================================================================
+\chapter{Block and Dynamic Behavior of Smalltalk-Runtime}\chalabel{blocks}
+
+Blocks are a powerful and essentail feature of Smalltalk. Without them it
+would be difficult to have a so small and compact syntax. The use of blocks in Smalltalk
+is the key to get conditional and loops not hardcoded in the language syntax but just 
+simple messages. 
+
+In addition block are  effective to improve the readability, reusability and efficiency of code. 
+However, the dynamic runtime semantics of Smalltalk is often not well documented. Blocks in presence of
+return statements behave like an excepting mechanism. 
+
+In this chapter we will discuss some basic block behavior such as the notion of a static environment 
+defined at block compiled time. But let us first recall some basics
+
+\section{Basics}
+
+value
+value:
+....
+
+ifTrue:ifFalse: 
+
+
+
+\section{Variables and Blocks}
+
+In Smalltalk, private variables (such as self, instance variables, temporaries and arguments) are 
+lexically scoped. These variables are bound in the context in which the block is deÞned 
+(its home context), rather than the context in which the block is evaluated. 
+
+Define a class name BExp (for BlockExperience) and 
+
+\begin{code}{}
+BExp>>testScope 
+	| t | 
+	t := 42. 
+	self testBlock: [Transcript show: t printString] 
+	
+BExp>>testBlock: aBlock 
+	| t | 
+	t := nil. 
+	aBlock value 
+\end{code}
+
+Execute \ct{BExp new testScope}
+
+Evaluating the \ct{testScope} message will print 42 in the Transcript. What you see is that the value of the temporary variable \ct{t} defined in method testScope is the one used.
+
+More blablablab here.
+
+
+\begin{code}{}
+BExp>>testScope2 
+	| t | 
+	t := 42. 
+	self testBlock: [t := 33.
+					Transcript show: t printString] 	
+	
+BExp>>testBlock: aBlock
+	| t | 
+	t := nil. 
+	aBlock value 
+\end{code}
+
+This experience shows that a block is not only an anonymous method but one with an execution context or environment.
+
+
+Let us check if self is bound :)
+
+Define another class
+
+
+
+\section{Basics on Return}
+
+Return are like 
+
+
+\section{clean, copy and ...}
+
+\section{Returning from inside a block}
+
+\begin{code}{}
+^ should be the last statement of a block body
+	[ Transcript show: 'two'.
+  ^ self. 
+	 Transcript show: 'not printed']
+^ return exits the method containing it.
+
+test
+	  Transcript show: 'one'.
+	  1 isZero 
+	       ifFalse: [ 0 isZero ifTrue: [ Transcript show: 'two'.					 	^ self]].
+	   Transcript show: ' not printed'
+-> one two
+\end{code}
+
+Simple block [:x :y| x*x. x+y] returns the value of the last statement to the method that sends it the message value
+Continuation blocks [:x :y| ^ x + y] returns the value to the method that activated its homeContext
+As a block is always evaluated in its homeContext, it is possible to attempt to return from a method which has already returned using other return. This runtime error condition is trapped by the VM.
+			Object>>returnBlock
+				^[^self]
+			Object new returnBlock
+	-> Exception
+	
+	
+|b| 
+b:= [:x| Transcript show: x. x].
+b value: a. b value: b.
+b:= [:x| Transcript show: x. ^x].
+b value: a. b value: b.
+
+Continuation blocks cannot be executed several times!
+
+\begin{code}{}
+Test>>testScope
+	   |t|
+    	t := 15.
+	   self testBlock: [Transcript show: "--",t printString, "--".
+	   ^35 ].
+    ^ 15
+
+Test>>testBlock:aBlock
+	   |t|
+	   t := 50.
+	   aBlock value.
+	   self halt.
+\end{code}
+
+Test new testBlock 	
+print: *15* and not halt. 
+return: 35
+
+
+|val|
+val := [:exit |
+		|goSoon|
+		goSoon := Dialog confirm: 'Exit now?'.
+		goSoon ifTrue: [exit value: 'Bye'].
+		Transcript show: 'Not exiting'.
+		'last value'] myValueWithExit.
+Transcript show: val.
+val
+yes -> print Bye and return  Bye
+no -> print Not Exiting 2 and return 2
+
+
+BlockClosure>>myValueWithExit
+	      self value: [:arg| ^arg ].
+      ^ '2'
+BlockClosure>>myValueWithExit
+ ^ self value: [:arg | ^ arg]        to get  
+
+
+
+
+
+\section{may be to trash}
+VM represents the state of execution as Context objects
+for method MethodContext
+for block BlockContext
+
+aContext contains a reference to the context from which it is invoked, the receiver arguments, temporaries in the Context
+
+We call home context the context in which a block is defined
+
+
+\paragraph{}
+Arguments, temporaries, instance variables are lexically scoped in Smalltalk
+These variables are bound in the context in which the block is defined and not in the context in which the block is evaluated
+
+
+\section{Conclusion}
+
+
+%=========================================================
+\ifx\wholebook\relax\else
+   \bibliographystyle{jurabib}
+   \nobibliography{scg}
+   \end{document}
+\fi
+
+%=================================================================
+\ifx\wholebook\relax\else\end{document}\fi
+%=================================================================
+
+%-----------------------------------------------------------------
+
+%%% Local Variables:
+%%% coding: utf-8
+%%% mode: latex
+%%% TeX-master: t
+%%% TeX-PDF-mode: t
+%%% ispell-local-dictionary: "english"
+%%% End:

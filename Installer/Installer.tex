@@ -32,9 +32,10 @@
 %\renewmessage{\nnbb}[2]{} % Disable editorial comments
 \sloppy
 %=================================================================
-\chapter{Installing Packages with Installer }\chalabel{installer}
+\chapter{Installing Packages with Installer and Gofer }\chalabel{installer}
 
 \on{Wouldn't it be enough just to add a few examples to the Monticello chapter? Does this really deserve a whole chapter on its own?}
+\sd{no I think that we can have something shot and nice about scripting loading of package. Probably we will have something about metacello if this becomes the standard for package}
 
 This chapter presents the Installer package developed by Keith Hodges which greatly simplifies the loading of code in \pharo. Its official web page is at: \url{http://installer.pbwiki.com/Installer}.
 Installer provides a simple Domain Specific Language for installing packages from different formats such as the Monticello package system or SqueakMap. It supports a large number of Squeak dialects, therefore it should work if you are using  \pharo or a Squeak distribution. 
