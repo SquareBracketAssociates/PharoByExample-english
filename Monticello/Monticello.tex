@@ -646,6 +646,7 @@ Here is the reason why:
 %-----------------------------------------------------------------
 \subsection{Class initialization}
 
+\alex{Where are the two emph\{\} for?}
 \emph{class!initialization}
 \emph{Monticello!class initialization}
 When \MC loads a package into the image, any class that defines an \ct{initialize} method on the class side will be be sent the \ct{initialize} message. The message is sent \emph{only} to classes that define this method on the class side. A class that does not define this method will not be initialized, even if \ct{initialize} is defined by one of its superclasses. NB: the initialize method is not invoked when you merely reload a package!
