@@ -1,0 +1,17 @@
+Just before: \section{Kinds of repositories}
+
+%=================================================================
+\section{Getting a change set from two versions}
+%:\alex{Change set were seen in Chapter 6, page 135 of the version 1 of PBE}
+A Monticello version is the snapshot of one or more packages. A version contains the complete set of class and method definitions that constitute the underlying packages. Sometimes, it is useful to have a ``patch'' from two versions. A patch is the set of all necessary changes to go from one version A to another version B. 
+
+\emph{Change set} is mechanism to define system patches. A change set is composed of global side effects on the system. New change set may be created and edited from the \emph{Change Sorter}. This tool is available from the \emph{Tool} entry of the \emph{World menu}.
+
+The difference between two Monticello versions may be easily captured by creating a new change set before loading a second version of a package. As an illustration, we will capture the differences between version 1 and 2 of the \ct{Perfect} package:
+\begin{enumerate}
+\item Load version 1 of \ct{Perfect}
+\item Open a change sorter and create a new change set. Let's call it \ct{DiffPerfect}
+\item Load version 2
+\item In the change sorted, you should now see the difference between version 1 and 2. The change set may be saved on the filesystem by right clicking on it and selecting \ct{file out}. A \ct{DiffPerfect.X.cs} file is now located next to your \Pharo image.
+\end{enumerate}
+
