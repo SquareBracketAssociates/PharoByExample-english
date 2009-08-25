@@ -96,13 +96,51 @@ BExp>>testBlock: aBlock
 	aBlock value 
 \end{code}
 
-This experience shows that a block is not only an anonymous method but one with an execution context or environment.
+This experience shows that a block is not only an anonymous method but one with an execution context or environment. In this environment temporary variables are bound with the values they hold when the block 
+is defined. Naturally we can expect that method arguments are also bound and also self and instance variables of the class in which the method defining a block is. Let's illustrate these points now. 
+
+For method arguments
+
+\begin{code}{}
+BExp>>testScopeArg: arg
+	"self new testScopeArg: 'foo'"
+	
+	self testScopeArgValue: [Transcript show: arg ; cr]
+
+BExp>>testScopeArgValue: aBlock
+	| arg | 
+	arg := 'zork'.
+	aBlock value
+\end{code}
+
+Now executing \ct{self new testScopeArg: 'foo'} prints foo even if in the method testScopeArgValue: the temporary arg is redefined. 
 
 
-Let us check if self is bound :)
+For binding of self, we can simply define a new class and a couple of method
 
 Define another class
+\begin{code}{}
+Object subclass: #BEXp2
+	instanceVariableNames: 'x'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'BlockExperiment'
+\end{code}
 
+\begin{code}{}
+BExp2>>estScopeSelf: aBlock
+	aBlock value
+	
+BExp>>testScopeSelf
+	"self new testScopeSelf"
+	self testScopeSelf: [Transcript show: self printString ; show: x; cr]
+
+
+BExp>>testScopeSelf: aBlock
+	BEXp2 new testScopeSelf: aBlock
+\end{code}	
+
+Now when we execute \ct{BExp new testScopeSelf} and we see that a BExp gets printed, showing that a block captures self. 
 
 
 \section{Basics on Return}
@@ -186,7 +224,7 @@ BlockClosure>>myValueWithExit
  ^ self value: [:arg | ^ arg]        to get  
 
 
-
+\paragraph{Storing a block}
 
 
 \section{may be to trash}
