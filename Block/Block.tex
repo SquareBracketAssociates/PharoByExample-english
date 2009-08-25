@@ -118,7 +118,15 @@ Now executing \ct{self new testScopeArg: 'foo'} prints foo even if in the method
 
 For binding of self, we can simply define a new class and a couple of method
 
-Define another class
+Add the instance variable x to the class BExp and define the initialize method
+as follows:
+
+\begin{code}{}
+BExp>>initialize
+	x := 666.
+\end{code}	
+
+Define another class 
 \begin{code}{}
 Object subclass: #BEXp2
 	instanceVariableNames: 'x'
@@ -127,18 +135,26 @@ Object subclass: #BEXp2
 	category: 'BlockExperiment'
 \end{code}
 
+
 \begin{code}{}
+BExp2>>initialize
+	x := 69.
+
 BExp2>>estScopeSelf: aBlock
 	aBlock value
-	
+\end{code}
+
+Then define the emthods that will invoke the methods defined in BExp2.
+\begin{code}{}	
 BExp>>testScopeSelf
 	"self new testScopeSelf"
 	self testScopeSelf: [Transcript show: self printString ; show: x; cr]
 
-
 BExp>>testScopeSelf: aBlock
 	BEXp2 new testScopeSelf: aBlock
 \end{code}	
+	
+	
 
 Now when we execute \ct{BExp new testScopeSelf} and we see that a BExp gets printed, showing that a block captures self. 
 
