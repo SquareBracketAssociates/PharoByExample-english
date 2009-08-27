@@ -875,11 +875,11 @@ Inspecting \ct{Undeclared} can sometimes help explain strange behaviour!
 
 \item
 \glbind{SystemOrganization} is an instance of \clsind{SystemOrganizer}: it records the organization of classes into packages.  More precisely, it categorizes the \emph{names} of classes, so
+\end{itemize}
+
 \begin{code}{@TEST}
 SystemOrganization categoryOfElement: #Magnitude --> #'Kernel-Numbers'
 \end{code}
-
-\end{itemize}
 
 Current practice is to strictly limit the use of global variables; it is usually better to use class instance variables or class variables, and to provide class methods to access them.  Indeed, if \pharo were to be implemented from scratch today, most of the global variables that are not classes would be replaced by singletons.
 

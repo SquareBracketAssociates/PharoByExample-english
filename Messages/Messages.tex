@@ -376,6 +376,7 @@ Here we need the \ind{parentheses} to force sending \ct{lowMajorScaleOn:} before
 The message \ct{(65@325 extent: 134 @ 100) center} returns the center of a rectangle whose top left point is $(65, 325)$ and whose size is $134{\times}100$. \Egref{decExtent} shows how the message is decomposed and sent. First the message between parentheses is sent: it contains two binary messages \ct{65@325} and \ct{134@100} that are sent first and return points, and a keyword message \ct{extent:} which is then sent and returns a rectangle. Finally the unary message \ct{center} is sent to the rectangle and a point is returned. 
 Evaluating the message without parentheses would lead to an error because the object \ct{100} does not understand the message \ct{center}.
 
+\needlines{9}
 \begin{example}[decExtent]{Example of Parentheses.}{}
       (65 @ 325 extent: 134 @ 100) center
 (1)   65@325                                                    "binary"
@@ -410,6 +411,7 @@ Now we know how messages of different kinds or priorities are handled. The final
 \subsection{Arithmetic inconsistencies}
 The message composition rules are simple but they result in inconsistency for the execution of arithmetic message sends expressed in terms of binary messages. Here we see the common situations where extra parentheses are needed. 
 
+\needlines{6}
 \begin{code}{@TEST}
 3 + 4 * 5      --> 35    "(not 23)  Binary messages sent from left to right"
 3 + (4 * 5)    --> 23

@@ -312,7 +312,8 @@ Although it is possible to override \ct{deepCopy} to do the right thing, \cmind{
 
 \begin{method}{Copying objects as a template method}
 Object>>>copy
-    "Answer another instance just like the receiver. Subclasses typically override postCopy;
+    "Answer another instance just like the receiver.
+    Subclasses typically override postCopy;
     they typically do not override shallowCopy."
     ^self shallowCopy postCopy
 \end{method}
@@ -408,7 +409,7 @@ A final key method that occurs not in \ct{Object} but in \ct{ProtoObject} is \mt
 
 \begin{method}{\lct{initialize} as an empty hook method}
 ProtoObject>>>initialize
-    "Subclasses should redefine this method to perform initializations on instance creation"
+   "Subclasses should redefine this method to perform initializations on instance creation"
 \end{method}
 
 The reason this is important is that in \pharo, the default \mthind{Behavior}{new} method defined for every class in the system will send \ct{initialize} to newly created instances.
