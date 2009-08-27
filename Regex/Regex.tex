@@ -923,10 +923,14 @@ The \ct{String} enumeration and replacement protocols that we saw earlier in thi
 \begin{code}{@TEST | seuss aWords |}
 seuss := 'The cat in the hat is back'.
 aWords := '\<([^aeiou]|[a])+\>' asRegex.    "match words with 'a' in them"
-aWords matchesIn: seuss                                                                                     --> an OrderedCollection('cat' 'hat' 'back')
-aWords matchesIn: seuss collect: [:each | each asUppercase ]                          --> an OrderedCollection('CAT' 'HAT' 'BACK')
-aWords copy: seuss replacingMatchesWith: 'grinch'                                           --> 'The grinch in the grinch is grinch'
-aWords copy: seuss translatingMatchesUsing: [ :each | each asUppercase ]     --> 'The CAT in the HAT is BACK'
+aWords matchesIn: seuss
+    --> an OrderedCollection('cat' 'hat' 'back')
+aWords matchesIn: seuss collect: [:each | each asUppercase ]
+    --> an OrderedCollection('CAT' 'HAT' 'BACK')
+aWords copy: seuss replacingMatchesWith: 'grinch'
+    --> 'The grinch in the grinch is grinch'
+aWords copy: seuss translatingMatchesUsing: [ :each | each asUppercase ]
+    --> 'The CAT in the HAT is BACK'
 \end{code}
 
 There are also the following methods for iterating over matches within streams:
