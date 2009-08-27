@@ -536,28 +536,35 @@ Alternatively, you can modify the \ct{handleKeystroke:} method so that you can u
 %=================================================================
 \section{Interactors}
 
-To prompt the user for input, the \clsind{FillInTheBlank} class provides a few ready-to-use dialog boxes.
-For instance, the \mthind{FillInTheBlank}{request:initialAnswer:} method returns the string entered by the user (\figref{dialogName}).
+To prompt the user for input, the \clsind{UIManager} class provides a large number of ready-to-use dialog boxes.
+For instance, the \mthind{UIManager}{request:initialAnswer:} method returns the string entered by the user (\figref{dialogName}).
+\begin{code}{}
+UIManager default request: 'What''s your name?' initialAnswer: 'no name'
+\end{code}
 
 \begin{figure}[htb]
-\begin{minipage}{0.55\textwidth}
-	\ifluluelse
-		{\centerline{\includegraphics[scale=0.65]{dialog}}}
-		{\centerline{\includegraphics[width=5cm]{dialog}}}
-	\caption{Dialog displayed by \ct{FillInTheBlank request: 'What''s your name?' initialAnswer: 'no name'}.
-		\figlabel{dialogName}}
+\begin{minipage}{0.48\textwidth}
+	\centerline{\includegraphics[width=0.8\textwidth]{dialog}}
+	\caption{An input dialog.}\figlabel{dialogName}
 \end{minipage}
 \hfill
-\begin{minipage}{0.38\textwidth}
+\begin{minipage}{0.48\textwidth}
 	\vfill
-	\ifluluelse
-		{\centerline{\includegraphics [scale=0.65]{popup}}}
-		{\centerline{\includegraphics[width=3cm]{popup}}}
+	\centerline{\includegraphics [width=0.8\textwidth]{popup}}
 	\vfill
 	\vspace{4ex}
-	\caption{Pop-up menu displayed by \ct{PopUpMenu>>>startUpWithCaption:}.}
+	\caption{Pop-up menu.}\figlabel{popup}
 \end{minipage}
 \end{figure}
+
+To display a popup menu, use one of the various \ct{chooseFrom:} methods (\figref{popup}):
+\begin{code}{}
+UIManager default
+	chooseFrom: #('circle' 'oval' 'square' 'rectangle' 'triangle')
+	lines: #(2 4) message: 'Choose a shape'
+\end{code}
+
+\dothis{Browse the \clsind{UIManager} class and try out some of the interaction methods offered.}
 
 %\begin{figure}[ht]
 %	\centerline{\includegraphics[width=5cm]{dialog}}
@@ -565,13 +572,10 @@ For instance, the \mthind{FillInTheBlank}{request:initialAnswer:} method returns
 %		\figlabel{dialogName}}
 %\end{figure}
 
-To display a pop-up menu, use the \clsind{PopupMenu} class:
-\begin{code}{}
-menu := PopUpMenu
-	labelArray: #('circle' 'oval' 'square' 'rectangle' 'triangle')
-	lines: #(2 4).
-menu startUpWithCaption: 'Choose a shape'
-\end{code}
+%To display a pop-up menu, use the \clsind{PopupMenu} class:
+%\begin{code}{}
+%UIManager default chooseFrom: #('circle' 'oval' 'square' 'rectangle' 'triangle') lines: #(2 4) message: 'Choose a shape'
+%\end{code}
 
 %\begin{figure}[ht]
 %	\centerline{\includegraphics[width=3cm]{popup}}
