@@ -1,20 +1,20 @@
 #! /usr/bin/ruby -s
 #
-# examples --- extract code examples from Squeak by Example LaTeX source
+# examples --- extract code examples from Pharo by Example LaTeX source
 #
 # $Id: examples.rb 12123 2007-09-22 09:04:38Z oscar $
 # ============================================================
 Header = <<eof
 
-===== SQUEAK BY EXAMPLE ==========
+===== PHARO BY EXAMPLE ==========
 
-Below follow all the (displayed) code examples from the book "Squeak by
+Below follow all the (displayed) code examples from the book "Pharo by
 Example".
 
-For details about this book, see: http://SqueakByExample.org
+For details about this book, see: http://pharo-project.org/PharoByExample
 
 The examples are provided, as is, for your convenience, in case you want
-to copy and paste fragments to Squeak to try out.
+to copy and paste fragments to Pharo to try out.
 
 Note that in almost all cases the annotation "--> ..." suggests that you
 can select and apply <print it> to the previous expression and you should
@@ -49,7 +49,7 @@ class Chapter
       # grab chapter title
       when line =~ /\\chapter\{([^}]*)\}/
         @title = $1
-        @title.gsub!(/\\sq/, "Squeak") # Expand macros
+        @title.gsub!(/\\pharo/, "Pharo") # Expand macros
         @title.gsub!(/\\st/, "Smalltalk")
       # look for the code listing environments
       when line =~ /^\\begin\{(code|example|script|classdef|methods?|numMethod)\}/
