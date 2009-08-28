@@ -217,16 +217,26 @@ You can open a browser on a class named by any selected text using the \short{b}
 \index{browser!senders}
 \Actclick{ing} \menu{browse \ldots \go senders (n)} in the method pane will bring up a list of all methods that may use the selected method. With the browser open on \ct{Morph}, click on the \mthind{Morph}{drawOn:} method in the method pane; the body of \ct{drawOn:} displays in the bottom part of the browser. If you now select \menu{senders (n)} (\figref{SendersOfDrawOn}), a menu will appear with \ct{drawOn:} as the topmost item, and below it, all the messages that \ct{drawOn:} sends (\figref{SendersOfDrawOn2}).  Selecting an item in this menu will open a browser with the list of all methods in the image that send the selected message (\figref{CanvasDraw}).
 
+%\begin{figure}[htb]
+%\begin{minipage}[b]{0.74\textwidth}
+%\centerline {\includegraphics[width=\textwidth]{SendersOfDrawOn}}
+%\caption{The \menu{senders (n)} menu item.\figlabel{SendersOfDrawOn}}
+%\end{minipage}
+%\hfill
+%\begin{minipage}[b]{0.24\textwidth}
+%\centerline {\includegraphics[width=\textwidth]{SendersOfDrawOn2}}
+%\caption{Choose senders of which message.\figlabel{SendersOfDrawOn2}}
+%\end{minipage}
+%\end{figure}
+
 \begin{figure}[htb]
-\begin{minipage}[b]{0.74\textwidth}
 \centerline {\includegraphics[width=\textwidth]{SendersOfDrawOn}}
 \caption{The \menu{senders (n)} menu item.\figlabel{SendersOfDrawOn}}
-\end{minipage}
-\hfill
-\begin{minipage}[b]{0.24\textwidth}
-\centerline {\includegraphics[width=\textwidth]{SendersOfDrawOn2}}
+\end{figure}
+
+\begin{figure}[htb]
+\centerline {\includegraphics[width=0.4\textwidth]{SendersOfDrawOn2}}
 \caption{Choose senders of which message.\figlabel{SendersOfDrawOn2}}
-\end{minipage}
 \end{figure}
 
 The ``n'' in \menu{senders (n)} tells you that the keyboard shortcut for finding the senders of a message is \short{n}. This will work in \emph{any} text window.
