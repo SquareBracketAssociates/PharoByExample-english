@@ -282,6 +282,7 @@ Bag withAll: #(7 3 1 3)                        --> a Bag(7 1 3 3)
 Dictionary withAll: #(7 3 1 3)               --> a Dictionary(1->7 2->3 3->1 4->3 )
 \end{code}
 
+\needlines{3}
 \begin{code}{@TEST}
 Array newFrom: #(7 3 1 3)                                          --> #(7 3 1 3)
 OrderedCollection newFrom: #(7 3 1 3)                     --> an OrderedCollection(7 3 1 3)
@@ -673,8 +674,7 @@ Another useful method is \ct{findString:}.
 'GNU/Linux mag' findString: 'linux' startingAt: 1 caseSensitive: false  --> 5
 \end{code}
 
-More advanced pattern matching facilities offering the capabilities of Perl are also available, but they are not included in the standard image\footnote{We strongly recommend Vassili Bykov's \ind{regular expression package}, available at \url{http://www.squeaksource.com/Regex.html}.
-\index{Bykov, Vassili}}.
+More advanced pattern matching facilities offering the capabilities of Perl are also available in the \pkgind{Regex} package.
 
 \paragraph{Some tests on strings.} The  following examples illustrate the use of \mbox{\mthind{String}{isEmpty},} \mthind{String}{includes:} and \mthind{String}{anySatisfy:} which are further messages defined not only on Strings but more generally on collections. 
 
