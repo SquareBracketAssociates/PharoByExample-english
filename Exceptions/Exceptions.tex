@@ -652,9 +652,7 @@ Installer>>>installQuietly: packageNameCollectionOrDetectBlock
 %	 [ self install ] on: Warning do: [ :ex | ex resume: true ]. 
 % The code actually says resume: true, but Keith Hodges confirms that this is not necessary
 
-\ab{This is as far as I got today.}
-
-Another typical situation can be seen when an interaction with the user is required, as in the following example:
+Another typical situation is when an interaction with the user is required, as in the following example:
 \begin{code}{}
 ResumableLoader>>>readOptionsFrom: aStream 
 	| option |
@@ -677,17 +675,24 @@ ResumableLoader>>>readConfiguration
 	stream close
 \end{code}
 
-If an invalid option is encountered in \ct{readOptionsFrom:}, an \ct{InvalidOption} exception is signaled. The block handler in \ct{readConfiguration} resumes the exception, then the \ct{signal} method call in \ct{readOptionsFrom:} returns and the execution keeps going.
+If an invalid option is encountered in \ct{readOptionsFrom:}, an \ct{InvalidOption} exception is signaled. The action handler in \ct{readConfiguration} resumes the exception, causing the \ct{signal} message send in \ct{readOptionsFrom:} to returns and the execution keeps going.
+
+\ab{I don't see why this would work.  For the loop to ``keep going'', the last expression in it must evaluate to \ct{false}.  \ct{InvalidOption signal} is going to evaluate to \ct{ nil} in the case where the exception is resumed.  
+In the case where the option is not \ct{nil}, it wil evaluate to the result of \ct{self addOption: foo}, which is presumably \ct{foo}, not a Boolean.
+I could not find this class in \pharo.}
 
 Note that \ct{InvalidOption} must be a resumable exception. It suffices to define it as a subclass of \ct{Exception}.
-It is not always a reasonable option to \ct{resume} an exception. For example, there is no sensible way to resume a \ct{FileNotFound} exception. The message \ct{isResumable} is used to determine whether an exception may be resumed or not. In \ct{Error>>>isResumable} returns \ct{false}, so by default subclasses of \ct{Error} are not resumable, unless they override this method to return \ct{true}.
+It is not always reasonable to allow an exception to be  \ct{resume}d:
+there is no sensible way to resume a \ct{FileNotFound} exception, for example.
+The message \ct{isResumable} is used to acertain whether or not an exception may be resumed.
+In class\ct{Error}, the \ct{isResumable} method answers \ct{false}, so subclasses of \ct{Error} are not resumable, unless they override this method to answer \ct{true}.
 
 %=================================================================
 \section{Example: deprecation}
 
 \index{deprecation (pattern)}
 \emph{Deprecation} offers a good case study of a simple mechanism built using exceptions.
-This design pattern allows a programmer to mark a method as being ``deprecated'', meaning that it may disappear in a future release and should not be used any more. In \pharo, a method can be marked as deprecated as follows:
+Deprecation is a design pattern allows a programmer to mark a method as being ``deprecated'', meaning that it may disappear in a future release and should not be used any more. In \pharo, a method can be marked as deprecated as follows:
 
 \mthindex{Object}{deprecated:}
 \begin{code}{}
@@ -696,7 +701,7 @@ SequenceableCollection>>>upTo: anObject
 	^ self copyUpTo: anObject
 \end{code}
 
-When the message \ct{upTo:} is sent, if the \ct{showDeprecationWarnings} preference is set to \ct{true}, then a pop-up window is displayed as a notification and the programmer may resume the application execution (see \figref{deprecation}).
+When the message \ct{upTo:} is sent, if the \ct{raiseDeprecationWarnings} preference is  \ct{true}, then a pop-up window is displayed with a notification and the programmer may resume the application execution; this is shown in \figref{deprecation}.
 
 
 \begin{figure}[ht]\centering
@@ -706,38 +711,29 @@ When the message \ct{upTo:} is sent, if the \ct{showDeprecationWarnings} prefere
 
 Deprecation is easily implemented in \pharo in just a few steps.
 First, we define \clsind{Deprecation} as a subclass of \clsind{Warning}.
-We should normally consider overriding \ct{isResumable}, \ct{description}, and \ct{defaultAction}. In this case the default implementations are fine:
+It should have some instance variables to contain information about the deprecation: in 
+\pharo{} these are \ct{methodReference, explanationString, deprecationDate} and \ct{versionString}; we therefore need to define an instance-side initialization method for these variables, and a class-side instance creation method that sends the corresponding message.
+
+When we define a new exception class, we should consider overriding \ct{isResumable}, \ct{description}, and \ct{defaultAction}.
+In this case the inherited implementations of the first two methods are fine:
 
 \begin{itemize}
-\item \ct{isResumable} is inherited from \clsind{Notification}, the superclass of \ct{Warning}, and returns \ct{true};
-\item \ct{description} is inherited from \ct{Exception}, and returns an adequate textual description;
-\item \ct{defaultAction} is inherited from \ct{Warning}, opening a debugger notification, and allowing a programmer to resume execution.
+\item \ct{isResumable} is inherited from \clsind{Exception}, and answers \ct{true};
+\item \ct{description} is inherited from \ct{Exception}, and answers an adequate textual description.
 \end{itemize}
 
+However, it is necessary to override the implementation of \ct{defaultAction}, because we want that to depend on some preferences.  Here is \pharo's implementation:
 \begin{code}{}
-Warning>>>defaultAction 
-	"The user should be notified of the occurrence of an exceptional occurrence
-	and given an option of continuing or aborting the computation. The description
-	of the occurrence should include any text specified as the argument of the
-	#signal: message." 
-
-	ToolSet 
-		debugContext: thisContext 
-		label: 'Warning' 
-		contents: self messageText, 'Select Proceed to continue, or close this window to cancel the operation.' withCRs. 
-		self resume. 
+Deprecation>>>defaultAction	Log ifNotNil: [:log| log add: self].	Preferences showDeprecationWarnings ifTrue:		[Transcript nextPutAll: explanationString; cr; flush].	Preferences raiseDeprecatedWarnings ifTrue:		[super defaultAction]
 \end{code}
 
-The only method we need to implement is this convenience method on \ct{Object}:
+We also need to implement some convenience methods in \ct{Object}, like this one:
 \begin{code}{}
-Object>>>deprecated: anExplanationString
-	"Warn that the sending method has been deprecated."
-	Preferences showDeprecationWarnings ifTrue:
-		[Deprecation signal: thisContext sender printString, ' has been deprecated. ', anExplanationString]
+Object>>>deprecated: anExplanationString	"Warn that the sending method has been deprecated."	(Deprecation		method: thisContext sender method		explanation: anExplanationString		on: nil		in: nil) signal
 \end{code}
 
 %=================================================================
-\section{Passing on exceptions}
+\section{Passing Exceptions on}
 
 To illustrate the remaining possibilities for handling exceptions, we will look at how to implement a generalization of the \ct{perform:} method.
 If we send \lct{perform: \emph{aSymbol}} to an object, this will cause the message named \lct{\emph{aSymbol}} to be sent  to that object:
@@ -749,7 +745,7 @@ Several variants of this method exist. For example:
 \begin{code}{@TEST}
 1 perform: #+ withArguments: #(2) --> 3    "same as: 1 + 2"
 \end{code}
-These \ct{perform:}-like methods are very useful for dynamically accessing an interface, since the messages to be sent can be determined at run-time.
+These \ct{perform:}-like methods are very useful for accessing an interface dynamically, since the messages to be sent can be determined at run-time.
 
 One message that is missing is one that will send a cascade of unary messages to a given receiver. A simple and naive implementation is:
 \begin{code}{}
@@ -762,17 +758,17 @@ This method could be used as follows:
 Morph new performAll: #( #activate #beTransparent #beUnsticky)
 \end{code}
 
-However, there is a complication. There might be a selector in the collection that the object does not understand (such as \ct{#activate}). We would like simply to ignore such selectors and continue sending the remaining messages. The following implementation seems to be reasonable:
+However, there is a complication. There might be a selector in the collection that the object does not understand (such as \ct{#activate}). We would like to ignore such selectors and continue sending the remaining messages. The following implementation seems to be reasonable:
 
 \begin{code}{}
 Object>>>performAll: selectorCollection 
 	selectorCollection do: [:each |
 		[self perform: each]
 			on: MessageNotUnderstood
-			do: [:ex | ex return]]    "doesn't distinguish internal errors"
+			do: [:ex | ex return]]    "also ignores internal errors"
 \end{code}
 
-On closer examination we notice another problem. This handler will not only catch and ignore messages not understood by the original receiver, but also any messages sent but not understood in methods for messages that \emph{are} understood! This will simply hide programming errors in those methods, which is not our intent.
+On closer examination we notice another problem. This handler will not only catch and ignore messages not understood by the original receiver, but also any messages sent but not understood in methods for messages that \emph{are} understood! This will hide programming errors in those methods, which is not our intent.
 To fix this, we need our handler to analyze the exception to see if it was indeed caused by the attempt to perform the current selector.
 Here is the correct implementation.
 \begin{code}{}
@@ -782,21 +778,30 @@ Object>>>performAll: selectorCollection
 			on: MessageNotUnderstood 
 			do: [:ex | (ex receiver == self and: [ex message selector == each]) 
 				ifTrue: [ex return] 
-				ifFalse: [ex pass]]]    "pass on internal errors"
+				ifFalse: [ex pass]]]    "pass internal errors on"
 \end{code}
 
-This has the effect of passing on \clsind{MessageNotUnderstood} errors to the surrounding context when they are not part of the list of messages we are performing. The \ct{pass} message will pass the exception on to the next applicable handler in the run-time stack.
+This has the effect of passing on \clsind{MessageNotUnderstood} errors to the surrounding context when they are not part of the list of messages we are performing. The \ct{pass} message will pass the exception on to the next applicable handler in the execution stack.
 
-If there is no next handler on the list, the \ct{defaultAction} message is sent to the exception instance. The \ct{pass} action does not modify the sender chain in any way\,---\,but the handler the control is passed to may do so. Like other messages we discussed in this section, \ct{pass} is special\,---\,it never returns to the sender.
+If there is no next handler on the stack, the \ct{defaultAction} message is sent to the exception instance. The \ct{pass} action does not modify the sender chain in any way\,---\,but the handler that control is passed to may do so. Like other messages we discussed in this section, \ct{pass} is special\,---\,it never returns to the sender.
 
 \lr{I hope nobody is going to write code like that after reading this section.}
 \on{Well, I certainly don't plan to!}
+
+\newsavebox{\apbmethod}
+\sbox{\apbmethod}{\fbox{\parbox[b]{\linewidth}{
+\lct{
+performAll: selectorCollection \\	selectorCollection		do: [:each | (self respondsTo: each)				ifTrue: [self perform: each]]
+}}}}
+\ab{I had exactly the same thought.  I would have written:\\[1ex]
+\usebox\apbmethod\\[2ex]
+The larger question is: should we be showing the reader overly-complex code just to illustrate the use of a complex feature?  Maybe we should just end by saying that there is a much simpler way to get the same effect?}
 
 %=================================================================
 \section{Resending exceptions}
 
 \index{exception!resending}
-Now suppose that in our \ct{performAll:} example we no longer want to ignore selectors not understood by the receiver. We do want to consider an occurrence of such a selector as an error. However, we want it to be signaled as an application-specific exception, let's say \ct{InvalidAction}, rather than the generic \ct{MessageNotUnderstood}. In other words, we want the ability to ``resignal'' a signaled exception as a different one.
+Now suppose that in our \ct{performAll:} example we no longer want to ignore selectors not understood by the receiver, but instead we want to consider an occurrence of such a selector as an error. However, we want it to be signaled as an application-specific exception, let's say \ct{InvalidAction}, rather than the generic \ct{MessageNotUnderstood}. In other words, we want the ability to ``resignal'' a signaled exception as a different one.
 
 It might seem that the solution would simply be to signal the new exception in the handler block. The handler block in our implementation of \ct{performAll:} would be:
 
@@ -807,9 +812,9 @@ It might seem that the solution would simply be to signal the new exception in t
 	ifFalse: [ex pass]]
 \end{code}
 
-A closer look reveals a subtle problem with this solution, however. Our original intent was to replace the occurrence of \ct{MessageNotUnderstood} with \ct{InvalidAction}. This replacement should have the effect as if \lct{InvalidAction} were signaled in the same place in the program where the original \ct{MessageNotUnderstood} was. Our solution signals \ct{InvalidAction} in a different location. The difference in locations may well lead to the difference in the set of applicable handlers.
+A closer look reveals a subtle problem with this solution, however. Our original intent was to replace the occurrence of \ct{MessageNotUnderstood} with \ct{InvalidAction}. This replacement should have the same effect as if \lct{InvalidAction} were signaled at the same place in the program as the original \ct{MessageNotUnderstood} exception. Our solution signals \ct{InvalidAction} in a different location. The difference in locations may well lead to a difference in the applicable handlers.
 
-To solve this problem, resignaling an exception should be a special action handled by the system. For this purpose, the system provides the message \ct{resignalAs:}. The correct implementation of a handler block in our \ct{performAll:} example should be:
+To solve this problem, resignaling an exception is be a special action handled by the system. For this purpose, the system provides the message \ct{resignalAs:}. The correct implementation of a handler block in our \ct{performAll:} example would be:
 
 \begin{code}{}
  [:ex |  (ex receiver == self and: [ex message selector == each])
@@ -818,7 +823,7 @@ To solve this problem, resignaling an exception should be a special action handl
 \end{code}
 
 %=================================================================
-\section{Outer vs. pass}
+\section{Comparing \lct{outer} with \lct{pass}}
 
 The method \mthind{Exception}{outer} is very similar to \ct{pass}. If you send \ct{outer} to an exception, then this also has the effect of evaluating the enclosing handler action. The only difference is that if the outer handler resumes the exception, then control will be returned to the point where \ct{outer} was sent, not the original point where the exception was signaled:
 
@@ -844,7 +849,8 @@ outerResume --> 2    "resumes to where outer was sent"
 %=================================================================
 \section{Catching sets of exceptions}
 
-So far we have always tried to catch just a single type of exception. The handler will only be invoked if the exception signaled is an instance of the specified exception class or one of its subclasses. It is easy to imagine, however, situations where we might like to catch multiple types of exceptions. This is easy to do:
+So far we have always tried to catch just a single class of exception. The handler will only be invoked if the exception signaled is a sub-instance of the specified exception class.
+However, It is easy to imagine situations where we might like to catch multiple classes of exceptions. This is easy to do:
 
 \begin{code}{@TEST | result |}
 result := [ Warning signal . 1/0 ]
@@ -884,6 +890,7 @@ ExceptionSet>>>handles: anException
 	^false
 \end{code}
 
+\ab{Here I stopped}
 
 %=========================================================
 \section{How exceptions are implemented}

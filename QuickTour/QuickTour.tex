@@ -128,7 +128,7 @@ A good place to get started is the \ind{world menu} shown in \figref{threeButton
 %		\includegraphics[width=0.35\linewidth]{yellowButtonMenuOnWorkspace}}\hfill
 %	\subfigure[The morphic halo]{\figlabel{threeButtons:metaclick}% meta click
 %		\includegraphics[width=0.35\linewidth]{morphicHaloOnWorkspace}}% these braces needed (else no whitespace at end of line)
-%	\caption{The world menu (brought up \click{ing}), a contextual menu (\actclick{ing}), and a morphic \subind{Morphic}{halo} (\metaclick{ing}).\figlabel{threeButtons}}
+%	\caption{The world menu (brought up by \click{ing}), a contextual menu (\actclick{ing}), and a morphic \subind{Morphic}{halo} (\metaclick{ing}).\figlabel{threeButtons}}
 %\end{figure}
 
 \begin{figure}[tbh]
@@ -139,7 +139,7 @@ A good place to get started is the \ind{world menu} shown in \figref{threeButton
 		\includegraphics[width=0.55\linewidth]{yellowButtonMenuOnWorkspace}}\hfill
 	\subfigure[The morphic halo]{\figlabel{threeButtons:metaclick}% meta click
 		\includegraphics[width=0.60\linewidth]{morphicHaloOnWorkspace}}% these braces needed (else no whitespace at end of line)
-	\caption{The world menu (brought up \click{ing}), a contextual menu (\actclick{ing}), and a morphic \subind{Morphic}{halo} (\metaclick{ing}).\figlabel{threeButtons}}
+	\caption{The world menu (brought up by \click{ing}), a contextual menu (\actclick{ing}), and a morphic \subind{Morphic}{halo} (\metaclick{ing}).\figlabel{threeButtons}}
 \end{figure}
 \seeindex{morphic halo}{Morphic}
 
@@ -163,11 +163,12 @@ Originally \st introduced colours to stand for the different mouse buttons.\foot
 \index{blue button}
 Since many users will use various modifiers keys (\emph{control}, \emph{ALT}, \emph{meta} \etc) to achieve the same effect, we will instead use the following terms:
 \begin{description}
-\item [\click:] this is the most often used mouse button, and is normally equivalent to \click{ing} a single-mouse button without any modifier key. \click on the image to bring up the ``World'' menu (\figref{threeButtons:click}).
+\item [\click:] this is the most often used mouse button, and is normally equivalent to \click{ing} a single-mouse button without any modifier key; \click{} on the image to bring up the ``World'' menu (\figref{threeButtons:click}).
 \item [\actclick:] this is the next most used button; it is used to bring up a contextual menu, that is, a menu that offers different sets of actions depending on where the mouse is pointing; see \figref{threeButtons:actclick}. If you do not have a multi-button mouse, then normally you will configure the \emph{control} modifier key to \actclick with the mouse button.
 \item [\metaclick:] Finally, you may \metaclick on any object displayed in the image to activate the ``morphic \subind{Morphic}{halo}'', an array of handles that are used to perform operations on the on-screen objects themselves, such as rotating them or resizing them; see \figref{threeButtons:metaclick}.\footnote{Note that the morphic handles are usually inactive in \pharo, but you can turn them on using the Preferences Browser, which we will see shortly.}
 If you let the mouse linger over a handle, a help balloon will explain its function.
 In \pharo, you can \metaclick by holding {\sc shift} \emph{ctrl} or {\sc shift} \emph{alt} while clicking.
+\ab{This makes it sound like either {\sc shift} \emph{ctrl} or {\sc shift} \emph{alt} will work.  On my (Mac OS) system, only the latter works.  Perhaps we want to say: In \pharo, how you meta-click depends on your operating system. On Linux \ldots}
 % Typically you will use a third modifier key, such as \emph{command} or \emph{meta} to \metaclick.
 \end{description}
 
@@ -187,9 +188,10 @@ Select \menu{print it}.}
 %\dothis{Now you should be able to \metaclick on the workspace. (See \figref{threeButtons:metaclick}.)
 %Grab the blue \raisebox{-0.4ex}{\includegraphics[width=1em]{morphicRotate}} handle near the bottom left corner and drag it to rotate the workspace.}
 
-We recommend that right-handed people configure their mouse to \click with the left button, \actclick with the right button, and \metaclick with the  clickable scroll wheel, if one is available.  If you don't have a clickable scroll wheel, then you can get the Morphic halo by holding down the \ct{alt} or \ct{option} key while \click{ing}.  If you are using a Macintosh without a second mouse button, you can simulate one by holding down the \clover{} key while \click{ing} the mouse.  However, if you are going to be using \pharo at all often, we recommend investing in a mouse with at least two buttons.
+We recommend that right-handed people configure their mouse to \click with the left button, \actclick with the right button, and \metaclick with the  clickable scroll wheel, if one is available.  If you don't have a clickable scroll wheel, then you can get the Morphic halo by holding down the \ct{alt} or \ct{option} key while \click{ing}. 
+\ab{This doesn't work any more.  This sentence either repeats or contradicts the meta-click item above; neither is a good idea.} If you are using a Macintosh without a second mouse button, you can simulate one by holding down the \clover{} key while \click{ing} the mouse.  However, if you are going to be using \pharo at all often, we recommend investing in a mouse with at least two buttons.
 
-You can configure your mouse to work the way you want by using the preferences of your operating system and mouse driver.
+You can configure your mouse to work the way you want by using the preferences of your operating system and mouse driver. \ab{How can I get meta-click without a three-finger salute?  Is this a secret?}
 \pharo has some preferences for customising the mouse and the meta keys on your keyboard.
 In the preference browser (\menu{System {\ldots\go} Preferences {\ldots\go} Preference Browser\ldots}), the \menu{keyboard} category contains an option \menu{swapControlAndAltKeys} that switches the \actclick and \metaclick functions.
 There are also options to duplicate the various command keys.   
