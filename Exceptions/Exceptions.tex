@@ -560,7 +560,7 @@ result := [Error signal]
 result --> 7
 \end{code}
 
-The \ind{ANSI standard} is not clear regarding the difference between \ct{do: [:ex | 100 ]} and \ct{do: [:ex | ex return: 100]} to return a value. We suggest that you use \mthind{Exception}{return:} since it is more intention-revealing, even if these two expressions are equivalent in \pharo.
+The \ind{ANSI standard} is not clear regarding the difference between using \ct{do: [:ex | 100 ]} and \ct{do: [:ex | ex return: 100]} to return a value. We suggest that you use \mthind{Exception}{return:} since it is more intention-revealing, even if these two expressions are equivalent in \pharo.
 
 A variant of \ct{return:} is the message \ct{return}, which returns \ct{nil}. 
 
@@ -722,15 +722,33 @@ In this case the inherited implementations of the first two methods are fine:
 \item \ct{description} is inherited from \ct{Exception}, and answers an adequate textual description.
 \end{itemize}
 
-However, it is necessary to override the implementation of \ct{defaultAction}, because we want that to depend on some preferences.  Here is \pharo's implementation:
+However, it is necessary to override the implementation of \lct{defaultAction}, because we want that to depend on some preferences.  Here is \pharo's implementation:
 \begin{code}{}
-Deprecation>>>defaultAction	Log ifNotNil: [:log| log add: self].	Preferences showDeprecationWarnings ifTrue:		[Transcript nextPutAll: explanationString; cr; flush].	Preferences raiseDeprecatedWarnings ifTrue:		[super defaultAction]
+Deprecation>>>defaultAction
+	Log ifNotNil: [:log| log add: self].
+	Preferences showDeprecationWarnings ifTrue:
+		[Transcript nextPutAll: explanationString; cr; flush].
+	Preferences raiseDeprecatedWarnings ifTrue:
+		[super defaultAction]
 \end{code}
 
+The first preference simply causes a warning message to to be written on the \ct{Transcript}.  The second preference asks for an exception to be signaled, which is accomplished by \super-sending \ct{defaultAction}.
+
 We also need to implement some convenience methods in \ct{Object}, like this one:
+\needlines{8}
 \begin{code}{}
-Object>>>deprecated: anExplanationString	"Warn that the sending method has been deprecated."	(Deprecation		method: thisContext sender method		explanation: anExplanationString		on: nil		in: nil) signal
+Object>>>deprecated: anExplanationString
+	"Warn that the sending method has been deprecated."
+
+	(Deprecation
+		method: thisContext sender method
+		explanation: anExplanationString
+		on: nil
+		in: nil) signal
 \end{code}
+
+\noindent
+The \lct{deprecated: \emph{anExplanationString} on: \emph{date} in: \emph{version}} message allows more information about the deprecation occurred to be specified.
 
 %=================================================================
 \section{Passing Exceptions on}
@@ -791,7 +809,10 @@ If there is no next handler on the stack, the \ct{defaultAction} message is sent
 \newsavebox{\apbmethod}
 \sbox{\apbmethod}{\fbox{\parbox[b]{\linewidth}{
 \lct{
-performAll: selectorCollection \\	selectorCollection		do: [:each | (self respondsTo: each)				ifTrue: [self perform: each]]
+performAll: selectorCollection \\
+	selectorCollection
+		do: [:each | (self respondsTo: each)
+				ifTrue: [self perform: each]]
 }}}}
 \ab{I had exactly the same thought.  I would have written:\\[1ex]
 \usebox\apbmethod\\[2ex]
@@ -825,7 +846,7 @@ To solve this problem, resignaling an exception is be a special action handled b
 %=================================================================
 \section{Comparing \lct{outer} with \lct{pass}}
 
-The method \mthind{Exception}{outer} is very similar to \ct{pass}. If you send \ct{outer} to an exception, then this also has the effect of evaluating the enclosing handler action. The only difference is that if the outer handler resumes the exception, then control will be returned to the point where \ct{outer} was sent, not the original point where the exception was signaled:
+The method \mthind{Exception}{outer} is very similar to \ct{pass}. Sending \ct{outer} to an exception also evaluates the enclosing handler action. The only difference is that if the outer handler resumes the exception, then control will be returned to the point where \ct{outer} was sent, not the original point where the exception was signaled:
 
 \begin{code}{@TEST | passResume |}
 passResume := [[ Warning signal . 1 ]    "resume to here"
@@ -836,7 +857,7 @@ passResume := [[ Warning signal . 1 ]    "resume to here"
 passResume --> 1    "resumes to original signal point"
 \end{code}
 
-
+\needlines{6}
 \begin{code}{@TEST | outerResume |}
 outerResume := [[ Warning signal . 1 ]
 	on: Warning
@@ -849,8 +870,8 @@ outerResume --> 2    "resumes to where outer was sent"
 %=================================================================
 \section{Catching sets of exceptions}
 
-So far we have always tried to catch just a single class of exception. The handler will only be invoked if the exception signaled is a sub-instance of the specified exception class.
-However, It is easy to imagine situations where we might like to catch multiple classes of exceptions. This is easy to do:
+So far we have always used \ct{on:do:} to catch just a single class of exception. The handler will only be invoked if the exception signaled is a sub-instance of the specified exception class.
+However, we can imagine situations where we might like to catch multiple classes of exceptions. This is easy to do:
 
 \begin{code}{@TEST | result |}
 result := [ Warning signal . 1/0 ]
@@ -859,7 +880,7 @@ result := [ Warning signal . 1/0 ]
 result --> 1
 \end{code}
 
-If you are wondering how this works, just have a look at the implementation of \ct{Exception class>>>,}.
+If you are wondering how this works, just have a look at the implementation of \ct{Exception class>>>,}
 
 \begin{code}{}
 Exception class>>>, anotherException
@@ -874,6 +895,8 @@ Exception class>>>, anotherException
 The rest of the magic occurs in the class \clsind{ExceptionSet}, which has a surprisingly trivial implementation.
 
 \begin{code}{}
+Object subclass: #ExceptionSet	instanceVariableNames: 'exceptions'	classVariableNames: ''	poolDictionaries: ''	category: 'Exceptions-Kernel'
+
 ExceptionSet>>>initialize
 	super initialize.
 	exceptions := OrderedCollection new
@@ -890,7 +913,8 @@ ExceptionSet>>>handles: anException
 	^false
 \end{code}
 
-\ab{Here I stopped}
+\noindent
+\ab{Is there some reason that \ct{ExceptionSet>>>handles:} isn't implemented using \ct{anySatisfy:}?}
 
 %=========================================================
 \section{How exceptions are implemented}
@@ -912,7 +936,8 @@ Let's have a look at how exceptions are implemented at the Virtual Machine level
 
 
 \paragraph{Storing Handlers.}
-First we need to understand is how the exception type and its associated handler  are stored and how this information is found at run-time. Let us look at the definition of the central method \mthind{BlockClosure}{on:do:} defined on the class \ct{BlockClosure}. % which is the class representing the block-closure. 
+First we need to understand how the exception class and its associated handler  are stored and how this information is found at run-time. 
+Let's look at the definition of the central method \mthind{BlockClosure}{on:do:} defined on the class \ct{BlockClosure}. % which is the class representing the block-closure. 
 
 \mthindex{BlockClosure}{on:do:}
 \needlines{6}
@@ -925,12 +950,11 @@ BlockClosure>>>on: exception do: handlerAction
 	^self value 
 \end{code}
 
-This code tells us two things: First, this method is implemented as a primitive, which means that  a function defined in the virtual machine is executed, when this method is invoked. Second, the method body simply returns the value of the block receiver and sets the variable \ct{handlerActive} to true. Surprisingly simple. 
+This code tells us two things: First, this method is implemented as a primitive, which means that  a primitive operation of the virtual machine is executed when this method is invoked.  VM primitives don't normally return: successful execution of a primitive terminates the method that contains the \lct{<primitive: \emph{n}\,>} instruction, answering the result of the primitive.
+So, the \st code that follows the primitive serves two purposes: it documents what the primitive does, and is available to be executed if the primitive should fail. 
+Here we see that \ct{on:do:} simply sets the temporary variable \ct{handlerActive} to true, and then evaluates the receiver (which is, of course, a block).  
 
-A primitive method as \ct{on:do:} has a body and a primitive number. Normally, the method body is not executed since the method is bound to a function written in C. When the method has to be executed, the C function is executed instead. In case of a failure in the C function, the \st method body is executed. The method body is then in charge of taking decisions on how to deal with the failure.
-Here the method \ct{on:do:} is associated with the primitive number 199. This number is important to understand the following. 
-
-So you are puzzled. Where are the arguments of the \ct{on:do:} method stored? Let's look at the instance variables of the class \ct{MethodContext}. 
+This is surprisingly simple, but somewhat puzzling.  Where are the arguments of the \ct{on:do:} method stored?  Let's look at the definition of the class \ct{MethodContext}, whose instances make up the execution stack: 
 
 \begin{code}{}
 ContextPart variableSubclass: #MethodContext
@@ -940,7 +964,11 @@ ContextPart variableSubclass: #MethodContext
 	category: 'Kernel-Methods'
 \end{code}
 
-They are neither defined here nor in the superclass. So what is the only solution left? To store the information in the object representing the stack itself. The exception type and the handler are stored in the activation context, in index positions 1 and 2, respectively. To verify this, you can evaluate the following piece of code:
+There is no instance variable here to store the exception class or the handler, nor is there any place  in the superclass to store them. 
+However, note that \ct{MethodContext} is defined as a \ct{variableSubclass}.
+This means that in addition to the named instance variables, objects of this class have some numbered slots.  In fact, every \ct{MethodContext} has a numbered slot for each  argument of the method whose invocation it represents.  There are also additional numbered slots for the temporary variables of the method.
+
+To verify this, you can evaluate the following piece of code:
 
 \begin{code}{}
 | exception handler | 
@@ -952,12 +980,15 @@ do: [:ex| ].
 { exception . handler } explore
 \end{code}
 
-The last line explores a 2-length array that contains the exception type and the exception handler. 
+The last line explores a 2-element array that contains the exception class and the exception handler. 
 
 \paragraph{Finding Handlers.}
-Now that we know how the information is stored, let's have a look at how it is looked up at runtime. 
+Now that we know where the information is stored, let's have a look at how it is found at runtime. 
 
-First, we might think that the primitive 199 is complex to write. But in our case, the C function that corresponds to the primitive 199 \emph{always} fails\footnote{The source code of the primitive is \ct{Interpreter>>>primitiveMarkHandlerMethod} in the \pkgind{VMMaker} \sqsrc project}. Its definition is therefore trivial. The body of \ct{on:do:} is therefore always executed since the primitive fails. An important point is that the execution of the primitive marks the executing context with 199, the primitive number. 
+We might think that the primitive 199 is complex to write. 
+But in fact it too is trivial, because primitive 199 \emph{always} fails\footnote{The source code of the primitive is \ct{Interpreter>>>primitiveMarkHandlerMethod} in the \pkgind{VMMaker} \sqsrc project}. 
+Because the primitive always fails, the \st{} body of \ct{on:do:} is always executed.
+However, the presence of the \ct{<primitive 199>} bytecode marks the executing context in a unique way. 
 
 \begin{code}{}
 primitiveMarkHandlerMethod
@@ -967,12 +998,14 @@ primitiveMarkHandlerMethod
      self inline: false.
     ^self primitiveFail
 \end{code}
+\hyphenation{Method-Context}
+So now we know that when the method \ct{on:do:} is executed, the \ct{MethodContext} that makes up the stack frame is tagged and the handler and exception class 
+are stored there. 
 
-So now we know that when the method \ct{on:do:} is executed, the stack element is tagged and the handler and exception type 
-are stored there. Now if a signal is raised within the handler, the method signal will look for the nextHandler as the method \ct{signal}
-does it.
+Now, if an exception is signaled further up the stack, the method \ct{signal} can search the stack to find the appropriate handler:
 
 \mthindex{Exception}{signal}
+\needlines{5}
 \begin{code}{}
 Exception>>>signal
 	"Ask ContextHandlers in the sender chain to handle this signal.
@@ -984,28 +1017,26 @@ Exception>>>signal
 
 \mthindex{Exception}{nextHandlerContext}
 \begin{code}{}
-Exception>>>nextHandlerContext
+ContextPart>>>nextHandlerContext
 
 	^ self sender findNextHandlerContextStarting
 \end{code}
 
-The method \ct{findNextHandlerContextStarting} is implemented as a primitive (number 197), its body describes what it does. It looks 
-if the stack element is a context created by the execution of the method \ct{on:do:} (it just looks if the number is 199). If this is  the case it returns it. Since the context has all the information, it can be filtered and the look up can continue further or the associated handler can be executed. 
+The method \ct{findNextHandlerContextStarting} is implemented as a primitive (number 197); its body describes what it does. It looks to see
+if the stack frame is a context created by the execution of the method \ct{on:do:} (it just looks to see if the primitive number is 199). If this is the case it answers with that context. 
 
 \mthindex{MethodContext}{findNextHandlerContextStarting}
 \begin{code}{}
-MethodContext>>>findNextHandlerContextStarting 
+ContextPart>>>findNextHandlerContextStarting 
 	"Return the next handler marked context, returning nil if there 
 	is none. Search starts with self and proceeds up to nil." 
 	| ctx |	
 	<primitive: 197> 
 	ctx := self. 
-	[ctx isHandlerContext ifTrue:[^ctx]. 
-	(ctx := ctx sender) == nil ] whileFalse. 
+	[  ctx isHandlerContext ifTrue: [^ctx]. 
+	   (ctx := ctx sender) == nil ] whileFalse. 
 	^nil 
 \end{code}
-
-The method \ct{findNextHandlerContextStarting} looks up for a call to \ct{on:do:} starting from the first activation context. \ct{Nil} is returned if none is found. 
 
 \begin{code}{}
 MethodContext>>>isHandlerContext 
@@ -1013,11 +1044,20 @@ MethodContext>>>isHandlerContext
 	^method primitive = 199 
 \end{code}
 
-So in summary the virtual machine finds the activation contexts that correspond to a \ct{on:do:} call. The virtual machine goes over the execution stack and selects the activation contexts that are marked with 199.
+Since the method context supplied by \ct{findNextHandlerContextStarting} contains all the exception-handling information, it can be examined to see if the exception class is suitable for handling the current exception.
+If so, the associated handler can be executed; if not, the look-up can continue further. 
+This is all implemented in the \ct{handleSignal:} method.
 
+\begin{code}{}
+ContextPart>>>handleSignal: exception	"Sent to handler (on:do:) contexts only.  If my exception class (first arg) handles exception then execute my handle block (second arg), otherwise forward this message to the next handler context.  If none left, execute exception's defaultAction (see nil>>handleSignal:)."	| val |	(((self tempAt: 1) handles: exception) and: [self tempAt: 3]) ifFalse: [		^ self nextHandlerContext handleSignal: exception].	exception privHandlerContext: self contextTag.	self tempAt: 3 put: false.  "disable self while executing handle block"	val := [(self tempAt: 2) valueWithPossibleArgs: {exception}]		ensure: [self tempAt: 3 put: true].	self return: val.  "return from self if not otherwise directed in handle block"
+\end{code}
 
+Notice how this method uses \ct{tempAt: 1} to access the exception class, and ask if it handles the exception.   What about  \ct{tempAt: 3}?  That is the temporary variable \ct{handlerActive} of the \ct{on:do:} method.   Checking that \ct{handlerActive} is \ct{true} and then setting it to \ct{false} ensures that a handler will not be asked to handle an exception that it signals itself. 
+The \ct{return:} message sent as the final action of \ct{handleSignal} is responsible for ``unwinding'' the execution stack by removing the stack frames above \self{}.
 
-%I could not get the following. \ugh{Method contexts are objects that may be manipulated as any plain objects. They represent a linked list of a which may be shortened a anytime. This is the principle of exception. In theory, it is not necessary to hardcode functions dedicated to exceptions in the virtual machine. This is a superb example of the \st flexibility.}
+The full story is only slightly more complicated because there are actually two classes of objects that make up the stack, \ct{MethodContext}s, which we have already discussed, and \ct{BlockContext}s, which represent the execution of blocks.  \ct{ContextPart} is their common superclass.
+
+So, to summarize, the \ct{signal} method, with minimal assistance from the virtual machine, finds the context that correspond to an \ct{on:do:} message with an appropriate exception class.   Because the execution stack is made up of Context objects that may be manipulated just like any other object, the stack can be shortened at any time.  This is a superb example of flexibility of \st.
 
 %=========================================================
 %\section{Error and Notification}
@@ -1060,19 +1100,19 @@ In this chapter we saw how to use exceptions to signal and handle abnormal situa
 
 \item Exceptions are objects. Exceptions classes form a hierarchy with the class \ct{Exception} at the root of the hierarchy.
 
-\item Use \lct{\emph{protectedBlock} on: \emph{ExceptionClass} \emph{handlerBlock}} to catch exceptions that are instances of \lct{\emph{ExceptionClass}} (or any of its subclasses). The \lct{\emph{handlerBlock}} should take an exception instance as its sole argument.
+\item Use \lct{\emph{protectedBlock} on: \emph{ExceptionClass} do: \emph{handlerBlock}} to catch exceptions that are instances of \lct{\emph{ExceptionClass}} (or any of its subclasses). The \lct{\emph{handlerBlock}} should take an exception instance as its sole argument.
 
-\item Exceptions are signaled by sending one of the messages \lct{signal} or \lct{signal:}. \ct{signal:} takes a string description as its argument. The description of an exception can be obtained by sending it the message \ct{description}.
+\item Exceptions are signaled by sending one of the messages \lct{signal} or \lct{signal:}. \ct{signal:} takes a descriptive string as its argument. The description of an exception can be obtained by sending it the message \ct{description}.
 
-\item You can set a breakpoint in your code by inserting the code \ct{self halt}. This signals a resumable \ct{Halt} exception. By default, this will open a debugger at the point where the breakpoint occurs.
+\item You can set a breakpoint in your code by inserting the message-send \ct{self halt}. This signals a resumable \ct{Halt} exception, which, by default, will open a debugger at the point where the breakpoint occurs.
 
-\item When an exception is signaled, the runtime system will search up the execution stack, searching for a handler for that specific type of exception. If none is found, the \ct{defaultAction} for that exception will be performed (\ie in most cases the debugger will be opened).
+\item When an exception is signaled, the runtime system will search up the execution stack, looking for a handler for that specific class of exception. If none is found, the \ct{defaultAction} for that exception will be performed (\ie in most cases the debugger will be opened).
 
-\item An exception handler may return control to the enclosing context by sending \ct{return:} to the signaled exception, with the value to be returned as the argument.
+\item An exception handler may terminate the protected block by sending \ct{return:} to the signaled exception; the value of the protected block will be the argument supplied to \ct{return:}. 
 
 \item An exception handler may retry a protected block by sending \ct{retry} to the signaled exception. The handler remains in effect.
 
-\item An exception handler may specify a new block to try by sending \ct{retryUsing:} to the signaled exception, with the new block as its argument. Here too, the handler remains in effect.
+\item An exception handler may specify a new block to try by sending \ct{retryUsing:} to the signaled exception, with the new block as its argument. Here, too, the handler remains in effect.
 
 \end{itemize}
 
