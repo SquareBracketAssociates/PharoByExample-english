@@ -330,10 +330,11 @@ NewFileCommand>>>execute
 
 	nodeToSelect := target files detect: [:fileNode | fileNode name = filename ].
 	requestor announce: (OBNodeCreated node: nodeToSelect).
+
+	self select: nodeToSelect with: requestor announcer.
 \end{code}
 
-The last line of \ct{execute} is important. It signals the column (referenced by \ct{requestor}) to trigger a global refresh. 
-\alex{Check with David about automatic node selection}
+When a new file is created, it is automatically selected. The last line of \ct{execute} selects \ct{noteToSelect}.
 
 
 %=============================================================
@@ -441,6 +442,35 @@ FileBrowser class>>>defaultMetaNode
 \end{code}
 
 The effect of adding a filter to a metanode is to let the user select the metaedge to follow. One button is created for each metaedge. Without any filter, all edges are used to compute of the next list as we previously saw.
+
+%=============================================================
+\subsubsection{Coloring and font selection}
+
+Item names in a menu may be colored and use font modifier such as italic and bold effect. This feature is useful for distinguishing some items from others or for emphasizing some items. Font particularization is achieved by returning instance of \ct{Text} instead of a simple string when overriding \ct{OBNode>>name}.
+
+\begin{code}{}
+FileNode>>>name
+	"return the name of a file"
+	
+	^ Text string: ((self path subStrings: '/') last) attribute: TextColor blue
+
+DirectoryNode>>>name
+	"return the name of a directory"
+	^ Text string: ((self path subStrings: '/') last) attribute: TextColor gray
+\end{code}
+
+Plain files are now listed in blue and directories in gray.
+
+A number of emphasizes are available: \ct{bold}, \ct{italic}, \ct{underlined}, and \ct{barred}. The attribute corresponding to the emphasis is obtained by sending a message to the \ct{TextEmphasis} class.
+
+Attributes may be combined by being added to a text using \ct{addAttribute:}. For example, the following \ct{name} definition makes directory appears in gray and underlined:
+
+\begin{code}{}
+DirectoryNode>>>name
+	^ (Text fromString: ((self path subStrings: '/') last))
+		addAttribute: TextEmphasis underlined;
+		addAttribute: TextColor gray
+\end{code}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Graph and Metagraph of a Browser} \seclabel{omnibrowser}
