@@ -1,0 +1,164 @@
+% $Author$
+% $Date$
+% $Revision$
+
+% HISTORY:
+% Chapter started by Stef (2008-07-26)
+
+%=================================================================
+\ifx\wholebook\relax\else
+% --------------------------------------------
+% Lulu:
+	\documentclass[a4paper,10pt,twoside]{book}
+	\usepackage[
+		papersize={6.13in,9.21in},
+		hmargin={.75in,.75in},
+		vmargin={.75in,1in},
+		ignoreheadfoot
+	]{geometry}
+	\input{../common.tex}
+	\setboolean{lulu}{true}
+% --------------------------------------------
+% A4:
+%	\documentclass[a4paper,11pt,twoside]{book}
+%	\input{../common.tex}
+%	\usepackage{a4wide}
+% --------------------------------------------
+    \graphicspath{{figures/} {../figures/}}
+	\begin{document}
+\fi
+%=================================================================
+%\renewcommand{\nnbb}[2]{} % Disable editorial comments
+\sloppy
+%=================================================================
+\chapter{Announcements: an Object Dependency Framework}\chalabel{basic}
+
+
+\section{A word about Component Coupling}
+
+Here is an interesting question that often comes up often when writing
+components. It is one that we faced when embedding our components. How
+do the components communicate with each other in a way that doesn't
+bind them together explicitly? That is, how does a child component
+send a message to its parent component without explicitly knowing who
+the parent is? Designing a component to refer to its parent is just a
+part of the solution since the interfaces of different parents may be
+different which would prevent the component from being reused in
+different contexts.
+
+There is a solution based on explicit dependencies also called the
+change/update mechanism. Since early versions of Smalltalk, a
+dependency mechanism based on a change/update protocol is available
+and it is the foundation of the MVC framework itself. A component
+registers its interest in some event and that event triggers a
+notification. \lr{the reviewer wants to know if this is related to the
+  observer pattern.}
+
+There is a new framework called Announcement developed originally by
+Vassili Bykov which has been ported to several Smalltalk
+implementations. While the original dependency framework relied on
+symbols for the event registration and notification, Announcement
+promotes an object-oriented solution. Events are plain objects.
+
+The main idea behind the framework is to set up announcers, define or
+reuse some announcements, let clients register interest in events and
+signal events. An event is an object representing an occurrence of a
+specific event. It is the place to define all the information related
+to the event occurrence. An announcer is responsible for registering
+interested clients and announcing events. 
+
+\paragraph{An Example.} Here is an example taken from Ramon Leon's
+very good Smalltalk blog. This example shows how we can use
+announcements to manage the communication between a parent component
+and its children as for example in the context of a menu and its menu
+items.
+
+\begin{method}{Defining an announcer.}
+MySession>>announcer
+    ^ announcer ifNil: [announcer := Announcer new]
+\end{method}
+
+Then subclass \clsind{Announcement} for any interesting thing that
+might happen. The announcement subclass is the place to add any extra
+information about the specific announcement such as a context, the
+objects involved \etc This is why announcement objects are both more
+powerful and simpler than using symbols.
+
+\begin{classdef}{Defining a specific Announcement.}
+Announcement subclass: #RemoveChild
+    instanceVariableNames: 'child'
+
+RemoveChild class>>child: aChild
+    ^self new
+        child: aChild;
+        yourself
+
+RemoveChild>>child: anChild
+    child := anChild
+
+RemoveChild>>child
+    ^child
+\end{classdef}
+
+Any component interested in this announcement registers its interest
+using the method \mthind{on:do:}{on: anAnnouncementClass do: aBlock}
+or \mthind{on: anAnnouncementClass send: aSelector to: anObject}{on:
+  anAnnouncementClass send: aSelector to: anObject}.  The messages
+\ct{on:do:} and \ct{on:send:to:} are strictly equivalent to the
+messages \mthind{subscribe:do:}{subscribe: anAnnouncementClass do:
+  aValuable}  and
+\mthind{subscribe:send:to:}{subscribe: anAnnouncementClass send:
+  aSelector to: anObject}. You can also ask an announcer to
+\ct{unsubcribe:} an object.
+
+In the following example, when a parent component is created, it
+expresses interest in the \clsind{RemoveChild} event and specifies the
+action that it will perform when such an event happens.
+
+\begin{method}{}
+Parent>>initialize
+    super initialize.
+    !\textbf{self session announcer on: RemoveChild do: [:it | self removeChild: it child] }!
+
+Parent>>removeChild: aChild
+    self children remove: aChild
+\end{method}
+
+And any component that wants to fire this event simply announces it by
+sending in an instance of that custom announcement object.
+
+\begin{method}{Announcing an event.}
+Child>>removeMe
+    self session announcer announce: (RemoveChild child: self)
+\end{method}
+
+Note that depending on where you place the announcer, you can even
+have different sessions sending events to each other, or different
+applications.
+
+Announcements are not always the best way to establish communication
+between components.  On one hand, announcements let you create loosely
+coupled components and thus maximize reusability.  On the other hand,
+they introduce additional complexity when you may be able solve your
+communication problem with a simple message send.
+
+%=============================================================
+\ifx\wholebook\relax\else
+   \bibliographystyle{jurabib}
+   \nobibliography{scg}
+   \end{document}
+\fi
+%=============================================================
+
+
+
+
+%-----------------------------------------------------------------
+
+%%% Local Variables:
+%%% coding: utf-8
+%%% mode: latex
+%%% TeX-master: t
+%%% TeX-PDF-mode: t
+%%% ispell-local-dictionary: "english"
+%%% End:
