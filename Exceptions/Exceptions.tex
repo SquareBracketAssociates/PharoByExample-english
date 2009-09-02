@@ -14,6 +14,7 @@
 % 2009-07-16 - Oscar indexing
 % 2009-07-16 - Lukas commenting
 % 2009-08-12 - Oscar fixed Lukas' comments
+% 2009-08-29 to 09-02 - Andrew brought code up to date with current Pharo, clarified
 
 %=================================================================
 \ifx\wholebook\relax\else
@@ -55,19 +56,21 @@ The basic idea behind exception handling is that
 client code does not clutter the main logic flow with checks for error codes, but specifies instead an \emph{exception handler} to ``catch'' exceptions.
 When something goes wrong, instead of returning an error code, the method that detects the exceptional situation interrupts the main flow of execution by  \emph{signaling} an exception.
 This does two things: it captures essential information about the context in which the exception occurred, and transfers control to the \ind{exception handler}, written by the client, which decides what to do about it.
-The ``essential information about the context'' is saved in an exception object; 
-various classes of \emphind{exception} are specified to cover the varied exceptional situations that may arise.
+The ``essential information about the context'' is saved in an \ct{Exception} object; 
+various classes of \clsind{Exception} are specified to cover the varied exceptional situations that may arise.
 
 \pharo's exception-handling mechanism is particularly expressive and flexible, covering a wide range of possibilities. Exception handlers can be used to \emph{ensure} that certain actions take place even if something goes wrong, or to take action only if something goes wrong.
 Like everything in \st, exceptions are objects, and respond to a variety of messages.
 When an exception is caught by a handler, there are many possible responses: the  handler can specify an alternative action to perform; it can ask the exception object to \emph{resume} the interrupted operation; it can \emph{retry} the operation; it can \emph{pass} the exception to another handler; or it can \emph{reraise} a completely different exception.
 
-With the help of a series of examples, we shall explore all of these possibilities, and we will also take a brief look into the internal mechanics of exceptions and exception handlers.
+With the help of a series of examples, we shall explore all of these possibilities, and we shall also take a brief look into the internal mechanics of exceptions and exception handlers.
+However, before we do that, we need to stop and think for a moment about the consequence of adding exceptions into a language: \emph{we can no longer be sure that a message send will give us an answer}.  
+In other words, once we have exceptions, any message send has the potential not to return to the sender: it may fail.
 
 %=================================================================
 \section{Ensuring execution}
 
-The \mthind{BlockClosure}{ensure:} message can be sent to a block to make sure that, even if the block fails (\eg raises an exception) the argument block will to be executed:
+The \mthind{BlockClosure}{ensure:} message can be sent to a block to make sure that, even if the block fails (\eg raises an exception) the argument block will still be executed:
 \begin{code}{}
 !\emph{anyBlock}! ensure: !\emph{ensuredBlock}!    "ensuredBlock will run even if anyBlock fails"
 \end{code}
@@ -99,7 +102,7 @@ writer := GIFReadWriter on: (FileStream newFileNamed: 'Pharo.gif').
 This code ensures that the \ct{writer} file handle will be closed, even if an error occurs in \ct{Form fromUser} or while writing to the file.
 
 Here is how it works in more detail.
-The \ct{nextPutImage:} method of the class \ct{GIFReadWriter} converts a form (\ie an instance of the class \ct{Form}, representing a bitmap image) into a GIF image. This method writes into a stream which has been opened on a file. The \ct{nextPutImage:} method does not close the stream it is writing to, therefore we should be sure to close the stream even if a problem arises while writing. This is achieved by sending the message \ct{ensure:} to the block that does the writing. In case \ct{nextPutImage:} fails, the control flow will go directly into the block passed to \ct{ensure:}.  If it does \emph{not} fail, the ensured block will still be executed.  So, in either case, we can be sure that \ct{writer} is closed.
+The \ct{nextPutImage:} method of the class \ct{GIFReadWriter} converts a form (\ie an instance of the class \ct{Form}, representing a bitmap image) into a GIF image. This method writes into a stream which has been opened on a file. The \ct{nextPutImage:} method does not close the stream it is writing to, therefore we should be sure to close the stream even if a problem arises while writing. This is achieved by sending the message \ct{ensure:} to the block that does the writing. In case \ct{nextPutImage:} fails, control will flow into the block passed to \ct{ensure:}.  If it does \emph{not} fail, the ensured block will still be executed.  So, in either case, we can be sure that \ct{writer} is closed.
 
 Here is another use of \ct{ensure:}, in class \ct{Cursor}:
 
@@ -116,7 +119,7 @@ Cursor>>>showWhile: aBlock
 	^aBlock ensure: [ oldcursor show ]
 \end{code}
 
-The argument \ct{[ oldcursor show ]} is evaluated whether or not  \ct{ablock} signals an exception. Note that the result of \ct{ensure:} is the value of the receiver, not that of the argument.
+The argument \ct{[ oldcursor show ]} is evaluated whether or not  \ct{aBlock} signals an exception. Note that the result of \ct{ensure:} is the value of the receiver, not that of the argument.
 
 \begin{code}{@TEST}
 [ 1 ] ensure: [ 0 ] --> 1    "not 0"
@@ -125,18 +128,18 @@ The argument \ct{[ oldcursor show ]} is evaluated whether or not  \ct{ablock} si
 %=================================================================
 \section{Handling non-local returns}
 
-The message \mthind{BlockClosure}{ifCurtailed:} is typically used for ``cleaning'' actions. It is similar to \ct{ensure:}, but instead of ensuring that its argument block is evaluated even if the receiver terminates abnormally, \ct{ifCurtailed:} does so \emph{only} if the receiver does not complete in a normal way.
+The message \mthind{BlockClosure}{ifCurtailed:} is typically used for ``cleaning'' actions. It is similar to \ct{ensure:}, but instead of ensuring that its argument block is evaluated even if the receiver terminates abnormally, \ct{ifCurtailed:} does so \emph{only} if the receiver fails or returns.
 
 In the following example, the receiver of \ct{ifCurtailed:} performs an early return, so the following statement is never reached.
 In \st, this is referred to as a \emph{non-local return}.
 Nevertheless the argument block will be executed.
 \needlines{4}
 \begin{code}{}
-[^ 10 ] ifCurtailed: [Transcript show: 'We see this'].
+[^ 10] ifCurtailed: [Transcript show: 'We see this'].
 Transcript show: 'But not this'.
 \end{code}
 
-In the following example, we can see clearly that the argument to \ct{ifCurtailed:} is only evaluated if the receiver terminates abnormally.
+In the following example, we can see clearly that the argument to \ct{ifCurtailed:} is evaluated only when the receiver terminates abnormally.
 \clsindex{Error}
 \begin{code}{}
 [Error signal] ifCurtailed: [Transcript show: 'Abandoned'; cr].
@@ -208,7 +211,7 @@ The general mechanism is provided by the message \mthind{BlockClosure}{on:do:}. 
 The beauty of this mechanism lies in the fact that the protected block can be written in  a straightforward way, \emph{without regard to any possible errors}. A single exception handler is responsible for taking care of anything that may go wrong.
 
 Consider the following example, where we want to copy the contents of one file to another.
-Although several file-related things could go wrong, with exception handling we simply write a straight-line method, a define a single exception handler for the whole transaction: 
+Although several file-related things could go wrong, with exception handling we simply write a straight-line method, and define a single exception handler for the whole transaction: 
 \clsindex{FileStream}
 \clsindex{FileStreamException}
 \clsindex{FileDirectory}
@@ -246,17 +249,17 @@ If any exception concerning \ct{FileStreams} is raised, the handler block (the b
 Our handler code alerts the user that the copy has failed, and delegates to the exception object \ct{ex} the task of providing details about the error.
 Note the two nested uses of \ct{ensure:} to make sure that the two file streams are closed, whether or not an exception occurs.
 
-It is important to understand  that the block that is the receiver of the message \ct{on:do:} defines the scope of the exception handler. This handler will be used only if the receiver (\ie the protected block) has not completed. Once completed, the exception handler will not be used anymore. Moreover, a handler is associated exclusively with the kind of exception specified as the first argument to \ct{on:do:}. 
-Thus, in the previous example, only a \clsind{FileStreamException} exception (or a more specific variant) may be handled.
+It is important to understand  that the block that is the receiver of the message \ct{on:do:} defines the scope of the exception handler. This handler will be used only if the receiver (\ie the protected block) has not completed. Once completed, the exception handler will not be used. Moreover, a handler is associated exclusively with the kind of exception specified as the first argument to \ct{on:do:}. 
+Thus, in the previous example, only a \clsind{FileStreamException} (or a more specific variant thereof) can be handled.
 
 %=================================================================
 \section{Error codes --- don't  do this!}
 
-Without exceptions, one (bad) way to handle the case that a method may fail to produce an expected result is to introduce explicit error codes as possible return values. In fact, in languages like C, code is littered with checks for such error codes, which obscures the main application logic.
+Without exceptions, one (bad) way to handle a method that may fail to produce an expected result is to introduce explicit error codes as possible return values. In fact, in languages like C, code is littered with checks for such error codes, which often obscure the main application logic.
 Error codes are also fragile in the face of evolution: if new error codes are added, then all clients must be adapted to take the new codes into account. By using exceptions instead of error codes, the programmer is freed from the task of explicitly checking each return value, and the program logic stays uncluttered.
 Moreover, because exceptions are classes, as new exceptional situations are discovered, they can be subclassed; old clients will still work, although they may provide less-specific exception handling than newer clients.
 
-If \st would did provide exception-handling support, then the tiny example we saw in the previous section would be written something like this, using error codes:
+If \st did provide exception-handling support, then the tiny example we saw in the previous section would be written something like this, using error codes:
 
 \begin{code}{| source destination fromStream toStream contents result success failure |}
 "Pseudo-code -- luckily Smalltalk does not work like this. Without the 
@@ -296,36 +299,44 @@ Without exception handling, we must explicitly check the result of each operatio
 Not only must we check error codes at each point that something might go wrong, but we must also be prepared to cleanup any operations performed up to that point and abort the rest of the code.
 
 %=================================================================
-\section{The Exception hierarchy}
+\section{Specifying which Exceptions will be Handled}
+
+
+\begin{figure}[t]\centering
+        \includegraphics[width=.5\linewidth]{SimpleHierarchy}
+        \caption{A small part of the \pharo exception hierarchy.\figlabel{hierarchy}}
+\end{figure}
+
 
 In \st, exceptions are, of course, objects. 
 In \pharo{}, an exception is an instance of an exception class which is part of a hierarchy of exception classes.
 For example, 
 because the exceptions \clsind{FileDoesNotExistException}, \clsind{FileExistsException} and \clsind{CannotDeleteFileException} are special kinds of \clsind{FileStreamException}, they are represented as subclasses of \ct{FileStreamException}, as shown in \figref{hierarchy}.
 This notion of ``specialization'' lets us associate an exception handler with a more or less general exceptional situation.
-
-\begin{figure}[ht]\centering
-        \includegraphics[width=.8\linewidth]{SimpleHierarchy}
-        \caption{A small part of the \pharo exception hierarchy.\figlabel{hierarchy}}
-\end{figure}
-
-
-
-The class \ct{FileStreamException} adds information to class \ct{Exception} to characterize the specific abnormal situation it describes. \ct{FileStreamException} defines the \ct{fileName} instance variable, which contains the name of the file that signaled the exception. The root of the exception class hierarchy is \ct{Exception}, which is a direct subclass of \ct{Object}.
-
-In some versions of \pharo, \ct{Exception} has 10 direct subclasses and 103 indirect subclasses!
-\begin{code}{} % NB: Fragile -- should not be a test
-Exception subclasses size     --> 10
-Exception subclasses 	        --> {Error . IllegalResumeAttempt . Notification . ProgressInitiationException . Abort . UnhandledError . TestFailure . Halt . MCNoChangesException . RefactoringWarning}
-Exception allSubclasses size --> 103
+So, we can write:
+\begin{code}{}
+[ ... ] on: Error do: [ ... ]
+[ ... ] on: FileStreamException do: [ ... ]
+[ ... ] on: FileDoesNotExistException do: [ ... ]
 \end{code}
 
-The two key messages are involved in exception handling: \ct{on:do:}, which we have already seen, is sent to blocks to set an exception handler; \ct{signal} is sent to subclasses of \ct{Exception} to signal that an exception has occurred.
+
+The class \ct{FileStreamException} adds information to class \ct{Exception} to characterize the specific abnormal situation it describes. Specifically, \ct{FileStreamException} defines the \ct{fileName} instance variable, which contains the name of the file that signaled the exception. The root of the exception class hierarchy is \ct{Exception}, which is a direct subclass of \ct{Object}.
+
+%In some versions of \pharo, \ct{Exception} has 10 direct subclasses and 103 indirect subclasses!
+%\begin{code}{} % NB: Fragile -- should not be a test
+%Exception subclasses size     --> 10
+%Exception subclasses 	        --> {Error . IllegalResumeAttempt . Notification . ProgressInitiationException . Abort . UnhandledError . TestFailure . Halt . MCNoChangesException . RefactoringWarning}
+%Exception allSubclasses size --> 103
+%\end{code}
+%\ab{I removed this because I added a new subsection that discusses the hierarchy more completely.}
+
+Two key messages are involved in exception handling: \ct{on:do:}, which, as we have already seen, is sent to blocks to set an exception handler, and \ct{signal}, which is sent to subclasses of \ct{Exception} to signal that an exception has occurred.
 
 %=================================================================
 \section{Signaling an exception}
 
-To signal an exception\footnote{Synonyms are to ``raise'' or to ``throw'' an exception. Since the message to send is called \lct{signal}, we exclusively use that terminology in this chapter.}, you only need to create an instance of the exception class, and to send it the message \ct{signal}, or \ct{signal:} with a textual description. The class \ct{Exception} provides a convenience method \ct{signal} which creates and signals an exception. Below are the two equivalent ways to signal a \clsind{ZeroDivide} exception.
+To signal an exception\footnote{Synonyms are to ``raise'' or to ``throw'' an exception. Since the vital message is called \lct{signal}, we use that terminology exclusively in this chapter.}, you only need to create an instance of the exception class, and to send it the message \ct{signal}, or \ct{signal:} with a textual description. The class \ct{Exception class} provides a convenience method \ct{signal}, which creates and signals an exception. So, here are two equivalent ways to signal a \clsind{ZeroDivide} exception:
 \needlines{2}
 \begin{code}{}
 	ZeroDivide new signal.
@@ -778,6 +789,7 @@ Morph new performAll: #( #activate #beTransparent #beUnsticky)
 
 However, there is a complication. There might be a selector in the collection that the object does not understand (such as \ct{#activate}). We would like to ignore such selectors and continue sending the remaining messages. The following implementation seems to be reasonable:
 
+\needlines{4}
 \begin{code}{}
 Object>>>performAll: selectorCollection 
 	selectorCollection do: [:each |
@@ -789,7 +801,7 @@ Object>>>performAll: selectorCollection
 On closer examination we notice another problem. This handler will not only catch and ignore messages not understood by the original receiver, but also any messages sent but not understood in methods for messages that \emph{are} understood! This will hide programming errors in those methods, which is not our intent.
 To fix this, we need our handler to analyze the exception to see if it was indeed caused by the attempt to perform the current selector.
 Here is the correct implementation.
-\begin{code}{}
+\begin{method}[objectPerformAll]{Object>>performAll:}
 Object>>>performAll: selectorCollection 
 	selectorCollection do: [:each | 
 		[self perform: each] 
@@ -797,7 +809,7 @@ Object>>>performAll: selectorCollection
 			do: [:ex | (ex receiver == self and: [ex message selector == each]) 
 				ifTrue: [ex return] 
 				ifFalse: [ex pass]]]    "pass internal errors on"
-\end{code}
+\end{method}
 
 This has the effect of passing on \clsind{MessageNotUnderstood} errors to the surrounding context when they are not part of the list of messages we are performing. The \ct{pass} message will pass the exception on to the next applicable handler in the execution stack.
 
@@ -895,7 +907,11 @@ Exception class>>>, anotherException
 The rest of the magic occurs in the class \clsind{ExceptionSet}, which has a surprisingly trivial implementation.
 
 \begin{code}{}
-Object subclass: #ExceptionSet	instanceVariableNames: 'exceptions'	classVariableNames: ''	poolDictionaries: ''	category: 'Exceptions-Kernel'
+Object subclass: #ExceptionSet
+	instanceVariableNames: 'exceptions'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'Exceptions-Kernel'
 
 ExceptionSet>>>initialize
 	super initialize.
@@ -1049,7 +1065,18 @@ If so, the associated handler can be executed; if not, the look-up can continue 
 This is all implemented in the \ct{handleSignal:} method.
 
 \begin{code}{}
-ContextPart>>>handleSignal: exception	"Sent to handler (on:do:) contexts only.  If my exception class (first arg) handles exception then execute my handle block (second arg), otherwise forward this message to the next handler context.  If none left, execute exception's defaultAction (see nil>>handleSignal:)."	| val |	(((self tempAt: 1) handles: exception) and: [self tempAt: 3]) ifFalse: [		^ self nextHandlerContext handleSignal: exception].	exception privHandlerContext: self contextTag.	self tempAt: 3 put: false.  "disable self while executing handle block"	val := [(self tempAt: 2) valueWithPossibleArgs: {exception}]		ensure: [self tempAt: 3 put: true].	self return: val.  "return from self if not otherwise directed in handle block"
+ContextPart>>>handleSignal: exception
+	"Sent to handler (on:do:) contexts only.  If my exception class (first arg) handles exception then execute my handle block (second arg), otherwise forward this message to the next handler context.  If none left, execute exception's defaultAction (see nil>>handleSignal:)."
+
+	| val |
+	(((self tempAt: 1) handles: exception) and: [self tempAt: 3]) ifFalse: [
+		^ self nextHandlerContext handleSignal: exception].
+
+	exception privHandlerContext: self contextTag.
+	self tempAt: 3 put: false.  "disable self while executing handle block"
+	val := [(self tempAt: 2) valueWithPossibleArgs: {exception}]
+		ensure: [self tempAt: 3 put: true].
+	self return: val.  "return from self if not otherwise directed in handle block"
 \end{code}
 
 Notice how this method uses \ct{tempAt: 1} to access the exception class, and ask if it handles the exception.   What about  \ct{tempAt: 3}?  That is the temporary variable \ct{handlerActive} of the \ct{on:do:} method.   Checking that \ct{handlerActive} is \ct{true} and then setting it to \ct{false} ensures that a handler will not be asked to handle an exception that it signals itself. 
@@ -1060,40 +1087,69 @@ The full story is only slightly more complicated because there are actually two 
 So, to summarize, the \ct{signal} method, with minimal assistance from the virtual machine, finds the context that correspond to an \ct{on:do:} message with an appropriate exception class.   Because the execution stack is made up of Context objects that may be manipulated just like any other object, the stack can be shortened at any time.  This is a superb example of flexibility of \st.
 
 %=========================================================
-%\section{Error and Notification}
+\section{Other kinds of Exception}
 
-%
-%\sd{probably redundant}
-%\on{not very interesting or useful --- I would leave this out too}
+The class \ct{Exception} in \pharo{} has ten direct subclasses, as shown in \figref{wholeHierarchy}.
+The first thing that we notice from this figure is that the Exception hierarchy is a bit of a mess; you can expect to see some of the details change as \pharo{} is improved.
 
-%\ugh{First of all, let us have a look at the different kind of exceptions offered by \st. Among the exceptions that may be signaled, we make a distinction between errors and notifications. The first tells the programmer that the program falls into an abnormal situation. The latter tells that a particular event occurred but if no action is taken, the program will continue to execute. Notifications are often used as alters (\ct{Warning} class) which are used to notify abnormal but non-lethal behavior. Note that C\# and Java propose a similar use of exceptions.}
+\begin{figure}[ht]\centering
+        \includegraphics[width=.95\linewidth]{ExceptionSubclasses}
+        \caption{The whole \pharo exception hierarchy.\figlabel{wholeHierarchy}}
+\end{figure}
 
-%Graphically user interfaces makes a great use of notifications. In \pharo, \ct{ProgressNotification} is used to move the progress bar forward when a task is being realized. \ct{ProgressNotification} is a subclass of \ct{Notification}.
+The second thing that we notice is that there are two large sub-hierarchies: \ct{Error} and \ct{Notification}. 
+Errors tell us that the program has fallen into some kind of abnormal situation. 
+In contrast, Notifications tell us that an event has occurred, but without the assumption that it is abnormal. 
+So, if no action is taken in response to a \ct{Notification}, the program can continue to execute. 
+An important subclass of \ct{Notification} is \ct{Warning};  warnings are used to notify other parts of the system, or the user, of abnormal but non-lethal behavior.
 
-%\begin{figure}[ht]\centering
-%        \includegraphics[width=.6\linewidth]{hierarchy}
-%        \caption{An except \on{?} of the \pharo exception hierarchy.\figlabel{hierarchy}
-%        \on{Kill Object. Which of these are resumable? Why this chart?}}
-%\end{figure}
+Graphically user interfaces make great use of notifications. In \pharo, \ct{ProgressNotification}, another subclass of \ct{Notification}, is used to move the progress bar forward when a long-running task is being executed. \ab{I wanted to put in a reference to the methods that do this, but couldn't find them.  Can someone else put this in, please?}
 
-%Compared with other languages, \st features an interesting ability for its exceptions: the control flow that signaled an exception may be resumed in the exception handler that caught the exception. The control flow of the application before the exception was signaled may then continue. Of course, it is the responsibility of the exception handler to update the system in order to give sense to an exception resume.
+The property of being resumable is largely orthogonal to the location of an exception in the hierarchy.   In general, \ct{Error}s are not resumable, but 10 of its subclasses \emph{are} resumable.  For example, \ct{MessageNotUnderstood} is a subclass of \ct{Error}, but it is resumable.  \ct{TestFailure}s are not resumable, but, as you would expect, \ct{ResumableTestFailure}s are.  If you want to see whether a class of exceptions is resumable, look at its protocol for the \ct{isResumable} method.  
+For example, in \ct{Error}, \ct{isResumable} answers \ct{false}, whereas in 
+\ct{MessageNotUnderstood}, \ct{isResumable} answers \ct{true}.
 
-%The property of being resumed is orthogonal to the notion of error. An error may be resumable. For example, the class \ct{MessageNotUnderstood} is a subclass of \ct{Error} but it is resumable:
-%\on{? discussed above with Halt}
+Sometimes it will never makes sense to resume a particular kind of exception, in which case you should make (or re-use) a non-resumable subclass.
+Sometimes it is always OK to resume an exception, without the handler having to do anything.
+In fact, this gives us another way of characterizing a notification:
+a \ct{Notification} is a resumable \ct{Exception} that can be safely resumed them without first modifying the state of the system.
+More often, it is only safe to resume an exception if the state of he system is modified in some way before the exception is resumed.
+So, if you declare a resumable exception, you should be very clear about what you expect an exception handler to do before it resumes the exception.
 
-%\begin{code}{}
-%MessageNotUnderstood>>>isResumable 
-%     ^true
-%\end{code}
+\section{When not to use Exceptions}
+Just because \pharo{} has exception handling, you should not conclude that it is always appropriate to use it.  
+Recall that in the introduction to this chapter, we said that exception handling is for \emph{exceptional} situations.  
+So, the first rule for using exceptions is \emph{not} to use them for situations that \emph{can reasonably be expected to occur} in a normal execution. 
 
-%\ugh{Now, we will see how an exception handler may resume an exception.}
+Of course, if you are writing a library, what is normal depends on the context in which your library is used.
+To make this concrete, let's look at \ct{Dictionary} as an example.
+\lct{\emph{aDictionary} at: \emph{aKey}} will signal an \ct{Error} if \ct{aKey} is not present.
+But you should not write a handler for this error!
+If the logic of your application is such that there is some possibility that \ct{aKey} will not be in the dictionary, then you should instead use \lct{at: \emph{aKey} ifAbsent: [\emph{remedial action}]}.
+In fact, \ct{Dictionary>>>at:} is implemented using \ct{Dictionary>>>at:ifAbsent:}.
+
+When you write methods that signal exceptions, you should consider whether you should also provide an alternative method that takes as an additional argument a remedial block to be executed if the normal action cannot be completed.  
+Although this technique can be used in any programming language that support closures, because \st{} uses closures for \emph{all} its control structures, it is a particularly natural one to use in \st{}.
+
+Another way of avoiding exception handling is to test the precondition of the exception before sending the message that may signal it.  For example, in \mthref{objectPerformAll}, we sent a message to an object using \ct{perform:}, and handled the \ct{MessageNotUnderstood} error that might ensue.  A much simpler alternative is to check to see if the message is understood before executing the \ct{perform:}
+
+\begin{method}[simplerObjectPerfromAll]{Object>>performAll: revisited}
+performAll: selectorCollection
+	selectorCollection
+		do: [:each | (self respondsTo: each)
+				ifTrue: [self perform: each]]
+\end{method}
+
+The primary objection to \mthref{simplerObjectPerfromAll} is efficiency.  The implementation of \ct{respondsTo: s} has to lookup \ct{s} in the target's method dictionary  to find out if \ct{s} will be understood.  If the answer is yes, then \ct{perform:} will look it up again.  Moreover, the first lookup is implemented in \st, not in the virtual machine.  If this code is in a performance-critical loop, this might be an issue.  However, if the collection of messages comes from a user interaction, the speed of \ct{performAll:} will not be a problem.
 
 %=================================================================
 \section{Chapter Summary}
 
-In this chapter we saw how to use exceptions to signal and handle abnormal situations arising in our code
+In this chapter we saw how to use exceptions to signal and handle abnormal situations arising in our code.
 
 \begin{itemize}
+\item Don't use exceptions as a control-flow mechanism.  Reserve them for notifications and for \emph{abnormal} situations.  Consider providing methods that take blocks as arguments as an alternative to signaling exceptions.
+
 \item Use \lct{\emph{protectedBlock} ensure: \emph{actionBlock}} to ensure that \lct{\emph{actionBlock}} will be performed even if \lct{\emph{protectedBlock}} terminates abnormally.
 
 \item Use \lct{\emph{protectedBlock} ifCurtailed: \emph{actionBlock}} to ensure that \lct{\emph{actionBlock}} will be performed \emph{only} if \lct{\emph{protectedBlock}} terminates abnormally.
@@ -1114,9 +1170,11 @@ In this chapter we saw how to use exceptions to signal and handle abnormal situa
 
 \item An exception handler may specify a new block to try by sending \ct{retryUsing:} to the signaled exception, with the new block as its argument. Here, too, the handler remains in effect.
 
+\item Notifications are subclass of Exception with the property that they can be safely resumed without the handler having to take any specific action.
+
 \end{itemize}
 
-\paragraph{Acknowledgment.}  We gratefully acknowledge Vassili Bykov for the raw material he provided. We also thank Paolo Bonzini, the main developer of GNU \st, for the \st implementations of \ct{ensure:} and \ct{ifCurtailed:}.
+\paragraph{Acknowledgments.}  We gratefully acknowledge Vassili Bykov for the raw material he provided. We also thank Paolo Bonzini, the main developer of GNU \st, for the \st implementations of \ct{ensure:} and \ct{ifCurtailed:}.
 \index{Bonzini, Paolo}
 \index{GNU \st}
 
