@@ -3,7 +3,7 @@
 % $Revision$
 
 % HISTORY:
-% Chapter started by Stef (2008-07-26)
+% Chapter started by Damien C (2009-09-02)
 
 %=================================================================
 \ifx\wholebook\relax\else
@@ -31,116 +31,154 @@
 %\renewcommand{\nnbb}[2]{} % Disable editorial comments
 \sloppy
 %=================================================================
-\chapter{Announcements: an Object Dependency Framework}\chalabel{basic}
+\chapter{Glamour}
+\chalabel{glamour}
+
+Browsers are a crucial instrument to understand complex systems or
+models. Each problem domain is accompanied by an abundance of browsers
+that are created to help analyze and interpret the underlying
+elements. Thee issue with these browsers is that they are frequently
+rewritten from scratch, making them expensive to create and burdensome
+to maintain. While many frameworks exist to ease the development of
+user interfaces in general, they provide only limited support to
+simplifying the creation of browsers.
+
+Glamour is a dedicated framework to describe the navigation flow
+of browsers. Thanks to its declarative language, Glamour allows to
+quickly define new browsers for their data.
+
+In this chapter we will first detail the creation of some example
+browsers to have an overview of the Glamour framework. In a second
+part, we will describe Glamour in more details.
+
+\section{Installation and first browser}
+
+To install Glamour on your \pharo{} image execute the following code:
+
+\begin{code}{}
+ScriptLoader
+  loadLatestPackage: 'GlamourLoader'
+  from: 'http://www.squeaksource.com/Glamour'.
+(Smalltalk classNamed: #GlamourLoader) load
+\end{code}
+
+Now that Glamour is installed, we are going to build a first browser
+in order to dive into Glamour's declarative language. What about
+building an Apple's Finder-like file browser? This browser is built
+using the Miller Columns browsing technique, displaying hierarchical
+elements in a series of columns. The principle of such a browser is
+that a column always reflects the content of the element selected in
+the previous column, the first column-content being chosen on opening.
+
+\damien{insert screenshot of a finder-like browser (maybe not Apple's
+  finder due to license restrictions).}
+
+In our case of implementing a file browser, we want to display a list
+of a particular directory's entries (each files and directories) in
+the first column and then, depending on the user selection, appending
+an other column:
+
+\begin{itemize}
+\item if the user selects a directory, the next column will display
+  the entries of that particular directory;
+\item if the user selects a file, the next column will display the
+  content of the file.
+\end{itemize}
+
+This may look complex at first. However, Glamour provides a very
+simple way of describing Miller Columns-based browsers. Glamour calls
+that kind of browsers finders, referring to the Apple's Finder found
+on Mac OS X. To create such a browser, we are going to use the
+\clsind{GLMFinder} class and then tell Glamour that we want elements
+to be in a list:
+
+\dc{SFile class and its test can be found in SLICE10146 on task forces}
+
+\begin{code}{}
+browser := GLMFinder new.
+browser list
+	display: [:entry | entry files].
+browser openOn: SFile anyRoot.
+\end{code}
+
+From this small piece of code you get a list of all entries (either
+file or directory) found at the root of your file system, each line
+representing either a file or a directory. If you click on a
+directory, you can see the entries of this directory in the next
+column.
+
+\damien{insert a screenshot}
+
+This code has some problems however. Each line displays the full print
+string of the entry and this is probably not what you want. A typical
+user would expect only names of each entry. This can easily be done by
+customizing the list:
+
+\begin{code}{}
+browser list
+  display: [:entry | entry files];
+  format: [:entry | entry name].
+\end{code}
+
+This way, the message \ct{name} will be sent to each entry to get its
+name. This makes the files and directory much easier to read.
+
+\damien{insert a screenshot}
+
+Another problem is that the code does not distinguish between files
+and directories. If you click on a file, you will get an error because
+the browser will send it the message \ct{files} that it does not
+understand. To fix that, we just have to avoid displaying a list of
+contained entries if the selected element is a file:
+
+\begin{code}{}
+browser list
+  display: [:entry | entry files];
+  format: [:entry | entry name];
+  when: [:entry | entry isDirectory].
+\end{code}
+
+This works well but the user can't distinguish between a line
+representing a file or a directory. This can be fixed by, for example,
+adding a slash at the end of the file name if it is a directory:
+
+\begin{code}{}
+browser := GLMFinder new.
+browser list
+  display: [:entry | entry files];
+  format: [:entry | entry isDirectory
+                                   ifTrue: [entry name, '/']
+                                   ifFalse: [entry name]];
+  when: [:entry | entry isDirectory].
+\end{code}
+
+The last thing we might want to do is to display the contents of the
+entry if it is a file. This gives the following final code:
+
+\begin{code}{}
+browser := GLMFinder new.
+browser list
+  display: [:entry | entry files];
+  format: [:entry | entry isDirectory
+                                   ifTrue: [entry name, '/']
+                                   ifFalse: [entry name]];
+  when: [:entry | entry isDirectory].
+browser text
+	display: [:entry | [entry contents]
+                                   on: Exception
+                                   do: ['Can''t display the content of this file']];
+	when: [:entry | entry isFile].
+browser openOn: SFile anyRoot
+\end{code}
+
+\dc{insert a screenshot}
+
+This short introduction has just presented how to install Glamour and
+how to use to create a simple file browser.
+
+\section{Glamour in greater details}
 
 
-\section{A word about Component Coupling}
-
-Here is an interesting question that often comes up often when writing
-components. It is one that we faced when embedding our components. How
-do the components communicate with each other in a way that doesn't
-bind them together explicitly? That is, how does a child component
-send a message to its parent component without explicitly knowing who
-the parent is? Designing a component to refer to its parent is just a
-part of the solution since the interfaces of different parents may be
-different which would prevent the component from being reused in
-different contexts.
-
-There is a solution based on explicit dependencies also called the
-change/update mechanism. Since early versions of Smalltalk, a
-dependency mechanism based on a change/update protocol is available
-and it is the foundation of the MVC framework itself. A component
-registers its interest in some event and that event triggers a
-notification. \lr{the reviewer wants to know if this is related to the
-  observer pattern.}
-
-There is a new framework called Announcement developed originally by
-Vassili Bykov which has been ported to several Smalltalk
-implementations. While the original dependency framework relied on
-symbols for the event registration and notification, Announcement
-promotes an object-oriented solution. Events are plain objects.
-
-The main idea behind the framework is to set up announcers, define or
-reuse some announcements, let clients register interest in events and
-signal events. An event is an object representing an occurrence of a
-specific event. It is the place to define all the information related
-to the event occurrence. An announcer is responsible for registering
-interested clients and announcing events. 
-
-\paragraph{An Example.} Here is an example taken from Ramon Leon's
-very good Smalltalk blog. This example shows how we can use
-announcements to manage the communication between a parent component
-and its children as for example in the context of a menu and its menu
-items.
-
-\begin{method}{Defining an announcer.}
-MySession>>announcer
-    ^ announcer ifNil: [announcer := Announcer new]
-\end{method}
-
-Then subclass \clsind{Announcement} for any interesting thing that
-might happen. The announcement subclass is the place to add any extra
-information about the specific announcement such as a context, the
-objects involved \etc This is why announcement objects are both more
-powerful and simpler than using symbols.
-
-\begin{classdef}{Defining a specific Announcement.}
-Announcement subclass: #RemoveChild
-    instanceVariableNames: 'child'
-
-RemoveChild class>>child: aChild
-    ^self new
-        child: aChild;
-        yourself
-
-RemoveChild>>child: anChild
-    child := anChild
-
-RemoveChild>>child
-    ^child
-\end{classdef}
-
-Any component interested in this announcement registers its interest
-using the method \mthind{on:do:}{on: anAnnouncementClass do: aBlock}
-or \mthind{on: anAnnouncementClass send: aSelector to: anObject}{on:
-  anAnnouncementClass send: aSelector to: anObject}.  The messages
-\ct{on:do:} and \ct{on:send:to:} are strictly equivalent to the
-messages \mthind{subscribe:do:}{subscribe: anAnnouncementClass do:
-  aValuable}  and
-\mthind{subscribe:send:to:}{subscribe: anAnnouncementClass send:
-  aSelector to: anObject}. You can also ask an announcer to
-\ct{unsubcribe:} an object.
-
-In the following example, when a parent component is created, it
-expresses interest in the \clsind{RemoveChild} event and specifies the
-action that it will perform when such an event happens.
-
-\begin{method}{}
-Parent>>initialize
-    super initialize.
-    !\textbf{self session announcer on: RemoveChild do: [:it | self removeChild: it child] }!
-
-Parent>>removeChild: aChild
-    self children remove: aChild
-\end{method}
-
-And any component that wants to fire this event simply announces it by
-sending in an instance of that custom announcement object.
-
-\begin{method}{Announcing an event.}
-Child>>removeMe
-    self session announcer announce: (RemoveChild child: self)
-\end{method}
-
-Note that depending on where you place the announcer, you can even
-have different sessions sending events to each other, or different
-applications.
-
-Announcements are not always the best way to establish communication
-between components.  On one hand, announcements let you create loosely
-coupled components and thus maximize reusability.  On the other hand,
-they introduce additional complexity when you may be able solve your
-communication problem with a simple message send.
 
 %=============================================================
 \ifx\wholebook\relax\else
