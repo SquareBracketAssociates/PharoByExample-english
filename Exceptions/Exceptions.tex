@@ -1109,12 +1109,12 @@ The property of being resumable is largely orthogonal to the location of an exce
 For example, in \ct{Error}, \ct{isResumable} answers \ct{false}, whereas in 
 \ct{MessageNotUnderstood}, \ct{isResumable} answers \ct{true}.
 
-Sometimes it will never makes sense to resume a particular kind of exception, in which case you should make (or re-use) a non-resumable subclass.
-Sometimes it is always OK to resume an exception, without the handler having to do anything.
+In some situations, it will never makes sense to resume an exception, in which case you should signal a non-resumable subclass\,---\,either an existing one or one of your own creation.
+In other situations, it will always be OK to resume an exception, without the handler having to do anything.
 In fact, this gives us another way of characterizing a notification:
 a \ct{Notification} is a resumable \ct{Exception} that can be safely resumed them without first modifying the state of the system.
-More often, it is only safe to resume an exception if the state of he system is modified in some way before the exception is resumed.
-So, if you declare a resumable exception, you should be very clear about what you expect an exception handler to do before it resumes the exception.
+More often, it will be safe to resume an exception only if the state of he system is first modified in some way.
+So, if you signal a resumable exception, you should be very clear about what you expect an exception handler to do before it resumes the exception.
 
 \section{When not to use Exceptions}
 Just because \pharo{} has exception handling, you should not conclude that it is always appropriate to use it.  
