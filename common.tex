@@ -214,16 +214,45 @@
 \newcommand{\Actclick}{Action-click\xspace} % YELLOW
 \newcommand{\Metaclick}{Meta-click\xspace} % BLUE
 %=============================================================
+%:ToSh macros
+\newboolean{tosh}
+\setboolean{tosh}{false}
+\newcommand{\iftoshelse}[2]{\ifthenelse{\boolean{tosh}}{#1}{#2}}
+%=============================================================
+%:ToSh colors
+%\newcommand{\highlightcolor}{\color{blue!65}}
+%\newcommand{\boxcolor}{\color{gray!25}}
+\newcommand{\highlight}[1]{\textcolor{blue!65}{#1}}
+%\newcommand{\codecolor}{\color{blue!65}}
+%%\setlength{\fboxrule}{2pt}
+%\newcommand{\asPict}[1]{%
+%	{\Large\highlight{#1}}}
+%=============================================================
 %:Reader cues (do this)
 %
 % Indicate something the reader should try out.
 % \newcommand{\dothisicon}{\raisebox{-.5ex}{\includegraphics[width=1.4em]{squeak-logo}}}
-\newcommand{\dothisicon}{\raisebox{-.5ex}{\includegraphics[height=1.2em]{pharo}}}
-\newcommand{\dothis}[1]{%
-	\medskip
-	\noindent\dothisicon
-	\ifx#1\empty\else\quad\emph{#1}\fi
-	\par\smallskip\nopagebreak}
+\iftoshelse{
+	\usepackage{marginnote}
+		\renewcommand*{\marginfont}{\footnotesize}
+	\newcommand{\vartriangleout}{\ifthenelse{\isodd{\thepage}}{\vartriangleright}{\vartriangleleft}}
+	\newcommand{\dothisicon}{\fcolorbox{blue!65}{white}{\highlight{$\vartriangleout$}}}
+	\newcommand{\dothis}[1]{%
+		\noindent\par\noindent
+		{\reversemarginpar
+			\marginnote{\fcolorbox{blue!65}{white}{\highlight{$\vartriangleout$}}}}
+		%\MarginLabel{do this}
+		\noindent\emph{#1}
+		\nopagebreak}
+}{
+	\newcommand{\dothisicon}{\raisebox{-.5ex}{\includegraphics[height=1.2em]{pharo}}}
+	\newcommand{\dothis}[1]{%
+		\medskip
+		\noindent\dothisicon
+		\ifx#1\empty\else\quad\emph{#1}\fi
+		\par\smallskip\nopagebreak}
+}
+%===> NEW VERSION <===
 % NB: To use this in an individual chapter, you must set:
 %\graphicspath{{figures/} {../figures/}}
 % at the head of the chapter.  Don't forget the final /
