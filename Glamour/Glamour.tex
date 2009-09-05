@@ -178,7 +178,407 @@ how to use to create a simple file browser.
 
 \section{Tutorial: Implementing a code browser}
 
-\damien{copy/past from thesis tutorial}
+This chapter serves as a motivation for specifying custom browsers and as a hands-on introduction to our reference implementation. The screen images in this tutorial represent the appearance of the Adobe Flex \cite{Adob06a} graphical user interface for which a Glamour renderer is available in the VisualWorks implementation.
+
+The chapter provides working examples. See appendix~\ref{chp:installation} on how to install the reference implementation in order to evaluate them.
+
+
+% -----------------------------------------------------------------------------
+\subsection{Running example}
+\label{sec:tutorial/getting_started}
+
+In the following tutorial we will be creating a simple Smalltalk class navigator. Such navigators are used in many Smalltalk browsers and usually consist of four panes, which are abstractly depicted in figure~\ref{fig:classnavigator_wireframe}.
+
+\begin{figure}[htbp]
+\centerline{\includegraphics[width=\linewidth]{classnavigator_wireframe.pdf}}
+\caption{Wireframe representation of a Smalltalk class navigator.}
+\label{fig:classnavigator_wireframe}
+\end{figure}
+
+The class navigator functions as follows: Pane~1 shows a list or a tree of \emph{packages} (containing classes) and \emph{bundles} (containing other bundles or packages) which make up the organizational structure of the environment and are collectively known as \emph{pundles}. When a package is selected, pane~2 shows a list of all classes in the selected package. When a class is selected, pane~3 shows all \emph{method categories} (a construct to group methods) and all methods of the class are shown on pane~4. When a method category is selected in pane~3, only the subset of methods that belong to that category are displayed on pane~4.
+
+
+% -----------------------------------------------------------------------------
+\subsection{Starting the Browser}
+
+We build the browser iteratively and gradually introduce new constructs of Glamour. To start with, we simply want to open a new browser on this list of packages. The listing below shows how to create a new, simple browser and to open it on a given object. Since this object is a collection, Glamour uses a list for the presentation if nothing else is specified. Figure~\ref{fig:helloworld} shows the browser that is displayed by evaluating the script.
+
+\begin{code}{}
+browser := TableLayoutBrowser new.
+browser openOn: self model allPundles
+\end{code}
+
+\begin{figure}[htbp]
+\centerline{\includegraphics[width=\linewidth]{helloworld.pdf}}
+\caption{Basic browser construct, displaying a list of packages and bundles}
+\label{fig:helloworld}
+\end{figure}
+
+
+
+%-------------------------------------------------------------------------------
+\subsection{Using Transmissions}
+
+In Glamour browsers are composed in terms of \emph{panes} and the \emph{flow of data} between them. The flow is specified by means of \emph{transmissions}. These are triggered when certain changes occur, such as the change of the selection in a list.
+
+To exemplify this, we add the second pane to display a list of classes for the currently selected package. Pane~1 can contain both \emph{packages} and \emph{bundles}, but only packages contain classes. Therefore, we should only attempt to display the list of classes on pane~2 when the selected item is actually a package. 
+
+The browser created by the following listing is displayed in figure~\ref{fig:showclasses}. The lines marked in bold show the additions to the previous listing.
+
+\begin{code}{}
+browser := TableLayoutBrowser new.
+/+browser
+	column: #pundles;
+	column: #classes.
+
+browser showOn: #classes; from: #pundles; using: [
+	browser list
+		display: [ :pundle | pundle containedClasses ];
+		when: [ :pundle | pundle isPackage ]
+].+/
+
+browser openOn: self model allPundles
+\end{code}
+
+\begin{figure}[htbp]
+\centerline{\includegraphics[width=\linewidth]{showclasses.pdf}}
+\caption{Two pane browser. When a package is selected in the left pane, the containing classes are shown on the right pane.}
+\label{fig:showclasses}
+\end{figure}
+
+The listing above shows almost all of the core language constructs of Glamour. Since we want to be able to reference the panes later, we give them the distinct names “pundles” and “classes” and arrange them in columns using the \ct{column:} keyword. Similarly, a \ct{row:} keyword exists with which panes can be organized in rows.
+
+The \ct{showOn:} and \ct{from:} keywords create a \emph{transmission}---a directed connection that defines the flow of information from one pane to another. In this case, we create a link from the \emph{pundles} pane to the \emph{classes} pane. The \ct{from:} signifies the \emph{origin} of the transmission and \ct{showOn:} the \emph{destination}. If nothing more specific is stated, Glamour assumes that the origin refers to the \emph{selection} of the specified pane. We show how to specify other aspects of the origin pane and how to use multiple origins below.
+
+Finally, the \ct{using:} specifies what to display on the destination pane when the connection is activated or \emph{transmitted}. In our example, we want to show a list of the classes that are contained in the selected package. The condition in \ct{when:} ensures that we only attempt to show this list when the selected item is a package and not a bundle.
+
+Both \ct{when:} and \ct{display:} simply store the supplied block within the presentation. The blocks will only be evaluated later, when the presentation should be displayed on-screen. If no explicit display block is specified, Glamour will attempt to display the object in some generic way. In the case of list presentations, this means that the \ct{displayString} message will be sent to the object to retrieve a standard string representation.
+
+
+
+%-------------------------------------------------------------------------------
+\subsection{Another Presentation}
+
+Up to now, we have been displaying the pundles as a list. The pundles in Smalltalk, howerver, are actually organized in a hierarchy and we have only been looking at the first level of this structure. To mend this, we specify that a tree presentation should be used instead:
+
+\begin{code}{}
+browser := TableLayoutBrowser new.
+browser
+	column: #pundles;
+	column: #classes.	
+
+/+browser showOn: #pundles; using: [
+	browser tree
+		children: #childPundles
+].+/
+
+browser showOn: #classes; from: #pundles; using: [
+	browser list
+		display: [ :pundle | pundle containedClasses ];
+		when: [ :pundle | pundle isPackage ]
+].
+
+browser openOn: self model /+pundleRoot+/ /-allPundles-/.
+\end{code}
+
+Since the registry of pundles is specified in \ct{openOn:} and not on a explicit pane, we use the keyword \ct{showOn:}---without any \ct{from:}---to create a transmission in which we can specify what to display on the \emph{pundles} pane. The tree presentation uses a \ct{children:} argument rather than \ct{display:} that takes a selector or a block which specifies how to retrieve the children of a given item in the tree. In the example, the message \ct{childPundles} will be sent to each pundle expanded in the view to retrieve its children. Since the children of each pundle are now selected by our tree presentation, we have to replace the selector for all pundles with just the root of the pundle hierarchy in the \ct{openOn:} argument on the last line.
+
+At this point, we can also add pane~3 that shows the method categories as shown in figure~\ref{fig:classnavigator_wireframe}. The listing below introduces no new elements that we have not already discussed:
+
+\begin{code}{}
+browser := TableLayoutBrowser new.
+browser
+	column: #pundles;
+	column: #classes/+;
+	column: #categories+/.	
+
+browser showOn: #pundles; using: [
+	browser tree
+		children: #childPundles
+].
+
+browser showOn: #classes; from: #pundles; using: [
+	browser list
+		display: [ :pundle | pundle containedClasses ];
+		when: [ :pundle | pundle isPackage ]
+].
+
+/+browser showOn: #categories; from: #classes; using: [
+	browser list
+		display: [ :class | class categoryNames ]
+].+/
+
+browser openOn: self model pundleRoot.
+\end{code} 
+
+Notice that we have not specified a \ct{when:} condition for the list of methods. By default, the only condition is that an item is in fact selected, i.e. that the display variable argument is not \ct{nil}.
+
+The browser resulting from the above changes is shown in figure~\ref{fig:treeandcategories}.
+
+\begin{figure}[htbp]
+\centerline{\includegraphics[width=\linewidth]{treeandcategories.pdf}}
+\caption{	Improved class navigator including a tree to display the pundles and a list of method categories for the selected class.}
+\label{fig:treeandcategories}
+\end{figure}
+
+
+
+%-------------------------------------------------------------------------------
+\subsection{Multiple Origins}
+
+The mechanism to show the methods is slightly more complicated. When a method category is selected we want to show \emph{only} the methods that belong to that category. If no category is selected, we want to show \emph{all} methods that belong to the current class.
+
+This leads to our methods pane depending on the selection of two other panes. Multiple origins can simply be defined using multiple \ct{from:} keywords as shown below.
+
+\begin{code}{}
+browser := TableLayoutBrowser new.
+browser
+	column: #pundles;
+	column: #classes;
+	column: #categories/+;
+	column: #methods+/.
+
+browser showOn: #pundles; using: [
+	browser tree
+		children: #childPundles
+].
+
+browser showOn: #classes; from: #pundles; using: [
+	browser list
+		display: [ :pundle | pundle containedClasses ];
+		when: [ :pundle | pundle isPackage ]
+].
+
+browser showOn: #categories; from: #classes; using: [
+	browser list
+		display: [ :class | class categoryNames ]
+].
+
+/+browser showOn: #methods; from: #classes; from: #categories; using: [
+	browser list
+		display: [ :class :category | class methodNamesIn: category ].
+	browser list
+		display: [ :class | class allMethodNames ];
+		when: [ :class :category | category isNil ]
+].+/
+
+browser openOn: self model pundleRoot.
+\end{code}
+
+The listing shows a couple of properties we have not seen
+before. First, the multiple origins are reflected in the number of
+arguments of the blocks that are used in the \ct{display:} and
+\ct{when:} clauses. Secondly, we are using more than one
+presentation---Glamour shows all presentations whose conditions match in
+the order that they were defined when the corresponding transmission
+is fired.
+
+In the first presentation, we do not explicitly specify a condition so Glamour uses the default condition that all arguments must not be nil. The second condition matches only when the category is undefined but the class is not. We can therefore omit the category from the display block.
+
+The completed class navigator is displayed in figure~\ref{fig:codenavigator}.
+
+\begin{figure}[htbp]
+\centerline{\includegraphics[width=\linewidth]{codenavigator.pdf}}
+\caption{Complete code navigator. If no method category is selected, all methods of the class
+are displayed. Otherwise, only the methods that belong to that category are shown.}
+\label{fig:codenavigator}
+\end{figure}
+
+
+%-------------------------------------------------------------------------------
+\subsection{Ports}
+
+When we stated that transmissions connect panes this was not entirely correct. More precisely, transmissions are connected to properties of panes called \emph{ports}. Such ports consist of  a name and a value which accommodates a particular aspect of state of the pane or its contained presentations. If the port is not explicitly specified by the user, Glamour uses the \emph{selection} port by default. As a result, the following two statements are equivalent:
+
+\begin{code}{}
+browser showOn: #categories; from: #classes; using: [ ... ]
+browser showOn: #categories; from: #classes -> #selection; using: [ ... ]
+\end{code}
+
+Other ports exist and may be used depending on the presentation. For example, the list presentation also populates the \emph{hover} port when the user hovers over an item over a list and a text presentation updates the \emph{text} port to reflect its contents as a user types within it. For a full reference, see the documentation of the presentations being used.
+
+
+%-------------------------------------------------------------------------------
+\subsection{Reusing Browsers}
+\label{sec:tutorial/reusing-browsers}
+
+On of the strengths of Glamour lies in the ability to use browsers in place of primitive presentations such as lists and trees. This allows us to reuse browsers and nest them within each other.
+
+In the next example we want to create a class \emph{editor} as shown in figure~\ref{fig:classbrowser_wireframe}. Panes 1 through 4 are equivalent with those described in the class \emph{navigator} in section~\ref{sec:tutorial/getting_started}. Pane~5 shows the source code of the method that is currently selected in pane~4.
+
+\begin{figure}[htbp]
+\centerline{\includegraphics[width=\linewidth]{classbrowser_wireframe.pdf}}
+\caption{Wireframe representation of a Smalltalk class editor.}
+\label{fig:classbrowser_wireframe}
+\end{figure}
+
+As panes 1 through 4 are the same as in the class navigator it would be convenient to reuse the class navigator rather than duplicating its code. To achieve this, we make the class navigator available through a method named \ct{codeNavigator} which returns the browser, rather than opening it. We can then use the browser as shown in the listing for the class editor below.
+
+\begin{code}{}
+browser := TableLayoutBrowser new.
+browser
+	row: #navigator;
+	row: #source.
+
+browser showOn: #navigator; using: [
+	browser show: self codeNavigator
+].
+
+browser openOn: self model pundleRoot.
+\end{code}
+
+The listing shows how the browser is used exactly like we would use a list or other type of presentation. In fact, browsers are a type of presentation.
+
+When evaluating the code, a new browser is opened that shows the navigator embedded in the top pane and an empty pane at the bottom. No source code will be displayed because we have not yet created any connections between the panes. To get to the source, we need both the name of the selected method as well as the class in which it is defined. Since this information is defined only within the navigator browser, we must first export it to the outside world by using the \ct{sendToOutside:from:} message. For this we append the following lines to \ct{codeNavigator}:
+
+\begin{code}{}
+browser
+	sendToOutside: #selectedClass from: #classes -> #selection;
+	sendToOutside: #selectedMethod from: #methods -> #selection.
+\end{code}
+
+This will send the selection within classes and methods to the \emph{selectedClass} and \emph{selectedMethod} ports of the containing pane. Alternatively, we could have added these lines to the \ct{self codeNavigator} instruction in the code editor---it makes no difference to Glamour at what point these are added. However, we consider it sensible to clearly define the interface on the side of the code \emph{navigator} rather than within the code editor in order to promote the reuse of this interface as well.
+
+Note that a message for achieving the reverse---importing a port from the outside pane and storing its value on one of the browser’s panes also exists and is known as \ct{sendTo:fromOutside:}.
+
+We extend our code editor example as follows:
+
+\begin{code}{}
+browser := TableLayoutBrowser new.
+browser
+	row: #navigator;
+	row: #source.
+
+browser showOn: #navigator; using: [
+	browser show: self codeNavigator
+].
+
+/+browser
+	showOn: #source;
+	from: #navigator -> #selectedClass;
+	from: #navigator -> #selectedMethod; using: [
+	browser text
+		display: [ :class :method | class sourceCodeAt: method ]
+].+/
+
+browser openOn: self model pundleRoot.
+\end{code}
+
+We can now view the source code of any selected method and have created a modular browser by reusing the class navigator that we had already written earlier. The composed browser described by the listing is shown in figure~\ref{fig:composed-browser}.
+
+\begin{figure}[htbp]
+\centerline{\includegraphics[width=\linewidth]{classbrowser.pdf}}
+\caption{Composed browser that reuses the previously described class navigator to show the source of a selected method.}
+\label{fig:composed-browser}
+\end{figure}
+
+
+%-------------------------------------------------------------------------------
+\subsection{Actions}
+\label{sec:tutorial/actions}
+
+Browsers generally rely on \emph{actions}---first-class behavioral objects that are executed when a keyboard shortcut is pressed or when an entry in a context menu is clicked. Glamour supports such actions through the \ct{act:on:} message sent to a presentation:
+
+\begin{code}{}
+browser := TableLayoutBrowser new.
+browser
+	row: #navigator;
+	row: #source.
+
+browser showOn: #navigator; using: [
+	browser custom: self codeNavigator
+].
+
+browser
+	showOn: #source;
+	from: #navigator -> #selectedClass;
+	from: #navigator -> #selectedMethod; using: [
+	browser text
+		display: [ :class :method | class sourceCodeAt: method ];
+		/+act: [ :presentation :class :method |
+			class installCode: presentation text at: method
+		] on: $s+/
+].
+
+browser openOn: self model pundleRoot.
+\end{code}
+
+The argument passed to \ct{on:} is a character that specifies the keyboard shortcut that should be used to trigger the action when the corresponding presentation has the focus. Whether the character needs to be combined with a meta-key---such as command, control or alt---is platform specific and need not be specified. The \ct{act:} block provides the corresponding presentation as its first argument which can be used to poll its various properties such as the contained text or the current selection. The other arguments to the block are the incoming origins as defined by \ct{from:} and are equivalent to the arguments of \ct{display:} and \ct{when:}.
+
+Actions can also be displayed as context menus. For this purpose, Glamour provides the messages \ct{act:on:entitled:} and \ct{act:entitled:} where the last argument is a string that should be displayed as the entry in the menu. For example, the following snippet extends the above example to provide a context menu entry to “save” the current method back to the class:
+\begin{code}{}
+...
+	act: [ :presentation :class :method |
+		class installCode: presentation text at: method
+	] on: $s entitled: 'Save'
+\end{code}
+
+
+%-------------------------------------------------------------------------------
+\subsection{Multiple Presentations}
+
+Frequently, developers wish to provide more than one presentation of a specific object. In our code browser for example, we may wish to show the classes not only as a list but as a visualization of their \emph{system complexity} as well. Glamour includes support to display and interact with visualizations created using the \emph{Mondrian visualization engine} \cite{Meye06b}. To add a second presentation, we simply define it in the \ct{using:} block as well:
+
+\begin{code}{}
+browser showOn: #classes; from: #pundles; using: [
+	browser list 
+		display: [ :pundle | pundle containedClasses ];
+		when: [ :pundle | pundle isPackage ]/+.
+	browser mondrian painting: [ :view :pundle |
+		view nodes: pundle item allDefinedClasses.
+		view edgesFrom: #superclass.
+		view treeLayout.
+	]+/
+]
+\end{code}
+
+Glamour distinguishes multiple presentations on the same pane with the help of a tab layout. The appearance of the Mondrian presentation as embedded in the code editor is shown in figure~\ref{fig:mondrian-presentation}.
+
+\begin{figure}[htbp]
+\centerline{\includegraphics[width=\linewidth]{mondrian-presentation.pdf}}
+\caption{Code editor sporting a Mondrian presentation in addition to a simple class list.}
+\label{fig:mondrian-presentation}
+\end{figure}
+
+
+%-------------------------------------------------------------------------------
+\subsection{Other Browsers}
+
+Up to now in the tutorial, we have only used the \ct{TableLayoutBrowser} which is named after its ability to generate custom layouts using the aforementioned \ct{row:} and \ct{column:} keywords. Additional browsers are provided in the reference implementation or can be written by the user. Browser implementations can be subdivided into two categories: browsers that have \emph{explicit panes} \emph{i.e.}, they are declared explicitly by the user---and browsers that have \emph{implicit panes}. 
+
+The \ct{TableLayoutBrowser} is an example of a browser that uses
+explicit panes. With implicit browsers, we do not declare the panes
+directly but the browser creates them and the connections between them
+internally. An example of such a browser is the \ct{Finder}, which
+implements a \emph{Miller Columns} style browsing, and is named after
+Mac OS~X’s \emph{finder}, which also employs such a mode of
+operation. Since the panes are created for us, we need not use the
+\ct{from:to:} keywords but can simply specify our presentations:
+
+\begin{code}{}
+browser := Finder new.
+
+browser list
+	display: [ :class | class subclasses ];
+	whenKindOf: Class.
+
+browser openOn: Collection
+\end{code}
+
+The listing above creates a browser (shown in figure~\ref{fig:finder}) and opens to show a list of subclasses of \emph{Collection}. Upon selecting an item from the list, the browser expands to the right to show the subclasses of the selected item. This can continue indefinitely as long as something to select remains.
+
+\begin{figure}[htbp]
+\centerline{\includegraphics[width=\linewidth]{finder.pdf}}
+\caption{Subclass navigator using Miller Columns style browsing.}
+\label{fig:finder}
+\end{figure}
+
+%-------------------------------------------------------------------------------
+\subsection{Tutorial Conclusion}
+
+This concludes our tutorial of Glamour. Please note that this tutorial is not meant to give an exhaustive overview of Glamour, but is merely intended to introduce the reader to the usage and to our intent for our approach. Additionally, we have only focussed on the language in this chapter. In the next chapter \hyperref[chp:design]{\emph{Inside Glamour}}, we describe our model and the concepts behind Glamour in more detail.
+
+
 
 \section{Glamour in greater details}
 
@@ -256,7 +656,7 @@ rendered. Finally, we discuss some specifics of the implementation in
 
 
 %-------------------------------------------------------------------------------
-\section{Browsers, Panes and Transmissions}
+\subsection{Browsers, Panes and Transmissions}
 \label{sec:impl/browsers-panes-transmissions}
 
 At the core, Glamour's model is a directed, possibly cyclic graph, consisting of \emph{panes} that are connected using \emph{transmissions}. This graph is encapsulated by a \emph{browser}.
@@ -271,7 +671,13 @@ Further use cases for simple transmissions include sending port values to the ou
 
 The second type of transmission is a \ct{BundleTransmission} which may have multiple origins but still only one destination. Bundle transmissions are the standard transmission type used between panes within a browser. They may carry a payload of a set of presentations which are inserted into the destination pane when the transmission is triggered. The use of bundle transmissions permits the modification of the representation of the pane on the fly. By making it the transmissions's responsibility to set the presentations, we maintain locality between the port values being transmitted and the presentations that will display them.
 
-The origins of bundle transmissions are distinguished between \emph{active origins} and \emph{passive origins}. Both are specified by the developer creating the transmission. The browser will trigger the transmission whenever one of its active origins changes but not when only the port value of a passive origin changes. With passive origins, bundle transmissions are able to “pull-in” additional values that are relevant to displaying information on the destination pane.
+The origins of bundle transmissions are distinguished between
+\emph{active origins} and \emph{passive origins}. Both are specified
+by the developer creating the transmission. The browser will trigger
+the transmission whenever one of its active origins changes but not
+when only the port value of a passive origin changes. With passive
+origins, bundle transmissions are able to ``pull-in'' additional values
+that are relevant to displaying information on the destination pane.
 
 Figure~\ref{fig:abs-browser} focuses on a subset of the abstract notation diagram that highlights these components. In the following sections we add to this sub-diagram.
 
@@ -284,7 +690,7 @@ Figure~\ref{fig:abs-browser} focuses on a subset of the abstract notation diagra
 
 
 %-------------------------------------------------------------------------------
-\section{Presentations}
+\subsection{Presentations}
 \label{sec:impl/presentations}
 
 Presentations provide visual semantics to the state of panes. They read and interpret the values of selected ports---known as \emph{input ports}---and, in turn, may choose to populate a set of other ports with values---the \emph{output ports}.
@@ -299,7 +705,14 @@ A pane can have no presentation, a single presentation or multiple presentations
 
 Various concrete subclasses of presentation exist and are usually named after their recommended visual representation. For example, \ct{ListPresentation} is rendered as a list user interface widget, \ct{TextPresentation} as a text input. The concrete representation is not encoded within the presentation class due to the intentional separation of widget-toolkit specific behavior from our model. However, the renderers which create the user interface elements heed the suggested representation and render the presentation accordingly. In return, presentations provide a well-defined and extensive interface to the rendering client to avoid that renderers directly access or manipulate the pane and its ports to reflect changes of the user interface. This prevents coupling as the renderers do not have to access the state of the presentations directly but rely solely on a higher-level and well defined interface.
 
-The presentations implement a strategy pattern \cite{Gamm95a} that uses a pane as its context object as is shown in figure~\ref{fig:uml-strategy}. It allows us to change the behavior of the pane on the fly and dynamically apply a new filter. This has the advantage that the communication structure determined by the panes and components can be statically defined for a particular browser, but the representation can be dynamically changed depending on the particular instance in the domain model that is currently being displayed.
+The presentations implement a strategy pattern that uses a pane as its
+context object as is shown in figure~\ref{fig:uml-strategy}. It allows
+us to change the behavior of the pane on the fly and dynamically apply
+a new filter. This has the advantage that the communication structure
+determined by the panes and components can be statically defined for a
+particular browser, but the representation can be dynamically changed
+depending on the particular instance in the domain model that is
+currently being displayed.
 
 \begin{figure}[htbp]
 \centerline{\includegraphics[width=\linewidth]{uml_strategy.pdf}}
@@ -309,7 +722,7 @@ The presentations implement a strategy pattern \cite{Gamm95a} that uses a pane a
 
 
 %-------------------------------------------------------------------------------
-\section{Actions}
+\subsection{Actions}
 \label{sec:impl/actions}
 
 All presentations can be configured with a number of \emph{actions}. Actions encapsulate units of behavior that can be executed upon the presentation or its corresponding panes. They may also be associated with a string name or a keyboard shortcut. The concrete representation of the actions lies in the responsibility of the renderer which may choose to simply trigger them when a key-combination is pressed on the keyboard or display them as a context menu to the widget that the presentation is associated with.
@@ -318,7 +731,7 @@ A frequent application for actions is to create a menu item or a keyboard shortc
 
 
 %-------------------------------------------------------------------------------
-\section{Composition}
+\subsection{Composition}
 \label{sec:impl/composition}
 
 Browsers in Glamour can be composed by treating presentations and browsers equally. In fact, browser \emph{are} presentations as one can see from our class diagram in figure~\ref{fig:uml-overview}. This means that, anywhere a list presentation or other type of primitive presentation may be used, a browser can be substituted instead. This simplifies the declaration of browsers in Glamour and promotes their reuse.
@@ -347,7 +760,7 @@ Just as port values can be forwarded to an outside pane, browsers can also captu
 
 
 %-------------------------------------------------------------------------------
-\section{Browser Implementations}
+\subsection{Browser Implementations}
 \label{sec:impl/browser-implementations}
 
 The exact handling of panes and transmissions depends on a concrete subclass of browser. Several types of browsers exist but we can differentiate between two general categories: browsers with \emph{explicit} pane configurations and browser with \emph{implicit} pane configurations. In the first case, panes must be declared and configured by the user and usually remain static at runtime. In the second case, the browser creates and destroys panes as needed. We provide an example for each.
@@ -359,7 +772,7 @@ An example of a browser which uses implicit pane configurations is the \emph{fin
 
 
 %-------------------------------------------------------------------------------
-\section{Rendering}
+\subsection{Rendering}
 \label{sec:impl/rendering}
 
 In our reference implementation we have created two concrete renderers: \ct{WidgetryRenderer} builds a representation of browsers using the Widgetry GUI library in VisualWorks and \ct{GlareRenderer} registers a Glare application \cite{Bunge08a} that streams the user interface to an Adobe Flex client over a network connection.
@@ -378,7 +791,7 @@ Developers wishing to create user interface elements for other environments need
 
 
 %-------------------------------------------------------------------------------
-\section{Smalltalk Implementation}
+\subsection{Smalltalk Implementation}
 \label{sec:impl/smalltalk-implementation}
 
 While our core contribution is the meta-model, we have also developed a declarative language in our reference implementation to construct specific browser models. The declarative language of Glamour is implemented as an internal domain specific language \cite{Fowl07c} (also known as an embedded DSL \cite{Huda98a}) that uses Smalltalk as its host language.
@@ -447,7 +860,7 @@ browser showOn: #relatedClasses;
 
 
 %-------------------------------------------------------------------------------
-\section{Model Implementations}
+\subsection{Model Implementations}
 
 In addition to our VisualWorks reference implementation, Glamour has attracted the interest of other researchers who work on other platforms. Tudor Gîrba, Lukas Renggli and David Röthlisberger have successfully ported Glamour to the Pharo Smalltalk dialect. The code base is taken largely from the reference implementation but other renderers have been implemented to fit the environment. As Pharo primarily uses the direct-manipulation user interface \emph{Morphic} to represent its widgets, building a corresponding visitor for Glamour was required. Additionally, a renderer for the Seaside web application framework has been written which renders Glamour models using a combination of basic HTML components and asynchronous Javascript (AJAX).
 
