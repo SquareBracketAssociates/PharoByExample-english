@@ -57,12 +57,10 @@ ifTrue:ifFalse:
 
 
 \section{Variables and Blocks}
-
 In Smalltalk, private variables (such as self, instance variables, temporaries and arguments) are 
-lexically scoped. These variables are bound in the context in which the block is deÞned 
-(its home context), rather than the context in which the block is evaluated. 
+lexically scoped. These variables are bound in the context in which the block that contains them is defined, rather than the context in which the block is evaluated.  We call the context (set of bindings) in which a block is defined, the block home context,
 
-Define a class name BExp (for BlockExperience) and 
+Define a class name BExp (for BlockExperience) and the following methods
 
 \begin{code}{}
 BExp>>testScope 
@@ -161,43 +159,62 @@ Now when we execute \ct{BExp new testScopeSelf} and we see that a BExp gets prin
 
 \section{Basics on Return}
 
-Return are like 
-
-
-\section{clean, copy and ...}
-
-\section{Returning from inside a block}
+A return statement allows one to return a different value than the receiver of the message.
+Return expressions behave 
 
 \begin{code}{}
-^ should be the last statement of a block body
-	[ Transcript show: 'two'.
-  ^ self. 
-	 Transcript show: 'not printed']
-^ return exits the method containing it.
+foo
+	
+	#(1 2 3 4) do: [:each | Transcript show: each printString. 
+						each = 3 
+							ifTrue: [^ 3]]
+\end{code}
 
-test
-	  Transcript show: 'one'.
-	  1 isZero 
-	       ifFalse: [ 0 isZero ifTrue: [ Transcript show: 'two'.					 	^ self]].
-	   Transcript show: ' not printed'
+
+
+\section{Returning from inside a block}
+It is not a really good idea to have return statement in a block that you pass or store into instance variables and we will explain why in this section. 
+
+In certain Smalltalk dialects, you can have expressions after a return statement in a block, in Pharo \ct{^} should be the last statement of a block body. You should get a compile error if you type and compile the following expression. 
+
+\begin{code}{}
+[ Transcript show: 'two'.
+  ^ self.  
+  Transcript show: 'not printed' ]
+\end{code}
+
+Now to see that a return is really escaping the current execution you 
+\begin{code}{}
+testExplicitReturn
+	"self new testExplicitReturn a BEXp"
+	
+	Transcript show: 'one'.
+	0 isZero ifTrue: [ Transcript show: 'two'. ^ self].
+	Transcript show: ' not printed'
 -> one two
 \end{code}
 
-Simple block [:x :y| x*x. x+y] returns the value of the last statement to the method that sends it the message value
-Continuation blocks [:x :y| ^ x + y] returns the value to the method that activated its homeContext
-As a block is always evaluated in its homeContext, it is possible to attempt to return from a method which has already returned using other return. This runtime error condition is trapped by the VM.
-			Object>>returnBlock
-				^[^self]
-			Object new returnBlock
-	-> Exception
+Simple block \ct{[:x :y| x*x. x+y]} returns the value of the last statement to the method that sends it the message value
+
+Continuation blocks \ct{[:x :y| ^ x + y]} returns the value to the method that activated its homeContext. As a block is always evaluated in its homeContext, it is possible to attempt to return from a method which has already returned using other return. This runtime error condition is trapped by the VM.
+
+\begin{code}{}
+Object>>returnBlock
+	^[^self]
+
+Object new returnBlock
+-> Exception
+\end{code}	
 	
 	
+\begin{code}{}
 |b| 
 b:= [:x| Transcript show: x. x].
 b value: a. b value: b.
 b:= [:x| Transcript show: x. ^x].
 b value: a. b value: b.
-
+\end{code}
+ 
 Continuation blocks cannot be executed several times!
 
 \begin{code}{}
@@ -215,11 +232,14 @@ Test>>testBlock:aBlock
 	   self halt.
 \end{code}
 
+\begin{code}{}
 Test new testBlock 	
 print: *15* and not halt. 
 return: 35
+\end{code}
 
 
+\begin{code}{}
 |val|
 val := [:exit |
 		|goSoon|
@@ -231,13 +251,16 @@ Transcript show: val.
 val
 yes -> print Bye and return  Bye
 no -> print Not Exiting 2 and return 2
+\end{code}
 
-
+\begin{code}{}
 BlockClosure>>myValueWithExit
 	      self value: [:arg| ^arg ].
       ^ '2'
 BlockClosure>>myValueWithExit
- ^ self value: [:arg | ^ arg]        to get  
+ ^ self value: [:arg | ^ arg]        
+\end{code}
+
 
 
 \paragraph{Storing a block}
@@ -260,6 +283,15 @@ These variables are bound in the context in which the block is defined and not i
 
 \section{About closure....}
 lukas tests illustrated 
+
+\begin{code}{}
+(let* ((index 0)
+       (y (lambda () index)))
+  (begin
+    (set! index 4)
+    (y)))
+\end{code}
+
 
 \section{Conclusion}
 
