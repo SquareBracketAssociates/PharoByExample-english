@@ -178,10 +178,10 @@ how to use to create a simple file browser.
 
 \section{Tutorial: Implementing a code browser}
 
-This chapter serves as a motivation for specifying custom browsers and as a hands-on introduction to our reference implementation. The screen images in this tutorial represent the appearance of the Adobe Flex \cite{Adob06a} graphical user interface for which a Glamour renderer is available in the VisualWorks implementation.
-
-The chapter provides working examples. See appendix~\ref{chp:installation} on how to install the reference implementation in order to evaluate them.
-
+This chapter serves as a motivation for specifying custom browsers and
+as a hands-on introduction to our reference implementation. The screen
+images in this tutorial represent the appearance of the Morphic
+graphical user interface for which a Glamour renderer is available.
 
 % -----------------------------------------------------------------------------
 \subsection{Running example}
@@ -612,8 +612,9 @@ user interface elements that are specific to the platform and that can
 be rendered on-screen or on a different medium as desired by the
 user. The medium-specific transformations are specified by a concrete
 subclass of \ct{GLMRenderer} such as a \ct{GLMMorphicRenderer} for
-on-screen GUI elements or a \ct{SGLRenderer} to stream user interfaces
-to the Seaside framework.
+on-screen GUI elements or, for the Seaside web application framework,
+\ct{SGLRenderer} renders Glamour models using a combination of basic
+HTML components and asynchronous Javascript (AJAX).
 
 While class diagrams are useful for showing the relationship between
 types, there is a necessity for describing \emph{instances} of
@@ -725,9 +726,21 @@ currently being displayed.
 \subsection{Actions}
 \label{sec:impl/actions}
 
-All presentations can be configured with a number of \emph{actions}. Actions encapsulate units of behavior that can be executed upon the presentation or its corresponding panes. They may also be associated with a string name or a keyboard shortcut. The concrete representation of the actions lies in the responsibility of the renderer which may choose to simply trigger them when a key-combination is pressed on the keyboard or display them as a context menu to the widget that the presentation is associated with.
+All presentations can be configured with a number of
+\emph{actions}. Actions encapsulate units of behavior that can be
+executed upon the presentation or its corresponding panes. They may
+also be associated with a string name or a keyboard shortcut. The
+concrete representation of the actions lies in the responsibility of
+the renderer which may choose to simply trigger them when a
+key-combination is pressed on the keyboard or display them as a
+context menu to the widget that the presentation is associated with.
 
-A frequent application for actions is to create a menu item or a keyboard shortcut that triggers a navigation, much like clicking on an item in a list may results in a navigation. The solution is to create an action that populates a port which is then connected to a destination pane using a normal transmission. When the action is executed, the port value changes, thus causing a navigation.
+A frequent application for actions is to create a menu item or a
+keyboard shortcut that triggers a navigation, much like clicking on an
+item in a list may results in a navigation. The solution is to create
+an action that populates a port which is then connected to a
+destination pane using a normal transmission. When the action is
+executed, the port value changes, thus causing a navigation.
 
 
 %-------------------------------------------------------------------------------
@@ -775,17 +788,44 @@ An example of a browser which uses implicit pane configurations is the \emph{fin
 \subsection{Rendering}
 \label{sec:impl/rendering}
 
-In our reference implementation we have created two concrete renderers: \ct{WidgetryRenderer} builds a representation of browsers using the Widgetry GUI library in VisualWorks and \ct{GlareRenderer} registers a Glare application \cite{Bunge08a} that streams the user interface to an Adobe Flex client over a network connection.
+In our reference implementation we have created two concrete
+renderers: \ct{GLMMorphicRenderer} builds a representation of browsers
+using the Morphic GUI library in Pharo while \ct{SGLRenderer}
+uses the Seaside web framework.
 
-A renderer acts as a \emph{visitor} \cite{Gamm95a} that traverses the component tree of browsers, panes and presentations, creating appropriate user interface elements for the components it encounters. As these elements are created, the renderer is also responsible for connecting the appropriate library-dependent callbacks to populate panes and their ports with the appropriate values when actions are performed or the state of the user interface components changes.
+A renderer acts as a \emph{visitor} that traverses the
+component tree of browsers, panes and presentations, creating
+appropriate user interface elements for the components it
+encounters. As these elements are created, the renderer is also
+responsible for connecting the appropriate library-dependent callbacks
+to populate panes and their ports with the appropriate values when
+actions are performed or the state of the user interface components
+changes.
 
-In \ct{GlareRenderer} for example, selecting an item within a list widget triggers a callback that sets the value of the \emph{selection} port of the corresponding pane. Double clicking populates the \emph{execution} port and hovering over an item sets the value of the \emph{hover} port. Different widgets might set other port values and some renderer implementations may choose not to support hovering or other operatives at all. Nevertheless, renderers do not communicate with the pane directly and use only the interface given to them by the presentation. This helps renderers to work in a consistent and predictable way. A user writing a browser would not expect that in one rendition of a model the selection of an item in the list would result in the setting of \emph{selection} and in another in the setting of \emph{choice}.
+In \ct{GLMMorphicRenderer} for example, selecting an item within a list
+widget triggers a callback that sets the value of the \emph{selection}
+port of the corresponding pane. Double clicking populates the
+\emph{execution} port and hovering over an item sets the value of the
+\emph{hover} port. Different widgets might set other port values and
+some renderer implementations may choose not to support hovering or
+other operatives at all. Nevertheless, renderers do not communicate
+with the pane directly and use only the interface given to them by the
+presentation. This helps renderers to work in a consistent and
+predictable way. A user writing a browser would not expect that in one
+rendition of a model the selection of an item in the list would result
+in the setting of \emph{selection} and in another in the setting of
+\emph{choice}.
 
-Developers wishing to create user interface elements for other environments need only create a new subclass of \ct{Renderer} and implement the appropriate methods. An incomplete list of these is shown in figure~\ref{fig:renderer}. Due to their similarity, the existing renderers may serve as a guide in determining the expected behavior of new implementations.
+Developers wishing to create user interface elements for other
+environments need only create a new subclass of \ct{Renderer} and
+implement the appropriate methods. An incomplete list of these is
+shown in figure~\ref{fig:renderer}. Due to their similarity, the
+existing renderers may serve as a guide in determining the expected
+behavior of new implementations.
 
 \begin{figure}[htbp]
-\centerline{\includegraphics[width=\linewidth]{renderer.pdf}}
-\caption{A subclass of renderer and some of the implemented methods.}
+\centerline{\includegraphics[width=.2\linewidth]{renderer.pdf}}
+\caption{A subclass of renderer and some of the implemented methods.\damien{change WidgetryRenderer to GLMMorphicRenderer}}
 \label{fig:renderer}
 \end{figure}
 
@@ -794,9 +834,15 @@ Developers wishing to create user interface elements for other environments need
 \subsection{Smalltalk Implementation}
 \label{sec:impl/smalltalk-implementation}
 
-While our core contribution is the meta-model, we have also developed a declarative language in our reference implementation to construct specific browser models. The declarative language of Glamour is implemented as an internal domain specific language \cite{Fowl07c} (also known as an embedded DSL \cite{Huda98a}) that uses Smalltalk as its host language.
+While our core contribution is the meta-model, we have also developed
+a declarative language in our reference implementation to construct
+specific browser models. The declarative language of Glamour is
+implemented as an internal domain specific language (also known as an
+embedded DSL) that uses Smalltalk as its host language.
 
-In our language implementation, we make heavy use of Smalltalk's features such as block closures and cascades. Take for example the following code snippet:
+In our language implementation, we make heavy use of Smalltalk's
+features such as block closures and cascades. Take for example the
+following code snippet:
 
 \begin{code}{}
 browser showOn: #classes; from: #pundles; using: [
@@ -857,16 +903,6 @@ browser showOn: #relatedClasses;
 	browser list
 ].
 \end{code}
-
-
-%-------------------------------------------------------------------------------
-\subsection{Model Implementations}
-
-In addition to our VisualWorks reference implementation, Glamour has attracted the interest of other researchers who work on other platforms. Tudor Gîrba, Lukas Renggli and David Röthlisberger have successfully ported Glamour to the Pharo Smalltalk dialect. The code base is taken largely from the reference implementation but other renderers have been implemented to fit the environment. As Pharo primarily uses the direct-manipulation user interface \emph{Morphic} to represent its widgets, building a corresponding visitor for Glamour was required. Additionally, a renderer for the Seaside web application framework has been written which renders Glamour models using a combination of basic HTML components and asynchronous Javascript (AJAX).
-
-Probably the most important result of this work for us is that the researchers found it easy to write additional renderers. It provides additional justification for separating the rendering from our model and shows that the added complexity arising from this separation is reasonable.
-
-
 
 %=============================================================
 \ifx\wholebook\relax\else
