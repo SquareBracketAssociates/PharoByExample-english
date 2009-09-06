@@ -351,9 +351,9 @@ the implementation checks that the \ct{exceptionClass} is a superclass of the si
 When signaling an exception, it is possible to provide information specific to the situation just encountered, as illustrated in the code below. 
 For example, if the file to be opened does not exist, the name of the non-existent file can be recorded in the exception object:
 
-\mthindex{StandardFileStream}{oldFileNamed:}
+\mthindex{StandardFileStream class}{oldFileNamed:}
 \begin{code}{}
-StandardFileStream>>>oldFileNamed: fileName
+StandardFileStream class>>>oldFileNamed: fileName
 	"Open an existing file with the given name for reading and writing. If the name has no directory part, then default directory will be assumed. If the file does not exist, an exception will be signaled. If the file exists, its prior contents may be modified or replaced, but the file will not be truncated on close."
 	| fullName |
 	fullName := self fullName: fileName.
@@ -373,10 +373,11 @@ result := [(StandardFileStream oldFileNamed: 'error42.log') contentsOfEntireFile
 Transcript show: result; cr
 \end{code}
 
-By every exception has a default description that is used by the development tools to report exceptional situations in a clear and comprehensible manner. To make the description available, all exception objects respond to the message \ct{description}. Moreover, the descriptive message may be changed by sending the message \lct{messageText:  \emph{aDescription}}, or by signaling the exception using \lct{signal: \emph{aDescription}}.
+Every exception has a default description that is used by the development tools to report exceptional situations in a clear and comprehensible manner. To make the description available, all exception objects respond to the message \ct{description}. Moreover, the default description can be changed by sending the message \lct{messageText:  \emph{aDescription}}, or by signaling the exception using \lct{signal: \emph{aDescription}}.
 
-Another example can be seen in the \ct{doesNotUnderstand:} mechanism, a pillar of the reflective capabilities of \st. Whenever an object is sent a message that it does not understand, the VM will (eventually) send it the message \ct{doesNotUnderstand:} with an argument representing the offending message. The default implementation of \ct{doesNotUnderstand:}, defined in class \ct{Object}, simply signals a \clsind{MessageNotUnderstood} exception, causing a debugger to be opened at that point in the execution.
-This method illustrates the way in which specific information such as the receiver and the message that is not understood can be stored in the exception, and thus made available to the debugger.
+Another example of signaling occurs in the \ct{doesNotUnderstand:} mechanism, a pillar of the reflective capabilities of \st. Whenever an object is sent a message that it does not understand, the VM will (eventually) send it the message \ct{doesNotUnderstand:} with an argument representing the offending message. The default implementation of \ct{doesNotUnderstand:}, defined in class \ct{Object}, simply signals a \clsind{MessageNotUnderstood} exception, causing a debugger to be opened at that point in the execution.
+
+The \ct{doesNotUnderstand:} method illustrates the way in which exception-specific information, such as the receiver and the message that is not understood, can be stored in the exception, and thus made available to the debugger.
 \mthindex{Object}{doesNotUnderstand:}
 
 \needlines{4}
@@ -390,10 +391,15 @@ Object>>>doesNotUnderstand: aMessage
 	^ aMessage sentTo: self.
 \end{code}
 
-%=================================================================
-\section{Setting breakpoints}
+That completes our description of how exceptions are used.  The remainder of this chapter discusses how exceptions are implemented, and adds some details that are relevant only if you define your own exceptions.
 
-In \st it is possible to set a \ind{breakpoint} within a method by inserting the message send \ct{self halt} into the code. The method \mthind{Object}{halt}, implemented in \ct{Object}, uses exceptions to open a debugger at the location of the breakpoint; it is defined as follows:
+%=================================================================
+
+
+\section{How breakpoints are Implemented}
+
+As we discussed in the Debugger chapter of \emph{Pharo By Example}, 
+the usual way of setting a \ind{breakpoint} within a \st{} method is to insert the message-send \ct{self halt} into the code. The method \mthind{Object}{halt}, implemented in \ct{Object}, uses exceptions to open a debugger at the location of the breakpoint; it is defined as follows:
 
 \needlines{6}
 \begin{code}{}
@@ -406,19 +412,9 @@ Object>>>halt
 \end{code}
 
 \index{exception!resumable}
-\clsind{Halt} is a direct subclass of \clsind{Exception}. A \ct{Halt} exception is \emph{resumable}, which means that it is possible to continue execution after this exception is signaled. The private \ct{Exception} method \mthind{Exception}{isResumable} tells us which exceptions are resumable, for example:
-\begin{code}{@TEST}
-Exception new isResumable --> true
-Halt new isResumable          --> true
-Error new isResumable         --> false
-\end{code}
+\clsind{Halt} is a direct subclass of \clsind{Exception}. A \ct{Halt} exception is \emph{resumable}, which means that it is possible to continue execution after a \ct{Halt} is signaled. 
 
-As it turns out, roughly 2/3 of all exceptions are resumable:
-\begin{code}{}
-(Exception allSubclasses select: [:each | each new isResumable]) size --> 58
-\end{code}
-
-\ct{Halt} redefines the \mthind{Halt}{defaultAction} method, which specifies the action to perform if the exception is not caught (\ie there is no exception handler for the class \ct{Halt} anywhere on the execution stack):
+\ct{Halt} overrides the \mthind{Halt}{defaultAction} method, which specifies the action to perform if the exception is not caught (\ie there is no exception handler for \ct{Halt} anywhere on the execution stack):
 
 \begin{code}{}
 Halt>>>defaultAction
@@ -428,7 +424,7 @@ Halt>>>defaultAction
 	UnhandledError signalForException: self
 \end{code}
 
-This code signals a new exception \ct{UnhandledError}, conveying the meaning that no handler is present. \ct {UnhandledError} opens a debugger, as its default action shows.
+This code signals a new exception, \ct{UnhandledError}, that conveys the idea that no handler is present. The \ct{defaultAction} of \ct {UnhandledError} is to open a debugger:
 
 \mthindex{UnhandledError}{defaultAction}
 \begin{code}{}
@@ -437,6 +433,7 @@ UnhandledError>>>defaultAction
 	^ ToolSet debugError: exception.
 \end{code}
 
+\noindent
 A few messages later, the debugger opens:
 
 \mthindex{StandardToolSet}{debug:context:label:contents:fullView:}
@@ -454,30 +451,29 @@ We will now take a look at how exception handlers are found and fetched from the
 However, before we do this, we need to understand how the control flow of a program is internally represented in the virtual machine.
 
 At each point in the execution of a program, the execution stack of the program is represented as a list of activation contexts. Each activation context represents a method invocation and contains all the information needed for its execution, namely its receiver, its arguments, and its local variables. It also contains a reference to the context that triggered its creation, \ie the activation context associated with the method execution that sent the message that created this context. In \pharo, the class \ct{MethodContext} models this information. 
-The references between activation contexts link them into a chain, which we call the execution stack.
+The references between activation contexts link them into a chain: this chain of activation contexts \emph{is} \st's execution stack.
 
-Suppose that we attempt to open a \ct{BookMorph} on a non-existent file.
-A \ct{FileDoesNotExistException} will be signaled, and the execution stack will contain the activation contexts created for the methods \ct{openFromFile:}, \ct{oldFileNamed:}, and \ct{signal}, as shown in \figref{stack}.
+Actually, there are two kinds of activation context in \pharo: \ct{methodContext}s and \ct{blockContext}s: the latter are used to represent the execution of blocks.  They have a common superclass \ct{ContextPart}.  We will ignore this detail for now.
+
+Suppose that we attempt to open a \ct{FileStream} on a non-existent file from a \ct{doIt}.
+A \ct{FileDoesNotExistException} will be signaled, and the execution stack will contain \ct{MethodContext}s for \ct{doIt}, \ct{oldFileNamed:}, and \ct{signal}, as shown in \figref{stack}.
 
 \begin{figure}[bth]\centering
         \includegraphics[width=\linewidth]{Stack}
         \caption{A \pharo execution stack.\figlabel{stack}}
 \end{figure}
 
-Since everything is an object in \st, we should expect activation contexts to also be objects.
-However, certain \st dialects and implementations use the native \ind{C} execution stack of the \ind{virtual machine} to avoid creating objects all the time.
-% The \pharo virtual machine does not do this, but instead creates the list of activation context objects only on demand, for example, whenever the debugger is started.
-% \lr{This is not true. The Pharo VM does not use the C stack and uses full Smalltalk objects at all times.}
-% \sd{exact. We can write: the current pharo virtual machine only use activation context objects which are recycled for speed improvements.  }
-The current \pharo virtual machine does actually use full Smalltalk objects all the time;  for speed, it recycles old activation context objects rather than creating new ones.
+Since everything is an object in \st, we would expect method contexts to be objects.
+However, some \st implementations use the native \ind{C} execution stack of the \ind{virtual machine} to avoid creating objects all the time.
+The current \pharo virtual machine does actually use full Smalltalk objects all the time;  for speed, it recycles old method context objects rather than creating a new one for each message-send.
 
 \index{BlockClosure!on:do:}
-When we send \lct{\emph{aBlock} on: \emph{ExceptionClass} do: \emph{actionHandler}}, we associate an exception handler (\lct{\emph{actionHandler}}) with a given class of exceptions (\lct{\emph{ExceptionClass}}) for the activation context of the protected block \lct{\emph{aBlock}}.
-This information is used to identify and invoke the exception handler whenever an exception is signaled. The handler will be available on the stack, and can be found by traversing the stack starting from the top down to the activation context that sent the \ct{on:do:} message.
+When we send \lct{\emph{aBlock} on: \emph{ExceptionClass} do: \emph{actionHandler}}, we intend to associate an exception handler (\lct{\emph{actionHandler}}) with a given class of exceptions (\lct{\emph{ExceptionClass}}) for the activation context of the protected block \lct{\emph{aBlock}}.
+This information is used to identify and execute \lct{\emph{actionHandler}} whenever an exception of an appropriate class is signaled; \lct{\emph{actionHandler}} can be found by traversing the stack starting from the top (the most resent message-send) and working down to the context that sent the \ct{on:do:} message.
 
-If no exception handler is available on the stack, the message \ct{defaultAction} will be sent either by \cmind{ContextPart}{handleSignal:} or by \lcmind{Un\-de\-fin\-ed\-Object}{handleSignal:}. The latter is associated with the bottom of the stack, and is defined as follows:
+If there is no exception handler on the stack, the message \ct{defaultAction} will be sent either by \cmind{ContextPart}{handleSignal:} or by \cmind{UndefinedObject}{handleSignal:}. The latter is associated with the bottom of the stack, and is defined as follows:
 
-\begin{code}
+\begin{code}{}
 UndefinedObject>>>handleSignal: exception
 	"When no more handler (on:do:) context is left in the sender chain, this gets called.  Return from signal with default action."
 	^ exception resumeUnchecked: exception defaultAction
@@ -489,14 +485,13 @@ When an exception $E$ is signaled, the system identifies and fetches the corresp
 
 \begin{enumerate}
 
-\item Search in the current activation context for a handler for $E$.
-($E$ should be of the same class as, or a subclass of, the exception class named in the \ct{on:do:} message.)
+\item Look in the current activation context for a handler, and test if that handler \ct{canHandleSignal:} $E$.
 
 \item If no handler is found and the stack is not empty, go down the stack and return to step 1.
 
 \item If no handler is found and the stack is empty, then send \ct{defaultAction} to $E$. The default implementation in the \ct{Error} class leads to the opening of a debugger.
 
-\item If the handler is found, send it \ct{value:} with the exception $E$ as the argument.
+\item If the handler is found, send it \ct{value:} $E$.
 
 \end{enumerate}
 
@@ -516,6 +511,7 @@ result --> 'Error: error 2'
 Without the second handler, the nested exception will not be caught, and the debugger will be invoked.
 
 An alternative would be to specify the second handler within the first one:
+\needlines{5}
 \begin{code}{@TEST | result |}
 result := [ Error signal: 'error 1' ]
 	on: Exception
@@ -625,7 +621,7 @@ As another example, recall the file handling code we saw earlier, in which we pr
 \begin{code}{}
 [(StandardFileStream oldFileNamed: 'error42.log') contentsOfEntireFile]
 	on: FileDoesNotExistException
-	do: [:ex | ex retryUsing: [FileList2 modalFileSelector contentsOfEntireFile] ]
+	do: [:ex | ex retryUsing: [FileList modalFileSelector contentsOfEntireFile] ]
 \end{code}
 
 %=================================================================
@@ -654,6 +650,7 @@ Here we can clearly see that the value of \ct{MyResumableTestError signal} is th
 The message \ct{resume} is equivalent to \ct{resume: nil}.
 
 The usefulness of resuming an exception is illustrated by the class \ct{Installer}, which implements an automatic package loading mechanism. When installing packages, warnings may be signaled. Warnings should not be considered fatal errors, so the installer should simply ignore the warning and continue installing. \lr{Maybe better use something from Pharo-Core like \ct{UndeclaredVariableWarning} or \ct{TimedOut}.}
+\ab{St\'{e}ph and I failed to find a better example.  If you have one, go ahead and replace this one.}
 
 \begin{code}{}
 Installer>>>installQuietly: packageNameCollectionOrDetectBlock 
@@ -663,7 +660,7 @@ Installer>>>installQuietly: packageNameCollectionOrDetectBlock
 %	 [ self install ] on: Warning do: [ :ex | ex resume: true ]. 
 % The code actually says resume: true, but Keith Hodges confirms that this is not necessary
 
-Another typical situation is when an interaction with the user is required, as in the following example:
+Another situation where resumption is useful is when you want to ask the user what to do.  For example, suppose that we were to define a class \ct{ResumableLoader} with the following method:
 \begin{code}{}
 ResumableLoader>>>readOptionsFrom: aStream 
 	| option |
@@ -674,7 +671,12 @@ ResumableLoader>>>readOptionsFrom: aStream
 				ifTrue: [InvalidOption signal]
 				ifFalse: [self addOption: option]].
 	aStream close
+\end{code}
+\noindent
+If an invalid option is encountered, we signal an \ct{InvalidOption} exception.
+The context that sends \ct{readOptionsFrom:} can set up a suitable handler:
 
+\begin{code}{}
 ResumableLoader>>>readConfiguration
 	| stream |
 	stream := self optionStream.
@@ -686,33 +688,25 @@ ResumableLoader>>>readConfiguration
 	stream close
 \end{code}
 
-If an invalid option is encountered in \ct{readOptionsFrom:}, an \ct{InvalidOption} exception is signaled. The action handler in \ct{readConfiguration} resumes the exception, causing the \ct{signal} message send in \ct{readOptionsFrom:} to returns and the execution keeps going.
+\noindent
+Depending on user input, the handler in \ct{readConfiguration} might \ct{return} \ct{nil}, or it might \ct{resume} the exception, causing the \ct{signal} message send in \ct{readOptionsFrom:} to return and the parsing of the options stream to continue.
 
-\ab{I don't see why this would work.  For the loop to ``keep going'', the last expression in it must evaluate to \ct{false}.  \ct{InvalidOption signal} is going to evaluate to \ct{ nil} in the case where the exception is resumed.  
-In the case where the option is not \ct{nil}, it wil evaluate to the result of \ct{self addOption: foo}, which is presumably \ct{foo}, not a Boolean.
-I could not find this class in \pharo.}
-
-Note that \ct{InvalidOption} must be a resumable exception. It suffices to define it as a subclass of \ct{Exception}.
-It is not always reasonable to allow an exception to be  \ct{resume}d:
-there is no sensible way to resume a \ct{FileNotFound} exception, for example.
-The message \ct{isResumable} is used to acertain whether or not an exception may be resumed.
-In class\ct{Error}, the \ct{isResumable} method answers \ct{false}, so subclasses of \ct{Error} are not resumable, unless they override this method to answer \ct{true}.
+Note that \ct{InvalidOption} must be resumable; it suffices to define it as a subclass of \ct{Exception}.
 
 %=================================================================
-\section{Example: deprecation}
+\subsection{Example: Deprecation}
 
 \index{deprecation (pattern)}
-\emph{Deprecation} offers a good case study of a simple mechanism built using exceptions.
-Deprecation is a design pattern allows a programmer to mark a method as being ``deprecated'', meaning that it may disappear in a future release and should not be used any more. In \pharo, a method can be marked as deprecated as follows:
+\emph{Deprecation} offers a case study of a mechanism built using resumable exceptions.
+Deprecation is a software re-engineering pattern that allows us to mark a method as being ``deprecated'', meaning that it may disappear in a future release and should not be used by new code.
+In \pharo, a method can be marked as deprecated as follows:
 
 \mthindex{Object}{deprecated:}
 \begin{code}{}
-SequenceableCollection>>>upTo: anObject
-	self deprecated: 'Use #copyUpTo:'.
-	^ self copyUpTo: anObject
+Utilities class>>>convertCRtoLF: fileName	"Convert the given file to LF line endings. Put the result in a file with the extention '.lf'"	self deprecated: 'Use ''FileStream convertCRtoLF: fileName'' instead.' 		on: '10 July 2009' in: #Pharo1.0 .	FileStream convertCRtoLF: fileName
 \end{code}
 
-When the message \ct{upTo:} is sent, if the \ct{raiseDeprecationWarnings} preference is  \ct{true}, then a pop-up window is displayed with a notification and the programmer may resume the application execution; this is shown in \figref{deprecation}.
+When the message \ct{convertCRtoLF:} is sent, if the \ct{raiseDeprecationWarnings} preference is  \ct{true}, then a pop-up window is displayed with a notification and the programmer may resume the application execution; this is shown in \figref{deprecation}.
 
 
 \begin{figure}[ht]\centering
@@ -720,10 +714,10 @@ When the message \ct{upTo:} is sent, if the \ct{raiseDeprecationWarnings} prefer
         \caption{Sending a deprecated message.\figlabel{deprecation}}
 \end{figure}
 
-Deprecation is easily implemented in \pharo in just a few steps.
+Deprecation is implemented in \pharo in just a few steps.
 First, we define \clsind{Deprecation} as a subclass of \clsind{Warning}.
 It should have some instance variables to contain information about the deprecation: in 
-\pharo{} these are \ct{methodReference, explanationString, deprecationDate} and \ct{versionString}; we therefore need to define an instance-side initialization method for these variables, and a class-side instance creation method that sends the corresponding message.
+\pharo{} these are \ct{methodReference}, \ct{explanationString}, \ct{deprecationDate} and \ct{versionString}; we therefore need to define an instance-side initialization method for these variables, and a class-side instance creation method that sends the corresponding message.
 
 When we define a new exception class, we should consider overriding \ct{isResumable}, \ct{description}, and \ct{defaultAction}.
 In this case the inherited implementations of the first two methods are fine:
@@ -748,18 +742,8 @@ The first preference simply causes a warning message to to be written on the \ct
 We also need to implement some convenience methods in \ct{Object}, like this one:
 \needlines{8}
 \begin{code}{}
-Object>>>deprecated: anExplanationString
-	"Warn that the sending method has been deprecated."
-
-	(Deprecation
-		method: thisContext sender method
-		explanation: anExplanationString
-		on: nil
-		in: nil) signal
+Object>>>deprecated: anExplanationString on: date in: version	(Deprecation		method: thisContext sender method		explanation: anExplanationString		on: date		in: version) signal
 \end{code}
-
-\noindent
-The \lct{deprecated: \emph{anExplanationString} on: \emph{date} in: \emph{version}} message allows more information about the deprecation occurred to be specified.
 
 %=================================================================
 \section{Passing Exceptions on}
@@ -813,22 +797,12 @@ Object>>>performAll: selectorCollection
 
 This has the effect of passing on \clsind{MessageNotUnderstood} errors to the surrounding context when they are not part of the list of messages we are performing. The \ct{pass} message will pass the exception on to the next applicable handler in the execution stack.
 
-If there is no next handler on the stack, the \ct{defaultAction} message is sent to the exception instance. The \ct{pass} action does not modify the sender chain in any way\,---\,but the handler that control is passed to may do so. Like other messages we discussed in this section, \ct{pass} is special\,---\,it never returns to the sender.
+If there is no next handler on the stack, the \ct{defaultAction} message is sent to the exception instance. The \ct{pass} action does not modify the sender chain in any way\,---\,but the handler that control is passed to may do so. Like the other messages discussed in this section, \ct{pass} is special\,---\,it never returns to the sender.
 
-\lr{I hope nobody is going to write code like that after reading this section.}
-\on{Well, I certainly don't plan to!}
-
-\newsavebox{\apbmethod}
-\sbox{\apbmethod}{\fbox{\parbox[b]{\linewidth}{
-\lct{
-performAll: selectorCollection \\
-	selectorCollection
-		do: [:each | (self respondsTo: each)
-				ifTrue: [self perform: each]]
-}}}}
-\ab{I had exactly the same thought.  I would have written:\\[1ex]
-\usebox\apbmethod\\[2ex]
-The larger question is: should we be showing the reader overly-complex code just to illustrate the use of a complex feature?  Maybe we should just end by saying that there is a much simpler way to get the same effect?}
+The goal of this section has been to demonstrate the power of exceptions.
+It should be clear that while you can do almost anything with exceptions, the code
+that results not always easy to understand.   
+There is often a simpler way to get he same effect without exceptions; see \mthref{simplerObjectPerfromAll} on page \pageref{mth:simplerObjectPerfromAll} for a better way to implement \ct{performAll:}.
 
 %=================================================================
 \section{Resending exceptions}
@@ -1002,9 +976,11 @@ The last line explores a 2-element array that contains the exception class and t
 Now that we know where the information is stored, let's have a look at how it is found at runtime. 
 
 We might think that the primitive 199 is complex to write. 
-But in fact it too is trivial, because primitive 199 \emph{always} fails\footnote{The source code of the primitive is \ct{Interpreter>>>primitiveMarkHandlerMethod} in the \pkgind{VMMaker} \sqsrc project}. 
+But it too is trivial, because primitive 199 \emph{always} fails!
 Because the primitive always fails, the \st{} body of \ct{on:do:} is always executed.
 However, the presence of the \ct{<primitive 199>} bytecode marks the executing context in a unique way. 
+
+The source code of the primitive is found in\ct{Interpreter>>>primitiveMarkHandlerMethod} in the \pkgind{VMMaker} \sqsrc project: 
 
 \begin{code}{}
 primitiveMarkHandlerMethod
@@ -1100,16 +1076,30 @@ The first thing that we notice from this figure is that the Exception hierarchy 
 The second thing that we notice is that there are two large sub-hierarchies: \ct{Error} and \ct{Notification}. 
 Errors tell us that the program has fallen into some kind of abnormal situation. 
 In contrast, Notifications tell us that an event has occurred, but without the assumption that it is abnormal. 
-So, if no action is taken in response to a \ct{Notification}, the program can continue to execute. 
+So, if a \ct{Notification} is not handled, the program will continue to execute. 
 An important subclass of \ct{Notification} is \ct{Warning};  warnings are used to notify other parts of the system, or the user, of abnormal but non-lethal behavior.
+%
+%Graphical user interfaces make great use of notifications. In \pharo, \ct{ProgressNotification}, another subclass of \ct{Notification}, is used to move the progress bar forward when a long-running task is being executed. \ab{I wanted to put in a reference to the methods that do this, but couldn't find them.  Can someone else put this in, please?} 
+%\ab{This appears not to be true, so I commented out the whole paragraph}
 
-Graphically user interfaces make great use of notifications. In \pharo, \ct{ProgressNotification}, another subclass of \ct{Notification}, is used to move the progress bar forward when a long-running task is being executed. \ab{I wanted to put in a reference to the methods that do this, but couldn't find them.  Can someone else put this in, please?}
+The property of being resumable is largely orthogonal to the location of an exception in the hierarchy.   In general, \ct{Error}s are not resumable, but 10 of its subclasses \emph{are} resumable.  For example, \ct{MessageNotUnderstood} is a subclass of \ct{Error}, but it is resumable.  \ct{TestFailure}s are not resumable, but, as you would expect, \ct{ResumableTestFailure}s are. 
 
-The property of being resumable is largely orthogonal to the location of an exception in the hierarchy.   In general, \ct{Error}s are not resumable, but 10 of its subclasses \emph{are} resumable.  For example, \ct{MessageNotUnderstood} is a subclass of \ct{Error}, but it is resumable.  \ct{TestFailure}s are not resumable, but, as you would expect, \ct{ResumableTestFailure}s are.  If you want to see whether a class of exceptions is resumable, look at its protocol for the \ct{isResumable} method.  
-For example, in \ct{Error}, \ct{isResumable} answers \ct{false}, whereas in 
-\ct{MessageNotUnderstood}, \ct{isResumable} answers \ct{true}.
+Resumability is controlled by the private \ct{Exception} method \mthind{Exception}{isResumable}. 
+For example:
+\begin{code}{@TEST}
+Exception new isResumable --> trueError new isResumable --> false
+Notification new isResumable --> trueHalt new isResumable --> trueMessageNotUnderstood new isResumable --> true
+\end{code}
 
-In some situations, it will never makes sense to resume an exception, in which case you should signal a non-resumable subclass\,---\,either an existing one or one of your own creation.
+As it turns out, roughly 2/3 of all exceptions are resumable:
+\begin{code}{}
+Exception allSubclasses size --> 103
+(Exception allSubclasses select: [:each | each new isResumable]) size --> 66
+\end{code}
+If you declare a new subclass of exceptions, you should look in its protocol for the \ct{isResumable} method, and override it as appropriate to the semantics of your exception.
+
+In some situations, it will never makes sense to resume an exception.
+In such a case you should signal a non-resumable subclass\,---\,either an existing one or one of your own creation.
 In other situations, it will always be OK to resume an exception, without the handler having to do anything.
 In fact, this gives us another way of characterizing a notification:
 a \ct{Notification} is a resumable \ct{Exception} that can be safely resumed them without first modifying the state of the system.
@@ -1122,17 +1112,19 @@ Recall that in the introduction to this chapter, we said that exception handling
 So, the first rule for using exceptions is \emph{not} to use them for situations that \emph{can reasonably be expected to occur} in a normal execution. 
 
 Of course, if you are writing a library, what is normal depends on the context in which your library is used.
-To make this concrete, let's look at \ct{Dictionary} as an example.
-\lct{\emph{aDictionary} at: \emph{aKey}} will signal an \ct{Error} if \ct{aKey} is not present.
+To make this concrete, let's look at \ct{Dictionary} as an example:
+\lct{\emph{aDictionary} at: \emph{aKey}} will signal an \ct{Error} if \lct{\emph{aKey}} is not present.
 But you should not write a handler for this error!
-If the logic of your application is such that there is some possibility that \ct{aKey} will not be in the dictionary, then you should instead use \lct{at: \emph{aKey} ifAbsent: [\emph{remedial action}]}.
+If the logic of your application is such that there is some possibility that the key will not be in the dictionary, then you should instead use \lct{at: \emph{aKey} ifAbsent: [\emph{remedial action}]}.
 In fact, \ct{Dictionary>>>at:} is implemented using \ct{Dictionary>>>at:ifAbsent:}.
+\lct{\emph{aCollection} detect: \emph{aPredicateBlock}} is similar: if there is any possibility that the predicate might not be satisfied, you should use \lct{\emph{aCollection} detect: \emph{aPredicateBlock} ifNone: [\emph{remedial action}]}. 
 
-When you write methods that signal exceptions, you should consider whether you should also provide an alternative method that takes as an additional argument a remedial block to be executed if the normal action cannot be completed.  
+When you write methods that signal exceptions, you should consider whether you should also provide an alternative method that takes a remedial block as an additional argument, and evaluates it if the normal action cannot be completed.  
 Although this technique can be used in any programming language that support closures, because \st{} uses closures for \emph{all} its control structures, it is a particularly natural one to use in \st{}.
 
 Another way of avoiding exception handling is to test the precondition of the exception before sending the message that may signal it.  For example, in \mthref{objectPerformAll}, we sent a message to an object using \ct{perform:}, and handled the \ct{MessageNotUnderstood} error that might ensue.  A much simpler alternative is to check to see if the message is understood before executing the \ct{perform:}
 
+\needlines{5}
 \begin{method}[simplerObjectPerfromAll]{Object>>performAll: revisited}
 performAll: selectorCollection
 	selectorCollection
