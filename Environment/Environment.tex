@@ -990,6 +990,7 @@ That's all there is to the debugger, but it's not all there is to the \ct{suffix
 The initial bug should have made you realize that if there is no dot in the target string, the \ct{suffix} method will raise an error.  
 This isn't the behaviour that we want, so let's add a second test to specify what should happen in this case.
 
+\needlines{3}
 \begin{method}[testNoSuffix]{A second test for the \ct{suffix} method: the target has no suffix}
 testSuffixNotFound
 	self assert: 'readme' suffix = ''
