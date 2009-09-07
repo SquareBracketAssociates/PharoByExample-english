@@ -15,6 +15,8 @@
 % 2009-07-16 - Lukas commenting
 % 2009-08-12 - Oscar fixed Lukas' comments
 % 2009-08-29 to 09-02 - Andrew brought code up to date with current Pharo, clarified
+% 2009-09-07 - Alexandre revised
+
 
 %=================================================================
 \ifx\wholebook\relax\else
@@ -703,7 +705,12 @@ In \pharo, a method can be marked as deprecated as follows:
 
 \mthindex{Object}{deprecated:}
 \begin{code}{}
-Utilities class>>>convertCRtoLF: fileName	"Convert the given file to LF line endings. Put the result in a file with the extention '.lf'"	self deprecated: 'Use ''FileStream convertCRtoLF: fileName'' instead.' 		on: '10 July 2009' in: #Pharo1.0 .	FileStream convertCRtoLF: fileName
+Utilities class>>>convertCRtoLF: fileName
+	"Convert the given file to LF line endings. Put the result in a file with the extention '.lf'"
+
+	self deprecated: 'Use ''FileStream convertCRtoLF: fileName'' instead.' 
+		on: '10 July 2009' in: #Pharo1.0 .
+	FileStream convertCRtoLF: fileName
 \end{code}
 
 When the message \ct{convertCRtoLF:} is sent, if the \ct{raiseDeprecationWarnings} preference is  \ct{true}, then a pop-up window is displayed with a notification and the programmer may resume the application execution; this is shown in \figref{deprecation}.
@@ -742,11 +749,16 @@ The first preference simply causes a warning message to to be written on the \ct
 We also need to implement some convenience methods in \ct{Object}, like this one:
 \needlines{8}
 \begin{code}{}
-Object>>>deprecated: anExplanationString on: date in: version	(Deprecation		method: thisContext sender method		explanation: anExplanationString		on: date		in: version) signal
+Object>>>deprecated: anExplanationString on: date in: version
+	(Deprecation
+		method: thisContext sender method
+		explanation: anExplanationString
+		on: date
+		in: version) signal
 \end{code}
 
 %=================================================================
-\section{Passing Exceptions on}
+\section{Passing exceptions on}
 
 To illustrate the remaining possibilities for handling exceptions, we will look at how to implement a generalization of the \ct{perform:} method.
 If we send \lct{perform: \emph{aSymbol}} to an object, this will cause the message named \lct{\emph{aSymbol}} to be sent  to that object:
@@ -821,7 +833,7 @@ It might seem that the solution would simply be to signal the new exception in t
 
 A closer look reveals a subtle problem with this solution, however. Our original intent was to replace the occurrence of \ct{MessageNotUnderstood} with \ct{InvalidAction}. This replacement should have the same effect as if \lct{InvalidAction} were signaled at the same place in the program as the original \ct{MessageNotUnderstood} exception. Our solution signals \ct{InvalidAction} in a different location. The difference in locations may well lead to a difference in the applicable handlers.
 
-To solve this problem, resignaling an exception is be a special action handled by the system. For this purpose, the system provides the message \ct{resignalAs:}. The correct implementation of a handler block in our \ct{performAll:} example would be:
+To solve this problem, resignaling an exception is a special action handled by the system. For this purpose, the system provides the message \ct{resignalAs:}. The correct implementation of a handler block in our \ct{performAll:} example would be:
 
 \begin{code}{}
  [:ex |  (ex receiver == self and: [ex message selector == each])
@@ -1087,8 +1099,11 @@ The property of being resumable is largely orthogonal to the location of an exce
 Resumability is controlled by the private \ct{Exception} method \mthind{Exception}{isResumable}. 
 For example:
 \begin{code}{@TEST}
-Exception new isResumable --> trueError new isResumable --> false
-Notification new isResumable --> trueHalt new isResumable --> trueMessageNotUnderstood new isResumable --> true
+Exception new isResumable --> true
+Error new isResumable --> false
+Notification new isResumable --> true
+Halt new isResumable --> true
+MessageNotUnderstood new isResumable --> true
 \end{code}
 
 As it turns out, roughly 2/3 of all exceptions are resumable:
@@ -1103,7 +1118,7 @@ In such a case you should signal a non-resumable subclass\,---\,either an existi
 In other situations, it will always be OK to resume an exception, without the handler having to do anything.
 In fact, this gives us another way of characterizing a notification:
 a \ct{Notification} is a resumable \ct{Exception} that can be safely resumed them without first modifying the state of the system.
-More often, it will be safe to resume an exception only if the state of he system is first modified in some way.
+More often, it will be safe to resume an exception only if the state of the system is first modified in some way.
 So, if you signal a resumable exception, you should be very clear about what you expect an exception handler to do before it resumes the exception.
 
 \section{When not to use Exceptions}
