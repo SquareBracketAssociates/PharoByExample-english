@@ -187,7 +187,10 @@ graphical user interface for which a Glamour renderer is available.
 \subsection{Running example}
 \label{sec:tutorial/getting_started}
 
-In the following tutorial we will be creating a simple Smalltalk class navigator. Such navigators are used in many Smalltalk browsers and usually consist of four panes, which are abstractly depicted in figure~\ref{fig:classnavigator_wireframe}.
+In the following tutorial we will be creating a simple Smalltalk class
+navigator. Such navigators are used in many Smalltalk browsers and
+usually consist of four panes, which are abstractly depicted in
+figure~\ref{fig:classnavigator_wireframe}.
 
 \begin{figure}[htbp]
 \centerline{\includegraphics[width=\linewidth]{classnavigator_wireframe.pdf}}
@@ -195,17 +198,31 @@ In the following tutorial we will be creating a simple Smalltalk class navigator
 \label{fig:classnavigator_wireframe}
 \end{figure}
 
-The class navigator functions as follows: Pane~1 shows a list or a tree of \emph{packages} (containing classes) and \emph{bundles} (containing other bundles or packages) which make up the organizational structure of the environment and are collectively known as \emph{pundles}. When a package is selected, pane~2 shows a list of all classes in the selected package. When a class is selected, pane~3 shows all \emph{method categories} (a construct to group methods) and all methods of the class are shown on pane~4. When a method category is selected in pane~3, only the subset of methods that belong to that category are displayed on pane~4.
+The class navigator functions as follows: Pane~1 shows a list or a
+tree of \emph{packages} (containing classes) which make up the
+organizational structure of the environment. When a package is
+selected, pane~2 shows a list of all classes in the selected
+package. When a class is selected, pane~3 shows all \emph{protocols}
+(a construct to group methods also known as method categories) and all
+methods of the class are shown on pane~4. When a protocol is
+selected in pane~3, only the subset of methods that belong to that
+protocol are displayed on pane~4.
 
 
 % -----------------------------------------------------------------------------
 \subsection{Starting the Browser}
 
-We build the browser iteratively and gradually introduce new constructs of Glamour. To start with, we simply want to open a new browser on this list of packages. The listing below shows how to create a new, simple browser and to open it on a given object. Since this object is a collection, Glamour uses a list for the presentation if nothing else is specified. Figure~\ref{fig:helloworld} shows the browser that is displayed by evaluating the script.
+We build the browser iteratively and gradually introduce new
+constructs of Glamour. To start with, we simply want to open a new
+browser on this list of packages. The listing below shows how to
+create a new, simple browser and to open it on a given object. Since
+this object is a collection, Glamour uses a list for the presentation
+if nothing else is specified. Figure~\ref{fig:helloworld} shows the
+browser that is displayed by evaluating the script.
 
 \begin{code}{}
-browser := TableLayoutBrowser new.
-browser openOn: self model allPundles
+browser := GLMTableLayoutBrowser new.
+browser openOn: Smalltalk organization  categories
 \end{code}
 
 \begin{figure}[htbp]
@@ -214,41 +231,49 @@ browser openOn: self model allPundles
 \label{fig:helloworld}
 \end{figure}
 
-
-
 %-------------------------------------------------------------------------------
 \subsection{Using Transmissions}
 
-In Glamour browsers are composed in terms of \emph{panes} and the \emph{flow of data} between them. The flow is specified by means of \emph{transmissions}. These are triggered when certain changes occur, such as the change of the selection in a list.
+In Glamour browsers are composed in terms of \emph{panes} and the
+\emph{flow of data} between them. The flow is specified by means of
+\emph{transmissions}. These are triggered when certain changes occur,
+such as the change of the selection in a list.
 
-To exemplify this, we add the second pane to display a list of classes for the currently selected package. Pane~1 can contain both \emph{packages} and \emph{bundles}, but only packages contain classes. Therefore, we should only attempt to display the list of classes on pane~2 when the selected item is actually a package. 
+To exemplify this, we add the second pane to display a list of classes
+for the currently selected package.
 
-The browser created by the following listing is displayed in figure~\ref{fig:showclasses}. The lines marked in bold show the additions to the previous listing.
+The browser created by the following listing is displayed in
+figure~\ref{fig:showclasses}. The lines marked in bold show the
+additions to the previous listing\damien{how to mark lines in bold in
+  the code environment?}.
 
 \begin{code}{}
-browser := TableLayoutBrowser new.
-/+browser
-	column: #pundles;
+browser := GLMTableLayoutBrowser new.
+browser
+	column: #packages;
 	column: #classes.
 
-browser showOn: #classes; from: #pundles; using: [
+browser showOn: #classes; from: #packages; using: [
 	browser list
-		display: [ :pundle | pundle containedClasses ];
-		when: [ :pundle | pundle isPackage ]
-].+/
-
-browser openOn: self model allPundles
+		display: [ :package | Smalltalk organization listAtCategoryNamed: package]
+].
+browser openOn: Smalltalk organization  categories
 \end{code}
 
 \begin{figure}[htbp]
 \centerline{\includegraphics[width=\linewidth]{showclasses.pdf}}
-\caption{Two pane browser. When a package is selected in the left pane, the containing classes are shown on the right pane.}
+\caption{Two pane browser. When a package is selected in the left
+  pane, the containing classes are shown on the right pane.}
 \label{fig:showclasses}
 \end{figure}
 
-The listing above shows almost all of the core language constructs of Glamour. Since we want to be able to reference the panes later, we give them the distinct names “pundles” and “classes” and arrange them in columns using the \ct{column:} keyword. Similarly, a \ct{row:} keyword exists with which panes can be organized in rows.
+The listing above shows almost all of the core language constructs of
+Glamour. Since we want to be able to reference the panes later, we
+give them the distinct names ``packages'' and ``classes'' and arrange them
+in columns using the \ct{column:} keyword. Similarly, a \ct{row:}
+keyword exists with which panes can be organized in rows.
 
-The \ct{showOn:} and \ct{from:} keywords create a \emph{transmission}---a directed connection that defines the flow of information from one pane to another. In this case, we create a link from the \emph{pundles} pane to the \emph{classes} pane. The \ct{from:} signifies the \emph{origin} of the transmission and \ct{showOn:} the \emph{destination}. If nothing more specific is stated, Glamour assumes that the origin refers to the \emph{selection} of the specified pane. We show how to specify other aspects of the origin pane and how to use multiple origins below.
+The \ct{showOn:} and \ct{from:} keywords create a \emph{transmission}---a directed connection that defines the flow of information from one pane to another. In this case, we create a link from the \emph{packages} pane to the \emph{classes} pane. The \ct{from:} signifies the \emph{origin} of the transmission and \ct{showOn:} the \emph{destination}. If nothing more specific is stated, Glamour assumes that the origin refers to the \emph{selection} of the specified pane. We show how to specify other aspects of the origin pane and how to use multiple origins below.
 
 Finally, the \ct{using:} specifies what to display on the destination pane when the connection is activated or \emph{transmitted}. In our example, we want to show a list of the classes that are contained in the selected package. The condition in \ct{when:} ensures that we only attempt to show this list when the selected item is a package and not a bundle.
 
@@ -259,48 +284,48 @@ Both \ct{when:} and \ct{display:} simply store the supplied block within the pre
 %-------------------------------------------------------------------------------
 \subsection{Another Presentation}
 
-Up to now, we have been displaying the pundles as a list. The pundles in Smalltalk, howerver, are actually organized in a hierarchy and we have only been looking at the first level of this structure. To mend this, we specify that a tree presentation should be used instead:
+Up to now, we have been displaying the packages as a list. The packages in Smalltalk, howerver, are actually organized in a hierarchy and we have only been looking at the first level of this structure. To mend this, we specify that a tree presentation should be used instead:
 
 \begin{code}{}
 browser := TableLayoutBrowser new.
 browser
-	column: #pundles;
+	column: #packages;
 	column: #classes.	
 
-/+browser showOn: #pundles; using: [
+/+browser showOn: #packages; using: [
 	browser tree
-		children: #childPundles
+		children: #childPackages
 ].+/
 
-browser showOn: #classes; from: #pundles; using: [
+browser showOn: #classes; from: #packages; using: [
 	browser list
-		display: [ :pundle | pundle containedClasses ];
-		when: [ :pundle | pundle isPackage ]
+		display: [ :package | package containedClasses ];
+		when: [ :package | package isPackage ]
 ].
 
-browser openOn: self model /+pundleRoot+/ /-allPundles-/.
+browser openOn: self model /+packageRoot+/ /-allPackages-/.
 \end{code}
 
-Since the registry of pundles is specified in \ct{openOn:} and not on a explicit pane, we use the keyword \ct{showOn:}---without any \ct{from:}---to create a transmission in which we can specify what to display on the \emph{pundles} pane. The tree presentation uses a \ct{children:} argument rather than \ct{display:} that takes a selector or a block which specifies how to retrieve the children of a given item in the tree. In the example, the message \ct{childPundles} will be sent to each pundle expanded in the view to retrieve its children. Since the children of each pundle are now selected by our tree presentation, we have to replace the selector for all pundles with just the root of the pundle hierarchy in the \ct{openOn:} argument on the last line.
+Since the registry of packages is specified in \ct{openOn:} and not on a explicit pane, we use the keyword \ct{showOn:}---without any \ct{from:}---to create a transmission in which we can specify what to display on the \emph{packages} pane. The tree presentation uses a \ct{children:} argument rather than \ct{display:} that takes a selector or a block which specifies how to retrieve the children of a given item in the tree. In the example, the message \ct{childPackages} will be sent to each package expanded in the view to retrieve its children. Since the children of each package are now selected by our tree presentation, we have to replace the selector for all packages with just the root of the package hierarchy in the \ct{openOn:} argument on the last line.
 
 At this point, we can also add pane~3 that shows the method categories as shown in figure~\ref{fig:classnavigator_wireframe}. The listing below introduces no new elements that we have not already discussed:
 
 \begin{code}{}
 browser := TableLayoutBrowser new.
 browser
-	column: #pundles;
+	column: #packages;
 	column: #classes/+;
 	column: #categories+/.	
 
-browser showOn: #pundles; using: [
+browser showOn: #packages; using: [
 	browser tree
-		children: #childPundles
+		children: #childPackages
 ].
 
-browser showOn: #classes; from: #pundles; using: [
+browser showOn: #classes; from: #packages; using: [
 	browser list
-		display: [ :pundle | pundle containedClasses ];
-		when: [ :pundle | pundle isPackage ]
+		display: [ :package | package containedClasses ];
+		when: [ :package | package isPackage ]
 ].
 
 /+browser showOn: #categories; from: #classes; using: [
@@ -308,7 +333,7 @@ browser showOn: #classes; from: #pundles; using: [
 		display: [ :class | class categoryNames ]
 ].+/
 
-browser openOn: self model pundleRoot.
+browser openOn: self model packageRoot.
 \end{code} 
 
 Notice that we have not specified a \ct{when:} condition for the list of methods. By default, the only condition is that an item is in fact selected, i.e. that the display variable argument is not \ct{nil}.
@@ -317,7 +342,7 @@ The browser resulting from the above changes is shown in figure~\ref{fig:treeand
 
 \begin{figure}[htbp]
 \centerline{\includegraphics[width=\linewidth]{treeandcategories.pdf}}
-\caption{	Improved class navigator including a tree to display the pundles and a list of method categories for the selected class.}
+\caption{	Improved class navigator including a tree to display the packages and a list of method categories for the selected class.}
 \label{fig:treeandcategories}
 \end{figure}
 
@@ -333,20 +358,20 @@ This leads to our methods pane depending on the selection of two other panes. Mu
 \begin{code}{}
 browser := TableLayoutBrowser new.
 browser
-	column: #pundles;
+	column: #packages;
 	column: #classes;
 	column: #categories/+;
 	column: #methods+/.
 
-browser showOn: #pundles; using: [
+browser showOn: #packages; using: [
 	browser tree
-		children: #childPundles
+		children: #childPackages
 ].
 
-browser showOn: #classes; from: #pundles; using: [
+browser showOn: #classes; from: #packages; using: [
 	browser list
-		display: [ :pundle | pundle containedClasses ];
-		when: [ :pundle | pundle isPackage ]
+		display: [ :package | package containedClasses ];
+		when: [ :package | package isPackage ]
 ].
 
 browser showOn: #categories; from: #classes; using: [
@@ -362,7 +387,7 @@ browser showOn: #categories; from: #classes; using: [
 		when: [ :class :category | category isNil ]
 ].+/
 
-browser openOn: self model pundleRoot.
+browser openOn: self model packageRoot.
 \end{code}
 
 The listing shows a couple of properties we have not seen
@@ -424,7 +449,7 @@ browser showOn: #navigator; using: [
 	browser show: self codeNavigator
 ].
 
-browser openOn: self model pundleRoot.
+browser openOn: self model packageRoot.
 \end{code}
 
 The listing shows how the browser is used exactly like we would use a list or other type of presentation. In fact, browsers are a type of presentation.
@@ -461,7 +486,7 @@ browser showOn: #navigator; using: [
 		display: [ :class :method | class sourceCodeAt: method ]
 ].+/
 
-browser openOn: self model pundleRoot.
+browser openOn: self model packageRoot.
 \end{code}
 
 We can now view the source code of any selected method and have created a modular browser by reusing the class navigator that we had already written earlier. The composed browser described by the listing is shown in figure~\ref{fig:composed-browser}.
@@ -500,12 +525,12 @@ browser
 		] on: $s+/
 ].
 
-browser openOn: self model pundleRoot.
+browser openOn: self model packageRoot.
 \end{code}
 
 The argument passed to \ct{on:} is a character that specifies the keyboard shortcut that should be used to trigger the action when the corresponding presentation has the focus. Whether the character needs to be combined with a meta-key---such as command, control or alt---is platform specific and need not be specified. The \ct{act:} block provides the corresponding presentation as its first argument which can be used to poll its various properties such as the contained text or the current selection. The other arguments to the block are the incoming origins as defined by \ct{from:} and are equivalent to the arguments of \ct{display:} and \ct{when:}.
 
-Actions can also be displayed as context menus. For this purpose, Glamour provides the messages \ct{act:on:entitled:} and \ct{act:entitled:} where the last argument is a string that should be displayed as the entry in the menu. For example, the following snippet extends the above example to provide a context menu entry to “save” the current method back to the class:
+Actions can also be displayed as context menus. For this purpose, Glamour provides the messages \ct{act:on:entitled:} and \ct{act:entitled:} where the last argument is a string that should be displayed as the entry in the menu. For example, the following snippet extends the above example to provide a context menu entry to ``save'' the current method back to the class:
 \begin{code}{}
 ...
 	act: [ :presentation :class :method |
@@ -520,12 +545,12 @@ Actions can also be displayed as context menus. For this purpose, Glamour provid
 Frequently, developers wish to provide more than one presentation of a specific object. In our code browser for example, we may wish to show the classes not only as a list but as a visualization of their \emph{system complexity} as well. Glamour includes support to display and interact with visualizations created using the \emph{Mondrian visualization engine} \cite{Meye06b}. To add a second presentation, we simply define it in the \ct{using:} block as well:
 
 \begin{code}{}
-browser showOn: #classes; from: #pundles; using: [
+browser showOn: #classes; from: #packages; using: [
 	browser list 
-		display: [ :pundle | pundle containedClasses ];
-		when: [ :pundle | pundle isPackage ]/+.
-	browser mondrian painting: [ :view :pundle |
-		view nodes: pundle item allDefinedClasses.
+		display: [ :package | package containedClasses ];
+		when: [ :package | package isPackage ]/+.
+	browser mondrian painting: [ :view :package |
+		view nodes: package item allDefinedClasses.
 		view edgesFrom: #superclass.
 		view treeLayout.
 	]+/
@@ -845,10 +870,10 @@ features such as block closures and cascades. Take for example the
 following code snippet:
 
 \begin{code}{}
-browser showOn: #classes; from: #pundles; using: [
+browser showOn: #classes; from: #packages; using: [
 	browser list
-		display: [ :pundle | pundle containedClasses ];
-		when: [ :pundle | pundle isPackage ].
+		display: [ :package | package containedClasses ];
+		when: [ :package | package isPackage ].
 	browser mondrian painting: [ ... ]
 ].
 \end{code}
