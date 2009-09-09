@@ -86,11 +86,17 @@ String streamContents: [:str | str nextPutAll: 'hello' asSet] --> 'hleo'
 The browser does not look like the one described in the book. What gives?
 \end{faq}
 \answer
-You are probably using an image in which a different version of the \ind{OmniBrowser} is installed as the default browser.  In this book we assume that the OmniBrowser \emph{Package Browser} is installed as the default.  You can change the default by clicking on the menu bar of the browser.
+You are probably using an image in which a different version of the \ind{OmniBrowser} is installed as the default browser.  In this book we assume that the OmniBrowser \emph{Package Browser} is installed as the default.  You can change the default by clicking on the menu bar of the browser.  Just click on the gray lozenge in the top right corner of the window, select ``Choose new default Browser'', and then pick the O2PackageBrowserAdaptor.  The next browser you open will be the Package Browser.
 
-%:===> CHECK/FIX instructions for switching default browser
-
-%  You can change the default by clicking on the little menu icon in the top-left corner of the browser window, between the ``\textsf{X}'' and the browser label, and selecting ``Choose new default browser'' from the menu that appears. Select \ct{#Browser} to get the plain old browser.
+\begin{figure}[tbh]
+	\centering
+	\subfigure[Choose a new browser]{\figlabel{chooseNewBrowser}
+		\includegraphics[width=0.45\linewidth]{chooseNewBrowser}}\hfill
+	\subfigure[Select the OB Package Browser]{\figlabel{O2PackageBrowserAdaptor}
+		\includegraphics[width=0.45\linewidth]{O2PackageBrowserAdaptor}}\hfill
+	\caption{Changing the default browser}
+\end{figure}
+\seeindex{morphic halo}{Morphic}
 
 \begin{faq}
 How do I search for a class?
