@@ -249,21 +249,21 @@ additions to the previous listing\damien{how to mark lines in bold in
 
 \begin{code}{}
 browser := GLMTableLayoutBrowser new.
-browser
+/+browser
 	column: #packages;
 	column: #classes.
 
 browser showOn: #classes; from: #packages; using: [
 	browser list
 		display: [ :package | Smalltalk organization listAtCategoryNamed: package]
-].
-browser openOn: Smalltalk organization  categories
+].+/
+browser openOn: Smalltalk organization categories
 \end{code}
 
 \begin{figure}[htbp]
 \centerline{\includegraphics[width=\linewidth]{showclasses.pdf}}
 \caption{Two pane browser. When a package is selected in the left
-  pane, the containing classes are shown on the right pane.}
+  pane, the contained classes are shown on the right pane.}
 \label{fig:showclasses}
 \end{figure}
 
@@ -273,18 +273,41 @@ give them the distinct names ``packages'' and ``classes'' and arrange them
 in columns using the \ct{column:} keyword. Similarly, a \ct{row:}
 keyword exists with which panes can be organized in rows.
 
-The \ct{showOn:} and \ct{from:} keywords create a \emph{transmission}---a directed connection that defines the flow of information from one pane to another. In this case, we create a link from the \emph{packages} pane to the \emph{classes} pane. The \ct{from:} signifies the \emph{origin} of the transmission and \ct{showOn:} the \emph{destination}. If nothing more specific is stated, Glamour assumes that the origin refers to the \emph{selection} of the specified pane. We show how to specify other aspects of the origin pane and how to use multiple origins below.
+The \ct{showOn:} and \ct{from:} keywords create a
+\emph{transmission}---a directed connection that defines the flow of
+information from one pane to another. In this case, we create a link
+from the \emph{packages} pane to the \emph{classes} pane. The
+\ct{from:} signifies the \emph{origin} of the transmission and
+\ct{showOn:} the \emph{destination}. If nothing more specific is
+stated, Glamour assumes that the origin refers to the \emph{selection}
+of the specified pane. We show how to specify other aspects of the
+origin pane and how to use multiple origins below.
 
-Finally, the \ct{using:} specifies what to display on the destination pane when the connection is activated or \emph{transmitted}. In our example, we want to show a list of the classes that are contained in the selected package. The condition in \ct{when:} ensures that we only attempt to show this list when the selected item is a package and not a bundle.
+Finally, the \ct{using:} specifies what to display on the destination
+pane when the connection is activated or \emph{transmitted}. In our
+example, we want to show a list of the classes that are contained in
+the selected package.
 
-Both \ct{when:} and \ct{display:} simply store the supplied block within the presentation. The blocks will only be evaluated later, when the presentation should be displayed on-screen. If no explicit display block is specified, Glamour will attempt to display the object in some generic way. In the case of list presentations, this means that the \ct{displayString} message will be sent to the object to retrieve a standard string representation.
+\ct{display:} simply stores the supplied block within the
+presentation. The blocks will only be evaluated later, when the
+presentation should be displayed on-screen. If no explicit display
+block is specified, Glamour will attempt to display the object in some
+generic way. In the case of list presentations, this means that the
+\ct{displayString} message will be sent to the object to retrieve a
+standard string representation.
 
-
+Along with \ct{display:}, it is possible to specify a \ct{when:}
+condition to limit the applicability of the connection. By default,
+the only condition is that an item is in fact selected, \ie{} that the
+display variable argument is not \ct{nil}.
 
 %-------------------------------------------------------------------------------
 \subsection{Another Presentation}
 
-Up to now, we have been displaying the packages as a list. The packages in Smalltalk, howerver, are actually organized in a hierarchy and we have only been looking at the first level of this structure. To mend this, we specify that a tree presentation should be used instead:
+Up to now, we have been displaying the packages as a list. The
+packages in Smalltalk, howerver, are actually organized in a hierarchy
+and we have only been looking at the first level of this structure. To
+mend this, we specify that a tree presentation should be used instead:
 
 \begin{code}{}
 browser := TableLayoutBrowser new.
@@ -294,51 +317,68 @@ browser
 
 /+browser showOn: #packages; using: [
 	browser tree
-		children: #childPackages
+		children: [:package | Smalltalk organization categories
+                                 select: [:subPackage | subPackage beginsWith: package, '-']]
 ].+/
 
 browser showOn: #classes; from: #packages; using: [
 	browser list
-		display: [ :package | package containedClasses ];
-		when: [ :package | package isPackage ]
+		display: [ :package | Smalltalk organization listAtCategoryNamed: package]
 ].
 
-browser openOn: self model /+packageRoot+/ /-allPackages-/.
+browser openOn: /+(Smalltalk organization  categories
+                     collect: [:package | package readStream upTo: $-])
+                           asSet asSortedCollection+/
 \end{code}
 
-Since the registry of packages is specified in \ct{openOn:} and not on a explicit pane, we use the keyword \ct{showOn:}---without any \ct{from:}---to create a transmission in which we can specify what to display on the \emph{packages} pane. The tree presentation uses a \ct{children:} argument rather than \ct{display:} that takes a selector or a block which specifies how to retrieve the children of a given item in the tree. In the example, the message \ct{childPackages} will be sent to each package expanded in the view to retrieve its children. Since the children of each package are now selected by our tree presentation, we have to replace the selector for all packages with just the root of the package hierarchy in the \ct{openOn:} argument on the last line.
+% counter balance the previous $ to avoid a syntax-highlighting bug
+% with Emacs
 
-At this point, we can also add pane~3 that shows the method categories as shown in figure~\ref{fig:classnavigator_wireframe}. The listing below introduces no new elements that we have not already discussed:
+Since the registry of packages is specified in \ct{openOn:} and not on
+a explicit pane, we use the keyword \ct{showOn:}---without any
+\ct{from:}---to create a transmission in which we can specify what to
+display on the \emph{packages} pane. The tree presentation uses a
+\ct{children:} argument rather than \ct{display:} that takes a
+selector or a block which specifies how to retrieve the children of a
+given item in the tree. Since the children of each package are now
+selected by our tree presentation, we have to replace the selector for
+all packages with just the roots of the package hierarchy in the
+\ct{openOn:} argument on the last line.
+
+At this point, we can also add pane~3 that shows the method categories
+as shown in figure~\ref{fig:classnavigator_wireframe}. The listing
+below introduces no new elements that we have not already discussed:
 
 \begin{code}{}
 browser := TableLayoutBrowser new.
 browser
 	column: #packages;
 	column: #classes/+;
-	column: #categories+/.	
+	column: #categories+/.
 
 browser showOn: #packages; using: [
 	browser tree
-		children: #childPackages
+		children: [:package | Smalltalk organization categories
+                                 select: [:subPackage | subPackage beginsWith: package, '-']]
 ].
 
 browser showOn: #classes; from: #packages; using: [
 	browser list
-		display: [ :package | package containedClasses ];
-		when: [ :package | package isPackage ]
+		display: [ :package | Smalltalk organization listAtCategoryNamed: package]
 ].
 
 /+browser showOn: #categories; from: #classes; using: [
-	browser list
-		display: [ :class | class categoryNames ]
+	browser list display: [ :class | class organization categories ].
 ].+/
 
-browser openOn: self model packageRoot.
-\end{code} 
+browser openOn: (Smalltalk organization  categories
+                     collect: [:package | package readStream upTo: $-])
+                           asSet asSortedCollection
+\end{code}
+%$
 
-Notice that we have not specified a \ct{when:} condition for the list of methods. By default, the only condition is that an item is in fact selected, i.e. that the display variable argument is not \ct{nil}.
-
-The browser resulting from the above changes is shown in figure~\ref{fig:treeandcategories}.
+The browser resulting from the above changes is shown in
+figure~\ref{fig:treeandcategories}.
 
 \begin{figure}[htbp]
 \centerline{\includegraphics[width=\linewidth]{treeandcategories.pdf}}
@@ -365,30 +405,34 @@ browser
 
 browser showOn: #packages; using: [
 	browser tree
-		children: #childPackages
+		children: [:package | Smalltalk organization categories
+                                 select: [:subPackage | subPackage beginsWith: package, '-']]
 ].
 
 browser showOn: #classes; from: #packages; using: [
 	browser list
-		display: [ :package | package containedClasses ];
-		when: [ :package | package isPackage ]
+		display: [ :package | Smalltalk organization listAtCategoryNamed: package]
 ].
 
 browser showOn: #categories; from: #classes; using: [
-	browser list
-		display: [ :class | class categoryNames ]
+	browser list display: [ :class | class organization categories ].
 ].
 
 /+browser showOn: #methods; from: #classes; from: #categories; using: [
 	browser list
-		display: [ :class :category | class methodNamesIn: category ].
+		when: [:class :category | class notNil and: [category notNil]].
+		display: [:class :category | (class organization listAtCategoryNamed: category)
+                                                            asSortedCollection];
 	browser list
-		display: [ :class | class allMethodNames ];
-		when: [ :class :category | category isNil ]
+		when: [:class :category | class notNil and: [category isNil]];
+		display: [:class :category | class selectors asSortedCollection].
 ].+/
 
-browser openOn: self model packageRoot.
+browser openOn: (Smalltalk organization  categories
+                     collect: [:package | package readStream upTo: $-])
+                           asSet asSortedCollection
 \end{code}
+%$
 
 The listing shows a couple of properties we have not seen
 before. First, the multiple origins are reflected in the number of
@@ -398,7 +442,10 @@ presentation---Glamour shows all presentations whose conditions match in
 the order that they were defined when the corresponding transmission
 is fired.
 
-In the first presentation, we do not explicitly specify a condition so Glamour uses the default condition that all arguments must not be nil. The second condition matches only when the category is undefined but the class is not. We can therefore omit the category from the display block.
+In the first presentation, the condition matches when all arguments
+are defined (not nil). The second condition matches only when the
+category is undefined but the class is not. We can therefore omit the
+category from the display block.
 
 The completed class navigator is displayed in figure~\ref{fig:codenavigator}.
 
