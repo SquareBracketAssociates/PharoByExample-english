@@ -113,7 +113,6 @@ Color red --> Color red
 \end{code}
 
 Note that some objects such as arrays are self-evaluating or not depending on the objects they contain. For example, an array of booleans is self-evaluating whereas an array of persons is not.
-% In 3.9, a mechanism was introduced (via the message \mthind{Object}{isSelfEvaluating}) to print collections in their self-evaluating forms as much as possible and this is especially true for brace arrays.
 The following example shows that a \subind{Array}{dynamic} array is self-evaluating only if its elements are:
 \begin{code}{@TEST}
 {10@10 . 100@100}          --> {10@10 . 100@100}
