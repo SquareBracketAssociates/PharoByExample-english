@@ -447,7 +447,8 @@ are defined (not nil). The second condition matches only when the
 category is undefined but the class is not. We can therefore omit the
 category from the display block.
 
-The completed class navigator is displayed in figure~\ref{fig:codenavigator}.
+The completed class navigator is displayed in
+figure~\ref{fig:codenavigator}.
 
 \begin{figure}[htbp]
 \centerline{\includegraphics[width=\linewidth]{codenavigator.pdf}}
@@ -467,14 +468,21 @@ browser showOn: #categories; from: #classes; using: [ ... ]
 browser showOn: #categories; from: #classes -> #selection; using: [ ... ]
 \end{code}
 
-Other ports exist and may be used depending on the presentation. For example, the list presentation also populates the \emph{hover} port when the user hovers over an item over a list and a text presentation updates the \emph{text} port to reflect its contents as a user types within it. For a full reference, see the documentation of the presentations being used.
+Other ports exist and may be used depending on the presentation. For
+example, the list presentation also populates the \emph{hover} port
+when the user hovers over an item over a list and a text presentation
+updates the \emph{text} port to reflect its contents as a user types
+within it. For a full reference, see the documentation of the
+presentations being used.
 
 
 %-------------------------------------------------------------------------------
 \subsection{Reusing Browsers}
 \label{sec:tutorial/reusing-browsers}
 
-On of the strengths of Glamour lies in the ability to use browsers in place of primitive presentations such as lists and trees. This allows us to reuse browsers and nest them within each other.
+One of the strengths of Glamour lies in the ability to use browsers in
+place of primitive presentations such as lists and trees. This allows
+us to reuse browsers and nest them within each other.
 
 In the next example we want to create a class \emph{editor} as shown in figure~\ref{fig:classbrowser_wireframe}. Panes 1 through 4 are equivalent with those described in the class \emph{navigator} in section~\ref{sec:tutorial/getting_started}. Pane~5 shows the source code of the method that is currently selected in pane~4.
 
