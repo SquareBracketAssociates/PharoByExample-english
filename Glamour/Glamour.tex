@@ -461,7 +461,13 @@ are displayed. Otherwise, only the methods that belong to that category are show
 %-------------------------------------------------------------------------------
 \subsection{Ports}
 
-When we stated that transmissions connect panes this was not entirely correct. More precisely, transmissions are connected to properties of panes called \emph{ports}. Such ports consist of  a name and a value which accommodates a particular aspect of state of the pane or its contained presentations. If the port is not explicitly specified by the user, Glamour uses the \emph{selection} port by default. As a result, the following two statements are equivalent:
+When we stated that transmissions connect panes this was not entirely
+correct. More precisely, transmissions are connected to properties of
+panes called \emph{ports}. Such ports consist of a name and a value
+which accommodates a particular aspect of state of the pane or its
+contained presentations. If the port is not explicitly specified by
+the user, Glamour uses the \emph{selection} port by default. As a
+result, the following two statements are equivalent:
 
 \begin{code}{}
 browser showOn: #categories; from: #classes; using: [ ... ]
@@ -484,7 +490,11 @@ One of the strengths of Glamour lies in the ability to use browsers in
 place of primitive presentations such as lists and trees. This allows
 us to reuse browsers and nest them within each other.
 
-In the next example we want to create a class \emph{editor} as shown in figure~\ref{fig:classbrowser_wireframe}. Panes 1 through 4 are equivalent with those described in the class \emph{navigator} in section~\ref{sec:tutorial/getting_started}. Pane~5 shows the source code of the method that is currently selected in pane~4.
+In the next example we want to create a class \emph{editor} as shown
+in figure~\ref{fig:classbrowser_wireframe}. Panes 1 through 4 are
+equivalent with those described in the class \emph{navigator} in
+section~\ref{sec:tutorial/getting_started}. Pane~5 shows the source
+code of the method that is currently selected in pane~4.
 
 \begin{figure}[htbp]
 \centerline{\includegraphics[width=\linewidth]{classbrowser_wireframe.pdf}}
@@ -492,7 +502,12 @@ In the next example we want to create a class \emph{editor} as shown in figure~\
 \label{fig:classbrowser_wireframe}
 \end{figure}
 
-As panes 1 through 4 are the same as in the class navigator it would be convenient to reuse the class navigator rather than duplicating its code. To achieve this, we make the class navigator available through a method named \ct{codeNavigator} which returns the browser, rather than opening it. We can then use the browser as shown in the listing for the class editor below.
+As panes 1 through 4 are the same as in the class navigator it would
+be convenient to reuse the class navigator rather than duplicating its
+code. To achieve this, we make the class navigator available through a
+method named \ct{codeNavigator} which returns the browser, rather than
+opening it. We can then use the browser as shown in the listing for
+the class editor below.
 
 \begin{code}{}
 browser := TableLayoutBrowser new.
@@ -501,15 +516,28 @@ browser
 	row: #source.
 
 browser showOn: #navigator; using: [
-	browser show: self codeNavigator
+	browser custom: self codeNavigator
 ].
 
-browser openOn: self model packageRoot.
+browser openOn: (Smalltalk organization  categories
+                     collect: [:package | package readStream upTo: $-])
+                           asSet asSortedCollection
 \end{code}
+% $
 
-The listing shows how the browser is used exactly like we would use a list or other type of presentation. In fact, browsers are a type of presentation.
+The listing shows how the browser is used exactly like we would use a
+list or other type of presentation. In fact, browsers are a type of
+presentation.
 
-When evaluating the code, a new browser is opened that shows the navigator embedded in the top pane and an empty pane at the bottom. No source code will be displayed because we have not yet created any connections between the panes. To get to the source, we need both the name of the selected method as well as the class in which it is defined. Since this information is defined only within the navigator browser, we must first export it to the outside world by using the \ct{sendToOutside:from:} message. For this we append the following lines to \ct{codeNavigator}:
+When evaluating the code, a new browser is opened that shows the
+navigator embedded in the top pane and an empty pane at the bottom. No
+source code will be displayed because we have not yet created any
+connections between the panes. To get to the source, we need both the
+name of the selected method as well as the class in which it is
+defined. Since this information is defined only within the navigator
+browser, we must first export it to the outside world by using the
+\ct{sendToOutside:from:} message. For this we append the following
+lines to \ct{codeNavigator}:
 
 \begin{code}{}
 browser
@@ -517,9 +545,17 @@ browser
 	sendToOutside: #selectedMethod from: #methods -> #selection.
 \end{code}
 
-This will send the selection within classes and methods to the \emph{selectedClass} and \emph{selectedMethod} ports of the containing pane. Alternatively, we could have added these lines to the \ct{self codeNavigator} instruction in the code editor---it makes no difference to Glamour at what point these are added. However, we consider it sensible to clearly define the interface on the side of the code \emph{navigator} rather than within the code editor in order to promote the reuse of this interface as well.
+This will send the selection within classes and methods to the
+\emph{selectedClass} and \emph{selectedMethod} ports of the containing
+pane. Alternatively, we could have added these lines to the \ct{self~codeNavigator} instruction in the code editor---it makes no
+difference to Glamour at what point these are added. However, we
+consider it sensible to clearly define the interface on the side of
+the code \emph{navigator} rather than within the code editor in order
+to promote the reuse of this interface as well.
 
-Note that a message for achieving the reverse---importing a port from the outside pane and storing its value on one of the browser’s panes also exists and is known as \ct{sendTo:fromOutside:}.
+Note that a message for achieving the reverse---importing a port from
+the outside pane and storing its value on one of the browser's panes
+also exists and is known as \ct{sendTo:fromOutside:}.
 
 We extend our code editor example as follows:
 
@@ -530,7 +566,7 @@ browser
 	row: #source.
 
 browser showOn: #navigator; using: [
-	browser show: self codeNavigator
+	browser custom: self codeNavigator
 ].
 
 /+browser
@@ -541,10 +577,16 @@ browser showOn: #navigator; using: [
 		display: [ :class :method | class sourceCodeAt: method ]
 ].+/
 
-browser openOn: self model packageRoot.
+browser openOn: (Smalltalk organization  categories
+                     collect: [:package | package readStream upTo: $-])
+                           asSet asSortedCollection
 \end{code}
+%$
 
-We can now view the source code of any selected method and have created a modular browser by reusing the class navigator that we had already written earlier. The composed browser described by the listing is shown in figure~\ref{fig:composed-browser}.
+We can now view the source code of any selected method and have
+created a modular browser by reusing the class navigator that we had
+already written earlier. The composed browser described by the listing
+is shown in figure~\ref{fig:composed-browser}.
 
 \begin{figure}[htbp]
 \centerline{\includegraphics[width=\linewidth]{classbrowser.pdf}}
@@ -576,43 +618,72 @@ browser
 	browser text
 		display: [ :class :method | class sourceCodeAt: method ];
 		/+act: [ :presentation :class :method |
-			class installCode: presentation text at: method
+			(Smalltalk classNamed: class) compile: presentation text
 		] on: $s+/
 ].
 
-browser openOn: self model packageRoot.
+browser openOn: (Smalltalk organization  categories
+                     collect: [:package | package readStream upTo: $-])
+                           asSet asSortedCollection
 \end{code}
 
-The argument passed to \ct{on:} is a character that specifies the keyboard shortcut that should be used to trigger the action when the corresponding presentation has the focus. Whether the character needs to be combined with a meta-key---such as command, control or alt---is platform specific and need not be specified. The \ct{act:} block provides the corresponding presentation as its first argument which can be used to poll its various properties such as the contained text or the current selection. The other arguments to the block are the incoming origins as defined by \ct{from:} and are equivalent to the arguments of \ct{display:} and \ct{when:}.
+The argument passed to \ct{on:} is a character that specifies the
+keyboard shortcut that should be used to trigger the action when the
+corresponding presentation has the focus. Whether the character needs
+to be combined with a meta-key---such as command, control or alt---is
+platform specific and need not be specified. The \ct{act:} block
+provides the corresponding presentation as its first argument which
+can be used to poll its various properties such as the contained text
+or the current selection. The other arguments to the block are the
+incoming origins as defined by \ct{from:} and are equivalent to the
+arguments of \ct{display:} and \ct{when:}.
 
-Actions can also be displayed as context menus. For this purpose, Glamour provides the messages \ct{act:on:entitled:} and \ct{act:entitled:} where the last argument is a string that should be displayed as the entry in the menu. For example, the following snippet extends the above example to provide a context menu entry to ``save'' the current method back to the class:
+Actions can also be displayed as context menus. For this purpose,
+Glamour provides the messages \ct{act:on:entitled:} and
+\ct{act:entitled:} where the last argument is a string that should be
+displayed as the entry in the menu. For example, the following snippet
+extends the above example to provide a context menu entry to ``save''
+the current method back to the class:
 \begin{code}{}
 ...
 	act: [ :presentation :class :method |
-		class installCode: presentation text at: method
+		(Smalltalk classNamed: class) compile: presentation text
 	] on: $s entitled: 'Save'
 \end{code}
-
+%$
 
 %-------------------------------------------------------------------------------
 \subsection{Multiple Presentations}
 
-Frequently, developers wish to provide more than one presentation of a specific object. In our code browser for example, we may wish to show the classes not only as a list but as a visualization of their \emph{system complexity} as well. Glamour includes support to display and interact with visualizations created using the \emph{Mondrian visualization engine} \cite{Meye06b}. To add a second presentation, we simply define it in the \ct{using:} block as well:
+Frequently, developers wish to provide more than one presentation of a
+specific object. In our code browser for example, we may wish to show
+the classes not only as a list but as a visualization of their
+\emph{system complexity} as well. Glamour includes support to display
+and interact with visualizations created using the \emph{Mondrian
+  visualization engine}. To add a second presentation, we simply
+define it in the \ct{using:} block as well:
 
 \begin{code}{}
 browser showOn: #classes; from: #packages; using: [
-	browser list 
-		display: [ :package | package containedClasses ];
-		when: [ :package | package isPackage ]/+.
-	browser mondrian painting: [ :view :package |
-		view nodes: package item allDefinedClasses.
+	browser list
+        display: [ :package | Smalltalk organization listAtCategoryNamed: package]/+;
+        title: 'Class list'.
+
+	browser mondrian
+             painting: [ :view :package |
+		view nodes: ((Smalltalk organization listAtCategoryNamed: package)
+                                    collect: [:name | Smalltalk classNamed: name]).
 		view edgesFrom: #superclass.
-		view treeLayout.
-	]+/
+		view treeLayout];
+             title: 'Hierarchy'+/
 ]
 \end{code}
 
-Glamour distinguishes multiple presentations on the same pane with the help of a tab layout. The appearance of the Mondrian presentation as embedded in the code editor is shown in figure~\ref{fig:mondrian-presentation}.
+Glamour distinguishes multiple presentations on the same pane with the
+help of a tab layout. The appearance of the Mondrian presentation as
+embedded in the code editor is shown in
+figure~\ref{fig:mondrian-presentation}. The clause \ct{title:} sets
+the name of the tab used to render the presentation.
 
 \begin{figure}[htbp]
 \centerline{\includegraphics[width=\linewidth]{mondrian-presentation.pdf}}
@@ -624,28 +695,39 @@ Glamour distinguishes multiple presentations on the same pane with the help of a
 %-------------------------------------------------------------------------------
 \subsection{Other Browsers}
 
-Up to now in the tutorial, we have only used the \ct{TableLayoutBrowser} which is named after its ability to generate custom layouts using the aforementioned \ct{row:} and \ct{column:} keywords. Additional browsers are provided in the reference implementation or can be written by the user. Browser implementations can be subdivided into two categories: browsers that have \emph{explicit panes} \emph{i.e.}, they are declared explicitly by the user---and browsers that have \emph{implicit panes}. 
+Up to now in the tutorial, we have only used the
+\ct{TableLayoutBrowser} which is named after its ability to generate
+custom layouts using the aforementioned \ct{row:} and \ct{column:}
+keywords. Additional browsers are provided in the reference
+implementation or can be written by the user. Browser implementations
+can be subdivided into two categories: browsers that have
+\emph{explicit panes} \emph{i.e.}, they are declared explicitly by the
+user---and browsers that have \emph{implicit panes}.
 
 The \ct{TableLayoutBrowser} is an example of a browser that uses
 explicit panes. With implicit browsers, we do not declare the panes
 directly but the browser creates them and the connections between them
 internally. An example of such a browser is the \ct{Finder}, which
 implements a \emph{Miller Columns} style browsing, and is named after
-Mac OS~X’s \emph{finder}, which also employs such a mode of
+Mac~OS~X's \emph{finder}, which also employs such a mode of
 operation. Since the panes are created for us, we need not use the
 \ct{from:to:} keywords but can simply specify our presentations:
 
 \begin{code}{}
-browser := Finder new.
+browser := GLMFinder new.
 
 browser list
-	display: [ :class | class subclasses ];
-	whenKindOf: Class.
+  display: [:class | class subclasses];
+  whenKindOf: Class.
 
 browser openOn: Collection
 \end{code}
 
-The listing above creates a browser (shown in figure~\ref{fig:finder}) and opens to show a list of subclasses of \emph{Collection}. Upon selecting an item from the list, the browser expands to the right to show the subclasses of the selected item. This can continue indefinitely as long as something to select remains.
+The listing above creates a browser (shown in figure~\ref{fig:finder})
+and opens to show a list of subclasses of \emph{Collection}. Upon
+selecting an item from the list, the browser expands to the right to
+show the subclasses of the selected item. This can continue
+indefinitely as long as something to select remains.
 
 \begin{figure}[htbp]
 \centerline{\includegraphics[width=\linewidth]{finder.pdf}}
