@@ -622,10 +622,9 @@ The search therefore continues in the superclass, \lct{BorderedMorph}, and so on
 
 \begin{method}[openInWorld]{An inherited method}
 Morph>>>openInWorld
-	"Add this morph to the world.  If in MVC, then provide a Morphic window for it."
-	self couldOpenInMorphic
-		ifTrue: [self openInWorld: self currentWorld]
-		ifFalse: [self openInMVC]
+	"Add this morph to the world."
+
+	self openInWorld: self currentWorld
 \end{method}
 \cmindex{Morph}{openInWorld}
 
@@ -653,11 +652,9 @@ This suggests that \mthref{openInWorld} is equivalent to \mthref{openInWorldRetu
 \needlines{5}
 \begin{method}[openInWorldReturnSelf]{Explicitly returning self}
 Morph>>>openInWorld
-	"Add this morph to the world.  If in MVC,
-	then provide a Morphic window for it."
-	self couldOpenInMorphic
-		ifTrue: [self openInWorld: self currentWorld]
-		ifFalse: [self openInMVC].
+	"Add this morph to the world."
+	
+    self openInWorld: self currentWorld
 	^ self		"Don't do this unless you mean it!"
 \end{method}
 
