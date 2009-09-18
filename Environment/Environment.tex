@@ -666,7 +666,7 @@ You can also type \short{i} for \menu{\textbf{i}nspect it}.)
 
 \begin{figure}[btp]
 	\begin{center}
-		\includegraphics[width=0.5\textwidth]{inspectTimeNow1}
+		\includegraphics[width=\textwidth]{inspectTimeNow1}
 	\end{center}
 	\caption{Inspecting \ct{TimeStamp now}}
 	\figlabel{inspectTimeNow1}
@@ -677,12 +677,14 @@ This is an inspector, and can be thought of as a window onto the internals of a 
 % the \mbox is here because without it, the listings macros puts a space between TimeStamp 
 % and the following word, and that space happens to come out at the start of a line.
 that was created when you evaluated the expression \ct{TimeStamp now}.
-The title bar of the window shows the \emph{class} of the object that is being inspected.
+The title bar of the window shows the printable representation of the object that is being inspected.
 If you select \menu{self} at the top of the left pane, the right pane will show the printstring of the object.
-If you select \menu{all inst vars} in the left pane, the right pane will show a list of the instance variables in the object, and the printstring for each one.  
-The remaining items in the left pane represent the instance variables; this makes it easy to examine them one at a time, and also to change them.
+% If you select \menu{all inst vars} in the left pane, the right pane will show a list of the instance variables in the object, and the printstring for each one.  
+% The remaining items in the left pane represent the instance variables; this makes it easy to examine them one at a time, and also to change them.
+The left pane shows a tree view of the object, with \self at the root.
+Instance variables can be explored by expanding the triangles next to their names.
 
-The horizontal pane at the bottom of the inspector is a small workspace window.  It is useful because in this window, the pseudo-variable \ct{self} is bound to the very object that you are inspecting.  
+The horizontal pane at the bottom of the inspector is a small workspace window.  It is useful because in this window, the pseudo-variable \ct{self} is bound to the object that you have selected in the left pane.
 So, if you \menu{inspect it} on
 \begin{code}{}
 self - TimeStamp today
@@ -690,7 +692,7 @@ self - TimeStamp today
 in the workspace pane, the result will be a \clsind{Duration} object that represents the time interval between midnight today and the instant at which you evaluated  \ct{TimeStamp now} and created the \ct{TimeStamp} object that you are inspecting.
 You can also try evaluating \ct{TimeStamp now - self}; this will tell you how long you have spent reading this section of this book!
 
-In addition to \ct{self}, all the instance variables of the object are in scope in the workspace pane, so you can use them in expressions or even assign to them.  For example, if you evaluate \ct{jdn  := jdn - 1} in the workspace pane, you will see that the value of the \ct{jdn} instance variable will indeed change, and the value of \ct{TimeStamp now - self} will increase by one day.
+In addition to \ct{self}, all the instance variables of the object are in scope in the workspace pane, so you can use them in expressions or even assign to them.  For example, if you select the root object in the left pane and evaluate \ct{jdn  := jdn - 1} in the workspace pane, you will see that the value of the \ct{jdn} instance variable will indeed change, and the value of \ct{TimeStamp now - self} will increase by one day.
 
 % ON: Does not work anymore
 %You can change instance variables directly by selecting them, replacing the old value in the right-hand  pane by a \pharo expression, and accepting.  
@@ -702,6 +704,7 @@ There are special variants of the inspector for Dictionaries, OrderedCollections
 \subsection{The Object Explorer}
 
 The \emph{object explorer} is conceptually similar to the inspector, but presents its information in a different way.
+%:===> IS THE EXPLORER OBSOLETE NOW? <===
 To see the difference, we'll \emph{explore} the same object that we were just inspecting.
 
 \begin{figure}[tbp]
@@ -825,7 +828,7 @@ In \figref{debuggerDetectIfNone} we have selected the \ct{detect:ifNone:} method
 The method body is displayed in the center pane; the blue highlight around the message \ct{value} shows that the current method has sent the message \ct{value} and is waiting for an answer.
 
 The four panes at the bottom of the debugger are really two mini-inspectors (without workspace panes).
-The inspector on the right shows the current object, that is, the object named \self in the center pane.
+The inspector on the left shows the current object, that is, the object named \self in the center pane.
 As you select different stack frames, the identity of \self may change, and so will the contents of the 
 \self{}-inspector.
 If you click on \self in the bottom-left pane, you will see that \self is the interval \ct{(10 to: 1 by -1)}, which is what we expect.
@@ -834,13 +837,15 @@ You can always \menu{cancel (l)} your changes using the menu or \short{\textit{l
 % apb: that lower-case-L is in italics so that it doesn't look like a 1 or a |
 \index{keyboard shortcut!cancel}
 
-The inspector on the left shows the temporary variables of the current context.
+The inspector on the right shows the temporary variables of the current context.
 In \figref{debuggerDetectIfNone},
 \ct{value} was sent to the parameter \ct{exceptionBlock}.
 
-\dothis{To see the current value of this parameter, click on \ct{exceptionBlock} in the context inspector.
-This will tell you that \ct{exceptionBlock} is \ct{[self errorNotFound: ...]}.
-So, it is not surprising that we see the corresponding error message.}
+%\dothis{To see the current value of this parameter, click on \ct{exceptionBlock} in the context inspector.
+%This will tell you that \ct{exceptionBlock} is \ct{[self errorNotFound: ...]}.
+%\on{no longer true!}
+
+As we can see one method lower in the stack trace, the \ct{exceptionBlock} is \ct{[self errorNotFound: ...]}, so, it is not surprising that we see the corresponding error message.
 
 Incidentally, if you want to open a full inspector or explorer on one of the variables shown in the mini-inspectors, just double-click on the name of the variable, or select the name of the variable and \actclick to choose \menu{inspect (i)} or \menu{explore (I)}.
 This can be useful if you want to watch how a variable changes while you execute other code. 
@@ -864,17 +869,18 @@ The blue highlight shows that the next message to be sent will be {\ct{do:}} (se
 \end{figure}
 
 The \button{Into} and \button{Over} buttons give us two different ways to step through the execution.  If you click \button{Over}, \pharo executes the current message-send (in this case the \ct{do:}) in one step, unless there is an error.  
-So \button{Over} will take us to the next message-send in the current method, which is \ct{value}: this is exactly where we started, and not much help. 
+So \button{Over} will take us to the next message-send in the current method, which is \ct{value}\,---\,this is exactly where we started, and not much help. 
 What we need to do is to find out why the \ct{do:} is not finding the character that we are looking for.
 
-\dothis{Click \button{Over}, and then click \button{Restart} to get back to the situation shown in \figref{RestartDetectIfNone}.}
+\dothis{After clicking \button{Over}, click \button{Restart} to get back to the situation shown in \figref{RestartDetectIfNone}.}
 
 \dothis{Click \button{Into}; \pharo will go into the method corresponding to the highlighted message-send, in this case, \ct{Collection>>>do:}.}
 
 However, it turns out that this is not much help either: we can be fairly confident that \ct{Collection>>>do:} is not broken.  The bug is much more likely to be in \emph{what} we asked \pharo to do.
 \button{Through} is the appropriate button to use in this case: we want to ignore the details of the \ct{do:} itself and focus on the execution of the argument block. 
 
-\dothis{Click on \button{Through} a few times.  Select \ct{each} in the context window as you do so.
+\dothis{Select the \ct{detect:ifNone:} method again and \button{Restart} to get back to the state shown in \figref{RestartDetectIfNone}.
+Now click on \button{Through} a few times.  Select \ct{each} in the context window as you do so.
 You should see \ct{each} count down from \ct{10} as the \ct{do:} method executes.}
 
 When \ct{each} is \ct{7} we expect the \ct{ifTrue:} block to be executed, but it isn't.
@@ -886,13 +892,9 @@ To see what is going wrong, go \button{Into} the execution of \ct{value:} as ill
 		{\includegraphics[width=\textwidth]{steppingIntoValue}}
 		{\includegraphics[width=0.7\textwidth]{steppingIntoValue}}
 	\end{center}
-	\caption{The debugger after stepping \lct{Through} the \ct{do:} method several times.
-	\on{FIX: context vars are mixed up}}
+	\caption{The debugger after stepping \lct{Through} the \ct{do:} method several times.}
 	\figlabel{steppingIntoValue}
 \end{figure}
-
-%:===> Debugger context is broken!
-\on{each shows a context and block shows each?! context vars are messed up}
 
 After clicking \button{Into}, we find ourselves in the position shown in \figref{dotIsAString}.
 It looks at first that we have gone \emph{back} to the \ct{suffix} method, but this is because we are now executing the block that \ct{suffix} provided as argument to \ct{detect:}.
@@ -916,20 +918,19 @@ And now you see why they are not equal: the seventh character of \ct{'readme.txt
 
 Now that we see the bug, the fix is obvious: we have to convert \ct{dot} to a character before starting to search for it.  
 
-%\begin{figure}[btp]
-%	\begin{center}
-%	\ifluluelse
-%		{\includegraphics[width=\textwidth]{revertDialog}}
-%		{\includegraphics[width=0.7\textwidth]{revertDialog}}
-%	\end{center}
-%	\caption{Changing the \ct{suffix} method in the debugger: asking for confirmation of the exit from an inner block}
-%	\figlabel{revertDialog}
-%\end{figure}
+\begin{figure}[btp]
+	\begin{center}
+	\ifluluelse
+		{\includegraphics[width=\textwidth]{revertDialog}}
+		{\includegraphics[width=0.7\textwidth]{revertDialog}}
+	\end{center}
+	\caption{Changing the \ct{suffix} method in the debugger: asking for confirmation of the exit from an inner block}
+	\figlabel{revertDialog}
+\end{figure}
 
 \dothis{Change the code right in the debugger so that the assignment reads \ct{dot := FileDirectory dot first} and \menu{accept} the change.}
 
-\on{There is no revert dialog any more?!}
-%Because we are executing code inside a block that is inside a \lct{detect:}, several stack frames will have to be abandoned in order to make this change.  \pharo asks us if this is what we want (see \figref{revertDialog}), and, assuming that we click \menu{yes}, will save (and compile) the new method.
+Because we are executing code inside a block that is inside a \lct{detect:}, several stack frames will have to be abandoned in order to make this change.  \pharo asks us if this is what we want (see \figref{revertDialog}), and, assuming that we click \menu{yes}, will save (and compile) the new method.
 
 %\dothis{Click \button{Restart} and then \button{Proceed}; the debugger window will vanish, and the evaluation of the expression \ct{'readme.txt' suffix} will complete, and print the answer \ct{'.txt'}}
 

@@ -149,7 +149,7 @@ We can see examples of the various syntactic elements in \tabref{syntax}.
 
 \item[Compile-time arrays] are defined by \ct{#( )}, surrounding space-separated literals.
 		Everything within the parentheses must be a compile-time constant.
-		For example,  \ct{#(27 #(true false) abc)} is a \subind{Array}{literal} \subind{literal}{array} of three elements: the integer \ct{27}, the compile-time array containing the two booleans, and the symbol \ct{#abc}.
+		For example,  \ct{#(27 (true false) abc)} is a \subind{Array}{literal} \subind{literal}{array} of three elements: the integer \ct{27}, the compile-time array containing the two booleans, and the symbol \ct{#abc}. (Note that this is the same as \ct{#(27 #(true false) #abc)}.)
 
 \item[Run-time arrays.] Curly braces \ct|{ }| define a (\subind{Array}{dynamic}) array at run-time.
 		Elements are expressions separated by periods.

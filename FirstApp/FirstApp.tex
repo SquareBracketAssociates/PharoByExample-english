@@ -263,7 +263,7 @@ You can test the effect of the code you have written by creating a new \ct{LOCel
 
 \begin{figure}[htbp]
    \centering
-   \includegraphics[scale=0.5]{LOCellInspector} 
+   \includegraphics[width=\textwidth]{LOCellInspector} 
    \caption{The inspector used to examine a LOCell object.\figlabel{LOCellInspector}}
 \end{figure}
 
@@ -278,6 +278,7 @@ The left-hand pane of the \ind{inspector} shows a list of instance variables; if
 The bottom pane of the inspector is a mini-workspace.  It's useful because in this workspace the pseudo-variable \self is bound to the object being inspected. 
 
 \dothis{
+Select the LOCell at the root of the inspector window.
 Type the text \ct{self bounds: (200@200 corner: 250@250)} in the bottom pane and \menu{do it}. If you inspect the \ct{bounds} variable you should now see that its value has changed.
 Now type the text \ct{self openInWorld} in the mini-workspace and \menu{do it}.}
 The cell should appear near the top left-hand corner of the screen, indeed, exactly where its \ct{bounds} say that it should appear.
@@ -648,7 +649,7 @@ You can email this file to your friends, and they can file it into their own \ph
 \seeindex{method!filing out}{file, filing out}
 \index{file!filing out}
 
-\dothis{\Actclick on the \scat{PBE-LightsOut} package and \menu{fileOut} the contents.}
+\dothis{\Actclick on the \scat{PBE-LightsOut} package and \menu{various \go{} file out} the contents.}
 You should now find a file called ``PBE-LightsOut.st'' in the same folder on disk where your image is saved.
 Have a look at this file with a text editor.
 

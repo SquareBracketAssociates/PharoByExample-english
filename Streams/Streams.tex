@@ -33,11 +33,16 @@
 % --------------------------------------------
     \graphicspath{{figures/} {../figures/}}
 	\begin{document}
-	\renewcommand{\nnbb}[2]{} % Disable editorial comments
+	% \renewcommand{\nnbb}[2]{} % Disable editorial comments
 	\sloppy
 \fi
 %=================================================================
 \chapter{Streams}\chalabel{streams}
+
+\ew{Streams are presented as a way to navigate collection. From my point of view, stream are important not to navigate collection, but to produce/consume data:
+(a)	memory constraint. Data can not hold into memory and must be processed in a stream fashion, e.g: encryption
+(b)	blocking IO. A stream is a nice abstraction to deal with, and the stream manages internally data availability, buffering, etc. to simplify the consumption/production of data
+Only few streams have random access capability.}
 
 \clsindexmain{Stream}
 Streams are used to iterate over sequences of elements such as sequenced
@@ -470,7 +475,7 @@ We need methods to go backward and forward:
 History>>goBackward
   self canGoBackward ifFalse: [self error: 'Already on the first element'].
   stream skip: -2.
-  ^ self next.
+  ^ stream next.
 
 History>>goForward
   self canGoForward ifFalse: [self error: 'Already on the last element'].

@@ -774,7 +774,7 @@ DieMorph>>>drawOn: aCanvas
 \end{method}
 
 The second part of this method uses the reflective capacities of \st.
-Drawing the dots of a face is a simple matter of iterating over the collection given by the \ct{faceX} method for that face, sending the \ct{drawDotOn:at:} message for each coordinate. To call the correct \ct{faceX} method, we use the \mthind{Object}{perform:} method which sends a message built from a string, here \ct{('face', dieValue asString) asSymbol}. You will encounter this use of \ct{perform:} quite regularly.
+Drawing the dots of a face is a simple matter of iterating over the collection given by the \ct{faceX} method for that face, sending the \ct{drawDotOn:at:} message for each coordinate. To call the correct \ct{faceX} method, we use the \mthind{Object}{perform:} method which sends a message built from a string, here \lct{('face', dieValue asString) asSymbol}. You will encounter this use of \ct{perform:} quite regularly.
 \index{reflection}
 \begin{method}{Drawing a single dot on a face.}
 DieMorph>>>drawDotOn: aCanvas at: aPoint
@@ -784,6 +784,7 @@ DieMorph>>>drawDotOn: aCanvas at: aPoint
 			extent: self extent / 6)
 		color: Color black
 \end{method}
+\ew{I would not use reflection to call faceX on p.234. A statically filled Dictionary would be more appropriate. Get the point set with "MyDict at: X".}
 
 Since the coordinates are normalized to the $[0{:}1]$ interval, we scale them to the dimensions of our die: \ct{self extent * aPoint}.
 
