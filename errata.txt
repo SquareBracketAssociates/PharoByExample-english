@@ -1,0 +1,81 @@
+---------------------------------------------------------------------------
+Errata to preview version 2009-08-28
+---------------------------------------------------------------------------
+Errors collected by Erwann Wernli (2009-09-14):
+Typos / errors
+p.7 Shift-ctrl not working for me
+- works for me in the latest image
+p.10 Bouncing Morph not working for me – probably due to morph package
+- fixed in the latest image
+p. 14 Screenshot
+- fixed
+p.15 Found confusing how to change the default browser. Screenshot would help.
+- FAQ 5 has a screenshot
+p.18-19: If you type 'eureka'.'EUREKA' in method finder, then you get two warnings before the matches are displayed. There is a another footnote about it, but  it would maybe be better in the body of the text, given that the warnings give the impression that something wrong is happening.
+- seems ok in the latest image
+p.33 inspector screenshot changed.
+- fixed
+p.33. Make sure you select a LOCell at the root of the tree before executing “self bound: (...)”
+- fixed
+p.34 Bounds in inspector don’t change until we refresh with action-click refresh in inspector pane
+- it works fine in the latest image
+p. 37 Caption “automatically categorize” vs “categorize automatically”
+- ?
+p. 43 Game not working for me – probably due to morph package
+- it works now
+p. 43 Specify where is “file out” command (various > fileOut)
+- fixed
+p.43 Specify how to “file in” (action click > file in or install button)
+- hm -- there is a big button labeled "file in" on the browser ...
+p.47 SqueakSource not working for me
+- what's wrong? I am using it.
+p.51 Make clear that #( 27 #(true false) abc ) is equivalent to #(27 #(true false) #abc) or #(27 (true false) abc)
+- fixed
+p.106 Where is the “message names” tool?
+- Hm. It seems to be labeled "Method Search" now in the tools menu. I have reported it.
+p.111 Screeshot: refactoring missing in pharo
+- in the latest image it is fixed
+p.112. AtomMorph missing – probably due to morph package
+- ok now
+p.112 Implementors: if only one match in class browser, opens it directly, no intermediate window.
+- ok
+p.116 “various>view...” accessible with action-click in category pane only (not method pane)
+- no. there is no category pane in the package browser. are you using the right browser?
+for me the method pane allows you to select the source view
+p 117 Screenshot: refactoring missing in pharo
+- it is there in the current image
+p.126 Screenshot.
+- fixed
+p.126 Where is “all inst vars” in the left pane?
+- rewrote the description to fit the new inspector
+p.127 Evalution of  “jdn := jdn -1” works only if root of tree is selected
+- fixed
+p.130-133 Debugger screenshot not the same
+- fixed all debugger screenshots and revised text to be consistent with current version
+p.137 Where is “message names”?
+- strangely this is called "method search" in the tools menu
+p.148 Code snippet should have “TestCase” instead of “Object” ?
+- fixed
+p. 155  Typo: “Both individual TestCases and TestSuite <new line> s understand the same protocol” 
+- fixed
+p. 211 ^ stream next instead of ^ self next ?
+- fixed
+p. 294 Screenshot: pharo has button on the implementor window.  If we show the implementer programmatically, we don't get the same window as if we use "browse > implementors" in class browser.
+- annoying -- will be fixed when we settle on a single browser
+p. 310 MorphObjectOut missing – probably due to morph package
+* to be fixed ...
+p.25x Seaside demo component not found
+- Did you load it from http://www.squeaksource.com/PharoByExample ?
+
+General:
+(1)	Stack is a popular construction. How does it fit in the collection hierarchy?
+(2)	Stream are presented as a way to navigate collection. From my point of view, stream are important not to navigate collection, but to produce/consume data:
+(a)	memory constraint. Data can not hold into memory and must be processed in a stream fashion, e.g: encryption
+(b)	blocking IO. A stream is a nice abstraction to deal with, and the stream manages internally data availability, buffering, etc. to simplify the consumption/production of data
+Only few streams have random access capability.
+(3)  I would not use reflection to call faceX on p.234. A statically filled Dictionary would be more appropriate. Get the point set with “MyDict at: X”.
+- above comments integrated into the various chapters as editorial notes
+
+(4) Implementation of future in Smalltalk according to http://onsmalltalk.com/smalltalk-concurrency-playing-with-futures would be a nice concluding example of Smalltalk power.
+
+---------------------------------------------------------------------------
