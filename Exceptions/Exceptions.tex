@@ -52,7 +52,7 @@ Arithmetic errors may occur (such as division by zero), unexpected situations ma
 The old-fashioned solution is to have operations that fail return a special \emph{error code}; this means that client code must check the return value of each operation, and take special action to handle errors.
 
 Modern programming languages, including \st, instead offer a dedicated exception-handling mechanism that greatly simplifies the way in which exceptional situations are signaled and handled.
-Before the development of the \ind{ANSI \st{}} standard in 1996, several  exception handling mechanisms existed, largely incompatible each other. \pharo's exception handling follows the ANSI standard, with some embellishments; we present it in this chapter from a user perspective.
+Before the development of the \ind{ANSI \st{}} standard in 1996, several  exception handling mechanisms existed, largely incompatible with each other. \pharo's exception handling follows the ANSI standard, with some embellishments; we present it in this chapter from a user perspective.
 
 The basic idea behind exception handling is that 
 client code does not clutter the main logic flow with checks for error codes, but specifies instead an \emph{exception handler} to ``catch'' exceptions.
@@ -261,7 +261,7 @@ Without exceptions, one (bad) way to handle a method that may fail to produce an
 Error codes are also fragile in the face of evolution: if new error codes are added, then all clients must be adapted to take the new codes into account. By using exceptions instead of error codes, the programmer is freed from the task of explicitly checking each return value, and the program logic stays uncluttered.
 Moreover, because exceptions are classes, as new exceptional situations are discovered, they can be subclassed; old clients will still work, although they may provide less-specific exception handling than newer clients.
 
-If \st did provide exception-handling support, then the tiny example we saw in the previous section would be written something like this, using error codes:
+If \st did not provide exception-handling support, then the tiny example we saw in the previous section would be written something like this, using error codes:
 
 \begin{code}{| source destination fromStream toStream contents result success failure |}
 "Pseudo-code -- luckily Smalltalk does not work like this. Without the 
@@ -744,7 +744,7 @@ Deprecation>>>defaultAction
 		[super defaultAction]
 \end{code}
 
-The first preference simply causes a warning message to to be written on the \ct{Transcript}.  The second preference asks for an exception to be signaled, which is accomplished by \super-sending \ct{defaultAction}.
+The first preference simply causes a warning message to be written on the \ct{Transcript}.  The second preference asks for an exception to be signaled, which is accomplished by \super-sending \ct{defaultAction}.
 
 We also need to implement some convenience methods in \ct{Object}, like this one:
 \needlines{8}
@@ -813,7 +813,7 @@ If there is no next handler on the stack, the \ct{defaultAction} message is sent
 
 The goal of this section has been to demonstrate the power of exceptions.
 It should be clear that while you can do almost anything with exceptions, the code
-that results not always easy to understand.   
+that results not is always easy to understand.   
 There is often a simpler way to get he same effect without exceptions; see \mthref{simplerObjectPerfromAll} on page \pageref{mth:simplerObjectPerfromAll} for a better way to implement \ct{performAll:}.
 
 %=================================================================
@@ -833,7 +833,7 @@ It might seem that the solution would simply be to signal the new exception in t
 
 A closer look reveals a subtle problem with this solution, however. Our original intent was to replace the occurrence of \ct{MessageNotUnderstood} with \ct{InvalidAction}. This replacement should have the same effect as if \lct{InvalidAction} were signaled at the same place in the program as the original \ct{MessageNotUnderstood} exception. Our solution signals \ct{InvalidAction} in a different location. The difference in locations may well lead to a difference in the applicable handlers.
 
-To solve this problem, resignaling an exception is a special action handled by the system. For this purpose, the system provides the message \ct{resignalAs:}. The correct implementation of a handler block in our \ct{performAll:} example would be:
+To solve this problem, resignaling an exception is a special action handled by the system. For this purpose, the system provides the message \lct{resignalAs:}. The correct implementation of a handler block in our \ct{performAll:} example would be:
 
 \begin{code}{}
  [:ex |  (ex receiver == self and: [ex message selector == each])
@@ -992,7 +992,7 @@ But it too is trivial, because primitive 199 \emph{always} fails!
 Because the primitive always fails, the \st{} body of \ct{on:do:} is always executed.
 However, the presence of the \ct{<primitive 199>} bytecode marks the executing context in a unique way. 
 
-The source code of the primitive is found in\ct{Interpreter>>>primitiveMarkHandlerMethod} in the \pkgind{VMMaker} \sqsrc project: 
+The source code of the primitive is found in \ct{Interpreter>>>primitiveMarkHandlerMethod} in the \pkgind{VMMaker} \sqsrc project: 
 
 \begin{code}{}
 primitiveMarkHandlerMethod
