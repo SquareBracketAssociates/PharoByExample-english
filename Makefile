@@ -14,7 +14,7 @@ export TEXINPUTS:=./local//:../local//:
 
 EG1 = Preface QuickTour FirstApp Syntax Messages \
 	Model Environment SUnit BasicClasses Collections Streams Morphic \
-	Metaclasses
+	Metaclasses Seaside Reflection
 
 EG2 = Seaside
 
