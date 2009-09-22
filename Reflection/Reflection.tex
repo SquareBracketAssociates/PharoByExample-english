@@ -863,7 +863,7 @@ Method wrappers can be used to perform any kind of suitable behaviour before or 
 %======================================
 \section{Pragmas}
 
-A \emphind{pragma} is an annotation that specifies data about a program, but is not part of the program itself. Pragmas have no direct effect on the operation of the method they annotate.
+A \emphind{pragma} is an annotation that specifies data about a program, but is not involved in the execution of the program. Pragmas have no direct effect on the operation of the method they annotate.
 Pragmas have a number of uses, among them:
 \begin{itemize}
 \item Information for the compiler: \indmain{pragmas} can be used by the compiler to make a method call a primitive function. This function has to be defined by the virtual machine or by an external plugging.
@@ -875,32 +875,40 @@ Pragmas can be applied to a program's method declarations only. A method may dec
 We briefly saw pragmas when we introduced primitives earlier in this chapter. A primitive is nothing more than a pragma declaration. 
 Consider \ct{<primitive: 73>} as contained in \ct{instVarAt:}. The pragma's selector is \ct{primitive:} and its arguments is an immediate literal value, \ct{73}. 
 
-Beside the compiler, Lint is a heavy user of pragmas. Lint is a static code analyzer that flags suspicious, non-portable constructs and code that is likely to contain bugs. It may happen that a method needs to be excluded from Lint analysis. This is the case here:
+The compiler is probably the bigger user of pragmas. SUnit is another tool that makes use of annotations. SUnit is able to estimate the coverage of an application from a test unit. One may want to exclude some methods from the coverage. This is the case of the \ct!documentation! method in \ct!SplitJointTest class!:
 
 \begin{code}{}
-MorphObjectOut>>>doesNotUnderstand: aMessage 
-	"Bring in the object, install, then resend aMessage"
-	"Transcript show: thisContext sender selector; cr."
-	"useful for debugging"
-	
-	! \textbf{<lint: 'Unnecessary "= true"' rationale: 'recursionFlag may be nil' author: 'stephane.ducasse'>}!
-	...
-\end{code}	
+SplitJointTest class>>>documentation	<ignoreForCoverage>	"self showDocumentation"		^ 'This package provides function.... "
+\end{code}
 
-One of the pragmas used by Lint to filter out methods is \ct{lint:rationale:author:}.
+By simply annotating a method with the pragma \ct!<ignoreForCoverage>! one can control the scope of the coverage.
+
+%Beside the compiler, Lint is a heavy user of pragmas. Lint is a static code analyzer that flags suspicious, non-portable constructs and code that is likely to contain bugs. It may happen that a method needs to be excluded from Lint analysis. This is the case here:
+
+%\begin{code}{}
+%MorphObjectOut>>>doesNotUnderstand: aMessage 
+%	"Bring in the object, install, then resend aMessage"
+%	"Transcript show: thisContext sender selector; cr."
+%	"useful for debugging"
+%	
+%	! \textbf{<lint: 'Unnecessary "= true"' rationale: 'recursionFlag may be nil' author: 'stephane.ducasse'>}!
+%	...
+%\end{code}	
+
+%One of the pragmas used by Lint to filter out methods is \ct{lint:rationale:author:}.
 
 As instances of the class \clsind{Pragma}, pragmas are first class objects. A compiled method answers to the message \mthind{CompiledMethod}{pragmas}. This method returns an array of pragmas. 
 
 \begin{code}{@TEST}
-(MorphObjectOut>>>#doesNotUnderstand:) pragmas
-  --> an Array(<lint: 'Unnecessary "= true"' rationale: 'recursionFlag may be nil' author: 'stephane.ducasse'>)
+(SplitJoinTest class >> #showDocumentation) pragmas
+  --> an Array(<ignoreForCoverage>)
 (Float>>#+) pragmas --> an Array(<primitive: 41>)
 \end{code}
 
-Methods defining a particular query may be retrieved from a class.
+Methods defining a particular query may be retrieved from a class. The class side of \ct!SplitJoinTest! contains some methods annotated with \ct!<ignoreForCoverage>!:
 
 \begin{code}{@TEST}
-Pragma allNamed: #lint:rationale:author: in: MorphObjectOut --> an Array(<lint: 'Unnecessary "= true"' rationale: 'recursionFlag may be nil' author: 'stephane.ducasse'>)
+Pragma allNamed: #ignoreForCoverage in: SplitJoinTest class  --> an Array(<ignoreForCoverage> <ignoreForCoverage> <ignoreForCoverage>)
 \end{code}
 
 A variant of \ct{allNamed:in:} may be found on the class side of \ct{Pragma}.
