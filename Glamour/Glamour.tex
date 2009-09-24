@@ -85,6 +85,23 @@ an other column:
   content of the file.
 \end{itemize}
 
+
+ Another well known example is the \emph{Miller Columns} style navigation used by the \emph{Finder} on Apple's \emph{OS X} platform. Here, each column represents a folder or a file and shows the contents of that item. Folders display a list of their content and create a new column to the right if an item is selected. In Glamour, such left-to-right navigation is provided by the \emph{Finder} browser implementation which---unlike its namesake---can be used to navigate over other types of objects as well in the same manner. The original finder and its Glamour correspondent are shown in figure \ref{fig:casestudies/file_finder}, of which the latter is implemented in less than ten lines of code.
+
+\begin{figure}[tbp]
+\begin{center}
+\subfigure[Original]{
+	\includegraphics[scale=0.48]{cs_file_finder_native.png}
+	\label{fig:casestudies/file_finder-osx}
+}
+\subfigure[Glamour]{
+	\includegraphics[scale=0.48]{cs_file_finder_glamour.png}
+}
+\caption{File finder in the original and as a Glamour implementation.}
+\label{fig:casestudies/file_finder}
+\end{center}
+\end{figure}
+
 This may look complex at first. However, Glamour provides a very
 simple way of describing Miller Columns-based browsers. Glamour calls
 that kind of browsers finders, referring to the Apple's Finder found
@@ -97,7 +114,7 @@ to be in a list:
 \begin{code}{}
 browser := GLMFinder new.
 browser list
-	display: [:entry | entry files].
+	display: #files.
 browser openOn: SFile anyRoot.
 \end{code}
 
@@ -116,8 +133,8 @@ customizing the list:
 
 \begin{code}{}
 browser list
-  display: [:entry | entry files];
-  format: [:entry | entry name].
+  display: #files;
+  format: #name.
 \end{code}
 
 This way, the message \ct{name} will be sent to each entry to get its
@@ -133,9 +150,9 @@ contained entries if the selected element is a file:
 
 \begin{code}{}
 browser list
-  display: [:entry | entry files];
-  format: [:entry | entry name];
-  when: [:entry | entry isDirectory].
+  display: #files;
+  format: #tail;
+  when: #isDirectory.
 \end{code}
 
 This works well but the user can't distinguish between a line
@@ -145,11 +162,9 @@ adding a slash at the end of the file name if it is a directory:
 \begin{code}{}
 browser := GLMFinder new.
 browser list
-  display: [:entry | entry files];
-  format: [:entry | entry isDirectory
-                                   ifTrue: [entry name, '/']
-                                   ifFalse: [entry name]];
-  when: [:entry | entry isDirectory].
+  display: #files;
+  format: #tail;
+  when: #isDirectory.
 \end{code}
 
 The last thing we might want to do is to display the contents of the
@@ -158,16 +173,14 @@ entry if it is a file. This gives the following final code:
 \begin{code}{}
 browser := GLMFinder new.
 browser list
-  display: [:entry | entry files];
-  format: [:entry | entry isDirectory
-                                   ifTrue: [entry name, '/']
-                                   ifFalse: [entry name]];
-  when: [:entry | entry isDirectory].
+  display: #files;
+  format: #tail;
+  when: #isDirectory.
 browser text
 	display: [:entry | [entry contents]
                                    on: Exception
                                    do: ['Can''t display the content of this file']];
-	when: [:entry | entry isFile].
+	when: #isFile.
 browser openOn: SFile anyRoot
 \end{code}
 
@@ -738,7 +751,13 @@ indefinitely as long as something to select remains.
 %-------------------------------------------------------------------------------
 \subsection{Tutorial Conclusion}
 
-This concludes our tutorial of Glamour. Please note that this tutorial is not meant to give an exhaustive overview of Glamour, but is merely intended to introduce the reader to the usage and to our intent for our approach. Additionally, we have only focussed on the language in this chapter. In the next chapter \hyperref[chp:design]{\emph{Inside Glamour}}, we describe our model and the concepts behind Glamour in more detail.
+This concludes our tutorial of Glamour. Please note that this tutorial
+is not meant to give an exhaustive overview of Glamour, but is merely
+intended to introduce the reader to the usage and to our intent for
+our approach. Additionally, we have only focussed on the language in
+this chapter. In the next chapter \hyperref[chp:design]{\emph{Inside
+    Glamour}}, we describe our model and the concepts behind Glamour
+in more detail.
 
 
 
@@ -771,31 +790,27 @@ should span in the table layout and the \texttt{format:} argument
 tells the tree presentation how to display each item (we only want the
 ``tail'', or the last part of the file path).
 
-\begin{lstlisting}
-fileExplorer
+\begin{code}{}
+| browser |
+browser := GLMTableLayoutBrowser new.
+browser
+   column: #folders;
+   column: #files span: 2.
+browser showOn: #folders; using: [
+   browser tree
+     title: 'Folders';
+     children: [ :each | each files select: #isDirectory ];
+     format: #tail.
+].
+browser showOn: #files; from: #folders; using: [
+   browser list
+     format: #tail;
+     display: [ :folder | folder files reject: #isDirectory ];
+     when: [ :folder | folder isDirectory ].
+].
 
-	| browser |
-	browser := GLMTableLayoutBrowser new.
-	browser
-		column: #folders;
-		column: #files span: 2. 
-
-	browser showOn: #folders; using: [
-		browser tree 
-			title: 'Folders'; 
-			children: [ :each | each files select: #isDirectory ];
-			format: #tail.
-	].
-
-	browser showOn: #files; from: #folders; using: [
-		browser list 
-			format: #tail; 
-			display: [ :folder | folder files reject: #isDirectory ];
-			when: [ :folder | folder asFilename isDirectory ].
-	].
-
-	^ browser
-\end{lstlisting}
+browser openOn: SFile roots
+\end{code}
 
 
 \begin{figure}[tbp]
@@ -812,63 +827,45 @@ fileExplorer
 \end{center}
 \end{figure}
 
+\subsubsection{Finder navigation.} This kind of navigation has been
+seen in the beginning of this chapter.
 
-\subsubsection{Finder navigation.} Another well known example is the \emph{Miller Columns} style navigation used by the \emph{Finder} on Apple's \emph{OS X} platform. Here, each column represents a folder or a file and shows the contents of that item. Folders display a list of their content and create a new column to the right if an item is selected. In Glamour, such left-to-right navigation is provided by the \emph{Finder} browser implementation which---unlike its namesake---can be used to navigate over other types of objects as well in the same manner. The original finder and its Glamour correspondent are shown in figure \ref{fig:casestudies/file_finder}, of which the latter is implemented in less than ten lines of code.
+\subsubsection{Spatial navigation.} The final type of file system
+navigation we demonstrate is that of the \emph{spatial navigation} in
+which folders are represented as windows, presenting their contents as
+a list or a grid of files and folders. This model was used in older
+versions of Windows and OS X and remains popular even today in file
+managers such as GNOME's \emph{Nautilus} or the ROX File
+Manager. Proponents of this style of file manager stress that the
+objects on screen have a stronger apparent spatial relationship. The
+obvious disadvantage is that navigation quickly clutters the screen
+with a multitude of windows. A possible alternative is to replace the
+current window---or actually its contents---with the folder into which
+the user just descended. This is, in fact, a behavior supported by
+Nautilus as shown in figure \ref{fig:casestudies/file_window}. The
+corresponding Glamour implementation is also quite simple with around
+ten lines of code. \damien{does not work because there is no 'executed'
+  port}
 
-\begin{lstlisting}
-fileFinder
+\begin{code}{}
+| browser |
+browser := GLMTableLayoutBrowser new.
+browser column: #files.
 
-	| browser |
-	browser := Finder new.
-	
+browser showOn: #files; using: [
 	browser list
 		display: #files;
-		format: #tail;
-		when: #isDirectory.
-	browser text
-		display: #yourself;
-		when: [ :file | file isDirectory not ].
+		format: #tail.
+].
 
-	^ browser
-\end{lstlisting}
+browser showOn: #files; from: #files -> #executed; using: [
+	browser list
+		display: #files;
+		format: #tail.
+].
 
-\begin{figure}[tbp]
-\begin{center}
-\subfigure[Original]{
-	\includegraphics[scale=0.48]{cs_file_finder_native.png}
-	\label{fig:casestudies/file_finder-osx}
-}
-\subfigure[Glamour]{
-	\includegraphics[scale=0.48]{cs_file_finder_glamour.png}
-}
-\caption{File finder in the original and as a Glamour implementation.}
-\label{fig:casestudies/file_finder}
-\end{center}
-\end{figure}
-
-\subsubsection{Spatial navigation.} The final type of file system navigation we demonstrate is that of the \emph{spatial navigation} in which folders are represented as windows, presenting their contents as a list or a grid of files and folders. This model was used in older versions of Windows and OS X and remains popular even today in file managers such as GNOME's \emph{Nautilus} or the ROX File Manager. Proponents of this style of file manager stress that the objects on screen have a stronger apparent spatial relationship. The obvious disadvantage is that navigation quickly clutters the screen with a multitude of windows. A possible alternative is to replace the current window---or actually its contents---with the folder into which the user just descended. This is, in fact, a behavior supported by Nautilus as shown in figure \ref{fig:casestudies/file_window}. The corresponding Glamour implementation is also quite simple with around ten lines of code.
-
-\begin{lstlisting}
-fileWindow
-
-	| browser |
-	browser := TableLayoutBrowser new.
-	browser column: #files.
-
-	browser showOn: #files; using: [
-		browser list
-			display: #files;
-			format: #tail.
-	].
-
-	browser showOn: #files; from: #files -> #executed; using: [
-		browser list
-			display: #files;
-			format: #tail.
-	].
-
-	^ browser
-\end{lstlisting}
+browser showOn: SFile anyRoot
+\end{code}
 
 \begin{figure}[tbp]
 \begin{center}
@@ -883,13 +880,6 @@ fileWindow
 \label{fig:casestudies/file_window}
 \end{center}
 \end{figure}
-
-The filesystem navigation browsers provide a full coverage of the aspects under which we wish to validate our model. Considering the challenges we enumerated in chapter~\ref{chp:introduction}, the filesystem navigation is a good example on how our browser can accommodate arbitrary domain models---there is no need to adapt the filesystem model, we simply define the message sends that should be performed on the model.
-
-Furthermore, the example shows how both the navigation flow and the presentation can be independently customized. The three browsers each use a navigation flow which is quite distinct from one another. The folders are shown both as lists and as tree widgets.
-
-Finally, the filesystem navigation shows how Glamour works at the instance-level of the domain model. We are provided not with distinct types for the folders and files but simply with messages such as \texttt{isDirectory} that allow us to infer the type of the object. The browser could also easily be extended with the navigation with other types of files, such as symbolic links and device descriptors in the same manner.
-
 
 \section{Glamour in greater details}
 
