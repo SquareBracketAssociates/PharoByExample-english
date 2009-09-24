@@ -60,19 +60,18 @@ You will also learn how to define a new method, create an object and send it mes
 There are three parts that you will need to download, consisting of four files (see \figref{download}).
 
 \begin{figure}[htb]
-\centerline {\includegraphics[width=\textwidth]{annotatedDownload}}
-\caption{The \pharo download files.\figlabel{download}}
+\centerline {\includegraphics[width=\textwidth]{annotatedDownload-flat}}
+\caption{The \pharo download files for one of the supported platforms.\figlabel{download}}
 \end{figure}
 
 \begin{enumerate}
 
-  \item The \emphind{virtual machine} (VM) is the only part of the system that is different for each operating system and processor.  Pre-compiled virtual machines are available for all the major computing environments.  In \figref{download} we see the VM for the Mac is called \textit{Squeak 4.0.1beta1U.app}.\footnote{\pharo is derived from \squeak 3.9, and presently shares the VM with \squeak.}
+  \item The \emphind{virtual machine} (VM) is the only part of the system that is different for each operating system and processor.  Pre-compiled virtual machines are available for all the major computing environments.  In \figref{download} we see the VM for the selected platform is called \textit{Pharo.exe}.
 
-  \item The \emphind{sources} file contains the source code for all of the parts of \pharo that don't change very frequently. In \figref{download} it is called \emph{SqueakV39.sources}.
+  \item The \emphind{sources} file contains the source code for all of the parts of \pharo that don't change very frequently. In \figref{download} it is called \emph{SqueakV39.sources}.\footnote{\pharo is derived from \squeak 3.9, and presently shares the VM with \squeak.}
 
   \item The current \emph{system \ind{image}} is a snapshot of a running \pharo system, frozen in time.  It consists of two files: an \emph{.}\emphind{image} file, which contains the state of all of the objects in the system (including classes and methods, since they are objects too), and a \emph{.}\emphind{changes} file, which contains a log of all of the changes to the source code of the system.
-In \figref{download}, we see that we are using the \textit{PBE} image and changes files.
-Actually, we will use a slightly different image in this book. \on{fix the figure to use Damien's PBE image}
+In \figref{download}, these files are called \emph{pharo.image} and \emph{pharo.changes}.
 \end{enumerate}
 
 \dothis{Download and install \pharo on your computer.}
