@@ -164,10 +164,10 @@ Since many users will use various modifiers keys (\emph{control}, \emph{ALT}, \e
 \begin{description}
 \item [\click:] this is the most often used mouse button, and is normally equivalent to \click{ing} a single-mouse button without any modifier key; \click{} on the image to bring up the ``World'' menu (\figref{threeButtons:click}).
 \item [\actclick:] this is the next most used button; it is used to bring up a contextual menu, that is, a menu that offers different sets of actions depending on where the mouse is pointing; see \figref{threeButtons:actclick}. If you do not have a multi-button mouse, then normally you will configure the \emph{control} modifier key to \actclick with the mouse button.
-\item [\metaclick:] Finally, you may \metaclick on any object displayed in the image to activate the ``morphic \subind{Morphic}{halo}'', an array of handles that are used to perform operations on the on-screen objects themselves, such as rotating them or resizing them; see \figref{threeButtons:metaclick}.\footnote{Note that the morphic handles are usually inactive in \pharo, but you can turn them on using the Preferences Browser, which we will see shortly.}
+\item [\metaclick:] Finally, you may \metaclick on any object displayed in the image to activate the ``morphic \subind{Morphic}{halo}'', an array of handles that are used to perform operations on the on-screen objects themselves, such as rotating them or resizing them; see \figref{threeButtons:metaclick}.\footnote{Note that the morphic handles are inactive by default in \pharo, but you can turn them on using the Preferences Browser, which we will see shortly.}
 If you let the mouse linger over a handle, a help balloon will explain its function.
-In \pharo, how you meta-click depends on your operating system:
-either you must hold {\sc shift} \emph{ctrl} or {\sc shift} \emph{alt} while clicking.
+In \pharo, how you \metaclick depends on your operating system:
+either you must hold {\sc shift} \emph{ctrl} or {\sc shift} \emph{option} while clicking.
 % \ab{This makes it sound like either {\sc shift} \emph{ctrl} or {\sc shift} \emph{alt} will work.  On my (Mac OS) system, only the latter works.  Perhaps we want to say: In \pharo, how you meta-click depends on your operating system. On Linux \ldots}
 % Typically you will use a third modifier key, such as \emph{command} or \emph{meta} to \metaclick.
 \end{description}
@@ -270,15 +270,15 @@ The object, not you, selects the appropriate method for responding to your messa
 Now select \menu{World\go{}Save and quit}.}
 
 Now if you go to the location where the original image and changes files were, you will find two new files called ``myPharo.\ind{image}'' and ``myPharo.\ind{changes}'' that represent the working state of the \pharo image at the moment before you told \pharo to \menu{Save and quit}.
-If you wish, you can move these two files anywhere that you like on your disk, but if you do so you may (depending on your operating system) need to also move, copy or link to the virtual machine and the \emph{.source} file.
+If you wish, you can move these two files anywhere that you like on your disk, but if you do so you may (depending on your operating system) need to also move, copy or link to the virtual machine and the \emph{sources} file.
 
 \dothis{Start up \pharo from the newly created ``myPharo.image'' file.}
 
-Now you should find yourself in precisely the state you were when you quit \pharo. The \bam is there again and it continues to move from where it was when you left it.
+Now you should find yourself in precisely the state you were when you quit \pharo. The \bam is there again and the atoms continue to bounce from where they were when you quit.
 
 When you start \pharo for the first time, the \pharo \ind{virtual machine} loads the image file that you provide. This file contains a snapshot of a large number of objects, including a vast amount of pre-existing code and a large number of programming tools (all of which are objects). As you work with \pharo, you will send messages to these objects, you will create new objects, and some of these objects will die and their memory will be reclaimed (\ie garbage-collected).
 
-When you quit \pharo, you will normally save a snapshot that contains all of your objects.  If you save normally, you will overwrite your old image file with the new snapshot. Alternatively you may save the image under a new name, as we just did.
+When you quit \pharo, you will normally save a snapshot that contains all of your objects.  If you save normally, you will overwrite your old image file with the new snapshot. Alternatively, you may save the image under a new name, as we just did.
 
 In addition to the \emph{.image} file, there is also a \emph{.changes} file.
 This file contains a log of all the changes to the source code that you have made using the standard tools.
@@ -293,9 +293,9 @@ You might think that the image is the key mechanism for storing and managing sof
 As we shall see very soon, there are much better tools for managing code and sharing software developed by teams.
 Images are very useful, but you should learn to be very cavalier about creating and throwing away images, since tools like Monticello offer much better ways to manage versions and share code amongst developers.
 
-\dothis{Blue-click on the \bam.\footnote{Remember, you may have to set the \ct{halosEnabled} option in the Preferences Browser.}}
-You will see a collection of colored dots that are collectively called the \bam's morphic \subind{Morphic}{halo}.
-Each dot is called a \emph{handle}.
+\dothis{Using the mouse (and the appropriate modifier keys), \metaclick on the \bam.\footnote{Remember, you may have to set the \ct{halosEnabled} option in the Preferences Browser.}}
+You will see a collection of colored circles that are collectively called the \bam's morphic \subind{Morphic}{halo}.
+Each circle is called a \emph{handle}.
 Click in the pink handle containing the cross; the \bam should go away. 
 
 %=================================================================
@@ -305,7 +305,7 @@ Click in the pink handle containing the cross; the \bam should go away.
 \dothis{Close all open windows. Open a \ind{transcript} and a \ind{workspace}. (The transcript can be opened from the \menu{World{\go}Tools ...} submenu.)}
 
 \dothis{Position and resize the transcript and workspace windows so that the workspace just overlaps the transcript.}
-You can resize windows either by dragging one of the corners, or by \metaclick{ing} the window to bring up the morphic handles, and dragging the yellow, bottom right handle.
+You can resize windows either by dragging one of the corners, or by \metaclick{ing} the window to bring up the morphic halo, and dragging the yellow (bottom right) handle.
 
 At any time only one window is active; it is in front and has its border highlighted.
 % The mouse cursor must be in the window in which you wish to type.
