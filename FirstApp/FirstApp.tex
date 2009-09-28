@@ -275,16 +275,17 @@ The left-hand pane of the \ind{inspector} shows a list of instance variables; if
 %\ct{OTNamedVariableNode(Object)>>doesNotUnderstand: #selectedClass}
 %\on{should use the mini workspace instead to send bounds: ?}
 
-The bottom pane of the inspector is a mini-workspace.  It's useful because in this workspace the pseudo-variable \self is bound to the object being inspected. 
+The bottom pane of the inspector is a mini-workspace.  It's useful because in this workspace the pseudo-variable \self is bound to the object selected. 
 
 \dothis{
 Select the LOCell at the root of the inspector window.
-Type the text \ct{self bounds: (200@200 corner: 250@250)} in the bottom pane and \menu{do it}. If you inspect the \ct{bounds} variable you should now see that its value has changed.
+Type the text \ct{self bounds: (200@200 corner: 250@250)} in the bottom pane and \menu{do it}. The \ct{bounds} variable should change in the inspector.
 Now type the text \ct{self openInWorld} in the mini-workspace and \menu{do it}.}
 The cell should appear near the top left-hand corner of the screen, indeed, exactly where its \ct{bounds} say that it should appear.
 \metaclick on the cell to bring up the morphic \subind{Morphic}{halo}.
 Move the cell with the brown (next to top-right) handle and resize it with the yellow (bottom-right) handle.
 Notice how the bounds reported by the inspector also change.
+(You may have to \actclick{} \menu{refresh} to see the new bounds value.)
 
 \begin{figure}[htbp]
 \centering
@@ -641,7 +642,7 @@ Now the game should work properly.
 Now that you have the Lights Out game working, you probably want to save it somewhere so that you can share it with your friends. Of course, you can save your whole \pharo image, and show off your first program by running it, but your friends probably have their own code in their images, and don't want to give that up to use your image.
 What you need is a way of getting source code out of your \pharo image so that other programmers can bring it into theirs.
 
-The simplest way of doing this is by \emph{filing out} the code.  The \actclick menu in the System Categories pane will give you the option to file out the whole of category \scat{PBE-LightsOut}.
+The simplest way of doing this is by \emph{filing out} the code.  The \actclick menu in the Package pane will give you the option to \menu{various \go{} file out} the whole of package \scat{PBE-LightsOut}.
 The resulting file is more or less human readable, but is really intended for computers, not humans.
 You can email this file to your friends, and they can file it into their own \pharo images using the file list browser.
 \seeindex{saving code}{categories}
@@ -653,9 +654,6 @@ You can email this file to your friends, and they can file it into their own \ph
 \dothis{\Actclick on the \scat{PBE-LightsOut} package and \menu{various \go{} file out} the contents.}
 You should now find a file called ``PBE-LightsOut.st'' in the same folder on disk where your image is saved.
 Have a look at this file with a text editor.
-
-%:===> File-out package needs to be implemented! (On DR's to-do list)
-\on{currently this does not work --- DR has said he will do it.}
 
 \dothis{Open a fresh \pharo image and use the File Browser tool (\menu{Tools \ldots {\go} File Browser}) to \menu{file in} the PBE-LightsOut.st fileout.
 Verify that the game now works in the new image.}
@@ -706,7 +704,7 @@ On the left-hand side of the Monticello browser is a list of packages that have 
 \seeindex{*}{package, dirty}
 \seeindex{dirty package}{package, dirty}
 
-What is a package?  For now, you can think of a package as a group of  class and method categories that share the same prefix.  Since we put all of the code for the Lights Out game into the category called \scat{PBE-LightsOut}, we can refer to it as the \ct{PBE-LightsOut} package.
+%What is a package?  For now, you can think of a package as a group of  class and method categories that share the same prefix.  Since we put all of the code for the Lights Out game into the category called \scat{PBE-LightsOut}, we can refer to it as the \ct{PBE-LightsOut} package.
 
 \dothis{Add the \ct{PBE-LightsOut} package to your Monticello browser using the \button{+Package} button and type \ct{PBE-LightsOut}.}
 
