@@ -25,11 +25,12 @@ about testing, see the Wiki link under:
 
 http://www.squeaksource.com/PharoByExample.html
 
-Last update: $Id$
 eof
 # ============================================================
+require 'date'
 def main
   puts Header
+  puts 'Last update: ' + DateTime.now.to_s
   ARGV.each do |arg|
     ch = Chapter.new arg
     puts ch
