@@ -91,10 +91,10 @@ omnibus : OMNIBUS index
 	time ${PDFLATEX} ${OMNIBUS}
 
 examples :
-	./examples.rb ${EG1} > ../pbe1-examples.txt
+	./examples.rb ${EG1} > pbe1-examples.txt
 
 examples2 :
-	./examples.rb ${EG2} > ../pbe2-examples.txt
+	./examples.rb ${EG2} > pbe2-examples.txt
 
 fun :
 	time ./examples.rb $C > $@1.txt

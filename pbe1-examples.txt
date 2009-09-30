@@ -1,0 +1,2298 @@
+
+===== PHARO BY EXAMPLE ==========
+
+Below follow all the (displayed) code examples from the book "Pharo by
+Example".
+
+For details about this book, see: http://pharo-project.org/PharoByExample
+
+The examples are provided, as is, for your convenience, in case you want
+to copy and paste fragments to Pharo to try out.
+
+Note that in almost all cases the annotation "--> ..." suggests that you
+can select and apply <print it> to the previous expression and you should
+obtain as a result the value following the arrow.
+
+Many of these actually serve as test cases for the book. For more details
+about testing, see the Wiki link under:
+
+http://www.squeaksource.com/SBEtesting.html
+
+===== CHAPTER: Preface ==========
+
+-----
+3 + 4 "--> 7    if you select 3+4 and 'print it', you will see 7"
+-----
+
+===== CHAPTER: A quick tour of Pharo ==========
+
+-----
+BouncingAtomsMorph new openInWorld
+-----
+Transcript show: 'hello world'; cr.
+-----
+3 + 4 "--> 7"
+-----
+testShout
+	self assert: ('Don''t panic' shout = 'DON''T PANIC!')
+-----
+shout
+	^ self asUppercase, '!'
+-----
+
+===== CHAPTER: A first application ==========
+
+-----
+SimpleSwitchMorph subclass: #LOCell
+   instanceVariableNames: 'mouseAction'
+   classVariableNames: ''
+   poolDictionaries: ''
+   category: 'PBE-LightsOut'
+-----
+initialize
+   super initialize.
+   self label: ''.
+   self borderWidth: 2.
+   bounds := 0@0 corner: 16@16.
+   offColor := Color paleYellow.
+   onColor := Color paleBlue darker.
+   self useSquareCorners.
+   self turnOff
+-----
+BorderedMorph subclass: #LOGame
+   instanceVariableNames: ''
+   classVariableNames: ''
+   poolDictionaries: ''
+   category: 'PBE-LightsOut'
+-----
+initialize
+   | sampleCell width height n |
+   super initialize.
+   n := self cellsPerSide.
+   sampleCell := LOCell new.
+   width := sampleCell width.
+   height := sampleCell height.
+   self bounds: (5@5 extent: ((width*n) @(height*n)) + (2 * self borderWidth)).
+   cells := Matrix new: n tabulate: [ :i :j | self newCellAt: i at: j ].
+-----
+LOGame>>cellsPerSide
+ "The number of cells along each side of the game"
+   ^ 10
+-----
+LOGame>>newCellAt: i at: j
+ "Create a cell for position (i,j) and add it to my on-screen
+   representation at the appropriate screen position.  Answer the new cell"
+   | c origin |
+   c := LOCell new.
+   origin := self innerBounds origin.
+   self addMorph: c.
+   c position: ((i - 1) * c width) @ ((j - 1) * c height) + origin.
+   c mouseAction: [self toggleNeighboursOfCellAt: i at: j]
+-----
+LOGame>>toggleNeighboursOfCellAt: i at: j
+   (i > 1) ifTrue: [ (cells at: i - 1 at: j ) toggleState].
+   (i < self cellsPerSide) ifTrue: [ (cells at: i + 1 at: j) toggleState].
+   (j > 1) ifTrue: [ (cells at: i  at: j - 1) toggleState].
+   (j < self cellsPerSide) ifTrue: [ (cells at: i at: j + 1) toggleState].
+-----
+LOCell>>mouseAction: aBlock
+   ^ mouseAction := aBlock
+-----
+LOCell>>mouseUp: anEvent
+   mouseAction value
+-----
+LOGame>>newCellAt: i at: j
+ "Create a cell for position (i,j) and add it to my on-screen
+   representation at the appropriate screen position.  Answer the new cell"
+   | c origin |
+   c := LOCell new.
+   origin := self innerBounds origin.
+   self addMorph: c.
+   c position: ((i - 1) * c width) @ ((j - 1) * c height) + origin.
+   c mouseAction: [self toggleNeighboursOfCellAt: i at: j].
+   ^ c
+-----
+MCHttpRepository 
+    location: 'http://www.squeaksource.com/!\emph{YourProject}!'
+    user: '!\emph{yourInitials}!' 
+    password: '!\emph{yourPassword}!'
+-----
+MCHttpRepository 
+    location: 'http://www.squeaksource.com/!\emph{YourProject}!'
+    user: '' 
+    password: ''
+-----
+
+===== CHAPTER: Syntax in a nutshell ==========
+
+-----
+(Smalltalk includes: Class) ifTrue: [ Transcript show: Class superclass ]
+-----
++ - / \ * ~ < > = @ % | & ! ? ,
+-----
+2 raisedTo: 1 + 3 factorial "--> 128"
+-----
+1 + 2 * 3 "--> 9"
+-----
+1 + (2 * 3) "--> 7"
+-----
+Transcript cr.
+Transcript show: 'hello world'.
+Transcript cr
+-----
+Transcript cr;
+    show: 'hello world';
+    cr
+-----
+String>>lineCount
+ "Answer the number of lines represented by the receiver,
+   where every cr adds one line."
+   | cr count |
+   cr := Character cr.
+   count := 1 min: self size.
+   self do:
+      [:c | c == cr ifTrue: [count := count + 1]].
+   ^ count
+-----
+[ 1 + 2 ] value "--> 3"
+-----
+[ :x | 1 + x ] value: 2 "--> 3"
+[ :x :y | x + y ] value: 1 value: 2 "--> 3"
+-----
+[ :x :y | | z | z := x+ y. z ] value: 1 value: 2 "--> 3"
+-----
+| x |
+x := 1.
+[ :y | x + y ] value: 2 "--> 3"
+-----
+(17 * 13 > 220)
+   ifTrue: [ 'bigger' ]
+   ifFalse: [ 'smaller' ] "--> 'bigger'"
+-----
+n := 1.
+[ n < 1000 ] whileTrue: [ n := n*2 ].
+n "--> 1024"
+-----
+n := 1.
+[ n > 1000 ] whileFalse: [ n := n*2 ].
+n "--> 1024"
+-----
+n := 1.
+10 timesRepeat: [ n := n*2 ].
+n "--> 1024"
+-----
+result := String new.
+1 to: 10 do: [:n | result := result, n printString, ' '].
+result "--> '1 2 3 4 5 6 7 8 9 10 '"
+-----
+result := String new.
+(1 to: 10) do: [:n | result := result, n printString, ' '].
+result "--> '1 2 3 4 5 6 7 8 9 10 '"
+-----
+(1 to: 10) collect: [ :each | each * each ] "--> #(1 4 9 16 25 36 49 64 81 100)"
+-----
+'hello there' select: [ :char | char isVowel ] "--> 'eoee'"
+'hello there' reject: [ :char | char isVowel ] "--> 'hll thr'"
+'hello there' detect: [ :char | char isVowel ] "--> $e"
+-----
+(1 to: 10) inject: 0 into: [ :sum :each | sum + each ] "--> 55"
+-----
++ aNumber 
+ "Primitive. Add the receiver to the argument and answer with the result
+  if it is a SmallInteger. Fail if the argument or the result is not a
+  SmallInteger  Essential  No Lookup. See Object documentation whatIsAPrimitive."
+
+  <primitive: 1>
+  ^ super + aNumber
+-----
+
+===== CHAPTER: Understanding message syntax ==========
+
+-----
+89 sin "--> 0.860069405812453"
+3 sqrt "--> 1.732050807568877"
+Float pi "--> 3.141592653589793"
+'blop' size "--> 4"
+true not "--> false"
+Object class "--> Object class  The class of Object is Object class (!)"
+-----
+100@100 "--> 100@100  creates a Point object"
+3 + 4 "--> 7"
+10 - 1 "--> 9"
+4 <= 3 "--> false"
+(4/3) * 3 = 4 "--> true  equality is just a binary message, and Fractions are exact"
+(3/4) == (3/4) "--> false  two equal Fractions are not the same object"
+-----
+1 to: 10 "--> (1 to: 10)  creates an interval"
+Color r: 1 g: 0 b: 0 "--> Color red  creates a new color"
+12 between: 8 and: 15 "--> true"
+
+nums := Array newFrom: (1 to: 5).
+nums at: 1 put: 6.
+nums "--> #(6 2 3 4 5)"
+-----
+1000 factorial / 999 factorial "--> 1000"
+2 raisedTo: 1 + 3 factorial "--> 128"
+-----
+1 + 2 * 3 "--> 9"
+1 + (2 * 3) "--> 7"
+-----
+[:aClass | aClass methodDict keys select: [:aMethod | (aClass>>aMethod) isAbstract ]] value: Boolean "--> an IdentitySet(#or: #| #and: #& #ifTrue: #ifTrue:ifFalse: #ifFalse: #not #ifFalse:ifTrue:)"
+-----
+        aPen color: Color yellow
+(1)                       Color yellow "unary message is sent first"
+ "--> aColor"
+(2)   aPen color: aColor "keyword message is sent next"
+-----
+      aPen go: 100 + 20   
+(1)                 100 + 20 "binary message first"
+ "-->   120"
+(2)  aPen go: 120 "then keyword message"
+-----
+1.5 tan rounded asString = (((1.5 tan) rounded) asString) "--> true    parentheses not needed here"
+3 + 4 factorial "--> 27    (not 5040)"
+(3 + 4) factorial "--> 5040"
+-----
+(FMSound lowMajorScaleOn: FMSound clarinet) play 
+"(1) send the message clarinet to the FMSound class to create a clarinet sound.
+ (2) send this sound to FMSound as argument to the lowMajorScaleOn: keyword message.
+ (3) play the resulting sound."
+-----
+      (65 @ 325 extent: 134 @ 100) center
+(1)   65@325 "binary"
+ "--> aPoint"
+(2)                                134@100 "binary"
+ "--> anotherPoint"
+(3)   aPoint extent: anotherPoint "keyword"
+ "--> aRectangle"
+(4)   aRectangle center "unary"
+ "--> 132@375"
+-----
+3 + 4 * 5 "--> 35    (not 23)  Binary messages sent from left to right"
+3 + (4 * 5) "--> 23"
+1 + 1/3 "--> (2/3)    and not 4/3"
+1 + (1/3) "--> (4/3)"
+1/3 + 2/3 "--> (7/9)    and not 1"
+(1/3) + (2/3) "--> 1"
+-----
+"As there is no priority among binary messages, the leftmost message + is evaluated first even if by the rules of arithmetic the * should be sent first."
+
+      20 + 2 * 5 
+(1)  20 + 2 "--> 22"
+(2)  22       * 5 "--> 110"
+-----
+"The messages surrounded by parentheses are evaluated first therefore * is sent prior to + which produces the correct behaviour."
+
+    20 + (2 * 5) 
+(1)        (2 * 5) "--> 10"
+(2) 20 + 10 "--> 30"
+-----
+aDict
+   at: (rotatingForm 
+          rotateBy: angle	
+          magnify: 2 
+          smoothing: 1)
+   put: 3
+-----
+(x isNil)
+   ifTrue:[...]
+-----
+ord := OrderedCollection new.
+(ord includes: $a)
+   ifTrue:[...]
+-----
+[ x isReady ] whileTrue: [ y doSomething ] "both the receiver and the argument must be blocks"
+4 timesRepeat: [ Beeper beep ] "the argument is evaluated more than once, so must be a block"
+(x isReady) ifTrue: [ y doSomething ] "receiver is evaluated once, so is not a block"
+-----
+| box |
+box := 20@30 corner: 60@90.
+box containsPoint: 40@50 "--> true"
+-----
+Transcript show: 'Pharo is '.
+Transcript show: 'fun '.
+Transcript cr.
+-----
+Transcript        
+   show: 'Pharo is';
+   show: 'fun ';
+   cr
+-----
+Point new setX: 25 setY: 35; isZero "--> false"
+-----
+
+===== CHAPTER: The Smalltalk object model ==========
+
+-----
+3 + 4 "--> 7    send '+ 4' to 3, yielding 7"
+20 factorial "--> 2432902008176640000   send factorial, yielding a big number"
+-----
+1 class "--> SmallInteger"
+20 factorial class "--> LargePositiveInteger"
+'hello' class "--> ByteString"
+#(1 2 3) class "--> Array"
+(4@5) class "--> Point"
+Object new class "--> Object"
+-----
+Point>>dist: aPoint 
+	"Answer the distance between aPoint and the receiver."
+	| dx dy |
+	dx := aPoint x - x.
+	dy :=  aPoint y - y.
+	^ ((dx * dx) + (dy * dy)) sqrt
+-----
+1@1 dist: 4@5 "--> 5.0"
+-----
+aColor := Color blue. "Class side method blue"
+aColor "--> Color blue"
+aColor red "--> 0.0         Instance side accessor method red"
+aColor blue "--> 1.0        Instance side accessor method blue"
+-----
+Object subclass: #Dog
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'PBE-CIV'
+
+Dog class
+	instanceVariableNames: 'count'
+
+Dog subclass: #Hyena
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'PBE-CIV'
+-----
+Dog class>>initialize
+	super initialize.
+	count := 0.
+
+Dog class>>new
+	count := count +1.
+	^ super new
+
+Dog class>>count
+	^ count
+-----
+Dog initialize.
+Hyena initialize.
+Dog count "--> 0"
+Hyena count "--> 0"
+Dog new.
+Dog count "--> 1"
+Dog new.
+Dog count "--> 2"
+Hyena new.
+Hyena count "--> 1"
+-----
+Object subclass: #WebServer
+	instanceVariableNames: 'sessions' 	
+	classVariableNames: '' 	
+	poolDictionaries: '' 	
+	category: 'Web'
+-----
+WebServer class 	
+	instanceVariableNames: 'uniqueInstance'
+-----
+WebServer class>>uniqueInstance
+     uniqueInstance ifNil: [uniqueInstance := self new].
+     ^ uniqueInstance
+-----
+SmallInteger superclass "--> Integer"
+Integer superclass "--> Number"
+Number superclass "--> Magnitude"
+Magnitude superclass "--> Object"
+Object superclass "--> ProtoObject"
+ProtoObject superclass "--> nil"
+-----
+Magnitude>>< aMagnitude 
+	"Answer whether the receiver is less than the argument."
+	^self subclassResponsibility
+-----
+>= aMagnitude 
+	"Answer whether the receiver is greater than or equal to the argument."
+	^(self < aMagnitude) not
+-----
+Character>>< aCharacter 
+	"Answer true if the receiver's value < aCharacter's value."
+	^self asciiValue < aCharacter asciiValue
+-----
+Trait named: #TAuthor
+	uses: { }
+	category: 'PBE-LightsOut'
+-----
+TAuthor>>author
+ "Returns author initials"
+	^ 'on' "oscar nierstrasz"
+-----
+BorderedMorph subclass: #LOGame
+	uses: TAuthor
+	instanceVariableNames: 'cells'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'PBE-LightsOut'
+-----
+LOGame new author "--> 'on'"
+-----
+Object subclass: #Behavior
+	uses: TPureBehavior @ {#basicAddTraitSelector:withMethod:->#addTraitSelector:withMethod:}
+	instanceVariableNames: 'superclass methodDict format'
+	classVariableNames: 'ObsoleteSubclasses'
+	poolDictionaries: ''
+	category: 'Kernel-Classes'
+-----
+3 + 4 "--> 7          send message + with argument 4 to integer  3"
+(1@2) + 4 "--> 5@6    send message + with argument 4 to point (1@2)"
+-----
+anEllipse := EllipseMorph new.
+-----
+anEllipse defaultColor "--> Color yellow"
+-----
+EllipseMorph>>defaultColor
+	"answer the default color/fill style for the receiver"
+	^ Color yellow
+-----
+Morph>>openInWorld
+	"Add this morph to the world."
+
+	self openInWorld: self currentWorld
+-----
+Morph>>openInWorld
+	"Add this morph to the world."
+	
+    self openInWorld: self currentWorld
+	^ self		"Don't do this unless you mean it!"
+-----
+BorderedMorph>>initialize
+	"initialize the state of the receiver"
+	super initialize.
+	self borderInitialize
+-----
+anEllipse constructorString "--> '((EllipseMorph newBounds: (0@0 corner: 50@40) color: Color yellow) setBorderWidth: 1 borderColor: Color black)'"
+-----
+Morph>>constructorString
+	^ String streamContents: [:s | self printConstructorOn: s indent: 0].
+-----
+BorderedMorph>>fullPrintOn: aStream
+	aStream nextPutAll: '('.
+	!\textbf{super fullPrintOn: aStream.}!
+	aStream nextPutAll: ') setBorderWidth: '; print: borderWidth;
+		nextPutAll: ' borderColor: ' , (self colorString: borderColor)
+-----
+Transcript show: 'Pharo is fun and powerful' ; cr
+-----
+Smalltalk at: #Boolean "--> Boolean"
+-----
+Smalltalk at: #Smalltalk "-->a SystemDictionary(lots of globals)}"
+-----
+(Smalltalk at: #Smalltalk) == Smalltalk "--> true"
+-----
+SystemOrganization categoryOfElement: #Magnitude "--> #'Kernel-Numbers'"
+-----
+Object subclass: #Color 	
+        instanceVariableNames: 'rgb cachedDepth cachedBitPattern'
+        classVariableNames: 'Black Blue BlueShift Brown CachedColormaps ColorChart ColorNames ComponentMask ComponentMax Cyan DarkGray Gray GrayToIndexMap Green GreenShift HalfComponentMask HighLightBitmaps IndexedColors LightBlue LightBrown LightCyan LightGray LightGreen LightMagenta LightOrange LightRed LightYellow Magenta MaskingMap Orange PaleBlue PaleBuff PaleGreen PaleMagenta PaleOrange PalePeach PaleRed PaleTan PaleYellow PureBlue PureCyan PureGreen PureMagenta PureRed PureYellow RandomStream Red RedShift TranslucentPatterns Transparent VeryDarkGray VeryLightGray VeryPaleRed VeryVeryDarkGray VeryVeryLightGray White Yellow'
+        poolDictionaries: '' 	
+        category: 'Graphics-Primitives'
+-----
+Color class>>colorNames	
+	ColorNames ifNil: [self initializeNames].
+	^ ColorNames
+-----
+Color class>>initialize	
+	!\ldots!
+	self initializeNames
+-----
+ArrayedCollection subclass: #Text
+        instanceVariableNames: 'string runs' 	
+        classVariableNames: '' 	
+        !\textbf{poolDictionaries: 'TextConstants'}!
+        category: 'Collections-Text'
+-----
+Text>>testCR 	
+      ^ CR == Character cr
+-----
+
+===== CHAPTER: The Pharo programming environment ==========
+
+-----
+SystemNavigation default browseAllCallsOn: #drawOn:
+-----
+SystemNavigation default browseAllCallsOn: #drawOn: from: ImageMorph
+-----
+SystemNavigation default browseAllImplementorsOf: #drawOn:
+-----
+Object>>asSQL
+String>>asSQL
+Date>>asSQL
+-----
+mc := PackageInfo named: 'Monticello'
+-----
+MCHttpRepository
+	location: 'http://squeaksource.com/PharoByExample'
+	user: ''
+	password: ''
+-----
+self - TimeStamp today
+-----
+suffix
+	"assumes that I'm a file name, and answers my suffix, the part after the last dot"
+	| dot dotPosition |
+	dot := FileDirectory dot.
+	dotPosition := (self size to: 1 by: -1) detect: [ :i | (self at: i) = dot ].
+	^ self copyFrom: dotPosition to: self size 
+-----
+testSuffixFound
+	self assert: 'readme.txt' suffix = 'txt'
+-----
+testSuffixFound
+	self assert: 'readme.txt' suffix = 'txt'.
+	self assert: 'read.me.txt' suffix = 'txt'
+-----
+suffix
+	"assumes that I'm a file name, and answers my suffix, the part after the last dot"
+	| dot dotPosition |
+	dot := FileDirectory dot first.
+	dotPosition := (self size to: 1 by: -1) detect: [ :i | (self at: i) = dot ].
+	self halt.
+	^ self copyFrom: dotPosition to: self size 
+-----
+testSuffixNotFound
+	self assert: 'readme' suffix = ''
+-----
+
+===== CHAPTER: SUnit ==========
+
+-----
+TestCase subclass: #ExampleSetTest
+	instanceVariableNames: 'full empty'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'MySetTest'
+-----
+ExampleSetTest>>setUp
+	empty := Set new.
+	full := Set with: 5 with: 6
+-----
+ExampleSetTest>>testIncludes
+	self assert: (full includes: 5).
+	self assert: (full includes: 6)
+-----
+ExampleSetTest>>testOccurrences
+	self assert: (empty occurrencesOf: 0) = 0.
+	self assert: (full occurrencesOf: 5) = 1.
+	full add: 5.
+	self assert: (full occurrencesOf: 5) = 1
+-----
+ExampleSetTest>>testRemove
+	full remove: 5.
+	self assert: (full includes: 6).
+	self deny: (full includes: 5)
+-----
+ExampleSetTest>>testIllegal
+	self should: [empty at: 5] raise: Error.
+	self should: [empty at: 5 put: #zork] raise: Error
+-----
+ExampleSetTest>>testIllegal
+	self should: [empty at: 5] raise: TestResult error.
+	self should: [empty at: 5 put: #zork] raise: TestResult error
+-----
+ExampleSetTest run: #testRemove "--> 1 run, 1 passed, 0 failed, 0 errors"
+-----
+ExampleSetTest suite run "--> 5 run, 5 passed, 0 failed, 0 errors"
+-----
+TestResource subclass: #MyTestResource
+	instanceVariableNames: ''
+
+MyTestCase class>>resources
+	"associate the resource with this class of test cases"
+	^{ MyTestResource }
+-----
+| e |
+e := 42.
+self assert: e = 23
+	description: 'expected 23, got ', e printString
+-----
+#assert:description:
+#deny:description:
+#should:description:
+#shouldnt:description:
+-----
+aCollection do: [ :each | self assert: each even]
+-----
+aCollection do:
+	[:each |
+	self
+		assert: each even
+		description: each printString , ' is not even'
+		resumable: true]
+-----
+TestCase>>run
+	| result |
+	result := TestResult new.
+	self run: result.
+	^result
+-----
+TestCase>>run: aResult
+	aResult runCase: self
+-----
+TestResult>>runCase: aTestCase
+	| testCasePassed |
+	testCasePassed := true.
+	[[aTestCase runCase] 
+			on: self class failure
+			do: 
+				[:signal | 
+				failures add: aTestCase.
+				testCasePassed := false.
+				signal return: false]]
+					on: self class error
+					do:
+						[:signal |
+						errors add: aTestCase.
+						testCasePassed := false.
+						signal return: false].
+	testCasePassed ifTrue: [passed add: aTestCase]
+-----
+TestCase>>runCase
+	[self setUp.
+	self performTest] ensure: [self tearDown]
+-----
+TestCase class>>testSelectors 
+	^self selectors asSortedCollection asOrderedCollection select: [:each | 
+		('test*' match: each) and: [each numArgs isZero]]
+-----
+TestSuite>>run
+	| result |
+ 	result := TestResult new.
+	self resources do: [ :res |
+		res isAvailable ifFalse: [^res signalInitializationError]].
+	[self run: result] ensure: [self resources do: [:each | each reset]].
+	^result
+-----
+TestSuite>>run: aResult
+	self tests do: [:each | 
+		self changed: each.
+		each run: aResult].
+-----
+TestResource class>>isAvailable
+	^self current notNil and: [self current isAvailable]
+-----
+TestResource class>>current
+	current isNil ifTrue: [current := self new].
+	^current
+-----
+TestResource>>initialize
+	super initialize.
+	self setUp
+-----
+
+===== CHAPTER: Basic Classes ==========
+
+-----
+Browser new printString "--> 'a Browser'"
+-----
+Color>>printOn: aStream
+	| name |
+	(name := self name) ifNotNil: 
+		[ ^ aStream
+			nextPutAll: 'Color ';
+			nextPutAll: name ].
+	self storeOn: aStream
+-----
+Color red printString "--> 'Color red'"
+-----
+true "--> true"
+3@4 "--> 3@4"
+$a "--> $a"
+#(1 2 3) "--> #(1 2 3)"
+Color red "--> Color red"
+-----
+{10@10 . 100@100} "--> {10@10 . 100@100}"
+{Browser new . 100@100} "--> an Array(a Browser 100@100)"
+-----
+#(10@10 100@100) "--> #(10 #@ 10 100 #@ 100)"
+-----
+Point>>printOn: aStream 
+ "The receiver prints on aStream in terms of infix notation."
+    x printOn: aStream.
+    aStream nextPut: $@.
+    y printOn: aStream
+-----
+Interval>>printOn: aStream
+    aStream nextPut: $(;
+        print: start;
+        nextPutAll: ' to: ';
+        print: stop.
+    step ~= 1 ifTrue: [aStream nextPutAll: ' by: '; print: step].
+    aStream nextPut: $)
+-----
+1 to: 10 "--> (1 to: 10)    intervals are self-evaluating"
+-----
+Object>>= anObject
+ "Answer whether the receiver and the argument represent the same object.
+    If = is redefined in any subclass, consider also redefining the message hash."
+    ^ self == anObject
+-----
+(1 + 2 i) = (1 + 2 i) "--> true     same value"
+(1 + 2 i) == (1 + 2 i) "--> false    but different objects"
+-----
+Complex>>= anObject
+    anObject isComplex
+        ifTrue: [^ (real = anObject real) & (imaginary = anObject imaginary)]
+        ifFalse: [^ anObject adaptToComplex: self andSend: #=]
+-----
+(1 + 2 i) ~= (1 + 4 i) "--> true"
+-----
+Complex>>hash
+ "Hash is reimplemented because = is implemented."
+    ^ real hash bitXor: imaginary hash.
+-----
+#'lulu' = 'lulu' "--> true"
+'lulu' = #'lulu' "--> true"
+-----
+1 class "--> SmallInteger"
+-----
+1 isMemberOf: SmallInteger "--> true    must be precisely this class"
+1 isMemberOf: Integer "--> false"
+1 isMemberOf: Number "--> false"
+1 isMemberOf: Object "--> false"
+-----
+1 isKindOf: SmallInteger "--> true"
+1 isKindOf: Integer "--> true"
+1 isKindOf: Number "--> true"
+1 isKindOf: Object "--> true"
+1 isKindOf: String "--> false"
+
+1/3 isKindOf: Number "--> true"
+1/3 isKindOf: Integer "--> false"
+-----
+1 respondsTo: #, "--> false"
+-----
+a1 := { { 'harry' } }.
+a1 "--> #(#('harry'))"
+a2 := a1 shallowCopy.
+a2 "--> #(#('harry'))"
+(a1 at: 1) at: 1 put: 'sally'.
+a1 "--> #(#('sally'))"
+a2 "--> #(#('sally'))    the subarray is shared!"
+-----
+a1 := { { 'harry' } } .
+a2 := a1 copyTwoLevel.
+(a1 at: 1) at: 1 put: 'sally'.
+a1 "--> #(#('sally'))"
+a2 "--> #(#('harry'))    fully independent state"
+-----
+a1 := { { { 'harry' } } } .
+a2 := a1 deepCopy.
+(a1 at: 1) at: 1 put: 'sally'.
+a1 "--> #(#('sally'))"
+a2 "--> #(#(#('harry')))"
+-----
+a1 := { 'harry' }.
+a2 := { a1 }.
+a1 at: 1 put: a2.
+a1 deepCopy "--> !\emph{... does not terminate!}!"
+-----
+Object>>copy
+ "Answer another instance just like the receiver.
+    Subclasses typically override postCopy;
+    they typically do not override shallowCopy."
+    ^self shallowCopy postCopy
+-----
+Stack>>pop
+ "Return the first element and remove it from the stack."
+    self assert: [ self isEmpty not ].
+    ^self linkedList removeFirst element
+-----
+1 doIfNotNil: [ :arg | arg printString, ' is not nil' ]
+ "--> !\emph{SmallInteger(Object)>>doIfNotNil: has been deprecated. use ifNotNilDo:}!"
+-----
+Object>>subclassResponsibility
+ "This message sets up a framework for the behavior of the class' subclasses.
+    Announce that the subclass should have implemented this message."
+    self error: 'My subclass should have overridden ', thisContext sender selector printString
+-----
+Number new + 1 "--> !\emph{Error: My subclass should have overridden \#+}!"
+-----
+ProtoObject>>initialize
+ "Subclasses should redefine this method to perform initializations on instance creation"
+-----
+Behavior>>new
+ "Answer a new initialized instance of the receiver (which is a class) with no indexable
+    variables. Fail if the class is indexable."
+    ^ self basicNew initialize
+-----
+Magnitude>> < aMagnitude 
+ "Answer whether the receiver is less than the argument."
+    ^self subclassResponsibility
+
+Magnitude>> > aMagnitude 
+ "Answer whether the receiver is greater than the argument."
+    ^aMagnitude < self
+-----
+1 + 2.5 "--> 3.5             Addition of two numbers"
+3.4 * 5 "--> 17.0           Multiplication of two numbers"
+8 / 2 "--> 4                 Division of two numbers"
+10 - 8.3 "--> 1.7              Subtraction of two numbers"
+12 = 11 "--> false           Equality between two numbers"
+12 ~= 11 "--> true            Test if two numbers are different"
+12 > 9 "--> true            Greater than"
+12 >= 10 "--> true            Greater or equal  than"
+12 < 10 "--> false           Smaller than"
+100@10 "--> 100@10    Point creation"
+-----
+1000 factorial / 999 factorial "--> 1000"
+-----
+Float pi "--> 3.141592653589793"
+Float infinity "--> Infinity"
+Float infinity isInfinite "--> true"
+-----
+6/8 "--> (3/4)"
+(6/8) class "--> Fraction"
+-----
+6/8 * 4 "--> 3"
+-----
+SmallInteger maxVal = ((2 raisedTo: 30) - 1) "--> true"
+SmallInteger minVal = (2 raisedTo: 30) negated "--> true"
+-----
+(SmallInteger maxVal + 1) class "--> LargePositiveInteger"
+(SmallInteger minVal - 1) class "--> LargeNegativeInteger"
+-----
+n := 2.
+3 timesRepeat: [ n := n*n ].
+n "--> 256"
+-----
+$a < $b "--> true"
+-----
+Character space = (Character value: Character space asciiValue) "--> true"
+-----
+Character value: 1 "--> Character home"
+Character value: 2 "--> Character value: 2"
+Character value: 32 "--> Character space"
+Character value: 97 "--> $a"
+-----
+$a asString "--> 'a'"
+$a "--> $a"
+$a printString "--> '$a'"
+-----
+(Character value: 97) == $a "--> true"
+-----
+Character characterTable size "--> 256"
+(Character value: 500) == (Character value: 500) "--> false"
+-----
+'hello world' class "--> ByteString"
+-----
+'hel','lo' == 'hello' "--> false"
+-----
+('hel','lo') asSymbol == #hello "--> true"
+-----
+'hello' at: 2 put: $u; yourself "--> 'hullo'"
+-----
+#hello at: 2 put: $u "--> error!"
+-----
+#hello indexOf: $o "--> 5"
+-----
+'*or*' match: 'zorro' "--> true"
+-----
+(4 factorial > 20) ifTrue: [ 'bigger' ] ifFalse: [ 'smaller' ] "--> 'bigger'"
+-----
+True>>ifTrue: trueAlternativeBlock ifFalse: falseAlternativeBlock 
+    ^trueAlternativeBlock value
+
+False>>ifTrue: trueAlternativeBlock ifFalse: falseAlternativeBlock 
+    ^falseAlternativeBlock value
+-----
+True>>not
+ "Negation--answer false since the receiver is true."
+    ^false
+-----
+(1>2) & (3<4) "--> false    must evaluate both sides"
+(1>2) and: [ 3<4 ] "--> false    only evaluate receiver"
+(1>2) and: [ (1/0) > 0 ] "--> false    argument block is never evaluated, so no exception"
+-----
+
+===== CHAPTER: Collections ==========
+
+-----
+students select: [ :each | each gpa < threshold ]
+-----
+Array with: 1 "--> #(1)"
+Array with: 1 with: 2 "--> #(1 2)"
+Array with: 1 with: 2 with: 3 "--> #(1 2 3)"
+Array with: 1 with: 2 with: 3 with: 4 "--> #(1 2 3 4)"
+Array with: 1 with: 2 with: 3 with: 4 with: 5 "--> #(1 2 3 4 5)"
+Array with: 1 with: 2 with: 3 with: 4 with: 5 with: 6 "--> #(1 2 3 4 5 6)"
+-----
+(1 to: 5) asOrderedCollection addAll: '678'; yourself "--> an OrderedCollection(1 2 3 4 5 $6 $7 $8)"
+-----
+Array withAll: #(7 3 1 3) "--> #(7 3 1 3)"
+OrderedCollection withAll: #(7 3 1 3) "--> an OrderedCollection(7 3 1 3)"
+SortedCollection withAll: #(7 3 1 3) "--> a SortedCollection(1 3 3 7)"
+Set withAll: #(7 3 1 3) "--> a Set(7 1 3)"
+Bag withAll: #(7 3 1 3) "--> a Bag(7 1 3 3)"
+Dictionary withAll: #(7 3 1 3) "--> a Dictionary(1->7 2->3 3->1 4->3 )"
+-----
+Array newFrom: #(7 3 1 3) "--> #(7 3 1 3)"
+OrderedCollection newFrom: #(7 3 1 3) "--> an OrderedCollection(7 3 1 3)"
+SortedCollection newFrom: #(7 3 1 3) "--> a SortedCollection(1 3 3 7)"
+Set newFrom: #(7 3 1 3) "--> a Set(7 1 3)"
+Bag newFrom: #(7 3 1 3) "--> a Bag(7 1 3 3)"
+Dictionary newFrom: {1 -> 7. 2 -> 3. 3 -> 1. 4 -> 3} "--> a Dictionary(1->7 2->3 3->1 4->3 )"
+-----
+anArray := Array new: 5.
+anArray at: 1 put: 4.
+anArray at: 2 put: 3/2.
+anArray at: 3 put: 'ssss'.
+anArray at: 1 "--> 4"
+-----
+Array with: 4 with: 3/2 with: 'lulu' "-->  {4 . (3/2) . 'lulu'}"
+-----
+#(1 'here') size "--> 2"
+-----
+#(1+2) "-->  #(1 #+ 2)"
+-----
+{ 1 + 2 } "--> #(3)"
+{(1/2) asFloat} at: 1 "--> 0.5"
+{10 atRandom . 1/3} at: 2 "--> (1/3)"
+-----
+anArray := #(1 2 3 4 5 6) copy.
+anArray at: 3 "--> 3"
+anArray at: 3 put: 33.
+anArray at: 3 "--> 33"
+-----
+ordCol := OrderedCollection new.
+ordCol add: 'Seaside'; add: 'SqueakSource'; addFirst: 'Monticello'.
+ordCol "--> an OrderedCollection('Monticello' 'Seaside' 'SqueakSource')"
+-----
+ordCol add: 'Monticello'.
+ordCol remove: 'Monticello'.
+ordCol "--> an OrderedCollection('Seaside' 'SqueakSource' 'Monticello')"
+-----
+res := ordCol remove: 'zork' ifAbsent: [33].
+res "--> 33"
+-----
+#(1 2 3) asOrderedCollection "--> an OrderedCollection(1 2 3)"
+'hello' asOrderedCollection "--> an OrderedCollection($h $e $l $l $o)"
+-----
+Interval from: 1 to: 100 "--> (1 to: 100)"
+-----
+(Interval from: 1 to: 100) = (1 to: 100) "--> true"
+-----
+(Interval from: 1 to: 100 by: 0.5) size "--> 199"
+(1 to: 100 by: 0.5) at: 198 "--> 99.5"
+(1/2 to: 54/7 by: 1/3) last "--> (15/2)"
+-----
+colors := Dictionary new.
+colors at: #yellow put: Color yellow.
+colors at: #blue put: Color blue.
+colors at: #red put: Color red.
+colors at: #yellow "--> Color yellow"
+colors keys "--> a Set(#blue #yellow #red)"
+colors values "--> {Color blue . Color yellow . Color red}"
+-----
+colors := Dictionary newFrom: { #blue->Color blue. #red->Color red. #yellow->Color yellow }.
+colors removeKey: #blue.
+colors associations "--> {#yellow->Color yellow . #red->Color red}"
+-----
+a := 'foobar'.
+b := a copy.
+trouble := IdentityDictionary new.
+trouble at: a put: 'a'; at: b put: 'b'.
+trouble at: a "--> 'a'"
+trouble at: b "--> 'b'"
+trouble at: 'foobar' "--> 'a'"
+-----
+Smalltalk keys collect: [ :each | each class ] "--> a Set(ByteSymbol)"
+-----
+s := Set new.
+s add: 4/2; add: 4; add:2.
+s size "--> 2"
+-----
+(Set newFrom: #( 1 2 3 1 4 )) = #(1 2 3 4 3 2 1) asSet "--> true"
+-----
+{ Color black. Color white. (Color red + Color blue + Color green) } asSet size "--> 2"
+-----
+{ Color black. Color white. (Color red + Color blue + Color green) } asBag size "--> 3"
+-----
+(1 to: 6) union: (4 to: 10) "--> a Set(1 2 3 4 5 6 7 8 9 10)"
+'hello' intersection: 'there' "--> 'he'"
+#Smalltalk includes: $k "--> true"
+-----
+SortedCollection new add: 5; add: 2; add: 50; add: -10; yourself. "--> a SortedCollection(-10 2 5 50)"
+-----
+#(5 2 50 -10) asSortedCollection "--> a SortedCollection(-10 2 5 50)"
+-----
+'hello' asSortedCollection "--> a SortedCollection($e $h $l $l $o)"
+-----
+'hello' asSortedCollection asString "--> 'a SortedCollection($e $h $l $l $o)'"
+-----
+'hello' asSortedCollection as: String "--> 'ehllo'"
+String newFrom: ('hello' asSortedCollection) "--> 'ehllo'"
+String withAll: ('hello' asSortedCollection) "--> 'ehllo'"
+-----
+{ 5. 2/-3. 5.21 } asSortedCollection "--> a SortedCollection((-2/3) 5 5.21)"
+-----
+col := SortedCollection sortBlock: [:c1 :c2 | c1 luminance <= c2 luminance].
+col addAll: { Color red. Color yellow. Color white. Color black }.
+col "--> a SortedCollection(Color black Color red Color yellow Color white)"
+-----
+'Hello' "--> 'Hello'"
+String with: $A "--> 'A'"
+String with: $h with: $i with: $! "--> 'hi!'"
+String newFrom: #($h $e $l $l $o) "--> 'hello'"
+-----
+s := 'no', ' ', 'worries'.
+s "-->  'no worries'"
+-----
+s at: 4 put: $h; at: 5 put: $u.
+s "--> 'no hurries'"
+-----
+(1 to: 3) , '45' "--> #(1 2 3 $4 $5)"
+-----
+s replaceAll: $n with: $N.
+s "--> 'No hurries'"
+s replaceFrom: 4 to: 5 with: 'wo'.
+s "--> 'No worries'"
+-----
+s copyReplaceAll: 'rries' with: 'mbats' "--> 'No wombats'"
+-----
+(1 to: 6) copyReplaceAll: (3 to: 5) with: { 'three'. 'etc.' } "--> #(1 2 'three' 'etc.' 6)"
+-----
+'Linux *' match: 'Linux mag' "--> true"
+'GNU/Linux #ag' match: 'GNU/Linux tag' "--> true"
+-----
+'GNU/Linux mag' findString: 'Linux' "--> 5"
+'GNU/Linux mag' findString: 'linux' startingAt: 1 caseSensitive: false "--> 5"
+-----
+'Hello' isEmpty "--> false"
+'Hello' includes: $a "--> false"
+'JOE' anySatisfy: [:c | c isLowercase] "--> false"
+'Joe' anySatisfy: [:c | c isLowercase] "--> true"
+-----
+'{1} is {2}' format: {'Pharo' . 'cool'} "--> 'Pharo is cool'"
+-----
+'look-<t>-here' expandMacros "--> 'look-	-here'"
+'<1s> is <2s>' expandMacrosWith: 'Pharo' with: 'cool' "--> 'Pharo is cool'"
+'<2s> is <1s>' expandMacrosWith: 'Pharo' with: 'cool' "--> 'cool is Pharo'"
+'<1p> or <1s>' expandMacrosWith: 'Pharo' with: 'cool' "--> '''Pharo'' or Pharo'"
+'<1?Quentin:Thibaut> plays' expandMacrosWith: true "--> 'Quentin plays'"
+'<1?Quentin:Thibaut> plays' expandMacrosWith: false "--> 'Thibaut plays'"
+-----
+'XYZ' asLowercase "--> 'xyz'"
+'xyz' asUppercase "--> 'XYZ'"
+'hilaire' capitalized "--> 'Hilaire'"
+'1.54' asNumber "--> 1.54"
+'this sentence is without a doubt far too long' contractTo: 20 "--> 'this sent...too long'"
+-----
+#ASymbol printString "--> '#ASymbol'"
+#ASymbol asString "--> 'ASymbol'"
+-----
+#('bob' 'joe' 'toto') do: [:each | Transcript show: each; cr].
+-----
+#('bob' 'joe' 'toto') doWithIndex: [:each :i | (each = 'joe') ifTrue: [ ^ i ] ] "--> 2"
+-----
+res := ''.
+#('bob' 'joe' 'toto') do: [:e | res := res, e ] separatedBy: [res := res, '.'].
+res "--> 'bob.joe.toto'"
+-----
+String streamContents: [:stream | #('bob' 'joe' 'toto') asStringOn: stream delimiter: '.' ] "--> 'bob.joe.toto'"
+-----
+colors := Dictionary newFrom: { #yellow -> Color yellow. #blue -> Color blue. #red -> Color red }.
+colors keysDo: [:key | Transcript show: key; cr]. "displays the keys"
+colors valuesDo: [:value | Transcript show: value;cr]. "displays the values"
+colors associationsDo: [:value | Transcript show: value;cr]. "displays the associations"
+-----
+double := OrderedCollection new.
+#(1 2 3 4 5 6) do: [:e | double add: 2 * e].
+double "--> an OrderedCollection(2 4 6 8 10 12)"
+-----
+#(1 2 3 4 5 6) collect: [:e | 2 * e] "--> #(2 4 6 8 10 12)"
+-----
+aCol :=  #( 2 -3 4 -35 4 -11).
+result := aCol species new: aCol size.
+1 to: aCol size do: [ :each | result at: each put: (aCol at: each) abs].
+result "--> #(2 3 4 35 4 11)"
+-----
+#( 2 -3 4 -35 4 -11) collect: [:each | each abs ] "--> #(2 3 4 35 4 11)"
+-----
+'abc' collect: [:ea | ea asciiValue ] "error!"
+-----
+'abc' asArray collect: [:ea | ea asciiValue ] "--> #(97 98 99)"
+-----
+(1 to: 5) collect: [ :ea | ea * 2 ] "--> #(2 4 6 8 10)"
+-----
+(2 to: 20) select: [:each | each isPrime] "--> #(2 3 5 7 11 13 17 19)"
+-----
+(2 to: 20) reject: [:each | each isPrime] "--> #(4 6 8 9 10 12 14 15 16 18 20)"
+-----
+'through' detect: [:each | each isVowel] "--> $o"
+-----
+Smalltalk allClasses detect: [:each | '*cobol*' match: each asString] ifNone: [ nil ] "--> nil"
+-----
+(1 to: 100) inject: 0 into: [:sum :each | sum + each ] "--> 5050"
+-----
+factorial := [:n | (1 to: n) inject: 1 into: [:product :each | product * each ] ].
+factorial value: 10 "--> 3628800"
+-----
+Smalltalk allClasses count: [:each | 'Collection*' match: each asString ] "--> 3"
+-----
+colors := {Color white . Color yellow. Color red . Color blue . Color orange}.
+colors includes: Color blue. "--> true"
+-----
+colors anySatisfy: [:c | c red > 0.5] "--> true"
+-----
+collection := OrderedCollection new add: 1; add: 2.
+collection "--> 2"
+-----
+collection := OrderedCollection new.
+collection add: 1; add: 2.
+collection "--> an OrderedCollection(1 2)"
+-----
+collection := OrderedCollection new add: 1; add: 2; yourself "--> an OrderedCollection(1 2)"
+-----
+range := (2 to: 20) asOrderedCollection.
+range do: [:aNumber | aNumber isPrime ifFalse: [ range remove: aNumber ] ].
+range "--> an OrderedCollection(2 3 5 7 9 11 13 15 17 19)"
+-----
+range := (2 to: 20) asOrderedCollection.
+range copy do: [:aNumber | aNumber isPrime ifFalse: [ range remove: aNumber ] ].
+range "--> an OrderedCollection(2 3 5 7 11 13 17 19)"
+-----
+Book>>= aBook
+   self class = aBook class ifFalse: [^ false].
+   ^ title = aBook title and: [ authors = aBook authors]
+
+Book>>hash 
+   ^ title hash xor: authors hash
+-----
+
+===== CHAPTER: Streams ==========
+
+-----
+r := ReadStream on: (1 to: 1000).
+r next. "--> 1"
+r next. "--> 2"
+r atEnd. "--> false"
+-----
+w := WriteStream on: (String new: 5).
+w nextPut: $a.
+w nextPut: $b.
+w contents. "-->  'ab'"
+-----
+w := WriteStream on: (OrderedCollection new: 20).
+w nextPut: 12. "-->  raises an error"
+-----
+StandardFileStream
+  fileNamed: 'test.txt'
+  do: [:str | str
+                nextPutAll: '123';
+                cr;
+                nextPutAll: 'abcd'].
+-----
+stream := ReadStream on: #(1 (a b c) false).
+stream next. "-->   1"
+stream next. "-->   #(#a #b #c)"
+stream next. "-->   false"
+-----
+stream := ReadStream on: 'abcdef'.
+stream next: 0. "-->   ''"
+stream next: 1. "-->   'a'"
+stream next: 3. "-->   'bcd'"
+stream next: 2. "-->   'ef'"
+-----
+stream := ReadStream on: '-143'.
+negative := (stream peek = $-). "look at the first element without reading it"
+negative. "--> true"
+negative ifTrue: [stream next]. "ignores the minus character"
+number := stream upToEnd.
+number. "--> '143'"
+-----
+stream := '-143' readStream.
+(stream peekFor: $-) "--> true"
+stream upToEnd "--> '143'"
+-----
+stream := 'abcde' readStream.
+stream position: 2.
+stream peek "--> $c"
+-----
+stream := 'abcdef' readStream.
+stream next. "--> $a    stream is now positioned just after the a"
+stream skip: 3. "stream is now after the d"
+stream position. "-->   4"
+stream skip: -2. "stream is after the b"
+stream position. "--> 2"
+stream reset.
+stream position. "--> 0"
+stream skipTo: $e. "stream is just after the e now"
+stream next. "--> $f"
+stream contents. "--> 'abcdef'"
+-----
+stream1 := #(1 4 9 11 12 13) readStream.
+stream2 := #(1 2 3 4 5 10 13 14 15) readStream.
+
+"The variable result will contain the sorted collection."
+result := OrderedCollection new.
+[stream1 atEnd not & stream2 atEnd not]
+  whileTrue: [stream1 peek < stream2 peek
+ "Remove the smallest element from either stream and add it to the result."
+    ifTrue: [result add: stream1 next]
+    ifFalse: [result add: stream2 next]].
+
+"One of the two streams might not be at its end. Copy whatever remains."
+result
+  addAll: stream1 upToEnd;
+  addAll: stream2 upToEnd.
+
+result. "-->   an OrderedCollection(1 1 2 3 4 4 5 9 10 11 12 13 13 14 15)"
+-----
+stream := String new writeStream.
+stream
+  nextPutAll: 'This Smalltalk image contains: ';
+  print: Smalltalk allClasses size;
+  nextPutAll: ' classes.';
+  cr;
+  nextPutAll: 'This is really a lot.'.
+
+stream contents. "--> 'This Smalltalk image contains: 2322 classes."
+This is really a lot.'
+-----
+string := String streamContents:
+		[:stream |
+			stream
+                 print: #(1 2 3);
+                 space;
+                 nextPutAll: 'size';
+                 space;
+                 nextPut: $=;
+                 space;
+                 print: 3.	].
+string. "-->   '#(1 2 3) size = 3'"
+-----
+[| temp |
+  temp := String new.
+  (1 to: 100000)
+    do: [:i | temp := temp, i asString, ' ']] timeToRun "--> 115176 (milliseconds)"
+
+[| temp |
+  temp := WriteStream on: String new.
+  (1 to: 100000)
+    do: [:i | temp nextPutAll: i asString; space].
+  temp contents] timeToRun "--> 1262 (milliseconds)"
+-----
+String streamContents: [ :tempStream |
+  (1 to: 100000)
+       do: [:i | tempStream nextPutAll: i asString; space]] 
+-----
+Object subclass: #History
+  instanceVariableNames: 'stream'
+  classVariableNames: ''
+  poolDictionaries: ''
+  category: 'PBE-Streams'
+
+History>>initialize
+    super initialize.
+    stream := ReadWriteStream on: Array new.
+-----
+History>>goBackward
+  self canGoBackward ifFalse: [self error: 'Already on the first element'].
+  stream skip: -2.
+  ^ stream next.
+
+History>>goForward
+  self canGoForward ifFalse: [self error: 'Already on the last element'].
+  ^ stream next
+-----
+History>>goTo: aPage
+    stream nextPut: aPage.
+-----
+History>>goTo: anObject
+  stream nextPut: anObject.
+  stream nextPut: nil.
+  stream back.
+-----
+History>>canGoBackward
+  ^ stream position > 1
+
+History>>canGoForward
+  ^ stream atEnd not and: [stream peek notNil]
+-----
+History>>contents
+  ^ stream contents
+-----
+History new
+	goTo: #page1;
+	goTo: #page2;
+	goTo: #page3;
+	goBackward;
+	goBackward;
+	goTo: #page4;
+	contents "--> #(#page1 #page4 nil nil)"
+-----
+stream := FileStream forceNewFileNamed: 'test.txt'.
+stream
+    nextPutAll: 'This text is written in a file named ';
+    print: stream localName.
+stream close.
+
+stream := FileStream readOnlyFileNamed: 'test.txt'.
+stream contents. "--> 'This text is written in a file named ''test.txt'''"
+stream close.
+-----
+FileStream
+    forceNewFileNamed: 'test.txt'
+    do: [:stream |
+        stream
+            nextPutAll: 'This text is written in a file named ';
+            print: stream localName].
+string := FileStream
+            readOnlyFileNamed: 'test.txt'
+            do: [:stream | stream contents].
+string "--> 'This text is written in a file named ''test.txt'''"
+-----
+FileStream
+  forceNewFileNamed: 'test.bin'
+  do: [:stream |
+          stream
+            binary;
+            nextPutAll: #(145 250 139 98) asByteArray].
+
+FileStream
+  readOnlyFileNamed: 'test.bin'
+  do: [:stream |
+          stream binary.
+          stream size. "--> 4"
+          stream next. "--> 145"
+          stream upToEnd. "--> #[250 139 98]"
+      ].
+-----
+FileStream
+  forceNewFileNamed: 'test.pgm' 
+  do: [:stream |
+	stream
+		nextPutAll: 'P5'; cr;
+		nextPutAll: '4 4'; cr;
+		nextPutAll: '255'; cr;
+		binary;
+		nextPutAll: #(255 0 255 0) asByteArray;
+		nextPutAll: #(0 255 0 255) asByteArray;
+		nextPutAll: #(255 0 255 0) asByteArray;
+		nextPutAll: #(0 255 0 255) asByteArray
+	]
+-----
+
+===== CHAPTER: Morphic ==========
+
+-----
+'Morph' asMorph openInWorld
+-----
+Color>>asMorph
+	^ Morph new color: self
+-----
+joe := Morph new color: Color blue.
+joe openInWorld.
+bill := Morph new color: Color red .
+bill openInWorld.
+-----
+bill position: (joe position + (100@0))
+-----
+star := StarMorph new color: Color yellow.
+joe addMorph: star.
+star position: joe position.
+-----
+Morph subclass: #CrossMorph
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'PBE-Morphic'
+-----
+drawOn: aCanvas 
+	| crossHeight crossWidth horizontalBar verticalBar |
+	crossHeight := self height / 3.0 .
+	crossWidth := self width / 3.0 .
+	horizontalBar := self bounds insetBy: 0 @ crossHeight.
+	verticalBar := self bounds insetBy: crossWidth @ 0.
+	aCanvas fillRectangle: horizontalBar color: self color.
+	aCanvas fillRectangle: verticalBar color: self color
+-----
+containsPoint: aPoint
+	| crossHeight crossWidth horizontalBar verticalBar |
+	crossHeight := self height / 3.0.
+	crossWidth := self width / 3.0.
+	horizontalBar := self bounds insetBy: 0 @ crossHeight.
+	verticalBar := self bounds insetBy: crossWidth @ 0.
+	^ (horizontalBar containsPoint: aPoint)
+		or: [verticalBar containsPoint: aPoint]
+-----
+horizontalBar
+	| crossHeight |
+	crossHeight := self height / 3.0.
+	^ self bounds insetBy: 0 @ crossHeight
+-----
+verticalBar
+	| crossWidth |
+	crossWidth := self width / 3.0.
+	^ self bounds insetBy: crossWidth @ 0
+-----
+drawOn: aCanvas 
+	aCanvas fillRectangle: self horizontalBar color: self color.
+	aCanvas fillRectangle: self verticalBar color: self color
+-----
+containsPoint: aPoint 
+	^ (self horizontalBar containsPoint: aPoint)
+		or: [self verticalBar containsPoint: aPoint]
+-----
+m := CrossMorph new bounds: (0@0 corner: 300@300).
+m openInWorld.
+m color: (Color blue alpha: 0.3).
+-----
+drawOn: aCanvas 
+	| topAndBottom |
+	aCanvas fillRectangle: self horizontalBar color: self color.
+	topAndBottom := self verticalBar areasOutside: self horizontalBar. 
+	topAndBottom do: [ :each | aCanvas fillRectangle: each color: self color]
+-----
+horizontalBar
+	| crossHeight |
+	crossHeight := (self height / 3.0) rounded.
+	^ self bounds insetBy: 0 @ crossHeight
+-----
+verticalBar
+	| crossWidth |
+	crossWidth := (self width / 3.0) rounded.
+	^ self bounds insetBy: crossWidth @ 0
+-----
+CrossMorph>>handlesMouseDown: anEvent
+	^true
+-----
+CrossMorph>>mouseDown: anEvent
+	anEvent redButtonPressed "click"
+		ifTrue: [self color: Color red].
+	anEvent yellowButtonPressed "action-click"
+		ifTrue: [self color: Color yellow].
+	self changed
+-----
+CrossMorph>>handlesMouseOver: anEvent
+	^true
+-----
+CrossMorph>>mouseEnter: anEvent
+	anEvent hand newKeyboardFocus: self
+-----
+CrossMorph>>mouseLeave: anEvent
+	anEvent hand newKeyboardFocus: nil
+-----
+CrossMorph>>handleKeystroke: anEvent
+	| keyValue |
+	keyValue := anEvent keyValue.
+	keyValue = 30	 "up arrow"
+		ifTrue: [self position: self position - (0 @ 1)].
+	keyValue = 31	 "down arrow"
+		ifTrue: [self position: self position + (0 @ 1)].
+	keyValue = 29	 "right arrow"
+		ifTrue: [self position: self position + (1 @ 0)].
+	keyValue = 28	 "left arrow"
+		ifTrue: [self position: self position - (1 @ 0)]
+-----
+CrossMorph>>stepTime
+	^ 100
+-----
+CrossMorph>>step
+	(self color diff: Color black) < 0.1
+		ifTrue: [self color: Color red]
+		ifFalse: [self color: self color darker]
+-----
+	keyValue = $+ asciiValue 
+		ifTrue: [self startStepping].
+	keyValue = $- asciiValue
+		ifTrue: [self stopStepping].
+-----
+UIManager default request: 'What''s your name?' initialAnswer: 'no name'
+-----
+UIManager default
+	chooseFrom: #('circle' 'oval' 'square' 'rectangle' 'triangle')
+	lines: #(2 4) message: 'Choose a shape'
+-----
+Morph subclass: #ReceiverMorph
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'PBE-Morphic'
+-----
+ReceiverMorph>>initialize
+	super initialize.
+	color := Color red.
+	bounds := 0 @ 0 extent: 200 @ 200
+-----
+ReceiverMorph>>wantsDroppedMorph: aMorph event: anEvent
+	^ aMorph color = Color blue
+-----
+ReceiverMorph>>repelsMorph: aMorph event: ev
+	^ (self wantsDroppedMorph: aMorph event: ev) not
+-----
+ReceiverMorph new openInWorld.
+EllipseMorph new openInWorld.
+-----
+Morph subclass: #DroppedMorph
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'PBE-Morphic'
+-----
+DroppedMorph>>initialize
+	super initialize.
+	color := Color blue.
+	self position: 250@100
+-----
+DroppedMorph>>rejectDropMorphEvent: anEvent
+	| h |
+	h := anEvent hand.
+	WorldState
+		addDeferredUIMessage: [h grabMorph: self].
+	anEvent wasHandled: true
+-----
+ReceiverMorph new openInWorld.
+(DroppedMorph new color: Color blue) openInWorld.
+(DroppedMorph new color: Color green) openInWorld.
+-----
+BorderedMorph subclass: #DieMorph
+	instanceVariableNames: 'faces dieValue isStopped'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'PBE-Morphic'
+-----
+DieMorph class>>faces: aNumber
+	^ self new faces: aNumber
+-----
+DieMorph>>initialize
+	super initialize.
+	self extent: 50 @ 50.
+	self useGradientFill; borderWidth: 2; useRoundedCorners.
+	self setBorderStyle: #complexRaised.
+	self fillStyle direction: self extent.
+	self color: Color green.
+	dieValue := 1.
+	faces := 6.
+	isStopped := false
+-----
+DieMorph>>faces: aNumber
+	"Set the number of faces"
+	(aNumber isInteger
+			and: [aNumber > 0]
+			and: [aNumber <= 9])
+		ifTrue: [faces := aNumber]
+-----
+DieMorph>>face1
+	^{0.5@0.5}
+DieMorph>>face2
+	^{0.25@0.25 . 0.75@0.75}
+DieMorph>>face3
+	^{0.25@0.25 . 0.75@0.75 . 0.5@0.5}
+DieMorph>>face4
+	^{0.25@0.25 . 0.75@0.25 . 0.75@0.75 . 0.25@0.75}
+DieMorph>>face5
+	^{0.25@0.25 . 0.75@0.25 . 0.75@0.75 . 0.25@0.75 . 0.5@0.5}
+DieMorph>>face6
+	^{0.25@0.25 . 0.75@0.25 . 0.75@0.75 . 0.25@0.75 . 0.25@0.5 . 0.75@0.5}
+DieMorph>>face7
+	^{0.25@0.25 . 0.75@0.25 . 0.75@0.75 . 0.25@0.75 . 0.25@0.5 . 0.75@0.5 . 0.5@0.5}
+DieMorph >>face8
+	^{0.25@0.25 . 0.75@0.25 . 0.75@0.75 . 0.25@0.75 . 0.25@0.5 . 0.75@0.5 . 0.5@0.5 . 0.5@0.25}
+DieMorph >>face9
+	^{0.25@0.25 . 0.75@0.25 . 0.75@0.75 . 0.25@0.75 . 0.25@0.5 . 0.75@0.5 . 0.5@0.5 . 0.5@0.25 . 0.5@0.75}
+-----
+DieMorph>>drawOn: aCanvas
+	super drawOn: aCanvas.
+	(self perform: ('face' , dieValue asString) asSymbol)
+		do: [:aPoint | self drawDotOn: aCanvas at: aPoint]
+-----
+DieMorph>>drawDotOn: aCanvas at: aPoint
+	aCanvas
+		fillOval: (Rectangle
+			center: self position + (self extent * aPoint)
+			extent: self extent / 6)
+		color: Color black
+-----
+(DieMorph faces: 6) openInWorld.
+-----
+DieMorph>>dieValue: aNumber
+	(aNumber isInteger
+			and: [aNumber > 0]
+			and: [aNumber <= faces])
+		ifTrue:
+			[dieValue := aNumber.
+			self changed]
+-----
+DieMorph>>stepTime
+	^ 100
+
+DieMorph>>step
+	isStopped ifFalse: [self dieValue: (1 to: faces) atRandom]
+-----
+DieMorph>>handlesMouseDown: anEvent
+	^ true
+
+DieMorph>>mouseDown: anEvent
+	anEvent redButtonPressed
+		ifTrue: [isStopped := isStopped not]
+-----
+DieMorph>>drawOn: aCanvas
+	| theCanvas |
+	theCanvas := aCanvas asAlphaBlendingCanvas: 0.5.
+	super drawOn: theCanvas.
+	(self perform: ('face' , dieValue asString) asSymbol)
+		do: [:aPoint | self drawDotOn: theCanvas at: aPoint]
+-----
+
+===== CHAPTER: Classes and metaclasses ==========
+
+-----
+Color blue "--> Color blue"
+-----
+Color blue class "--> Color"
+-----
+(Color blue alpha: 0.4) class "--> TranslucentColor"
+-----
+EllipseMorph new color: (Color blue alpha: 0.4); openInWorld
+-----
+TranslucentColor superclass "--> Color"
+Color superclass "--> Object"
+-----
+translucentBlue := Color blue alpha: 0.4.
+translucentBlue isKindOf: TranslucentColor "--> true"
+translucentBlue isKindOf: Color "--> true"
+translucentBlue isKindOf: Object "--> true"
+-----
+Color class "--> Color class"
+Object class "--> Object class"
+-----
+Color subclasses "--> {TranslucentColor}"
+TranslucentColor subclasses "--> #()"
+TranslucentColor allSuperclasses "--> an OrderedCollection(Color Object ProtoObject)"
+TranslucentColor instVarNames "--> #('alpha')"
+TranslucentColor allInstVarNames "--> #('rgb' 'cachedDepth' 'cachedBitPattern' 'alpha')"
+TranslucentColor selectors "-->  an IdentitySet(#pixelValueForDepth: #pixelWord32 #convertToCurrentVersion:refStream: #isTransparent #scaledPixelValue32 #bitPatternForDepth: #storeArrayValuesOn: #setRgb:alpha: #alpha #isOpaque #pixelWordForDepth: #isTranslucentColor #hash #isTranslucent #alpha: #storeOn: #asNontranslucentColor #privateAlpha #balancedPatternForDepth:)"
+-----
+TranslucentColor class superclass "--> Color class"
+TranslucentColor superclass class "--> Color class"
+-----
+TranslucentColor class "--> TranslucentColor class"
+TranslucentColor class superclass "--> Color class"
+TranslucentColor class superclass superclass "--> Object class"
+-----
+TranslucentColor blue "--> Color blue"
+-----
+TranslucentColor new class "--> TranslucentColor    not Behavior!"
+-----
+TranslucentColor superclass "--> Color"
+Color superclass "--> Object"
+-----
+TranslucentColor class superclass "--> Color class"
+Color class superclass "--> Object class"
+Object class superclass superclass "--> Class    NB: skip ProtoObject class"
+Class superclass "--> ClassDescription"
+ClassDescription superclass "--> Behavior"
+Behavior superclass "--> Object"
+-----
+TranslucentColor class class "--> Metaclass"
+Color class class "--> Metaclass"
+Object class class "--> Metaclass"
+Behavior class class "--> Metaclass"
+-----
+Metaclass class class "--> Metaclass"
+Metaclass superclass "--> ClassDescription"
+-----
+
+===== CHAPTER: Seaside by Example ==========
+
+-----
+WAHelloWorld>>renderContentOn: html
+	html text: 'hello world'
+-----
+WAHelloWorld class>>canBeRoot
+	^ true
+-----
+html text: 'hello world'. "render a plain text string"
+html html: '&ndash;'. "render an XHTML incantation"
+html render: 1. "render any object"
+-----
+html horizontalRule.
+-----
+SeasideDemo>>renderContentOn: html
+	html heading: 'Rendering Demo'.
+	html heading
+		level: 2;
+		with: 'Rendering basic HTML: '.
+	html div
+		class: 'subcomponent';
+		with: htmlDemo.
+	"render the remaining components ..."
+-----
+SeasideDemo>>children
+	^ { htmlDemo . formDemo . editDemo . dialogDemo }
+-----
+SeasideHtmlDemo>>renderContentOn: html 
+	self renderParagraphsOn: html.
+	self renderListsAndTablesOn: html.
+	self renderDivsAndSpansOn: html.
+	self renderLinkWithCallbackOn: html
+-----
+SeasideHtmlDemo>>renderParagraphsOn: html 
+	html paragraph: 'A plain text paragraph.'.
+	html paragraph: [
+		html
+			text: 'A paragraph with plain text followed by a line break. ';
+			break;
+			emphasis: 'Emphasized text ';
+			text: 'followed by a horizontal rule.';
+			horizontalRule;
+			text: 'An image URI: '.
+		html image
+			url: self squeakImageUrl;
+			width: '50']
+-----
+SeasideHtmlDemo>>renderListsAndTablesOn: html 
+	html orderedList: [
+		html listItem: 'An ordered list item'].
+	html unorderedList: [
+		html listItem: 'An unordered list item'].
+	html table: [
+		html tableRow: [
+			html tableData: 'A table with one data cell.']]
+-----
+SeasideHtmlDemo>>renderDivsAndSpansOn: html 
+	html div
+		id: 'author';
+		with: [
+			html text: 'Raw text within a div with id ''author''. '.
+			html span
+				class: 'highlight';
+				with: 'A span with class ''highlight''.']
+-----
+SeasideHtmlDemo>>renderLinkWithCallbackOn: html 
+	html paragraph: [
+		html text: 'An anchor with a local action: '.
+		html span with: [
+			html anchor
+				callback: [toggleValue := toggleValue not];
+				with: 'toggle boolean:'].
+		html space.
+		html span
+			class: 'boolean';
+			with: toggleValue ]
+-----
+SeasideFormDemo>>renderContentOn: html
+	| radioGroup |
+	html heading: heading.
+	html form: [
+		html span: 'Heading: '.
+		html textInput on: #heading of: self.
+		html select
+			list: self colors;
+			on: #color of: self.
+		radioGroup := html radioGroup.
+		html text: 'Radio on:'.
+		radioGroup radioButton
+			selected: radioOn;
+			callback: [radioOn := true].
+		html text: 'off:'.
+		radioGroup radioButton
+			selected: radioOn not;
+			callback: [radioOn := false].
+		html checkbox on: #checked of: self.
+		html submitButton
+			text: 'done' ]
+-----
+SeasideDemoWidget>>style
+	^ '
+body {
+	font: 10pt Arial, Helvetica, sans-serif, Times New Roman;
+}
+h2 {
+	font-size: 12pt;
+	font-weight: normal;
+	font-style: italic;
+}
+table { border-collapse: collapse; }
+td {
+	border: 2px solid #CCCCCC;
+	padding: 4px;
+}
+#author {
+	border: 1px solid black;
+	padding: 2px;
+	margin: 2px;
+}
+.subcomponent {
+	border: 2px solid lightblue;
+	padding: 2px;
+	margin: 2px;
+}
+.highlight { background-color: yellow; }
+.boolean { background-color: lightgrey; }
+.field { background-color: lightgrey; }
+'
+-----
+SeasideEditCallDemo>>renderContentOn: html 
+	html span
+		class: 'field';
+		with: self text.
+	html space.
+	html anchor
+		callback: [self text: (self !\underline{call:}! (SeasideEditAnswerDemo new text: self text))];
+		with: 'edit'
+-----
+SeasideEditAnswerDemo>>renderContentOn: html
+	html form: [
+		html textInput
+			on: #text of: self.
+		html submitButton
+			callback: [ self !\underline{answer:}! self text ];
+			text: 'ok'.
+		]
+-----
+SeasideDialogDemo>>renderContentOn: html
+	html anchor
+		callback: [ self request: 'edit this' label: 'done' default: 'some text' ];
+		with: 'self request:'.
+...
+-----
+...
+	html space.
+	html anchor
+		callback: [ self inform: 'yes!' ];
+		with: 'self inform:'.
+...
+-----
+...
+	html space.
+	html anchor
+		callback: [
+			(self confirm: 'Are you happy?')
+				ifTrue: [ self inform: ':-)' ]
+				ifFalse: [ self inform: ':-(' ]
+			];
+		with: 'self confirm:'.
+-----
+WAConvenienceTest>>go
+	[ self chooseCheese.
+	  self confirmCheese ] whileFalse.
+	self informCheese
+-----
+WAConvenienceTest>>chooseCheese
+	cheese := self
+		chooseFrom: #('Greyerzer' 'Tilsiter' 'Sbrinz')
+		caption: 'What''s your favorite Cheese?'.
+	cheese isNil ifTrue: [ self chooseCheese ]
+-----
+WAConvenienceTest>>confirmCheese
+	^self confirm: 'Is ', cheese,  ' your favorite cheese?'
+-----
+WAConvenienceTest>>informCheese
+	self inform: 'Your favorite cheese is ', cheese, '.'
+-----
+WAStore>>renderContentOn: html
+	"... render the title bar ..."
+	html div id: 'body'; with: task
+-----
+WAStoreTask>>go
+	| shipping billing creditCard |
+	cart := WAStoreCart new.
+	self isolate:
+		[[self fillCart.
+		self confirmContentsOfCart]
+			whileFalse].
+
+	self isolate:
+		[shipping := self getShippingAddress.
+		billing := (self useAsBillingAddress: shipping)
+					ifFalse: [self getBillingAddress]
+					ifTrue: [shipping].
+		creditCard := self getPaymentInfo.
+		self shipTo: shipping billTo: billing payWith: creditCard].
+
+	self displayConfirmation.
+-----
+WANestedTransaction>>go
+	self inform: 'Before parent txn'.
+	self isolate:
+			[self inform: 'Inside parent txn'.
+			self isolate: [self inform: 'Inside child txn'].
+			self inform: 'Outside child txn'].
+	self inform: 'Outside parent txn'
+-----
+MyStackMachine>>initialize
+	super initialize.
+	contents := OrderedCollection new.
+-----
+MyStackMachineTest>>testDiv
+	stack
+		push: 3;
+		push: 4;
+		div.
+	self assert: stack size = 1.
+	self assert: stack top = (4/3).
+-----
+MyRPNWidget>>style
+	^ 'table.keypad { float: left; }
+td.key {
+	border: 1px solid grey;
+	background: lightgrey;
+	padding: 4px;
+	text-align: center;
+}
+table.stack { float: left; }
+td.stackcell {
+	border: 2px solid white;
+	border-left-color: grey;
+	border-right-color: grey;
+	border-bottom-color: grey;
+	padding: 4px;
+	text-align: right;
+}
+td.small { font-size: 8pt; }'
+-----
+MyKeypad>>renderStackButton: text callback: aBlock colSpan: anInteger on: html 
+	html tableData
+		class: 'key';
+		colSpan: anInteger;
+		with: 
+				[html anchor
+					callback: aBlock;
+					with: [html html: text]]
+-----
+MyKeypad>>renderStackButton: text callback: aBlock on: html 
+	self 
+		renderStackButton: text
+		callback: aBlock
+		colSpan: 1
+		on: html
+-----
+MyKeypad>>renderContentOn: html 
+  self ensureStackMachineNotEmpty.
+  html table
+    class: 'keypad';
+    with: [
+      html tableRow: [
+          self renderStackButton: '+' callback: [self stackOp: #add] on: html.
+          self renderStackButton: '&ndash;' callback: [self stackOp: #min] on: html.
+          self renderStackButton: '&times;' callback: [self stackOp: #mul] on: html.
+          self renderStackButton: '&divide;' callback: [self stackOp: #div] on: html.
+          self renderStackButton: '&plusmn;' callback: [self stackOp: #neg] on: html ].
+        html tableRow: [
+          self renderStackButton: '1' callback: [self type: '1'] on: html.
+          self renderStackButton: '2' callback: [self type: '2'] on: html.
+          self renderStackButton: '3' callback: [self type: '3'] on: html.
+          self renderStackButton: 'Drop' callback: [self stackOp: #pop]
+          	colSpan: 2 on: html ].
+"and so on ... "
+        html tableRow: [
+          self renderStackButton: '0' callback: [self type: '0'] colSpan: 2 on: html.
+          self renderStackButton: 'C' callback: [self stackClearTop] on: html.
+          self renderStackButton: 'Enter'
+          	callback: [self stackOp: #dup. self setClearMode]
+			colSpan: 2 on: html ]]
+-----
+MyKeypad>>type: aString
+	stackMachine push: (stackMachine pop asString, aString) asNumber.
+-----
+MyKeypad>>stackOp: op
+	[ stackMachine perform: op ] on: AssertionFailure do: [ ].
+-----
+MyKeypad>>type: aString
+	self inPushMode ifTrue: [
+		stackMachine push: stackMachine top.
+		self stackClearTop ].
+	self inClearMode ifTrue: [ self stackClearTop ].
+	stackMachine push: (stackMachine pop asString, aString) asNumber.
+-----
+html anchor
+	callback: [ self call: (MyDisplayStack new setMyStackMachine: stackMachine)];
+	with: 'open'
+-----
+html anchor
+	callback: [ self answer];
+	with: 'close'
+-----
+MyCalculator>>renderContentOn: html
+	html div id: 'keypad'; with: keypad.
+	html div id: 'display'; with: display.	
+-----
+MyKeypad>>renderStackButton: text callback: aBlock colSpan: anInteger on: html 
+	html tableData
+		class: 'key';
+		colSpan: anInteger;
+		with: [
+			html anchor
+				callback: aBlock;
+				onClick:				"handle Javascript event"
+					(html updater
+						id: 'display';
+						callback: [ :r |
+							aBlock value.
+							r render: display ];
+						return: false);
+				with: [ html html: text ] ]
+-----
+MyCalculator class>>initialize
+	(self registerAsApplication: 'rpn')
+		addLibrary: SULibrary}}
+-----
+new Ajax.Updater(
+	'display',
+	'http://localhost/seaside/RPN+Calculator',
+	{'evalScripts': true,
+	  'parameters': ['_s=zcdqfonqwbeYzkza', '_k=jMORHtqr','9'].join('&')});
+return false
+-----
+
+===== CHAPTER: Reflection ==========
+
+-----
+w := Workspace new.
+w openLabel: 'My Workspace'.
+w inspect
+-----
+w instVarNamed: 'contents' put: 'howdy!'; contentsChanged
+-----
+Object>>instVarAt: index 
+	"Primitive. Answer a fixed variable in an object. ..."
+	!\textbf{<primitive: 73>}!
+	"Access beyond fixed variables."
+	^self basicAt: index - self class instSize		
+-----
+SketchMorph allInstances select: [:c | (c instVarNamed: 'owner') isWorldMorph]
+-----
+(1@2) instanceVariableValues "--> an OrderedCollection(1 2)"
+-----
+Object>>instanceVariableValues
+	"Answer a collection whose elements are the values of those instance variables of the receiver which were added by the receiver's class."	
+	| c |
+	c := OrderedCollection new.
+	self class superclass instSize + 1
+		to: self class instSize
+		do: [ :i | c add: (self instVarAt: i)].
+	^ c
+-----
+1.5 class "--> Float"
+1.5 isKindOf: Number "--> true"
+1.5 isKindOf: Integer "--> false"
+-----
+1.5 respondsTo: #floor "--> true    since Number implements floor"
+1.5 floor "--> 1"
+Exception respondsTo: #, "--> true    exception classes can be grouped"
+-----
+Morph allSuperclasses size. "-->       2 inheritance depth"
+Morph allSelectors size. "--> 1378 number of methods"
+Morph allInstVarNames size. "-->      6 number of instance variables"
+Morph selectors size. "-->  998 number of new methods"
+Morph instVarNames size. "-->      6 number of new variables"
+Morph subclasses size. "-->    45 direct subclasses"
+Morph allSubclasses size. "-->  326 total subclasses"
+Morph linesOfCode. "--> 5968 total lines of code!"
+-----
+Point someInstance "--> 0@0"
+-----
+ByteString allInstances "--> #('collection' 'position'  ...)"
+ByteString instanceCount "--> 104565"
+String allSubInstances size "-->  101675"
+-----
+Point whichSelectorsAccess: 'x' "--> an IdentitySet(#'\\' #= #scaleBy: ...)"
+Point whichSelectorsStoreInto: 'x' "--> an IdentitySet(#setX:setY: ...)"
+Point whichSelectorsReferTo: #+ "--> an IdentitySet(#rotateBy:about: ...)"
+Point crossReference "--> an Array("
+		an Array('*' an IdentitySet(#rotateBy:about: ...))
+		an Array('+' an IdentitySet(#rotateBy:about: ...))
+		...)
+-----
+Rectangle whichClassIncludesSelector: #inspect "--> Object"
+Rectangle unreferencedInstanceVariables "--> #()"
+-----
+SystemNavigation default allClassesImplementing: #yourself "--> {Object}"
+-----
+SystemNavigation default allSentMessages size "--> 24930"
+SystemNavigation default allUnsentMessages size "--> 6431"
+SystemNavigation default allUnimplementedCalls size "--> 270"
+-----
+SystemNavigation default browseAllImplementorsOf: #ifTrue:
+-----
+SystemNavigation default browseMethodsWithSourceString: 'super'.
+SystemNavigation default browseAllSelect: [:method | method sendsToSuper ].
+-----
+[:aClass| aClass methodDict keys select: [:aMethod |
+  (aClass superclass canUnderstand: aMethod) not ]] value: SmallInteger
+ "--> an IdentitySet(#threeDigitName #printStringBase:nDigits: ...)"
+-----
+[:aClass| aClass methodDict keys select: [:aMethod |
+  (aClass>>aMethod) isAbstract ]] value: Number
+ "--> an IdentitySet(#storeOn:base: #printOn:base: #+ #- #* #/ ...)"
+-----
+class := Collection.
+SystemNavigation default
+  browseMessageList: (class withAllSubclasses gather: [:each |
+    each methodDict associations
+      select: [:assoc | assoc value sendsToSuper]
+      thenCollect: [:assoc | MethodReference class: each selector: assoc key]])
+  name: 'Supersends of ' , class name , ' and its subclasses'
+-----
+(Object>>#=) methodReference methodSymbol "--> #="
+-----
+((BrowserEnvironment new forClasses: (Collection withAllSubclasses))
+	selectMethods: [:method | method sendsToSuper])
+	label: 'Collection methods sending super';
+	open.
+-----
+((BrowserEnvironment new forClasses: (Collection withAllSubclasses))
+	selectMethods: [:method | 
+		method sendsToSuper
+		and: [(method parseTree superMessages includes: method selector) not]])
+	label: 'Collection methods sending different super';
+	open
+-----
+Integer>>factorial
+	"Answer the factorial of the receiver."
+	self = 0 ifTrue: [!\underline{thisContext explore. self halt.}! ^ 1].
+	self > 0 ifTrue: [^ self * (self - 1) factorial].
+	self error: 'Not valid for negative integers'
+-----
+SystemNavigation default browseMethodsWithSourceString: 'thisContext'
+-----
+Object>>subclassResponsibility
+	"This message sets up a framework for the behavior of the class' subclasses.
+	Announce that the subclass should have implemented this message."
+
+	self error: 'My subclass should have overridden ', thisContext sender selector printString
+-----
+OrderedCollection>>add: newObject
+	!\underline{self halt.}!
+	^self addLast: newObject
+-----
+OrderedCollection>>add: newObject
+	!\underline{self haltIf: \#testAdd.}!
+	^self addLast: newObject
+-----
+Object>>haltIf: condition
+	| cntxt |
+	condition isSymbol ifTrue: [
+		"only halt if a method with selector symbol is in callchain"
+		cntxt := thisContext.
+		[cntxt sender isNil] whileFalse: [
+			cntxt := cntxt sender. 
+			(cntxt selector = condition) ifTrue: [Halt signal]. ].
+		^self.
+	].
+	...
+-----
+ProtoObject subclass: #LoggingProxy
+	instanceVariableNames: 'subject invocationCount'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'PBE-Reflection'
+-----
+Object methodDict size "--> 408"
+-----
+LoggingProxy>>initialize
+	invocationCount := 0.
+	subject := self.
+-----
+LoggingProxy>>invocationCount
+	^ invocationCount
+-----
+LoggingProxy>>doesNotUnderstand: aMessage 
+	Transcript show: 'performing ', aMessage printString; cr.
+	invocationCount := invocationCount + 1.
+	^ aMessage sendTo: subject
+-----
+point := 1@2.
+LoggingProxy new !\underline{become:}! point.
+-----
+point invocationCount "--> 0"
+point + (3@4) "--> 4@6"
+point invocationCount "--> 1"
+-----
+point class "--> LoggingProxy"
+-----
+point := 1@2.
+LoggingProxy new become: point.
+point invocationCount "--> 0"
+point rect: (3@4) "--> 1@2 corner: 3@4"
+point invocationCount "--> 1"
+-----
+Point>>rect: aPoint 
+	^ Rectangle  origin: (self min: aPoint) corner: (self max: aPoint)
+-----
+DynamicAcccessors>>doesNotUnderstand: aMessage
+	| messageName |
+	messageName := aMessage selector asString.
+	(self class instVarNames includes: messageName)
+		ifTrue: [
+			self class compile: messageName, String cr, ' ^ ', messageName.
+			^ aMessage sendTo: self ].
+	^ super doesNotUnderstand: aMessage
+-----
+myDA := DynamicAccessors new.
+myDA x "--> nil"
+-----
+5 perform: #factorial "--> 120"
+6 perform: ('fac', 'torial') asSymbol "--> 720"
+4 perform: #max: withArguments: (Array with: 6) "--> 6"
+-----
+answer42
+	^42
+
+run: oldSelector with: arguments in: aReceiver
+	^self perform: oldSelector withArguments: arguments
+-----
+Demo methodDict removeKey: #answer42 ifAbsent: []
+-----
+TestRunner>>runCoverage
+	| packages methods |
+	... "identify methods to check for coverage"
+	self collectCoverageFor: methods
+-----
+TestRunner>>collectCoverageFor: methods
+	| wrappers suite |
+	wrappers := methods collect: [ :each | TestCoverage on: each ].
+	suite := self
+		reset;
+		suiteAll.
+	[ wrappers do: [ :each | each install ].
+	  [ self runSuite: suite ] ensure: [ wrappers do: [ :each | each uninstall ] ] ] valueUnpreemptively.
+	wrappers := wrappers reject: [ :each | each hasRun ].
+	wrappers isEmpty 
+		ifTrue: 
+			[ UIManager default inform: 'Congratulations. Your tests cover all code under analysis.' ]
+		ifFalse: ...
+-----
+TestCoverage class>>on: aMethodReference
+	^ self new initializeOn: aMethodReference
+
+TestCoverage>>initializeOn: aMethodReference
+	hasRun := false.
+	reference := aMethodReference.
+	method := reference compiledMethod
+-----
+TestCoverage>>install
+	reference actualClass methodDictionary
+		at: reference methodSymbol
+		put: self
+
+TestCoverage>>uninstall
+	reference actualClass methodDictionary
+		at: reference methodSymbol
+		put: method
+-----
+run: aSelector with: anArray in: aReceiver
+	self mark; uninstall.
+	^ aReceiver withArgs: anArray executeMethod: method
+
+mark
+	hasRun := true
+-----
+SplitJointTest class>>documentation	<ignoreForCoverage>	"self showDocumentation"		^ 'This package provides function.... "
+-----
+(SplitJoinTest class >> #showDocumentation) pragmas
+ "--> an Array(<ignoreForCoverage>)"
+(Float>>#+) pragmas "--> an Array(<primitive: 41>)"
+-----
+Pragma allNamed: #ignoreForCoverage in: SplitJoinTest class "--> an Array(<ignoreForCoverage> <ignoreForCoverage> <ignoreForCoverage>)"
+-----
