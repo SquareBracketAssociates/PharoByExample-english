@@ -23,7 +23,9 @@ obtain as a result the value following the arrow.
 Many of these actually serve as test cases for the book. For more details
 about testing, see the Wiki link under:
 
-http://www.squeaksource.com/SBEtesting.html
+http://www.squeaksource.com/PharoByExample.html
+
+Last update: $Id$
 eof
 # ============================================================
 def main
