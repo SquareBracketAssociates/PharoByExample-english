@@ -392,7 +392,7 @@ We can use it to identify all the abstract methods of an abstract class
 \end{code}
 Note that this code sends the \ct{>>} message to a class to obtain the compiled method for a given selector.
 
-As a slightly more complex example, we can browse 
+% As a slightly more complex example, we can browse 
 
 To browse the super-sends within a given hierarchy, for example within the Collections hierarchy, we can pose a more sophisticated query:
 \begin{code}{}
@@ -878,7 +878,11 @@ Consider \ct{<primitive: 73>} as contained in \ct{instVarAt:}. The pragma's sele
 The compiler is probably the bigger user of pragmas. SUnit is another tool that makes use of annotations. SUnit is able to estimate the coverage of an application from a test unit. One may want to exclude some methods from the coverage. This is the case of the \ct!documentation! method in \ct!SplitJointTest class!:
 
 \begin{code}{}
-SplitJointTest class>>>documentation	<ignoreForCoverage>	"self showDocumentation"		^ 'This package provides function.... "
+SplitJointTest class>>>documentation
+	<ignoreForCoverage>
+	"self showDocumentation"
+	
+	^ 'This package provides function.... "
 \end{code}
 
 By simply annotating a method with the pragma \ct!<ignoreForCoverage>! one can control the scope of the coverage.
