@@ -18,7 +18,7 @@ about testing, see the Wiki link under:
 
 http://www.squeaksource.com/PharoByExample.html
 
-Last update: 2009-09-30T17:09:32+02:00
+Last update: 2009-10-07T15:39:47+02:00
 
 ===== CHAPTER: Preface ==========
 
@@ -2290,7 +2290,11 @@ run: aSelector with: anArray in: aReceiver
 mark
 	hasRun := true
 -----
-SplitJointTest class>>documentation	<ignoreForCoverage>	"self showDocumentation"		^ 'This package provides function.... "
+SplitJointTest class>>documentation
+	<ignoreForCoverage>
+	"self showDocumentation"
+	
+	^ 'This package provides function.... "
 -----
 (SplitJoinTest class >> #showDocumentation) pragmas
  "--> an Array(<ignoreForCoverage>)"

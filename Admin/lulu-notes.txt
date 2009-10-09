@@ -43,6 +43,13 @@ Crop the resulting file, copy to OmniGraffle, and Export the current object as P
 Check again the font list with Acrobat and all should now be embedded.
 In some cases you may not be able to embed fonts -- a workaround is to save the file as a 300 dpi png.
 -----------------------------------------------------------------------------
+Flattening the PDF
+------------------
+During 2009, Lulu contracted a new printer in Europe, which has problems particularly with transparency in PDF files.  All transparency has been removed from figures, but it appears that still some transparency may remain (an artifact of OmniGraffle?).
+The solution is the use Adobe Acrobat 8 Professional to "flatten" the PDF of the inside material.  Open the PDF with acrobat and select "Advanced>Print Production>Flattener Preview".
+Be sure to select "All pages in document", "Apply" and "Save As" ...-flat.pdf.
+This is the document you should upload to Lulu. (It doesn't seem to be strictly necessary, but is probably more reliable, as it will remove any transparency found.)
+-----------------------------------------------------------------------------
 Checklist:
 - Use cover.xls to calculate the spine size and total dimensions based on the page count
 - If the dimensions change, you will have to change the Page Setup of cover.graffle.  Right now it is 32.83cm x 23.50 cm for a 0.68cm spine (300 pages).
