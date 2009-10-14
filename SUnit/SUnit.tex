@@ -524,7 +524,7 @@ pattern in which \ct{TestSuite} is the composite and the
 
 The class \clsindmain{TestResult} represents the results of a
 \ct{TestSuite} execution.  It records the number of tests passed,
-the number of tests failed, and the number of errors raised.
+the number of tests failed, and the number of errors signalled.
 
 %---------------------------------------------------------
 \subsection{TestResource}
@@ -535,7 +535,7 @@ Performing \ct{setUp} before each test and \ct{tearDown} afterwards helps to rei
 
 However, there are occasions where setting up the necessary context is just too time-consuming for it to be practical to do once before the execution of each test.
 Moreover, if it is known that the test cases do not disrupt the resources used by the tests, then it is wasteful to set them up afresh for each test; it is sufficient to set them up once for each suite of tests.
-Suppose, for example, that a suite of tests need to query a database, or do some analysis on some compiled code.
+Suppose, for example, that a suite of tests needs to query a database, or do some analysis on some compiled code.
 In such cases, it may make sense to set up the database and open a connection to it, or to compile some source code, before any of the tests start to run.
 
 Where should we cache these resources, so that they can be shared by a suite of tests?
@@ -543,7 +543,7 @@ The instance variables of a particular \ct{TestCase} sub-instance won't do, beca
 A global variable would work, but using too many global variables pollutes the name space, and the binding between the global and the tests that depend on it will not be explicit.
 A better solution is to put the necessary resources in a singleton object of some class.
 The class \clsindmain{TestResource} exists to be subclassed by such resource classes.
-Each subclass of \ct{TestResource} understands the message  \ct{current}, which will answer a singleton instance of that subclass.
+Each subclass of \lct{TestResource} understands the message  \ct{current}, which will answer a singleton instance of that subclass.
 Methods \ct{setUp} and \ct{tearDown} should be overridden in the subclass to ensure that the resource is initialized and finalized.
 
 One thing remains: somehow, \sunit has to be told which resources are associated with which test suite.
@@ -772,7 +772,7 @@ TestSuite>>>run
 	^result
 \end{method}
 
-\begin{method}[testsuiterun:]{Passing the test suite to the test result}
+\begin{method}[testsuiterun:]{Passing the test result to the test suite}
 TestSuite>>>run: aResult
 	self tests do: [:each | 
 		self changed: each.
@@ -874,9 +874,11 @@ Never get yourself into a situation where you don't want to run your unit test s
   no test that does not add value to the system by increasing your confidence that a useful property
   holds.
   For example, several tests of the same property do no good. 
-  In fact they do harm: they make it harder to infer the behaviour of the class by reading the tests, and
-  because one bug in the code might then break many tests at the same time.
-  Have a property in mind when you write a test.
+  In fact, they do harm in two ways.
+  First, they make it harder to infer the behaviour of the class by reading the tests. 
+  Second, 
+  because one bug in the code might then break many tests, they make it harder to estimate how many bugs remain in the code.
+  So, have a property in mind when you write a test.
 \end{description}
 
 %\section{Extending \SUnit}
