@@ -704,7 +704,6 @@ There are special variants of the inspector for Dictionaries, OrderedCollections
 \subsection{The Object Explorer}
 
 The \emph{object explorer} is conceptually similar to the inspector, but presents its information in a different way.
-%:===> IS THE EXPLORER OBSOLETE NOW? <===
 To see the difference, we'll \emph{explore} the same object that we were just inspecting.
 
 \begin{figure}[tbp]
@@ -898,7 +897,6 @@ To see what is going wrong, go \button{Into} the execution of \ct{value:} as ill
 
 After clicking \button{Into}, we find ourselves in the position shown in \figref{dotIsAString}.
 It looks at first that we have gone \emph{back} to the \ct{suffix} method, but this is because we are now executing the block that \ct{suffix} provided as argument to \ct{detect:}.
-%:===> Debugger does not know about block variables!
 %\on{does not work any more! the debugger does not know about block variables!}
 %If you select \ct{i} in the context inspector, you can see its current value, which should be \ct{7} if you have been following along.  
 %You can then select the corresponding element of \self from the \self{}-inspector.
