@@ -39,6 +39,39 @@
 \chapter{The Pharo programming environment}
 \chalabel{env}
 
+% Email 2009-10-21
+\hw{The fist paragraph talks about error handling. Maybe it is a good idea to reference point 1.4 for the problems related with error handling. I know that forward references are not good, but changing the order to talk about error codes first is a big change. \\
+Just as a comment, in my class of exceptions, I start talking about how to write safe code and talk about error code as a common technique. Then we discuss about the problems of error code handling (as you do later in the chapter) and then I make them think about how to "remove" all that code duplication... the solution then is obviuos, the problem needs to be reified and a object model has to be created to solve the problem... then we talk about whose responsible for what so, processes, contexts and blocks came into play and we deduce the final model together... Anyway, the idea of seen exceptions as a model that replaces error codes makes a lot of sense to them and help them understand exceptions from the conceptual point of view \\
+- Section 1.4: it says: "If Smalltalk did provide exception-handling".
+I think it should say: "If Smalltalk did NOT provide exception-handling" \\
+- Something that is missing but I don't know if it is one goal of the chapter is some words about whose responsible to signal exceptions (the objects at the end of the tree call) and whose responsible to handle exceptions (the objects at the top of the tree call) \\
+Section 1.7 sounded to me a little out of order... because you need to talk about defaultAction but you have not talked about how handlers are found yet... I would move this secction to the end, as an example of exception usage \\
+- Page 12, point 4: it says: "send it value: E". I think it should say "send TO it value: E". I also would write "value: E" in italics because it makes more clear that you are talking about a message. \\
+- Section Nested Exceptions: "Exception handlers are outside of their own scope" For me is confusing... maybe "Exception handlers do not handle exceptions signaled during its evaluation" or something like that?
+The first example of Nested Exceptions does:
+\ct{result := [[ Error signal ....]}\\
+But nowhere before is said what \#on:do: returns...  \\
+- Section 1.9: Does it make sense to talk about abandon? It is the same as return... 
+Section 1.10: I would put section 1.10 as part of 1.9. I mean, it is the same from the organization point of view as Retry Execution, etc. \\
+- Page 16, second example: ResumableLoader>>readOptionsFrom:aStrem. A the end of the method does "aStream close". I think it should not close the stream, that is responsibility of the one that opened it and passed it as parameter.
+Page 16, third example, the "stream close" should be inside an \#ensure: :-) \\
+- I would move the Deprication example to a different section. I think it is better to finish with how exception can be handle and then give examples. \\
+- About deprication, why is it an exception? why not having a global object to wich one can send the message \#deprecated:on:in: ? my feeling is that there is no need to use exceptions for this... even more, I'm starting to think that they are a bad example of exception usage... \\
+- Section 1.11: I would move it inside section 1.9, at the same level as Retry excecution, Returning execution, etc.
+Section 1.12: Same as section 1.11. I would put Resending exceptions as part of 1.9
+Section 1.13: Same as section 1.11 (does it make sense to have outer? I think it only adds confusion... just a coment) \\
+- Page 23: It seems to me that the second example is not doing what it is expected. The handler variable references the doit closure, not the handler. I think it should be:
+\ct{| exception handler |
+[ exception := thisContext sender at: 1. 
+1/0 ]
+on: Error
+do: [ :ex | handler := thisContext ].
+{ exception . handler } explore}
+I would also suggest to send the message \#at: 1 to the handler \\
+- Section 1.16: I don't like the title... Specialized Exceptions or Specific Exceptions ?
+I think a good discussion about when to subclass an exception and when to reuse an exception is valuable. Something to help avoid a class explosion of exceptions... That is an interesting problem... \\
+}
+
 The goal of this chapter is to show you how to develop programs in the \pharo programming environment.
 You have already seen how to define methods and classes using the browser; this chapter will show you more of the features of the browser, and introduce you to some of the other browsers.
 
