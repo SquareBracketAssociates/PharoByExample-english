@@ -1,6 +1,10 @@
 ---------------------------------------------------------------------------
 Errata to version 2009-09-28
 ---------------------------------------------------------------------------
+2009-10-22 Eric Moyer
+p 43. Lights Out toggles cells if you move the mouse between clicking and releasing. Fix is to override inherited SimpleSwitchMorph>>mouseMove: with an empty method.
+- fixed
+
 p 298. Delete incomplete sentence: "As a slightly more complex example, we can browse"
 - fixed
 ---------------------------------------------------------------------------

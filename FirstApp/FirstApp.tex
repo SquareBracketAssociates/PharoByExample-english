@@ -43,17 +43,6 @@
 \chapter{A first application}
 \chalabel{firstApp}
 
-\nnbb{Eric Moyer}{
-In the 2009-10-11 version of PBE, the Lights Out game has a bug where moving the mouse between the click and the release will cause the clicked cell to toggle.
-The problem can be fixed by overriding LOCell>>mouseMove: with an empty method containing:\\
-\ct{mouseMove: anEvent}\\
-I'm new to SmallTalk/Pharo, so I don't know if there's a stylistically better way to block the message, but the above fix does the trick.
-I think it's worth fixing in PBE, rather than risk newcomers thinking that the odd behavior is somehow a bug in the environment rather than the app.}
-
-\on{Even more serious, the whole example is broken because the InputSensor class is gone from Pharo!
-LR says: InputSensor has been replaced with InputEventSensor.
-The global Sensor points to the right instance in old and new images.}
-
 In this chapter, we will develop a simple game: \ind{Lights Out}.\footnote{\url{http://en.wikipedia.org/wiki/Lights_Out_(game)}}
 Along the way we will demonstrate most of the tools that \pharo programmers use to construct and debug their programs, and show how programs are exchanged with other developers. We will see the browser, the object inspector, the debugger and the \ind{Monticello} \ind{package} browser. 
 Development in Smalltalk is efficient: you will find that you spend far more time actually writing code and far less managing the development process. 
@@ -641,7 +630,15 @@ In our case, because the bug was in the initialization of an object, rather than
 % ON : It messed me up too!  Better not propose this.
 
 \dothis{Do: \ct{LOGame new openInWorld} again.}
-Now the game should work properly.
+
+Now the game should work properly ... or nearly so.  If we happen to move the mouse between clicking and releasing, then the cell the mouse is over will also be toggled.  This turns out to be behavior that we inherit from \ct{SimpleSwitchMorph}. We can fix this simply by overriding \ct{mouseMove:} to do nothing:
+
+% \needlines{6}
+\begin{method}[mouseMove:]{Overriding mouse move actions.}
+LOGame>>>mouseMove: anEvent
+\end{method}
+
+Finally we are done!
 
 %\sd{It would be good to have a word about the debugger buttons into, step.... Or to have a separate chapter, we would use the material I wrote for my turtle book, please check it.}
 %\on{I think that is too much for this chapter. It will come soon enough.}
