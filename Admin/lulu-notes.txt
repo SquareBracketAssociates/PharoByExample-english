@@ -43,8 +43,13 @@ Crop the resulting file, copy to OmniGraffle, and Export the current object as P
 Check again the font list with Acrobat and all should now be embedded.
 In some cases you may not be able to embed fonts -- a workaround is to save the file as a 300 dpi png.
 -----------------------------------------------------------------------------
-Flattening the PDF
-------------------
+*** OBSOLETE *** Flattening the PDF
+-----------------------------------
+This does not work. It appears that certain ligatures "fi" in particular, are corrupted.
+The title of chapter 2 is missing the "fi" in "first".
+Do *not* do this!
+
+Old text below:
 During 2009, Lulu contracted a new printer in Europe, which has problems particularly with transparency in PDF files.  All transparency has been removed from figures, but it appears that still some transparency may remain (an artifact of OmniGraffle?).
 The solution is the use Adobe Acrobat 8 Professional to "flatten" the PDF of the inside material.  Open the PDF with acrobat and select "Advanced>Print Production>Flattener Preview".
 Be sure to select "All pages in document", "Apply" and "Save As" ...-flat.pdf.
