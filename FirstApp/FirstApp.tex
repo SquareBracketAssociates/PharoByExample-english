@@ -50,6 +50,8 @@ The problem can be fixed by overriding LOCell>>mouseMove: with an empty method c
 I'm new to SmallTalk/Pharo, so I don't know if there's a stylistically better way to block the message, but the above fix does the trick.
 I think it's worth fixing in PBE, rather than risk newcomers thinking that the odd behavior is somehow a bug in the environment rather than the app.}
 
+\on{Even more serious, the whole example is broken because the InputSensor class is gone from Pharo!}
+
 In this chapter, we will develop a simple game: \ind{Lights Out}.\footnote{\url{http://en.wikipedia.org/wiki/Lights_Out_(game)}}
 Along the way we will demonstrate most of the tools that \pharo programmers use to construct and debug their programs, and show how programs are exchanged with other developers. We will see the browser, the object inspector, the debugger and the \ind{Monticello} \ind{package} browser. 
 Development in Smalltalk is efficient: you will find that you spend far more time actually writing code and far less managing the development process. 
