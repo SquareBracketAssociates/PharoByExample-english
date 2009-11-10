@@ -54,7 +54,40 @@ May be we should move some code from the other chapters.
 \item ObjectOut aka disk wrapper
 
 \item Actalk or may be in another chapter
+
+\item replay object from adrian
 \end{itemize}
+
+
+\section{ObjectTracer and friends}
+
+ObjectViewers offers the same kind of interception of messages (via doesnotUnderstand:) as ObjectTracers, but instead of just being wrappers, they actually replace the object being viewed.  This makes them a lot more dangerous to use, but one can do amazing things.  For instance, the example below actually intercepts the InputSensor object, and prints the mouse coordinates asynchronously, every time they change:	Sensor evaluate: [Sensor cursorPoint printString displayAt: 0@0]		wheneverChangeIn: [Sensor cursorPoint].To exit from this example, execute:	Sensor xxxUnTrace
+
+\begin{code}{}
+ObjectViewer class>>on: viewedObject evaluate: block1 wheneverChangeIn: block2	^ self new xxxViewedObject: viewedObject evaluate: block1 wheneverChangeIn: block2
+
+ObjectViewer>>xxxViewedObject: viewedObject evaluate: block1 wheneverChangeIn: block2	"This message name must not clash with any other (natch)."	tracedObject := viewedObject.	valueBlock := block2.	changeBlock := block1.	recursionFlag := false
+
+ObjectViewer>>doesNotUnderstand: aMessage 	"Check for change after sending aMessage"	| returnValue newValue |	recursionFlag ifTrue: [^ aMessage sentTo: tracedObject].	recursionFlag := true.	returnValue := aMessage sentTo: tracedObject.	newValue := valueBlock value.	newValue = lastValue ifFalse:		[changeBlock value.		lastValue := newValue].	recursionFlag := false.	^ returnValue
+\end{code}
+
+
+An ObjectTracer can be wrapped around another object, and then give you a chance to inspect it whenever it receives messages from the outside.  For instance...	(ObjectTracer on: Display) flash: (50@50 extent: 50@50)will give control to a debugger just before the message flash is sent.Obviously this facility can be embellished in many useful ways.See also the even more perverse subclass, ObjectViewer, and its example.
+
+\begin{code}{}
+ObjectTracer>>doesNotUnderstand: aMessage 	"All external messages (those not caused by the re-send) get trapped here"	"Present a dubugger before proceeding to re-send the message"	ToolSet debugContext: thisContext				label: 'About to perform: ', aMessage selector				contents: nil.	^ aMessage sentTo: tracedObject.
+
+ObjectTracer>>xxxUnTrace	tracedObject become: self
+
+ObjectTracer>>xxxViewedObject	"This message name must not clash with any other (natch)."	^ tracedObject
+
+ObjectTracer>>xxxViewedObject: anObject	"This message name must not clash with any other (natch)."	tracedObject := anObject
+
+ObjectTracer>>on: anObject	^ self new xxxViewedObject: anObject
+\end{code}
+
+
+
 
 
 
