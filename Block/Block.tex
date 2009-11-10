@@ -263,7 +263,7 @@ BlockClosure>>myValueWithExit
 
 
 
-\paragraph{Storing a block}
+\section{Storing a block}
 
 
 \section{may be to trash}
@@ -284,6 +284,13 @@ These variables are bound in the context in which the block is defined and not i
 \section{About closure....}
 lukas tests illustrated 
 
+
+When we look at the following Scheme expression and evaluate it you get 4. Indeed a binding is created 
+which associates the variable index to the value 0. Then y a lambda expression is defined and it returns
+ the variable index (its value). Then within this context another expression is evaluated which starts
+with a begin statement: first the value of the variable index is set to 4. Second the lambda expression is 
+evaluated. It returns then the value of the 
+
 \begin{code}{}
 (let* ((index 0)
        (y (lambda () index)))
@@ -291,6 +298,27 @@ lukas tests illustrated
     (set! index 4)
     (y)))
 \end{code}
+
+\begin{code}{}
+(let ((index 0))
+  (let ((y (lambda () index)))
+    (begin
+      (set! index 4)
+      (y))))
+\end{code}
+
+\begin{code}{}
+((lambda (index)
+   ((lambda () (begin 
+                (set! index 4)
+                index))))
+ 0)
+\end{code}
+
+
+What you see is that the lambda expression is sharing the binding (index 0) with expression \ct{(begin...)}
+therefore when this binding is modify from the body of the begin expression, the lambda expression sees its impact
+and this is why it returns 4 and not 0 because. 
 
 
 \section{Conclusion}

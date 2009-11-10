@@ -1,0 +1,166 @@
+
+% $Author: oscar $
+% $Date: 2009-01-13 10:57:05 +0100 (Tue, 13 Jan 2009) $
+% $Revision: 23887 $
+
+
+%=================================================================
+\ifx\wholebook\relax\else
+% --------------------------------------------
+% Lulu:
+	\documentclass[a4paper,10pt,twoside]{book}
+	\usepackage[
+		papersize={6.13in,9.21in},
+		hmargin={.75in,.75in},
+		vmargin={.75in,1in},
+		ignoreheadfoot
+	]{geometry}
+	\input{../common.tex}
+	\pagestyle{headings}
+	\setboolean{lulu}{true}
+% --------------------------------------------
+% A4:
+%	\documentclass[a4paper,11pt,twoside]{book}
+%	\input{../common.tex}
+%	\usepackage{a4wide}
+% --------------------------------------------
+    \graphicspath{{figures/} {../figures/}}
+	\begin{document}
+	% \renewcommand{\nnbb}[2]{} % Disable editorial comments
+	\sloppy
+\fi
+%=================================================================
+\chapter{Metacello}\chalabel{metacello}
+
+\section{Naming your configuration}
+ConfigurationOfXXX is a good convention I think ... The package name and the class name match and by beginning with ConfigurationOfxxx it is easier to scan through repository listings and class categories ... it is also very convenient to have the configurations grouped together rather than jumping around in the browser ... with that said it is a convention and moving forward the convention can be less necessary with tools support... 
+
+We call it ConfigurationOf* because like this you will get all configurations in the same place. This has two advantages:
+\begin{itemize}
+\item find the configuration package easier in the Monticello package list
+\item do not get any conflict with Monticello package naming (for example, we have the Mondrian package and this might conflict with the MondrianConfiguration)
+\item when you have to manage multiple Configurations in the PackageBrowser
+\item  given that the name is slightly counter intuitive, it also has very few changes to collide with other names
+\end{itemize}
+
+\section{Baseline}
+  
+  The baseline should define the structure of a project using just
+  names of packages ... as structure changes the baseline should be
+  updated. The version should just have package name and package
+  versions listed...in the absence of structural changes, the changes in
+  package versions is what is interesting.
+
+
+\section{Default}
+ 'default' version is a \#baseline, but it is just a version
+ name. I am version oriented, so I want my baseline names and version
+ names to correspond - that way if/when branching occurs the history
+ can be traced, so I agree with your plan. 
+
+
+\section{Project}
+The \#project:... messages are used when referencing an external project configuration. For example, you would use the \#project:... form to reference the Moose configuration from your configuration.
+
+
+
+  \begin{code}{}
+  baseline01: spec 
+  	<version: '1.1-baseline'>
+  	
+  	spec for: #common do: [
+  		spec blessing: #baseline.
+  		spec repository: 'http://www.squeaksource.com/CAnalyzer'.
+  		spec 
+  			package: 'CAnalyzer';
+  			package: 'XML-Parser' with: [spec repository: 'http://www.squeaksource.com/XMLSupport'];
+  			package: 'Pastell' with: [spec repository: 'http://www.squeaksource.com/Pastell'];
+  			package: 'Rio' with: [spec repository: 'http://www.squeaksource.com/Rio']
+  			]
+	\end{code}
+
+Just a quick note ... you probably want to specify package dependencies in the above as part of your baseline definition...the dependencies are used for load order, but also used if you were to load \#('Rio'), you might need XML-Parser loaded first... 
+
+
+how can I specify to install two packages?
+ 
+\begin{code}{}
+baseline01: spec 
+ 	<version: '1.1-baseline'>
+ 	
+ 	spec for: #common do: [
+ 		spec blessing: #baseline.
+ 		spec repository: 'http://www.squeaksource.com/CAnalyzer'.
+ 		spec 
+ 			package: 'CAnalyzer';
+ 			package: 'XML-Parser' with: [spec repository: 'http://www.squeaksource.com/XMLSupport'];
+ 			package: 'Pastell' with: [spec repository: 'http://www.squeaksource.com/Pastell'];
+ 			package: 'Rio-Kernel' with: [spec repository: 'http://www.squeaksource.com/Rio'];
+ 			package: 'Rio-Grande' with: [spec repository: 'http://www.squeaksource.com/Rio']
+ 			]
+\end{code}
+
+
+
+\paragraph{Pattern.} For GLASS I've come up with a convention that I'm using a ConfigurationOfGsMisc configuration (http://seaside.gemstone.com/ss/GLASSproject) to manage the versions of all of my one-off packages like XML-Parser, SMacc, etc. If a project has more than one package and/or the package has dependencies upon other configurations, then I create a separate configuration for those guys (so the dependency/version information can be re-used by other projects) ... See ConfigurationOfGsScaffolding in http://seaside.gemstone.com/ss/ScaffoldingGS for an example. Finally I tie all of the separate configuration together in ConfigurationOfGLASS (http://seaside.gemstone.com/ss/GLASSproject)...I expose the useful set of configurations. For Seaside3.0, all that is necessary to load it is the following expression:
+
+ (ConfigurationOfGLASS project version: '1.0-beta.2') load: 'Seaside3.0 Dev'.
+
+So for your configuration I would be real tempted to put Rio into it's own configuration and then reference that configuration using the \#project:... form.
+
+
+
+\section{About naming your version methods}
+What I see is that you only want baseline01, 02 to represent different
+baseline and not version of the baseline.
+
+The versions you have then on squeaksource. Now the tag inside the version represents the version.
+
+ So this is why I have 
+
+\begin{code}{} 
+	baseline01: spec 
+ 	<version: '1.1-baseline'>
+ 
+ 	and not 
+ 	baseline11: spec 
+ 	<version: '1.1-baseline'>
+\end{code} 
+
+ What is the pattern that you use (In the tutorial I understand that
+ you give different names because like that people can just load one
+ version and get the complete history but in practices I would not
+ (except if I want to reuse parts as we do for baseline: for example).
+
+Now this is better to have the method name match the version itself. I would name you '1.1-baseline' method \#baseline110:. I tack the 0 on the end to allow for minor versions to be created ... I like to have the method names indicate the version and I like to have the methods sort in version order so I might even be tempted to name your method \#baseline1100 if I thought I might run through more than 9 minor version ... I've done that with Metacello already and renamed methods along the way so that the sort order is maintained...
+
+In the tutorial the 01 corresponded to version '0.1' and when I hit ten version if went to version '1.0' ... probably a bit misleading:)
+
+\section{Conditional Loading}
+Conditional loads are controlled by attributes, so to do a load based on whether or not OB is installed, you would define your 
+\#project method doing something like the following example (adapted from ConfigurationOfGemTools in http://seaside.gemstone.com/ss/GLASSClient):
+
+\begin{code}{}
+project
+
+   versionString  
+ ^ project ifNil: [
+   "Bootstrap Metacello if it is not already loaded"
+   self class ensureMetacello.
+   "Construct Metacello project"
+   project := MetacelloMCProject new.
+   "conditionally define #OB attribute when OBNode class missing"
+   Smalltalk at: #OBNode ifAbsent: [project projectAttributes: #( #OB ) ].
+   (Smalltalk at: #MetacelloVersionConstructor) on: self project: project.
+   project]
+  \end{code}
+
+Then you'd add a 'spec for: \#OB do: []' clause with the OB package info.
+
+
+%=================================================================
+\ifx\wholebook\relax\else\end{document}\fi
+%=================================================================
+
+%-----------------------------------------------------------------
+\subsection{XXX}
