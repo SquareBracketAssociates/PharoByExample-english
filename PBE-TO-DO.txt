@@ -19,6 +19,9 @@ Check/report these pharo bugs ...
 - pretty print (r) shortcut does nothing (issue 1312)
 - context-clicking on process browser raises an error (issue 1313)
 -----------------------------------------------------------------------------
+SUPPRESS fi ligatures in headings:
+perl -pi -e 's/(\\(chapter|section|subsection).*)fi/\1f{}i/g;'  $*
+-----------------------------------------------------------------------------
 PHARO BOOK 2
 -----------------------------------------------------------------------------
 AUTHORS: Alexandre Bergel, Andrew Black, Stéphane Ducasse, Oscar Nierstrasz
