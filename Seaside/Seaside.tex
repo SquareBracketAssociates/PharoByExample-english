@@ -681,7 +681,7 @@ There are basically two mechanisms that you can use:
   The caller is temporarily replaced by the callee, until the callee returns control by sending \ct{answer:}.
   The caller is usually \ct{self}, but could also be any other currently visible component.
 
-  \item A workflow can be be defined as a \emphsubind{Seaside}{task}.
+  \item A workflow can be defined as a \emphsubind{Seaside}{task}.
   This is a special kind of component that subclasses \clsind{WATask} (instead of \clsind{WAComponent}). \seclabel{task}
   Instead of defining \ct{renderContentOn:}, it defines no content of its own, but rather defines a \ct{go} method that sends a series of \ct{call:} messages to activate various subcomponents in turn.
 \end{enumerate}
@@ -1152,7 +1152,7 @@ MyKeypad>>>renderContentOn: html
 \end{code}
 
 Check that the keypad displays properly.
-If you try to click on the keys, however, you will find that the calculator does not work yet ...
+If you try to click on the keys, however, you will find that the calculator does not work yet\ldots{}
 
 \dothis{
 Implement \ct{MyKeypad>>>type:} to update the top of the stack by appending the typed digit.
@@ -1185,7 +1185,7 @@ You will notice that typing digits does not behave the way you might expect.
 Actually the calculator should be aware of whether you are typing a \emph{new} number, or appending to an existing number.
 
 \dothis{Adapt \ct{MyKeypad>>>type:} to behave differently depending on the current typing mode.
-Introduce an instance variable \ct{mode} which takes on one of the three values \lct{typing} (when you are typing), \lct{push} (after you you have performed a calculator operation and typing should force the top value to be pushed), or \lct{clear} (after you have performed \menu{Enter} and the top value should be cleared before typing).
+Introduce an instance variable \ct{mode} which takes on one of the three values \lct{\#typing} (when you are typing), \lct{\#push} (after you have performed a calculator operation and typing should force the top value to be pushed), or \lct{\#clear} (after you have performed \menu{Enter} and the top value should be cleared before typing).
 The new \ct{type:} method might look like this:
 }
 
@@ -1197,6 +1197,8 @@ MyKeypad>>>type: aString
 	self inClearMode ifTrue: [ self stackClearTop ].
 	stackMachine push: (stackMachine pop asString, aString) asNumber.
 \end{code}
+\mb{better with "stackMachine dup" instead of "stackMachine push:
+  stackMachine top}"
 
 Typing might work better now, but it is still frustrating not to be able to see what is on the stack.
 
@@ -1211,6 +1213,9 @@ html anchor
 	callback: [ self call: (MyDisplayStack new setMyStackMachine: stackMachine)];
 	with: 'open'
 \end{code}
+\mb{if the user got a stackmachine ivar, I'm sure he will define
+  setStackMachine and not setMyStackMachine}
+
 
 The callback will cause the current instance of \ct{MyDisplay} to be temporarily replaced by a new instance of \ct{MyDisplayStack} whose job it is to display the complete stack.
 When this component signals that it is done (\ie by sending \ct{self answer}), then control will return to the original instance of \ct{MyDisplay}.
@@ -1240,7 +1245,8 @@ Now if you type \menu{+} the stack shows ``3''.
 Backtracking is not yet working.
 
 \dothis{
-Implement \ct{MyCalculator>>>states} to return the contents of the stack machine.
+Implement \ct{MyCalculator>>>states} to return 
+an array with the contents of the stack machine.
 Check that backtracking now works correctly!
 }
 
