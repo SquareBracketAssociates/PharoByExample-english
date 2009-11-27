@@ -1283,7 +1283,8 @@ MyCalculator>>>renderContentOn: html
 	html div id: 'keypad'; with: keypad.
 	html div id: 'display'; with: display.	
 \end{code}
-				
+
+\mb{'keyboard' below should be renamed 'keypad'}
 \dothis{To be able to re-render the display when a keyboard button is pressed, the keyboard needs to know the display component.
 Add a \ct{display} instance variable to \ct{MyKeypad}, an initialize method \ct{MyKeypad>>>setDisplay:}, and call this from \ct{MyCalculator>>initialize}.
 Now we are able to assign some JavaScript code to the buttons by updating \ct{MyKeypad>>>renderStackButton:callback:colSpan:on:} as follows:}
@@ -1375,7 +1376,7 @@ In case of client side problems use FireFox (\url{http://www.mozilla.com}) with 
   \item \menu{Toggle Halos} to directly view application source code, run-time objects, CSS and XHTML.
   \item Send \ct{WAGlobalConfiguration setDeploymentMode} to hide the toolbar.
   \item Seaside web applications are composed of components, each of which is an instance of a subclass of \ct{WAComponent}.
-  \item Only a root component may be registered as a component. It should implement \ct{canBeRoot} on the class side. Alternatively it may register itself as an application in its class-side \ct{initialize} method by sending \ct{self registerAsApplication:} \emph{application path}.
+  \item Only a root component may be registered as an application. It should implement \ct{canBeRoot} on the class side. Alternatively it may register itself as an application in its class-side \ct{initialize} method by sending \ct{self registerAsApplication:} \emph{application path}.
   If you override \ct{description} it is possible to return a descriptive application name that will be displayed in the configuration editor.
   \item To backtrack state, a component must implement the \ct{states} method to answer an array of objects whose state will be restored if the user clicks the browser's ``back'' button.
   \item A component renders itself by implementing \ct{renderContentOn:}.
