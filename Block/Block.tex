@@ -200,6 +200,8 @@ Continuation blocks \ct{[:x :y| ^ x + y]} returns the value to the method that a
 
 \begin{code}{}
 Object>>returnBlock
+	"self new returnBlock value -> error"
+
 	^[^self]
 
 Object new returnBlock
@@ -284,7 +286,17 @@ These variables are bound in the context in which the block is defined and not i
 \section{About closure....}
 lukas tests illustrated 
 
+\begin{code}{}
+testToDoOutsideTemp	| temp |	1 to: 5 do: [ :index | 		temp := index. 		collection add: [ temp ] ].	self assertValues: #(5 5 5 5 5)
 
+(map  (lambda (each)   (apply each '())) (let ((r '())        (tmp 0))  (for-each (lambda (each)              (set! tmp each)              (set! r (cons (lambda () tmp)                             r)))            '(1 2 3 4 5))  r))
+
+
+testToDoInsideTemp		1 to: 5 do: [ :index | | temp |		temp := index. 		collection add: [ temp ] ].	self assertValues: #(1 2 3 4 5)
+
+(map  (lambda (each)   (apply each '()))  (let ((r '())        (tmp 0))  (for-each (lambda (each)              (set! tmp each)              (set! r (cons (lambda () tmp)                             r)))            '(1 2 3 4 5))  r))
+
+\end{code}
 When we look at the following Scheme expression and evaluate it you get 4. Indeed a binding is created 
 which associates the variable index to the value 0. Then y a lambda expression is defined and it returns
  the variable index (its value). Then within this context another expression is evaluated which starts
