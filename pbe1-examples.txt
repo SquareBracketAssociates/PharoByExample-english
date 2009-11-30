@@ -18,7 +18,7 @@ about testing, see the Wiki link under:
 
 http://www.squeaksource.com/PharoByExample.html
 
-Last update: 2009-10-27T09:38:24+01:00
+Last update: 2009-11-30T16:46:49+01:00
 
 ===== CHAPTER: Preface ==========
 
@@ -113,6 +113,8 @@ LOGame>>newCellAt: i at: j
    c position: ((i - 1) * c width) @ ((j - 1) * c height) + origin.
    c mouseAction: [self toggleNeighboursOfCellAt: i at: j].
    ^ c
+-----
+LOGame>>mouseMove: anEvent
 -----
 MCHttpRepository 
     location: 'http://www.squeaksource.com/!\emph{YourProject}!'
