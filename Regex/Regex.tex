@@ -46,7 +46,7 @@ They are useful to identify strings that match a certain pattern, to check that 
 Regex is installed by default in \pharo. If you are using an older image that does not include Regex the Regex package, you can install it yourself from \ind{\sqsrc}\footnote{\url{http://www.squeaksource.com/Regex.html}}.
 
 A regular expression\footnote{\url{http://en.wikipedia.org/wiki/Regular_expression}} is a template that matches a set of strings.
-For example, the regular expression \ct{'h.*o'} will match the the strings \ct{'ho'}, \ct{'hiho'} and \ct{'hello'}, but it will not match \ct{'hi'} or \ct{'yo'}.
+For example, the regular expression \ct{'h.*o'} will match the strings \ct{'ho'}, \ct{'hiho'} and \ct{'hello'}, but it will not match \ct{'hi'} or \ct{'yo'}.
 We can see this in \pharo as follows:
 \mthindex{String}{matchesRegex:}
 \begin{code}{@TEST}
@@ -212,6 +212,7 @@ WebPage class>>on: filePath forHome: homePath
 \end{code}
 
 A \ct{WebDir} instance should be able to return a list of all the web pages it contains.
+
 \dothis{Add the following method to \ct{WebDir}, and inspect the return value to verify that it works correctly.}
 
 \begin{code}{}
@@ -264,11 +265,11 @@ Now you should see something like this on your test web site:
 
 Our next task is to extract the title of each HTML page.
 
-First we need a way to get at the contents of each page. This is straightforward.
+First we need a way to get at the contents of each page.  This is straightforward.
 
 \dothis{Add the following method and try it out.}
 
-\mthind{FileStream}{oldFileOrNoneNamed:}
+\mthindex{FileStream}{oldFileOrNoneNamed:}
 \begin{code}{}
 WebPage>>contents
 	^ (FileStream oldFileOrNoneNamed: path) contents
@@ -476,7 +477,7 @@ To obtain a regex that matches ``zero or more occurrences of \ct{ab}'', we must 
 \indexmain{Regex syntax!@\ct{+}}
 \indexmain{Regex syntax!@\ct{?}}
 Two other useful operators similar to \ct{*} are \ct{+} and \ct{?}.
-\ct{+} matches one or more instances of the regex it modifies, and \ct{?} will match zero or one instances.
+\ct{+} matches one or more instances of the regex it modifies, and \ct{?} will match zero or one instance.
 \begin{code}{@TEST}
 'ac' matchesRegex: 'ab*c'	   --> true
 'ac' matchesRegex: 'ab+c'	  --> false    "need at least one b"
@@ -495,7 +496,7 @@ As we have seen, the characters \ct{*}, \ct{+}, \ct{?}, \ct{(}, and \ct{)} have 
 \indexmain{Regex syntax!@\ct{|}}
 The last operator is \ct{|}, which expresses choice between two subexpressions.
 It matches a string if either of the two subexpressions matches the string.
-It has the lowest precedence\,---\,even lower than sequencing. For example, \ct{ab*|ba*} means 'a followed by any number of b's, or b followed by any number of a's':
+It has the lowest precedence\,---\,even lower than sequencing. For example, \ct{ab*|ba*} means ``a followed by any number of b's, or b followed by any number of a's'':
 \begin{code}{@TEST}
 'abb' matchesRegex: 'ab*|ba*'   --> true
 'baa' matchesRegex: 'ab*|ba*'	--> true
