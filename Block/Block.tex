@@ -287,14 +287,45 @@ These variables are bound in the context in which the block is defined and not i
 lukas tests illustrated 
 
 \begin{code}{}
-testToDoOutsideTemp	| temp |	1 to: 5 do: [ :index | 		temp := index. 		collection add: [ temp ] ].	self assertValues: #(5 5 5 5 5)
+testToDoOutsideTemp
+	| temp |
+	1 to: 5 do: [ :index | 
+		temp := index. 
+		collection add: [ temp ] ].
+	self assertValues: #(5 5 5 5 5)
 
-(map  (lambda (each)   (apply each '())) (let ((r '())        (tmp 0))  (for-each (lambda (each)              (set! tmp each)              (set! r (cons (lambda () tmp)                             r)))            '(1 2 3 4 5))  r))
+(map 
+ (lambda (each)
+   (apply each '()))
+ (let ((r '()) 
+       (tmp 0))
+  (for-each (lambda (each)
+              (set! tmp each)
+              (set! r (cons (lambda () tmp) 
+                            r)))
+            '(1 2 3 4 5))
+  r))
 
 
-testToDoInsideTemp		1 to: 5 do: [ :index | | temp |		temp := index. 		collection add: [ temp ] ].	self assertValues: #(1 2 3 4 5)
+testToDoInsideTemp
+	
+	1 to: 5 do: [ :index | | temp |
+		temp := index. 
+		collection add: [ temp ] ].
+	self assertValues: #(1 2 3 4 5)
 
-(map  (lambda (each)   (apply each '()))  (let ((r '())        (tmp 0))  (for-each (lambda (each)              (set! tmp each)              (set! r (cons (lambda () tmp)                             r)))            '(1 2 3 4 5))  r))
+(map 
+ (lambda (each)
+   (apply each '()))
+ 
+ (let ((r '()) 
+       (tmp 0))
+  (for-each (lambda (each)
+              (set! tmp each)
+              (set! r (cons (lambda () tmp) 
+                            r)))
+            '(1 2 3 4 5))
+  r))
 
 \end{code}
 When we look at the following Scheme expression and evaluate it you get 4. Indeed a binding is created 
@@ -335,6 +366,41 @@ and this is why it returns 4 and not 0 because.
 
 \section{Conclusion}
 
+I have a method that takes OBCommands and returns Actions:
+
+\begin{code}{}
+actionsFrom: aCollectionOfOBCommandClasses on: aTarget for: aRequestor
+	| command |
+	^ aCollectionOfOBCommandClasses collect: [ :each |
+		command := each on: aTarget for: aRequestor.
+		GLMAction new
+			icon: command icon;
+			title: command label;
+			action: [:presentation | command execute ];
+			yourself
+		]
+	\end{code}
+
+These actions have a block that will be executed at a later time. The  
+problem here was that the command in the action block was always  
+pointing to the same command object, even at each point the command  
+variable was populated correctly.
+
+However, when the command is defined inside the block, everything  
+works as expected.
+
+\begin{code}{}
+actionsFrom: aCollectionOfOBCommandClasses on: aTarget for: aRequestor
+	^ aCollectionOfOBCommandClasses collect: [ :each |
+		| command |
+		command := each on: aTarget for: aRequestor.
+		GLMAction new
+			icon: command icon;
+			title: command label;
+			action: [:presentation | command execute ];
+			yourself
+		]
+	\end{code}
 
 %=========================================================
 \ifx\wholebook\relax\else
