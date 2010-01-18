@@ -402,6 +402,36 @@ actionsFrom: aCollectionOfOBCommandClasses on: aTarget for: aRequestor
 		]
 	\end{code}
 
+
+
+
+The semantics change in various ways. The trivial example that everyone 
+knows is this:
+\begin{code}{}
+factorial := [ :n |
+	n > 1
+		ifTrue: [ n * (factorial value: n - 1) ]
+		ifFalse: [ 1 ] ].
+factorial value: 10.
+\end{code}
+Without closures you get an error, with closures you get the expected 
+result.
+
+Another significant change is the existence of local variables in blocks. 
+Without closures blocks don't have local variables, with closures they do:
+
+\begin{code}{}
+b := [ :p |
+	| t |
+	t ifNil: [ t := p ] ].
+{ b value: 1. b value: 2 }
+\end{code}
+In a non-closure image you get #(1 1) as result, because t is not a block 
+local variable even if it looks like one. In a closure image you get #(1 2)
+because t is a block local variable.
+
+
+
 %=========================================================
 \ifx\wholebook\relax\else
    \bibliographystyle{jurabib}
