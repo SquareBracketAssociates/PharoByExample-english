@@ -799,7 +799,11 @@ You can create a matcher using one of the following methods:
 \begin{itemize}
 \item You can send \mthind{String}{asRegex} or \mthind{String}{asRegexIgnoringCase} to the string.
 
-\item You can directly invoke the \ct{RxMatcher} constructor methods \mthind{RxMatcher}{forString:} or \mthind{RxMatcher}{forString:ignoreCase:} (which is what the convenience methods above will do).
+\item You can directly invoke the \ct{RxMatcher} constructor methods
+  \mthind{RxMatcher}{forString:} or
+  \mthind{RxMatcher}{forString:ignoreCase:} (which is what the
+  convenience methods above will do).
+\mb{should be RxMatcher class in the mthind; I don't like 'invoke constructor methods'; better with: 'instantiate using one of its class methods}
 %
 %The \mthind{RxMatcher}{forString:} method is equivalent to \mthind{RxMatcher class}{forString: regexString ignoreCase: false}. A more convenient way is using one of the two matcher-created messages understood by \clsind{String}. 	 \cmind{RxMatcher}{regexString asRegex} is equivalent to \mthind{RxMatcher class}{forString: regexString}. 	 \ct{regexString asRegexIgnoringCase} is equivalent to \cmind{RxMatcher class}{forString: regexString ignoreCase: true}.
 
@@ -824,13 +828,13 @@ hex matchesIn: '8r52 = 16r2A'   --> an OrderedCollection('16r2A')
 
 A matcher understands these messages (all of them return \ct{true} to indicate successful match or search, and false otherwise):
 
-\mthind{RxMatcher}{matches:} -- true if the whole argument string (aString) matches.
+\mthind{RxMatcher}{matches:} \ct{aString} -- true if the whole argument string (aString) matches.
 
 \begin{code}{@TEST}
 '\w+' asRegex matches: 'Krazy' --> true
 \end{code}
 
-\mthind{RxMatcher}{matchesPrefix:} -- true if some prefix of the argument string (not necessarily the whole string) matches.
+\mthind{RxMatcher}{matchesPrefix:} \ct{aString} -- true if some prefix of the argument string (not necessarily the whole string) matches.
 
 \begin{code}{@TEST}
 '\w+' asRegex matchesPrefix: 'Ignatz hates Krazy' --> true
@@ -875,7 +879,7 @@ For example, the regex \ct{((\d+)\s*(\w+))} has four subexpressions, including i
 
 The highest valid index is equal to 1 plus the number of matching parentheses.  (So, 1 is always a valid index, even if there are no parenthesized subexpressions.)
 
-After a successful match, the matcher can report what part of the original string matched what subexpression. It understandards these messages:
+After a successful match, the matcher can report what part of the original string matched what subexpression. It understands these messages:
 
 \mthind{RxMatcher}{subexpressionCount} answers the total number of subexpressions: the highest value that can be used as a subexpression index with this matcher. This value 	is available immediately after initialization and never changes.
 

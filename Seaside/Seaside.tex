@@ -1378,13 +1378,14 @@ In case of client side problems use FireFox (\url{http://www.mozilla.com}) with 
   \item Seaside web applications are composed of components, each of which is an instance of a subclass of \ct{WAComponent}.
   \item Only a root component may be registered as an application. It should implement \ct{canBeRoot} on the class side. Alternatively it may register itself as an application in its class-side \ct{initialize} method by sending \ct{self registerAsApplication:} \emph{application path}.
   If you override \ct{description} it is possible to return a descriptive application name that will be displayed in the configuration editor.
+  \mb{the description thing is not mentionned anywhere}
   \item To backtrack state, a component must implement the \ct{states} method to answer an array of objects whose state will be restored if the user clicks the browser's ``back'' button.
   \item A component renders itself by implementing \ct{renderContentOn:}.
   The argument to this method is an XHTML rendering \emph{canvas} (usually called \ct{html}).
   \item A component can render a subcomponent by sending \ct{self render:} \emph{subcomponent}.
   \item XHTML is generated programmatically by sending messages to \emph{brushes}. A brush is obtained by sending a message, such as \ct{paragraph} or \ct{div}, to the html canvas.
   \item If you send a cascade of messages to a brush that includes the message \ct{with:}, then \ct{with:} should be the last message sent.
-  Thw \ct{with:} message sets the contents \emph{and} renders the result.
+  The \ct{with:} message sets the contents \emph{and} renders the result.
   \item Actions should appear only in callbacks.
 You should not change the state of the application while you are rendering it.
   \item You can bind various form widgets and anchors to instance variables with accessors by sending the message \ct{on:} \emph{instance variable} \ct{of:} \emph{object} to the brush.
