@@ -33,7 +33,7 @@
 % --------------------------------------------
     \graphicspath{{figures/} {../figures/}}
 	\begin{document}
-	% \renewcommand{\nnbb}[2]{} % Disable editorial comments
+	\renewcommand{\nnbb}[2]{} % Disable editorial comments
 	\sloppy
 \fi
 
@@ -157,7 +157,8 @@ Various operations may be performed via the button pane and the menus of the two
 \MC manages versions of \emph{packages}.  A \ind{package} is essentially a named set of classes and methods.
 In fact, a package is an object\,---\,an instance of \clsind{PackageInfo}\,---\,that knows how to identify the classes and methods that belong to it.
 
-We would like to version our \ct{PerfectTest} class. The right way to do this is to define a package\,---\,called \ct{Perfect}\,---\,containing \ct{PerfectTest} and all the related classes and methods we will introduce later. For the moment, no such package exists. We only have a \emph{category} called (not coincidentally) \ct{Perfect}. This is perfect (ugh!), since \MC will map categories to packages for us.
+We would like to version our \ct{PerfectTest} class. The right way to do this is to define a package\,---\,called \ct{Perfect}\,---\,containing \ct{PerfectTest} and all the related classes and methods we will introduce later. For the moment, no such package exists. We only have a \emph{category} called (not coincidentally) \ct{Perfect}. This is perfect, % (ugh!), 
+since \MC will map categories to packages for us.
 
 \dothis{Press the \button{+Package} in the \MCB and enter \scat{Perfect}.}
 
@@ -254,7 +255,7 @@ This means that the version of the package in the image is different from the ve
 	\caption{Modifying our Perfect package will ``dirty'' it.\figlabel{dirty}}
 \end{figure}
 
-In the \MCB,  a dirty package can be recognized by an asterix (\ct{*}) preceding its name.  This indicates which packages have uncommitted changes, and therefore need to be saved into a repository if those changes are not to be lost. Saving a dirty package cleans it. \ab{Why is it that when I click \button{Changes} on a birty package, I sometimes get a dialog back that says ``no changes''?  I found this very confusing.  How can I see \emph{why} \MC thinks a package is dirty?  How can I see \emph{which} repository it was originally loaded from or saved to?}
+In the \MCB,  a dirty package can be recognized by an asterix (\ct{*}) preceding its name.  This indicates which packages have uncommitted changes, and therefore need to be saved into a repository if those changes are not to be lost. Saving a dirty package cleans it. \ab{Why is it that when I click \button{Changes} on a dirty package, I sometimes get a dialog back that says ``no changes''?  I found this very confusing.  How can I see \emph{why} \MC thinks a package is dirty?  How can I see \emph{which} repository it was originally loaded from or saved to?}
 
 \dothis{Try the \button{Browse}, \button{History} and \button{Changes} buttons to see what they do\footnote{At the time of this writing, the \button{Scripts} button does not work.}.
 \button{Save} the changes to the \ct{Perfect} package. Confirm that the package is now ``clean'' again.}
@@ -665,9 +666,8 @@ Here is the reason why:
 %-----------------------------------------------------------------
 \subsection{Class initialization}
 
-\alex{Where are the two emph\{\} for?}
-\emph{class!initialization}
-\emph{Monticello!class initialization}
+\index{class!initialization}
+\index{Monticello!class initialization}
 When \MC loads a package into the image, any class that defines an \ct{initialize} method on the class side will be sent the \ct{initialize} message. The message is sent \emph{only} to classes that define this method on the class side. A class that does not define this method will not be initialized, even if \ct{initialize} is defined by one of its superclasses. NB: the initialize method is not invoked when you merely reload a package!
 % martial: invoked method?? -> better with 'message \ct{initialize} is not sent??
 
