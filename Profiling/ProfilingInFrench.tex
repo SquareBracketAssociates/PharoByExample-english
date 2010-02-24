@@ -1,0 +1,1022 @@
+% $Author: jannick $
+% $Date: 2009-12-21 09:02:58 -0300 (Mon, 21 Dec 2009) $
+% $Revision: 30016 $
+
+% HISTORY:
+% 2006-12-07 - Stef started chapter
+% 2009-02-12 - Stef added examples
+
+%=================================================================
+\ifx\wholebook\relax\else
+% --------------------------------------------
+% Lulu:
+	\documentclass[a4paper,10pt,twoside]{book}
+	\usepackage[
+		papersize={6.13in,9.21in},
+		hmargin={.75in,.75in},
+		vmargin={.75in,1in},
+		ignoreheadfoot
+	]{geometry}
+	\input{../common.tex}
+	\pagestyle{headings}
+	\setboolean{lulu}{true}
+% --------------------------------------------
+% A4:
+%	\documentclass[a4paper,11pt,twoside]{book}
+%	\input{../common.tex}
+%	\usepackage{a4wide}
+% --------------------------------------------
+    \graphicspath{{figures/} {../figures/}}
+	\begin{document}
+	% \renewcommand{\nnbb}[2]{} % Disable editorial comments
+	\sloppy
+\fi
+%=================================================================
+%\chapter{Profiling applications}
+
+%\on{Some of this is now in the Reflection chapter}
+
+%Profiling applications is not an obvious topics. Here we present a simple tutorial on using 
+%\ct{MessageTally}. We thanks Andreas Raab for the original version of this tutorial.
+
+%\sd{we re rewriting it}
+
+%\on{needs a case study / running example}
+
+%\sd{We should have a look at the example in VW profiler --- impact of String concatenation vs Stream usage}
+
+%How to improve 
+%\begin{code}{}
+%	Collection>>select:thenCollect:
+%	Collection>>select:thenDo:
+%	Collection>>collect:thenSelect:
+%	
+%	Here are some optimized implementations: 
+
+%	#select:thenDo: apply to Collection
+%	#select:thenCollect: apply to OrderedCollection
+%	#collect:thenSelect: apply to OrderedCollection
+
+%	select:thenCollect
+%	==================
+%	" Unoptimized version results ---> between 1951 - 2005 ms"
+%	| coll |
+%	coll := #(1 2 3 4 5 6 7 8) asOrderedCollection. 
+%	[ 100000 timesRepeat:[
+%	   ( coll select:[:each | each > 5] ) collect:[:i | i * i]
+%	  ]
+%	] timeToRun
+
+%	" Optimized version results ---> between 1229 - 1289 ms "
+%	| coll |
+%	coll := #(1 2 3 4 5 6 7 8) asOrderedCollection. 
+%	[ 100000 timesRepeat:[
+%	    coll select:[:each | each > 5] thenCollect:[:i | i * i]
+%	  ]
+%	] timeToRun
+
+%	select:thenDo:
+%	==============
+%	" Unoptimized version results ---> between 3496 - 3573 ms"
+%	" Optimized version results ---> between 2488 - 2619 "
+
+%	coll := #(1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20).
+%	[ 100000 timesRepeat:[
+%	        coll select: [ : i | i even] thenDo: [ : i | i * i ]
+%	     ]
+%	] timeToRun  
+
+%	collect:thenSelect:
+%	===================
+%	" Unoptimized version results ---> between 1678 - 1691 ms"
+%	| coll |
+%	Smalltalk garbageCollect.
+%	coll := #(1 2 3 4) asOrderedCollection.   
+%	[ 100000 timesRepeat:[
+%	   ( coll collect:[:i | i * i]) select:[:each | each > 5]
+%	   ]
+%	] timeToRun  
+
+%	" Optimized version results ---> between 974 - 979"
+%	| coll |
+%	coll := #(1 2 3 4) asOrderedCollection.   
+%	[ 100000 timesRepeat:[
+%	    coll collect:[:i | i * i] thenSelect:[:each | each > 5]
+%	   ]
+%	] timeToRun
+
+%	
+%	
+%	
+%	
+%	
+%	
+%benchButton
+%	| browser button canvas time |
+%	browser := OBPackageBrowser openOnClass: Object selector: #yourself.
+%	browser position: 0@0.
+%	button := browser allMorphs detect: [:m | (m
+%	isKindOf:PluggableButtonMorph ) and: [ m label = 'browse' ]].
+
+%	canvas := World assuredCanvas.
+%	time := [1000 timesRepeat: [ button fullDrawOn: canvas ]] timeToRun.
+%	browser delete.
+%	^ time
+%\end{code}
+
+%\section{MessageTally}
+
+%The primary tool to measure performance, both for Squeak in general  is \ct{MessageTally}. \ct{MessageTally} acts on a particular expression (\ct{MessageTally spyOn:["your expression here"]}) and provides
+%the following information:
+
+%\begin{enumerate}
+%\item a) A hierarchy showing how much time was spent where in the computation.
+%\item b) A list showing which amount of time was spent in which leaf nodes
+%\item c) Memory statistics, incl. the growth rate, garbage collection info etc.
+%\end{enumerate}
+
+%MessageTally uses a technique known as "pc-sampling". What that means is
+%that a high-priority process is started which (based on a timer) samples
+%the call stack of the process and allocates a time value (typically
+%whatever it's using for sampling).
+
+%It is important to notice that this is a statistical measure - given a
+%large enough number of samples, the reported result will be
+%statistically valid. On the other hand, small numbers of samples are
+%typically statistically invalid - a single garbage collection can lead
+%to a major change in an otherwise insignificant part of the computation.
+
+%Here is an example:
+
+%\ct{MessageTally spyOn:[100 raisedTo: 1000].}
+
+%resulted in the following output:
+
+%\begin{verbatim}
+%**Tree**
+%100.0% {3ms} SmallInteger(Number)>>raisedTo:
+%100.0% {3ms} SmallInteger(Number)>>raisedToInteger:
+%50.0% {2ms} LargePositiveInteger>>*
+%50.0% {2ms} primitives
+%\end{verbatim}
+
+%These results claim that we're spending 50\% of the overall time in
+%Multiplying large integers. Which is completely bogus since we have only
+%two samples (the default sampling rate is 1ms). If we run this for a
+%longer period of time, like here:
+
+%\ct{MessageTally spyOn:[1000 timesRepeat:[100 raisedTo: 1000]]}
+
+%\begin{verbatim}
+%**Tree**
+%100.0% {1007ms} SmallInteger(Number)>>raisedTo:
+%99.9% {1006ms} SmallInteger(Number)>>raisedToInteger:
+%96.8% {975ms} primitives
+%3.0% {30ms} LargePositiveInteger>>*
+%\end{verbatim}
+
+%We see that indeed, we only spend roughly 3\% in multiplying large
+%integers. The other 97\% are spent in "primitives" which, unfortunately,
+%are not broken out separately in the measures (however, if such a
+%measure is critical, then the primitives can to be factored into
+%separate methods which then call the primitives themselves - this allows
+%message tally to "see" the method frames and report the usage accordingly).
+
+%In a more complex situation, the percentage tree is typically useful to
+%figure out roughly the areas in which time is spent which can then be
+%measured individually.
+
+% \subsection{**Leaves**}
+
+%
+%The **Leaves* section reported by MessageTally is the amount of time spent in a
+%method WITHOUT the time spent in the methods called from that method. In
+%our above example the leaves are reported as:
+
+%\begin{verbatim}
+%**Leaves**
+%96.8% {975ms} SmallInteger(Number)>>raisedToInteger:
+%\end{verbatim}
+
+%which is the overall time spent in \ct{Number>>raisedToInteger: (1006ms)}
+%minus the time spent in \ct{LargePositiveInteger>>* (30ms)}. If a method
+%shows up in the leaves it typically means that this method is
+%computationally expensive or just gets called a large number of times.
+
+% \subsection{**Memory**}
+
+%
+%The **Memory** statistics shown in MessageTally provide information
+%about how various memory regions have changed:
+
+%\begin{enumerate}
+%\item old: Describes the "old space" in memory. This is the portion that
+%will not be included in incremental garbage collection but only during a
+%full garbage collection. See also the "tenure" information below.
+%Extensively growing old space typically means that there is a problem
+%with the allocation patterns or garbage collector settings.
+
+%\item young: Describes the "young space" in memory, e.g., the region handled
+%by the incremental garbage collector. Changes in young space are usually
+%not relevant.
+
+%\item used: Total amount of used memory.
+
+%\item free: Total amount of unused memory.
+%\end{enumerate}
+
+%\subsection{**GCs**}
+
+%The *GCs* statistics provide information about the garbage collector:
+
+%\begin{enumerate}
+%\item full: The number of "full" garbage collections and time spent in
+%those. Automatic full garbage collections should be VERY rare, they are
+%a sign that you're allocating huge amounts of memory repeatedly. Note
+%that at times these garbage collections are manually triggered though
+%(like in the checkpointing process) and a normal effect of the operation.
+
+%\item incr: The number of "incremental" garbage collections and time spent
+%in those. Generally speaking, IGCs should be quick (avg. < 2ms) and
+%frequent (several times a second). However, the total time spent in IGCs
+%should generally be less than 10\%, otherwise this is a sign of a problem
+%with the allocation patterns. If the time spent in IGCs exceeds 25\%
+%something is *definitely* wrong.
+
+%\item tenures: Tenuring occurs when the number of surviving objects in young
+%space exceeds a certain threshold. In this case, the young space
+%boundary is increased (which adds to the size of "old space" mentioned
+%above). Tenuring typically means that the working set of the application
+%hasn't been reached. For example, in a space construction we would
+%expect frequent tenuring until the space is fully constructed. Once the
+%working set has been reached, tenuring should be rare to non-existent.
+%Frequent tenuring in such cases means that the garbage collection
+%parameters need to be adjusted.
+
+%\item root table overflows: Root table overflows describe the (rare) case
+%that the number of "roots" for the incremental garbage collector will
+%overflow the internal table. This will force an immediate garbage
+%collection plus tenuring. The measure is provided in order to be able to
+%find such rare cases (which otherwise leave you wondering why the system
+%is running full GCs all the time for no apparent reason)
+%\end{enumerate}
+
+%
+%\subsection{Multiple processes}
+
+%Historically, MessageTally measured and reported only the call stack of
+%the current process. This had the disadvantage that if time was spent in
+%a different process, it would be attributed to a bogus frame in current
+%thread. For Croquet, I have changes this such that *all* processes are
+%reported in order to be able to see "what else" is going on.
+
+%For example, if we measure an expression like here:
+
+%\ct{MessageTally spyOn:[(Delay forSeconds: 5) wait]}
+
+%we will find that all of the time is reported here:
+
+%\begin{verbatim}
+
+%**Tree**
+%99.5% {4975ms} ProcessorScheduler class>>startUp
+%99.5% {4975ms} ProcessorScheduler class>>idleProcess
+%\end{verbatim}
+
+%The idle process is the process that is being activated when no other
+%activity occurs (the implementation of the idle process requests the VM
+%to sleep for a millisecond so that the VM isn't running a busy).
+%Generally, time reported in idleProcess is time spent "doing nothing"
+%(e.g., waiting for some activity).
+
+%The other relevant system process that may show up is the finalization
+%process. If the finalization process shows up, it means we're having a
+%problem with too many weak references being finalized. This has been a
+%*big* problem in the past, so keep an eye on it.
+
+%=================================================================
+
+\chapter{Optimisation d'applications en Pharo}
+
+Depuis que le d\'eveloppement logiciel existe, les d\'eveloppeurs se sont confront\'es aux probl\`emes de performance des applications. L'av\`enement des langages avanc\'es comme Smalltalk, Java ou C\# a permis de r\'eduire consid\'erablement les temps de d\'eveloppement des applications (en plus de les structurer) pour permettre aux d\'eveloppeurs de se consacrer \`a la logique applicative. Bien que les compilateurs g\'en\'erent du code efficace, l'optimisation manuelle est encore largement n\'ecessaire. Il est dit qu'une application qui n'a jamais \'et\'e analys\'ee et optimis\'ee peut doubler sa vitesse d'ex\'ecution en reconsid\'erant les algorithmes et en optimisant les points clefs consommateurs de temps de calcul. 
+
+D\'evelopper du code efficace en temps n\'ecessite un certain investissement mais est \`a la port\'ee de tous.  Cependant, il est n\'ecessaire de se focaliser sur les m\'ethodes les plus co\^uteuses dans le programme afin d'\'eviter de perdre du temps de d\'eveloppement et de complexifier inutilement le logiciel. Car optimiser implique souvent d'introduire de la complexit\'e au travers de caches et autres pratiques. 
+
+Nous allons montrer les outils disponibles en Pharo un nouveau smalltalk open-source disponible \`a \url{http://www.pharo-project.org}. 
+
+
+\section{Profiler, c'est quoi ?} 
+Profiler une application est le terme technique qui fait r\'ef\'erence \`a l'optimisation de programmes. 
+Profiler c'est mesurer et am\'eliorer. Pour cela on utilise un profileur, un outil permettant d'\'etudier les performances d'un logiciel en mesurant les ressources utilis\'ees par un programme. Un profileur collecte deux types d'information : le temps utilis\'e par les m\'ethodes du programme et la place que prend le programme en m\'emoire.  Ceci permet de d\'etecter les m\'ethodes qui consomment le plus de temps ou de place. Ainsi, on peut se concentrer sur les parties du code les plus probl\'ematiques car le profilage est une histoire de compromis entre le temps de d\'eveloppement et le temps d'execution du logiciel. L'ex\'ecution d'un logiciel respecte souvent la d\'ecomposition  20-80: 20\% des m\'ethodes utilisent 80\% des ressources. De la m\^eme mani\`ere, le profilage de 20\% des m\'ethodes va permettre de gagner 80\% du temps.
+
+Profiler un logiciel avant la phase finale de d\'eveloppement est souvent une erreur car le profilage demande du temps, or d\'epenser ce temps sur du code changeant est inutile et peut grandement complexifier le code. L'adage de K. Beck le p\`ere de la programmation agile est bien:  \textit{Make it works, make it right, make it fast.}
+
+L'utilisation de tests unitaires est souvent indispensable \`a cette \'etape. En modifiant le code source en profondeur, ou en r\'e\'ecrivant compl\`etement certains algorithmes, les tests unitaires permettent de confirmer le bon fonctionnement des m\'ethodes modifi\'ees. 
+
+%%%%%%%%%%%%
+%%%%%%%%%%%%
+
+\section{De simples mesures}
+
+Prenons la m\'ethode \ct{Collection>>select:thenCollect:} de Pharo.
+Cette m\'ethode s\'electionne des \'el\'ements, et ensuite collecte les r\'esultats de l'application d'un bloc sur chacun des \'el\'ements. Ceci implique  a priori deux parcours sur les collections et une cr\'eation inutile de collection pour stocker les r\'esultats interm\'ediaires. Or il est simple de faire ce traitement en un seul parcours, si l'\'el\'ement correspond \`a la condition du select, on l'ajoute au r\'esultat.
+
+\paragraph{\ct{timeToRun}.} Obtenir une trace montrant l'\'execution d'un programme n'est pas suffisante pour vraiment comprendre ce qu'il faut optimiser. 
+Il est souvent plus judicieux de comparer deux ex\'ecutions. Regardons
+comment le message \ct{timeToRun} envoy\'e \`a un bloc nous permet d'avoir un premier aper\c cu de la situation. Tout d'abord ce message est envoy\'e \`a un bloc. Nous amplifions l'ex\'ecution par l'utilisation d'une boucle : cela a un effet grossissant sur les diff\'erences d'ex\'ecutions. 
+
+
+Voici des r\'esultats:
+\begin{code}{}
+	| coll |
+	coll := #(1 2 3 4 5 6 7 8) asOrderedCollection. 
+	[ 100000 timesRepeat:[ ( coll select:[:each | each > 5] ) collect: [:i |i * i]]] timeToRun
+	"Resultat de la version non optimisee ---> entre 1951 - 2005 ms"
+
+	| coll |
+	coll := #(1 2 3 4 5 6 7 8) asOrderedCollection. 
+	[ 100000 timesRepeat:[ coll select:[:each | each > 5] thenCollect:[:i |i * i]]] timeToRun
+	"Resultat de la version optimisee ---> entre 1229 - 1289 ms"
+\end{code}
+
+Le gain de temps est consid\'erable. Maintenant essayons de comprendre en regardant le code 
+des m\'ethodes \ct{select:thenCollect:}. En effet, \ct{select:thenCollect:} est d\'efinie de mani\`ere 
+g\'en\'erique sur la classe \ct{Collection} racine de l'h\'eritage des collections puis red\'efinie de 
+mani\`ere plus optimale sur les collections ordonn\'ees comme le montre les d\'efinitions suivantes tir\'ees de Pharo.
+
+\begin{code}{}
+Collection>>select: selectBlock thenCollect: collectBlock
+	"Utility method to improve readability."
+
+	^ (self select: selectBlock) collect: collectBlock
+\end{code}
+
+\begin{code}{}
+OrderedCollection>>select: selectBlock thenCollect: collectBlock
+    " Utility method to improve readability.
+	Do not create the intermediate collection. "
+
+	| newCollection |
+    newCollection := self copyEmpty.
+    firstIndex to: lastIndex do:[:index |
+		| element |
+		element := array at: index.
+		( selectBlock value: element ) 
+			ifTrue:[ newCollection addLast: ( collectBlock value: element ) ]].
+    ^ newCollection
+\end{code}
+
+Comme vous pouvez le penser \`a juste titre, les collections telles que les ensembles (Set et autres), ne b\'en\'eficient pas 
+de cette optimisation. Nous vous laissons comme exercice de mesurer cette absence. Si vous optimisez cette m\'ethode pour d'autres collections, n'h\'esitez pas \`a contribuer en soumettant votre proposition \`a la communaut\'e Pharo.
+
+
+%%%%%%%%%%%%
+%%%%%%%%%%%%
+
+\paragraph{\ct{bench}.}
+Le message \ct{bench} envoy\'e \`a un bloc permet de connaitre combien de fois une expression peut etre execut\'ee par seconde. Par exemple l'expression \ct{[ 1000 factorial ] bench} montre que \ct{1000 factorial} peut etre execut\'ee 350 fois par seconde.
+
+\begin{figure}
+	\begin{center}
+	\includegraphics[width=.8\linewidth]{MessageTallyOne}
+	\caption{MessageTally en action.}
+	\figlabel{MessageTallyOne}
+	\end{center}
+\end{figure}
+
+
+\section{Profiler dans Pharo} 
+
+Alors que la m\'ethode \ct{timeToRun} nous indique le temps total d'une execution, elle ne nous aide pas vraiment \`a d\'eterminer comment les envois de messages qui composent la fonctionalit\'e se partage le temps d'ex\'ecution.
+Pour cela l'outil \ct{MessageTally} permet une analyse fine du temps pass\'e. 
+%\ct{SpaceTally} qu'en \`a lui analyse l'espace m\'emoire utilis\'e. 
+
+
+\subsection{MessageTally}
+L'outil principal pour la mesure des performances dans Pharo est impl\'ement\'e par la classe \ct{MessageTally}. On utilise le message \ct{spyOn:} en passant un block en param\`etre (\ct{MessageTally spyOn: ["your expression here"]}) pour recevoir les informations suivantes:
+
+\begin{enumerate}
+\item Une liste hierarchique montrant quelles m\'ethodes et combien de temps sont utilis\'es par l'expression analys\'ee.
+\item Une liste montrant le temps total pass\'e dans chacune des m\'ethodes.
+\item Des statistiques de l'utilisation de la m\'emoire incluant la taille de m\'emoire utilis\'e et des infos du Garbage Collector.
+\end{enumerate}
+Nous allons revenir en d\'etail sur ces diff\'erents aspects.
+
+La \figref{MessageTallyOne} montre le resultat de l'execution de l'expression: 
+\ct{MessageTally spyOn: [20 timesRepeat: [Transcript show: 100 factorial printString]]}.
+Le message \ct{spyOn:} montre tous les processus activ\'es lors de l'ex\'ecution. Le message \ct{spyAllOn:} montre tous les processus actif du syst\`eme durant l'ex\'ecution. 
+
+%Le message \ct{spyAt:on:} permet de s\'electionner le niveau de processus. Par exemple pour ne voir que le temps pris par l'expression utilisez \ct{MessageTally spyAt: 40 on: [20 timesRepeat: [Transcript show: 100 factorial printString]]}
+
+
+Quand vous utilisez les options par d\'efaut de la classe \ct{MessageTally} un outil un peu plus accommodant le \ct{TimeProfileBrowser} permet de voir la d\'efinition des m\'ethodes qui sont invoqu\'ees (\figref{TimeProfiler}). Pour cela il suffit de substituer \ct{MessageTally} par \ct{TimeProfileBrowser}.
+
+
+\begin{figure}
+	\begin{center}
+	\includegraphics[width=.8\linewidth]{TimeProfiler}
+	\caption{Le TimeProfiler utilise MessageTally et permet de consulter les m\'ethodes ex\'ecut\'ees.
+	\ct{TimeProfileBrowser spyOn:  [20 timesRepeat: [Transcript show: 100 factorial printString]]}}
+	\figlabel{TimeProfiler}
+	\end{center}
+\end{figure}
+
+
+\subsection{Int\'egration dans Pharo}
+Pharo int\`egre ce profiler dans sa boite \`a outils. Ce dernier est facilement accessible de plusieurs mani\`eres, en fonction de l'objectif souhait\'e. Il y a trois acc\`es en fonction de la granularit\'e souhait\'ee.
+
+\paragraph{Via le Menu.}
+Le premier acc\`es s'effectue dans l'environnement de Pharo. On y acc\`ede par le menu "World" comme pr\'esent\'e dans la \figref{menu}. Il y a deux acc\`es diff\'erents: l'un pour profiler tout les processus (\ct{Start profiling all processes}), l'autre pour profiler uniquement l'interface (\ct{Start profiling UI})
+Ce mode de profiling permet d'analyser l'ensemble de l'environnement. Ainsi, on peut voir globalement les m\'ethodes les plus appel\'ees. La deuxi\`eme technique est surtout utilis\'ee pour les am\'eliorations li\'ees \`a Morphic: l'interface utilisateur.
+%You have two entries one to start profiling all the processes and the other one to focus on the UI main process. 
+
+
+\begin{figure}[h]
+	\begin{center}
+	\includegraphics[width=.6\linewidth]{menu}
+	\caption{Acc\`es par le menu.}
+	\figlabel{menu}
+	\end{center}
+\end{figure}
+
+
+
+
+\paragraph{Via le Test Runner.}
+Le deuxi\`eme acc\`es se fait au niveau du browseur de tests unitaires. En effet, le profillage fait tr\`es bon m\'enage avec les tests unitaires. Dans Pharo, il y a donc dans l'outil d'ex\'ecution de tests nomm\'e "Test Runner" un bouton "Run Profiled" pr\'esent\'e dans la \figref{testRunner}. Ce bouton permet d'executer les tests s\'electionn\'es tout en obtenant un rapport du profileur. Cet acc\`es au profileur est simple et permet de profiler directement les tests.
+
+\begin{figure}[h]
+	\begin{center}
+	\includegraphics[width=.8\linewidth]{testRunner}
+	\caption{Acc\`es par le TestRunner}
+	\figlabel{testRunner}
+	\end{center}
+\end{figure}
+
+
+\paragraph{Via la ligne de commande.}
+Le troisi\`eme acc\`es est au niveau du code. On peut y acc\'eder tr\`es simplement via les lignes de code. Cette m\'ethode permet de ma\^itriser les m\'ethodes analys\'es. Elle permet \'egalement de comparer diff\'erents algorithmes comme nous allons voir plus loin.
+
+
+\section{Lire et interpreter les r\'esultats} 
+Le profiler fournit deux types d'information: temporelles et m\'emorielles. Les informations temporelles sont repr\'esent\'ees sous deux formes: un arbre d'execution (**Tree**) et le temps pass\'e dans chacune des m\'ethodes (**Leaves**) sans prendre en compte les m\'ethodes quelles appellent. Les informations m\'emorielles sont repr\'esent\'ees par la consommation m\'emoire (**Memory**) et des informations concernant le Garbage Collector (**GC**).
+
+
+Prenons le code suivant qui ajoute la chaine \ct{'A'} 9000 fois dans
+une chaine. Nous r\'ep\'etons ce code afin de prendre en compte la
+cr\'eation de la premi\`ere chaine. 
+
+\begin{code}{}
+MessageTally spyOn: 
+     [ 500 timesRepeat: [
+                     | str |  
+                     str := ''. 
+                     9000 timesRepeat: [ str := str, 'A' ]]].
+\end{code} 
+
+
+Le r\'esultat complet donne:
+\begin{footnotesize}
+\begin{sf}
+ - 19915 tallies, 19928 msec.
+
+**Tree**
+--------------------------------
+Process: (40s)  1175: nil
+--------------------------------
+19.8% {3946ms} ByteString(SequenceableCollection)>>copyReplaceFrom:to:with:
+  |14.0% {2790ms} primitives
+  |5.9% {1176ms} ByteString class(String class)>>new:
+7.7% {1534ms} primitives
+
+**Leaves**
+52.7% {10502ms} SmallInteger(Integer)>>timesRepeat:
+14.0% {2790ms} ByteString(SequenceableCollection)>>copyReplaceFrom:to:with:
+8.8% {1754ms} UndefinedObject>>DoIt
+7.7% {1534ms} ByteString(SequenceableCollection)>>,
+5.9% {1176ms} ByteString class(String class)>>new:
+
+**Memory**
+	old			+0 bytes
+	young		+2,803,380 bytes
+	used		+2,803,380 bytes
+	free		-2,803,380 bytes
+
+**GCs**
+	full			0 totalling 0ms (0.0% uptime)
+	incr		4500 totalling 923ms (5.0% uptime), avg 0.0ms
+	tenures		0
+	root table	0 overflows
+\end{sf}
+\end{footnotesize}
+
+La premi\`ere ligne donne le temps total d'execution ainsi que le
+nombre d'echantillons (tallies). Par d\'efaut la fr\'equence
+d'\'echantillon est d'une milliseconde. 
+
+ \subsection{**Tree**: Information cumul\'ee}
+
+ La partie **Tree** repr\'esente l'arbre d'\'execution par
+ processus. Cet arbre repr\'esente le temps pass\'e dans les
+ m\'ethodes principalement appel\'ees \emph{ainsi que} leur flot
+ d'ex\'ecution. Cela veut dire que l'on connait le temps total pass\'e
+ \`a ex\'ecuter une m\'ethode. La partie d\'elimit\'ee par les tirets
+ montre la priorit\'e du processus dont le r\'esultat est
+ montr\'e. Ici nous voyons un processus de priority 40.  Dans
+ l'exemple, il apparait:
+
+\begin{sf}
+\begin{small}
+**Tree**
+--------------------------------
+Process: (40s)  1175: nil
+--------------------------------
+19.8% {3946ms} ByteString(SequenceableCollection)>>copyReplaceFrom:to:with:
+  |14.0% {2790ms} primitives
+  |5.9% {1176ms} ByteString class(String class)>>new:
+7.7% {1534ms} primitives
+\end{small}
+\end{sf}
+
+
+Cet arbre nous indique que 19.8\% du temps est pass\'e dans la m\'ethode
+\ct{SequenceableCollection>>copyReplaceFrom:to:with:} qui est en effet
+appel\'ee par la concat\'enation de chaine "\ct{,}". Cette m\'ethode
+appelle les m\'ethodes \ct{new:} et des primitives  --- une primitive
+est une m\'ethode dont une impl\'ementation C est directement
+disponible dans la machine virtuelle, elle n'est donc pas ex\'ecut\'ee
+au niveau de l'interpretation de code smalltalk mais directement dans
+la machine virtuelle. 
+
+La somme des pourcentages ne fait pas 100\% car il y a d'autres processus qui
+consomment du temps d'ex\'ecution. On voit ici que l'expression arrive 
+rapidement sur des primitives et donc semble d\'ej\`a rapidement. Nous
+verrons plus loin que cette expression peut \^etre grandement
+optimis\'ee. 
+
+
+
+\subsection{**Leaves**: feuilles seules}
+La partie **Leaves** repr\'esente le temps pass\'e dans une m\'ethode
+\emph{sans} le temps pass\'e dans les m\'ethodes appel\'ees par
+celle-ci. Dans l'exemple pr\'ec\'edent, il apparait:
+
+\begin{small}
+\begin{sf}
+**Leaves**
+52.7% {10502ms} SmallInteger(Integer)>>timesRepeat:
+14.0% {2790ms} ByteString(SequenceableCollection)>>copyReplaceFrom:to:with:
+8.8% {1754ms} UndefinedObject>>DoIt
+7.7% {1534ms} ByteString(SequenceableCollection)>>,
+5.9% {1176ms} ByteString class(String class)>>new:
+\end{sf}
+\end{small}
+
+
+Toutes les m\'ethodes n'apparaissent pas dans la section
+**Leaves**. Une m\'ethode apparaissant dans cette section signifie
+soit que la m\'ethode r\'ealise beaucoup d'op\'erations, soit qu'elle
+est appell\'ee de nombreuses fois par d'autres m\'ethodes.
+Ici on voit que la m\'ethode \ct{copyReplaceFrom:to:with:} qui prenait
+pr\`es de 20\% du temps total prend seulement 14\% pour son ex\'ecution
+propre. Regardez la d\'efinition de la m\'ethode pour voir qu'elle
+fait effectivement plus que quelques envois de messages. 
+
+
+ \subsection{**Memory**}
+
+La partie statistique m\'emoire fournit des informations \`a propos
+des changements observ\'es dans la m\'emoire. 
+Pour comprendre ces informations, il faut savoir que le
+ramasse-miettes (garbage collector) de Pharo est
+un scavenging GC dont le principe est bas\'e sur la
+remarque qu'un objet vieux \`a de moins fortes chances de ne plus
+\^etre r\'ef\'erenc\'e et que les objets jeunes pour leur part sont
+souvent rapidement d\'er\'ef\'erenc\'es. Ainsi plusieurs zones
+m\'emoires sont consid\'er\'ees et une migration de l'espace des
+objets jeunes vers les objets vieux est possible lorsqu'un objet
+jeune a surv\'ecu quelques GC --- Il est promu (``tenured''). Ce qui veut dire,
+par analogique aux universitaires am\'ericain, qu'il a obtenu un poste
+fixe. 
+
+Le profiler montre alors quatre \'etats de la m\'emoire :
+
+\begin{enumerate}
+\item old: d\'ecrit les "objets anciens". Cette valeur repr\'esente la
+  partie qui n'est pas incluse dans le ramasse miettes incr\'emental
+  (incremental GC),  mais seulement durant un ramasse miettes complet
+  (full GC). Cet espace m\'emoire est li\'e au m\'ecanisme de tenure. Une large croissance de cet espace m\'emoire indique
+  clairement un probl\`eme car cela veut dire que de nombreux objets  jeunes ont \'et\'e promus dans la m\'emoire vielle.
+
+\item young: d\'ecrit l'espace "jeune" en m\'emoire. C'est la partie
+  qui est scann\'ee par le  ramasse miettes incr\'emental. En
+  g\'en\'eral les changements dans cet espace sont tr\`es fr\'equent
+  et donc cette information est peu utile.
+
+\item used: repr\'esente la taille de m\'emoire totale  utilis\'ee.
+
+\item free: repr\'esente la taille de m\'emoire inutilis\'ee.
+\end{enumerate}
+
+Dans notre exemple, il n'y a pas de nouveaux objets dans la partie "vielle". Il y a
+2 803 380 octets utilis\'es par le processus dans l'espace jeune. Il y a
+donc au total 2 803 380 octets utilis\'es par l'ex\'ecution de
+l'expression et donc autant d'octets occup\'es (-2 803 380 octets).
+
+\subsection{**GCs**}
+
+La partie statistique **GCs** fournit des informations sur le
+ramasse-miettes lui-m\^eme. Les deux derni\`eres informations sont
+pour des experts. 
+
+\begin{enumerate}
+\item full: repr\'esente le nombre de ramasse-miettes complets et le
+  temps pass\'e. Avoir des ramasses-miettes complets reste en
+  g\'en\'eral tr\'es rare. Ils sont souvent dus \`a l'allocation
+  r\'ep\'et\'ee de gros blocs de m\'emoire. 
+
+\item incr: repr\'esente le nombre de ramasse-miettes incrementaux. Le
+  temps pass\'e par les ramasses-miettes incr\'ementaux sont rapides
+  et souvent inf\'erieurs \`a 2ms en moyenne. De plus leurs lancements
+  est fr\'equent `a savoir plusieurs fois par seconde. Cependant 
+le temps total pass\'e en ramasse-miettes incr\'ementaux doit \^etre g\'en\'eralement inf\'erieur \`a 10\% autrement, c'est signe qu'il y a un probl\`eme. Si le temps est sup\'erieur \`a 25\%, il y a vraiment un probl\`eme.
+
+\item tenures: La promotion d'objets jeunes en objet vieux est
+  d\'eclench\'ee lors que l'espace des objects jeunes arrive a un
+  seuil limite d'occupation. Dans ce cas, la taille de l'espace des
+  jeunes est pass\'ee dans l'espace des vieux objets ce qui correspond
+  au ``old'' pr\'ec\'edent. La promotion d'objets jeunes  est souvent
+  le signe que votre application n'a pas atteint son stade de
+  croisi\'ere --- que tous les objets n\'ecessaires n'ont pas pas
+  \'et\'e cr\'e\'es et r\'ef\'erenc\'es. En g\'en\'eral apr\`es une
+  phase de promotions, une application fait rarement des phases de
+  promotions. 
+
+\item root table overflows: La table des racines repr\'esente un
+  ensemble d'objets \`a partir duquel les GC sont lanc\'es. Ce chiffre
+  d\'ecrit les rares cas o\`u le nombre de "racines" destin\'ees au
+GC incremental d\'epasse la table interne de racine. Ce cas force un
+GC incr\'emental ainsi qu'une phase de promotion. Ce nombre est
+affichait afin que vous puissiez comprendre les rares cas o\u` cela
+peut arriver --- le syst\`eme faisant alors des GC complets sans
+raison apparente. 
+\end{enumerate}
+
+
+Dans l'exemple on voit que seul le GC incr\'emental est utilis\'e. 
+Comme nous allons le voir il est int\'eressant de mesurer la
+quantit\'e d'objets cr\'ees car cela peut avoir des incidences sur les
+performances.
+
+
+
+
+
+
+\section{Illustrons une analyse}
+Comprendre les r\'esultats du profiler est la premi\`ere \'etape pour
+optimiser, cependant comme vous pouvez le voir il n'est pas simple de
+comprendre si un algorithme est dispendieux. Nous montrons maintenant
+au travers d'exemples comment la comparaison de l'ex\'ecution de
+diff\'erentes expressions peut faire jaillir de la connaissance.
+
+%La figure \ref{workspace} montre effectivement trois m\'ethodes de concat\'enation de chaines execut\'ees 9000 fois afin d'obtenir des r\'esultats plus caract\'eristiques. Attention toutefois dans le cas d'ajout d'\'el\'ements dans un dictionnaire par exemple. En effet les dictionnaires (comme toutes autres collections) ont ce que l'on peut appeler des tailles optimales pour lesquelles ils sont plus efficaces.
+
+%\begin{figure}
+% 	\begin{center}
+% 	\includegraphics[width=.8\linewidth]{workspace}
+% 	\caption{Acc\`es par lignes de code}
+% 	\figlabel{workspace}
+% 	\end{center}
+% \end{figure}
+
+L'utilisation de la m\'ethode "\ct{,}" est connue pour \^etre lente car
+elle cr\'ee une nouvelle chaine r\'esultante de la
+concat\'enation. Nous allons donc regarder comment l'utilisation d'une
+Stream peut am\'eliorer les performances. Nous pouvons par exemple
+comparer l'utilisation des m\'ethodes nextPut: et nextPutAll: ainsi
+que mesurer l'impact de la pr\'eallocation des chaines r\'esultantes. 
+
+\paragraph{Utilisation d'une Stream.}
+Commen\c cons par utiliser une Stream. Alors que l'on pourrait croire
+que la cr\'eation d'une Stream doit \^etre couteuse au point de ne pas
+apporter un b\'en\'efice. En fait le r\'esultat du profiler est
+\'eloquent, la nouvelle expression qui cr\'e\'e une Stream puis y
+ajoute des caract\`eres est quasiment 10 fois plus rapide. Ceci est
+compr\'ehensible car lorsque nous concat\'enons 9000 fois une chaine,
+nous cr\'eons 8999 chaines intermediates et copions leur contenu alors
+qu'avec une Stream nous ajoutons simplement un caract\`ere dans la
+Stream \`a chaque it\'eration. 
+
+\begin{code}{}
+MessageTally spyOn: 
+     [ 500 timesRepeat: [
+                     | str |  
+                     str := WriteStream on: (String new). 
+                     9000 timesRepeat: [ str nextPut: $A ]]].
+\end{code}
+
+\begin{code}{}
+ - 1790 tallies, 1790 msec.
+
+**Tree**
+--------------------------------
+Process: (40s)  1175: nil
+--------------------------------
+39.1% {700ms} Character>>isOctetCharacter
+16.2% {290ms} primitives
+
+**Leaves**
+39.1% {700ms} Character>>isOctetCharacter
+22.1% {396ms} UndefinedObject>>DoIt
+16.2% {290ms} WriteStream>>nextPut:
+12.3% {220ms} SmallInteger(Integer)>>timesRepeat:
+
+**Memory**
+	old			+0 bytes
+	young		+53,260 bytes
+	used		+53,260 bytes
+	free		-53,260 bytes
+
+**GCs**
+	full			0 totalling 0ms (0.0% uptime)
+	incr		1140 totalling 198ms (11.0% uptime), avg 0.0ms
+	tenures		0
+	root table	0 overflows
+\end{code}
+
+\paragraph{Utiliser nextPutAll: \`a la place de nextPut:}
+Nous allons maintenant \'etudier l'impact de la m\'ethode utilis\'ee
+pour ajouter des \'el\'ements dans la Stream. En effet, la m\'ethode
+\ct{nextPut: aCharacter} ajoute un caract\`ere. Essayons avec la m\'ethode
+\ct{nextPutAll: aString}.
+
+\begin{code}{}
+MessageTally spyOn: 
+    [ 500 timesRepeat: [
+                    | str |  
+                    str := WriteStream on: (String new). 
+                    9000 timesRepeat: [ str nextPutAll: 'A' ]]].
+\end{code}
+
+On pourrait penser qu'ajouter un
+caract\`ere est plus rapide qu'ajouter une chaine compos\'ee du m\^eme 
+caract\`ere mais l'analyse de cette solution nous montre que notre
+hypoth\`ese est fausse. On est plus rapide: 1610 ms contre 1790 ms
+et ce m\^eme en occupant le double de m\'emoire. 
+
+\begin{code}{}
+ - 1617 tallies, 1618 msec.
+
+**Tree**
+--------------------------------
+Process: (40s)  1175: nil
+--------------------------------
+50.8% {822ms} primitives
+
+**Leaves**
+50.8% {822ms} WriteStream>>nextPutAll:
+20.3% {328ms} SmallInteger(Integer)>>timesRepeat:
+18.5% {299ms} UndefinedObject>>DoIt
+
+**Memory**
+	old			+0 bytes
+	young		+99,216 bytes
+	used		+99,216 bytes
+	free		-99,216 bytes
+
+**GCs**
+	full			0 totalling 0ms (0.0% uptime)
+	incr		1139 totalling 190ms (12.0% uptime), avg 0.0ms
+	tenures		0
+	root table	0 overflows
+\end{code}
+
+\paragraph{Influence de la pr\'eallocation de la chaine.}
+En Smalltalk, l'utilisation d'\ct{OrderedCollection} sans
+pr\'e-allocation de la taille finale de la collection est connue pour
+\^etre une op\'eration couteuse. En effet, \`a chaque fois que la
+collection est pleine et doit grandir il faut copier une partie de la
+collection. Maintenant regarder si la pr\'eallocation de la chaine
+sur laquelle la stream va op\'erer a un impact. On utilise alors le
+message \ct{new: aNumber} \`a la place de \ct{new}.
+
+
+\begin{code}{}
+MessageTally spyOn: 
+    [ 500 timesRepeat: [
+                    | str |  
+                    str := WriteStream on: (String new: 10000). 
+                    9000 timesRepeat: [ str nextPutAll: 'A' ]]].
+\end{code}
+
+\paragraph{Une exp\'erience.}
+L'expression que l'on profile a clairement un impact sur le
+r\'esultat. A titre d'exemple si l'on remplace les deux nombres 9000 par 500,
+ on obtient des r\'esultats int\'eressants. Faites cette
+manipulation sur les deux premi\`eres expressions. 
+On obtient un facteur 2,7 (5100 ms contre 1850 ms) au lieu d'un facteur 10
+entre la concat\'enation bas\'ee sur la m\'ethode \ct{,} et
+l'utilisation d'une stream. On voit alors l'importance de
+connaitre la longueur des chaines manipul\'ees. 
+
+Notez que de la m\^eme mani\`ere la validit\'e du r\'esultat d\'epend
+aussi de la dur\'ee d'\'echantillon. Comme le profiler utilise un
+technique d'analyse de haut de pile (PC-Sampling), il est important de
+s'assurer que l'on fait tourner l'expression de mani\`ere suffisante
+pour que la probabilit\'e que l'\'echantillon en haut de pile soit significatif.
+
+
+
+
+
+\section{Comptons les messages}
+Il est aussi possible d'avoir un rapport d\'etaill\'e non plus bas\'e
+sur l'\'echantillonnage de la pile d'ex\'ecution mais en
+interpr\'etant le programme. En utilisant le message \ct{tallySends:},
+on obtient ainsi une figure exacte des messages ex\'ecut\'es. La
+\figref{sendTally} montre le r\'esultat obtenu en ex\'ecutant
+l'expression suivante \ct{MessageTally tallySends:[ 1000 timesRepeat:  [3.14159 printString]]}:
+
+\begin{figure}
+	\begin{center}
+	\includegraphics[width=.8\linewidth]{sendTally}
+	\caption{Tous les messages execut\'es lors d'une ex\'ecution.}
+	\figlabel{sendTally}
+	\end{center}
+\end{figure}
+
+Faire un tallySend: prend usuellement plus de temps car cette m\'ethode utilise un
+interpr\`ete de bytecode. 
+
+%%%%%%%%%%%%
+%%%%%%%%%%%%
+
+
+\section{Fibonacci M\'emorisant}
+Comme exercice nous vous proposons d'\'etudier l'impact d'une
+m\'emorisation des calculs interm\'ediaires dans le cas de la suite de
+fibonacci dont la d\'efinition est $fib (n) = fib (n-1) + fib(n-2)$
+avec $fib(1)=1, fib(2)=1$.
+
+Donnons d'abord une d\'efinition non m\'emorisante.
+\begin{code}{}
+Integer>>fibSlow
+	self assert: self >= 1.
+	(self == 1) ifTrue: [ ^1].
+	(self == 2) ifTrue: [ ^1].
+	^ (self - 1) fibSlow + (self - 2) fibSlow
+\end{code}
+
+Maintenant la version m\'emorisante stocke dans un cache (une collection ordonn\'ee) 
+lorsque les r\'esultats ne sont pas connus  et utilise
+ce cache lors des calculs. Au vu de la d\'efinition de fibonacci le
+cache empeche donc de calculer une formule sur deux. Les caches peuvent
+avoir bien plus d'impact lorsque le domaine
+le permet. 
+      
+\begin{code}{}
+Integer>>fib
+	self assert: self >= 1.
+	^ Self fibWithCache: OrderedCollection new.
+
+Integer>>fibLookup: cache
+	^ cache at: self ifAbsentPut: [ self fibWithCache: cache ] 
+
+Integer>>fibWithCache: cache
+	(self == 1) ifTrue: [ ^1].
+	(self == 2) ifTrue: [ ^1].
+	^ ((self - 1) fibLookup: cache) + ((self - 2) fibLookup: cache)
+\end{code}
+
+Profilez \ct{1200 fibSlow} et \ct{1200 fib} pour voir l'impact d'un tel
+cache. Vous pouvez aussi mesurer l'impact de la pr\'eallocation de la
+taille de la collection en utilisant \ct{OrderedCollection new: self}.
+
+\begin{code}{}
+29.8% {1843ms} OrderedCollection>>at:ifAbsentPut:
+11.4% {705ms} OrderedCollection>>size
+7.5% {464ms} SmallInteger(Integer)>>fibLookup:
+4.8% {297ms} OrderedCollection>>at:put:
+4.5% {278ms} SmallInteger(Integer)>>fibWithCache:
+4.2% {260ms} OrderedCollection>>at:
+2.2% {136ms} LargePositiveInteger>>+
+2.1% {130ms} OrderedCollection>>makeRoomAtLast
+2.0% {124ms} OrderedCollection>>addLast:
+1.9% {118ms} OrderedCollection>>add:
+1.9% {118ms} LargePositiveInteger(Integer)>>+
+\end{code}
+
+Il est int\'eressant de voir que la pr\'eallocation n'a que peu
+d'effet et que la m\'ethode \ct{makeRoomAtLast} n'\'etant ex\'ecut\'ee
+qu'une seule fois par calcul de \ct{fib} ne prend que peu de temps de
+calcul. Par contre on peut voir que la m\'ethode \ct{at:ifAbsentPut:} 
+prend une part importante. Nous allons donc proposer et \'evaluer une
+ nouvelle impl\'ementation. Nous changeons donc la collection
+ ordonn\'ee par un tableau pr\'e-allou\'e et nous d\'efinissons une
+ nouvelle m\'ethode d'acc\'es au cache. 
+
+
+
+\begin{code}{}
+fib2
+	self assert: self >= 1.
+	^ self fibWithCache2: (Array new: self).
+
+fibLookup2: cache
+	|res|
+	res := cache at: self.
+	^ res ifNil: [cache at: self put: (self fibWithCache2: cache) ]
+		
+fibWithCache2: cache
+ 	(self == 1) ifTrue: [ ^1].
+ 	(self == 2) ifTrue: [ ^1].
+ 	^ ((self - 1) fibLookup2: cache) + ((self - 2) fibLookup2: cache)
+\end{code}
+
+Nous avons obtenus une diff\'erence int\'eressante qui illustre 
+que
+l'exp\'erimentation et la mesure sont la base de l'optimisation. 
+
+\begin{code}{}
+[1200 fib2] bench  '559.288142371526 per second.'
+[1200 fib] bench  '191.2470023980816 per second.'
+\end{code}
+
+
+
+--------
+\section{Consommation de m\'emoire par classe: SpaceTally}
+
+Il est parfois important de connaitre le nombre d'instances d'une
+classe ou sa consommation m\'emoire. La classe SpaceTally offre cette
+fonctionalit\'e. 
+
+\ct{SpaceTally new printSpaceAnalysis} montre la consommation
+m\'emoire de la classe au niveau de ses m\'ethodes, du nombre
+d'instances et de la m\'emoire utilis\'ees par les instances. Il n'est pas
+surprenant de voir que les chaines et les m\'ethodes compil\'ees
+prennent 30\% de la m\'emoire en Pharo.
+
+\begin{code}{}
+Class                           code space # instances  inst space percent
+ByteString                           2217       91946       6325763    26.0
+CompiledMethod               21186       60807       3704137    15.2
+Bitmap                                  3893         319       3685532    15.1
+Array                                     2478       96671       3015172    12.4
+ByteSymbol                        920       40109       1009703     4.1
+\end{code}
+
+Vous pouvez aussi ex\'ecuter cette fonctionnalit\'e sur une s\'election de classes: 
+\begin{code}{}
+((SpaceTally new spaceTally: (Array with: TextMorph with: Point)) 
+	asSortedCollection: [:a :b | a spaceForInstances > b spaceForInstances]) 
+\end{code}
+
+
+
+\section{Quelques conseils pour finir}
+
+Nous vous avons montr\'e comment utiliser le profiler et montr\'e
+quelques approches comme la comparaison de deux analyses pour
+d\'eterminer une impl\'ementation plus judicieuse. L'utilisation d'un
+cache est une technique tr\`es int\'eressante quand le domaine s'y
+pr\^ete. Voici quelques conseils pour appr\'ehender des optimisations:
+Ne commencez pas par optimiser les feuilles mais essayez de comprendre
+l'algorithme dans son ensemble. Consid\'erez d'autres fa\c cons
+d'obtenir le m\^eme r\'esultat.  Exploitez la m\'eta-information de
+l'algorithme.
+Consid\'erez les caract\'eristiques d'ex\'ecution des structures de
+donn\'ees. Ainsi dans un graphe cyclique si on utilise une
+collection ordonn\'ees ou une liste pour stocker les \'el\'ements d\'ej\`a
+visit\'es, chaque ex\'ecution va potentiellement parcourir un grand nombre de fois
+la liste pour savoir si l'\'el\'ement y est. Utiliser un
+ensemble offre d\'ej\`a un temps d'acc\`es plus raisonable. Utiliser
+un dictionaire peut \^etre aussi une solution lorsque les \'el\'ements ont
+une bonne distribution de leur hash. 
+
+N'oubliez pas de penser \`a la m\'emoire consomm\'ee lors de
+l'algorithme. En effet ce n'est pas parce que le ramasse-miette peut
+absorber la cr\'eation d'objets temporaires que le stresser est
+anodin. Penser \`a la cr\'eation inutile de collection
+interm\'ediaire.  En effet, ce n'est pas parce que Smalltalk poss\`ede
+une superbe biblioth\`eques d'iterateurs qu'enchainer des select: et
+collect: n'implique pas de multiples parcours de collections
+ainsi que la g\'en\'eration de collections inutiles. 
+
+
+
+%\bibliographystyle{alpha}
+%{\small
+%\bibliography{scg,lse}
+%}
+
+
+
+%=================================================================
+
+\ifx\wholebook\relax\else\end{document}\fi
+%=================================================================
+
+%-----------------------------------------------------------------
+
