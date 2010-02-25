@@ -5,6 +5,7 @@
 % HISTORY:
 % 2006-12-07 - Stef started chapter
 % 2009-02-12 - Stef added examples
+% 2010-02-24 - Begin the translation
 
 %=================================================================
 \ifx\wholebook\relax\else
@@ -296,53 +297,46 @@
 
 %=================================================================
 
-\chapter{Optimisation d'applications en Pharo}
+\chapter{Optimizing Application}
 
-Depuis que le d\'eveloppement logiciel existe, les d\'eveloppeurs se sont confront\'es aux probl\`emes de performance des applications. L'av\`enement des langages avanc\'es comme Smalltalk, Java ou C\# a permis de r\'eduire consid\'erablement les temps de d\'eveloppement des applications (en plus de les structurer) pour permettre aux d\'eveloppeurs de se consacrer \`a la logique applicative. Bien que les compilateurs g\'en\'erent du code efficace, l'optimisation manuelle est encore largement n\'ecessaire. Il est dit qu'une application qui n'a jamais \'et\'e analys\'ee et optimis\'ee peut doubler sa vitesse d'ex\'ecution en reconsid\'erant les algorithmes et en optimisant les points clefs consommateurs de temps de calcul. 
+Since the beginning of software engineering, programmers have faced issues related to application performance. Although there has been a great improvement on the programming environment to support better and faster development process, addressing performance issues when programming requires quite some dexterity.
 
-D\'evelopper du code efficace en temps n\'ecessite un certain investissement mais est \`a la port\'ee de tous.  Cependant, il est n\'ecessaire de se focaliser sur les m\'ethodes les plus co\^uteuses dans le programme afin d'\'eviter de perdre du temps de d\'eveloppement et de complexifier inutilement le logiciel. Car optimiser implique souvent d'introduire de la complexit\'e au travers de caches et autres pratiques. 
+Optimizing an application is not particularly difficult. The general idea is to make slow and frequently called methods either faster or less frequently called. Note that optimizing an application usually complexity the application. It is therefore recommended to optimize an application only when the requirements for it are well understood and addressed. In other term, you should optimize your application only when you are sure of what it is supposed to do. As Kent Beck famously formulated: 1 - Make It Work, 2 - Make It Right, 3 - Make It Fast.
 
-Nous allons montrer les outils disponibles en Pharo un nouveau smalltalk open-source disponible \`a \url{http://www.pharo-project.org}. 
+\section{What does profiling mean?} 
+Profiling an application is a term commonly employed that refers to obtaining dynamic information from a controlled program execution. The obtained information is intended to provide important hints on how to improve the program execution. These hints are usually numerical measurements, easily comparable from one program execution to another.
 
+In this chapter, we will consider measurement related to method execution time and memory consumption. Note that other kind of information may be extracted from a program execution, in particular the method call graph.
 
-\section{Profiler, c'est quoi ?} 
-Profiler une application est le terme technique qui fait r\'ef\'erence \`a l'optimisation de programmes. 
-Profiler c'est mesurer et am\'eliorer. Pour cela on utilise un profileur, un outil permettant d'\'etudier les performances d'un logiciel en mesurant les ressources utilis\'ees par un programme. Un profileur collecte deux types d'information : le temps utilis\'e par les m\'ethodes du programme et la place que prend le programme en m\'emoire.  Ceci permet de d\'etecter les m\'ethodes qui consomment le plus de temps ou de place. Ainsi, on peut se concentrer sur les parties du code les plus probl\'ematiques car le profilage est une histoire de compromis entre le temps de d\'eveloppement et le temps d'execution du logiciel. L'ex\'ecution d'un logiciel respecte souvent la d\'ecomposition  20-80: 20\% des m\'ethodes utilisent 80\% des ressources. De la m\^eme mani\`ere, le profilage de 20\% des m\'ethodes va permettre de gagner 80\% du temps.
+It is interesting to observe that a program execution usually follows the universal 80-20 rule: only a few amount of the total amount of methods (let's say 20\%) consume the largest part of the available resources (80\% of memory and CPU consumption). Optimizing an application is essentially a matter of tradeoff therefore. In this chapter we will see how to use the available tools to quickly identify these 20\% of methods and how to measure the progress coming along the program enhancements we bring.
 
-Profiler un logiciel avant la phase finale de d\'eveloppement est souvent une erreur car le profilage demande du temps, or d\'epenser ce temps sur du code changeant est inutile et peut grandement complexifier le code. L'adage de K. Beck le p\`ere de la programmation agile est bien:  \textit{Make it works, make it right, make it fast.}
-
-L'utilisation de tests unitaires est souvent indispensable \`a cette \'etape. En modifiant le code source en profondeur, ou en r\'e\'ecrivant compl\`etement certains algorithmes, les tests unitaires permettent de confirmer le bon fonctionnement des m\'ethodes modifi\'ees. 
+Experience shows that having unit tests is essential to ensure that we do not break the program semantics when optimizing it. When replacing an algorithm by another, we ought to make sure that the program still do what it is supposed to do.
 
 %%%%%%%%%%%%
 %%%%%%%%%%%%
 
-\section{De simples mesures}
+\section{A simple example}
 
-Prenons la m\'ethode \ct{Collection>>select:thenCollect:} de Pharo.
-Cette m\'ethode s\'electionne des \'el\'ements, et ensuite collecte les r\'esultats de l'application d'un bloc sur chacun des \'el\'ements. Ceci implique  a priori deux parcours sur les collections et une cr\'eation inutile de collection pour stocker les r\'esultats interm\'ediaires. Or il est simple de faire ce traitement en un seul parcours, si l'\'el\'ement correspond \`a la condition du select, on l'ajoute au r\'esultat.
+Consider the method \ct{Collection>>select:thenCollect:}. For a given collection, this method selects some element according to a predicate. It then returns a collection of applying a block function on each selected element. At the first sight, this behavior implies two runs over the collections: the one provided by the user of \ct{select:thenCollect:} then an intermediate one that contains the selected elements. However, this intermediate collection is not indispensable, since the selection and the function application can be done with only one run.
 
-\paragraph{\ct{timeToRun}.} Obtenir une trace montrant l'\'execution d'un programme n'est pas suffisante pour vraiment comprendre ce qu'il faut optimiser. 
-Il est souvent plus judicieux de comparer deux ex\'ecutions. Regardons
-comment le message \ct{timeToRun} envoy\'e \`a un bloc nous permet d'avoir un premier aper\c cu de la situation. Tout d'abord ce message est envoy\'e \`a un bloc. Nous amplifions l'ex\'ecution par l'utilisation d'une boucle : cela a un effet grossissant sur les diff\'erences d'ex\'ecutions. 
+\paragraph{\ct{timeToRun}.} Profiling one program execution is usually not enough to fully identify and understand what has to be optimized. Comparing at least two different profiled executions is definitely more fruitful. The message \ct{timeToRun} may be sent to a bloc to obtain the time in milliseconds that it took to evaluate the block. In order to have a significant measurement, we need to ``amplify'' the profiling with a loop.
 
-
-Voici des r\'esultats:
+Here are some results:
 \begin{code}{}
 	| coll |
 	coll := #(1 2 3 4 5 6 7 8) asOrderedCollection. 
 	[ 100000 timesRepeat:[ ( coll select:[:each | each > 5] ) collect: [:i |i * i]]] timeToRun
-	"Resultat de la version non optimisee ---> entre 1951 - 2005 ms"
+	"Calling select:, then collect: ---> ~ 1951 - 2005 ms"
 
 	| coll |
 	coll := #(1 2 3 4 5 6 7 8) asOrderedCollection. 
 	[ 100000 timesRepeat:[ coll select:[:each | each > 5] thenCollect:[:i |i * i]]] timeToRun
-	"Resultat de la version optimisee ---> entre 1229 - 1289 ms"
+	"Calling select:thenCollect: ---> ~ 1229 - 1289 ms"
 \end{code}
 
-Le gain de temps est consid\'erable. Maintenant essayons de comprendre en regardant le code 
-des m\'ethodes \ct{select:thenCollect:}. En effet, \ct{select:thenCollect:} est d\'efinie de mani\`ere 
-g\'en\'erique sur la classe \ct{Collection} racine de l'h\'eritage des collections puis red\'efinie de 
-mani\`ere plus optimale sur les collections ordonn\'ees comme le montre les d\'efinitions suivantes tir\'ees de Pharo.
+Although the difference between these two execution is only about few hundred of milliseconds, opting for one method instead of the other could significantly slow your application!
+
+Let's scrutinize the definition of \ct{select:thenCollect:}. A naive and non-optimized implementation is found in \ct{Collection}. (Remember that \ct{Collection} is the root class of the Pharo collection library). A more efficient implementation is defined in \ct{OrderedCollection}, which takes into account the structure of an ordered collection to efficiently perform this operation.
 
 \begin{code}{}
 Collection>>select: selectBlock thenCollect: collectBlock
@@ -366,15 +360,12 @@ OrderedCollection>>select: selectBlock thenCollect: collectBlock
     ^ newCollection
 \end{code}
 
-Comme vous pouvez le penser \`a juste titre, les collections telles que les ensembles (Set et autres), ne b\'en\'eficient pas 
-de cette optimisation. Nous vous laissons comme exercice de mesurer cette absence. Si vous optimisez cette m\'ethode pour d'autres collections, n'h\'esitez pas \`a contribuer en soumettant votre proposition \`a la communaut\'e Pharo.
-
+As you have probably guessed already, other collection such as set and dictionary do not benefit from an optimized version. We leave as an exercise the cost of not having this optimization. No not forget to submit your contribution to Pharo if you come up with an optimized version of \ct{select:thenCollect:}.
 
 %%%%%%%%%%%%
 %%%%%%%%%%%%
 
-\paragraph{\ct{bench}.}
-Le message \ct{bench} envoy\'e \`a un bloc permet de connaitre combien de fois une expression peut etre execut\'ee par seconde. Par exemple l'expression \ct{[ 1000 factorial ] bench} montre que \ct{1000 factorial} peut etre execut\'ee 350 fois par seconde.
+\paragraph{\ct{bench}.} When sent to a block, the \ct{bench} message estimates how many times this block is evaluated per second. For example, the expression \ct{[ 1000 factorial ] bench} says that \ct{1000 factorial} may be executed approximately 350 times per second.
 
 \begin{figure}
 	\begin{center}
@@ -385,7 +376,7 @@ Le message \ct{bench} envoy\'e \`a un bloc permet de connaitre combien de fois u
 \end{figure}
 
 
-\section{Profiler dans Pharo} 
+\section{Profiling in Pharo} 
 
 Alors que la m\'ethode \ct{timeToRun} nous indique le temps total d'une execution, elle ne nous aide pas vraiment \`a d\'eterminer comment les envois de messages qui composent la fonctionalit\'e se partage le temps d'ex\'ecution.
 Pour cela l'outil \ct{MessageTally} permet une analyse fine du temps pass\'e. 
