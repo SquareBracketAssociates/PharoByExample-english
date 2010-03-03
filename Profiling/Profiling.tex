@@ -5,7 +5,7 @@
 % HISTORY:
 % 2006-12-07 - Stef started chapter
 % 2009-02-12 - Stef added examples
-% 2010-02-24 - Begin the translation
+% 2010-02-24 - Alexandre begins the translation 
 
 %=================================================================
 \ifx\wholebook\relax\else
@@ -382,7 +382,7 @@ The \ct{timeToRun} method is useful to tell how long an expression takes to be e
 
 
 \subsection{MessageTally}
-\ct{MessageTally} is a implemented as a unique class having the same name. Using it is quite simple. A message \ct{spyOn:} needs to be sent to \co{MessageTally} with a block expression as argument to obtained a detailed execution analysis. Evaluating \ct{MessageTally spyOn: ["your expression here"]} open a window that contains the following information:
+\ct{MessageTally} is a implemented as a unique class having the same name. Using it is quite simple. A message \ct{spyOn:} needs to be sent to \ct{MessageTally} with a block expression as argument to obtained a detailed execution analysis. Evaluating \ct{MessageTally spyOn: ["your expression here"]} open a window that contains the following information:
 
 \begin{enumerate}
 \item a hierarchy list showing the methods executed with their associated execution time during the expression execution.
@@ -416,7 +416,7 @@ A tool a bit less crude than \ct{MessageTally} is \ct{TimeProfileBrowser}. It sh
 As shown previously, the profiler may be directly invoked by sending \ct{spyOn:} and \ct{spyAllOn:} to the \ct{MessageTally} class. It may be accessed through a number of additional ways.
 
 \paragraph{Via the World menu.}
-The World menu (obtained by clicking outside any Pharo window) offers some profiling facilities under the \ct{Debug} submenu (\figref{menu}). \ct{Start profiling all processes} creates a block from a text selection and invokes \ct{spyAllOn:}. The entry \ct{Start profiling UI} profiles the user interface process. This is quite handy when debugging a user interface!
+The World menu (obtained by clicking outside any Pharo window) offers some profiling facilities under the \ct{Debug} submenu (\figref{menu}). \ct{Start profiling all processes} creates a block from a text selection and invokes \ct{spyAllOn:}. The entry \ct{Start profiling UI} profiles the user interface process. This is quite handy when debugging an user interface!
 
 \begin{figure}[h]
 	\begin{center}
@@ -428,9 +428,10 @@ The World menu (obtained by clicking outside any Pharo window) offers some profi
 
 
 
-@@HERE
-\paragraph{Via Test Runner.}
-Le deuxi\`eme acc\`es se fait au niveau du browseur de tests unitaires. En effet, le profillage fait tr\`es bon m\'enage avec les tests unitaires. Dans Pharo, il y a donc dans l'outil d'ex\'ecution de tests nomm\'e "Test Runner" un bouton "Run Profiled" pr\'esent\'e dans la \figref{testRunner}. Ce bouton permet d'executer les tests s\'electionn\'es tout en obtenant un rapport du profileur. Cet acc\`es au profileur est simple et permet de profiler directement les tests.
+\paragraph{Via the Test Runner.}
+As the size of an application grow, unit tests are usually becoming good candidate for code profiling. Running tests often is rather tedious when the time to run them is getting too long. The \ct{test runner} in \pharo offers a button \ct{Run Profiled} (\figref{testRunner}). 
+
+Pressing this button runs the selected unit tests and generates a message tally report. 
 
 \begin{figure}[h]
 	\begin{center}
@@ -441,17 +442,17 @@ Le deuxi\`eme acc\`es se fait au niveau du browseur de tests unitaires. En effet
 \end{figure}
 
 
-\paragraph{Via la ligne de commande.}
-Le troisi\`eme acc\`es est au niveau du code. On peut y acc\'eder tr\`es simplement via les lignes de code. Cette m\'ethode permet de ma\^itriser les m\'ethodes analys\'es. Elle permet \'egalement de comparer diff\'erents algorithmes comme nous allons voir plus loin.
+\section{Read and interpret the results} 
+The message tally profiler essentially provides two kind of information:
+\begin{itemize}
+\item execution time is represented using a tree representing the profiled code execution (\ct{**Tree**}. Each node of this tree is annotated with the time spend in each leave method (\ct{**Leaves**}). 
 
+\item memory activity contains the memory consumption (\ct{**Memory**} and the garbage collector usage (**GC**).
+\end{itemize}
 
-\section{Lire et interpreter les r\'esultats} 
-Le profiler fournit deux types d'information: temporelles et m\'emorielles. Les informations temporelles sont repr\'esent\'ees sous deux formes: un arbre d'execution (**Tree**) et le temps pass\'e dans chacune des m\'ethodes (**Leaves**) sans prendre en compte les m\'ethodes quelles appellent. Les informations m\'emorielles sont repr\'esent\'ees par la consommation m\'emoire (**Memory**) et des informations concernant le Garbage Collector (**GC**).
+For illustration purpose, consider the following scenario: the string character \ct{'A'} is cumulatively appended 9 000 times to an initial empty string.
 
-
-Prenons le code suivant qui ajoute la chaine \ct{'A'} 9000 fois dans
-une chaine. Nous r\'ep\'etons ce code afin de prendre en compte la
-cr\'eation de la premi\`ere chaine. 
+%Prenons le code suivant qui ajoute la chaine \ct{'A'} 9000 fois dans une chaine. Nous r\'ep\'etons ce code afin de prendre en compte la cr\'eation de la premi\`ere chaine. \alex{I do not get this, to take into account the creation of the first string?? The string '' is allocated at the compilation, not during the profiling. }
 
 \begin{code}{}
 MessageTally spyOn: 
@@ -461,8 +462,8 @@ MessageTally spyOn:
                      9000 timesRepeat: [ str := str, 'A' ]]].
 \end{code} 
 
+The complete result is:
 
-Le r\'esultat complet donne:
 \begin{footnotesize}
 \begin{sf}
  - 19915 tallies, 19928 msec.
@@ -497,11 +498,13 @@ Process: (40s)  1175: nil
 \end{sf}
 \end{footnotesize}
 
-La premi\`ere ligne donne le temps total d'execution ainsi que le
-nombre d'echantillons (tallies). Par d\'efaut la fr\'equence
-d'\'echantillon est d'une milliseconde. 
+The first line gives the overall execution time and the number of samplings (also called \emph{tallies}, we will come back on sampling at the end of the chapter). 
 
- \subsection{**Tree**: Information cumul\'ee}
+\subsection{**Tree**: Cumulative information}
+
+The \ct{**Tree**} section represents the execution tree per processes. The tree tells the time the \pharo interpreter spent in each method. It also tells about the call graph.
+
+@@HERE 
 
  La partie **Tree** repr\'esente l'arbre d'\'execution par
  processus. Cet arbre repr\'esente le temps pass\'e dans les
@@ -991,7 +994,7 @@ une superbe biblioth\`eques d'iterateurs qu'enchainer des select: et
 collect: n'implique pas de multiples parcours de collections
 ainsi que la g\'en\'eration de collections inutiles. 
 
-
+\section {How MessageTally is implemented?}
 
 %\bibliographystyle{alpha}
 %{\small
