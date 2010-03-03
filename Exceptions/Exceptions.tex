@@ -18,6 +18,7 @@
 % 2009-09-07 - Alexandre revised
 % 2009-10-21 - Hernan Wilkinson comments
 % 2010-03-02 - posted as draft chapter for PBE2 on web site
+% 2010-03-03 - Henrik Sperre Johansen spotted an error. Alexandre fixed it
 
 %=================================================================
 \ifx\wholebook\relax\else
@@ -162,7 +163,7 @@ Here are some  examples of \lct{ifCurtailed:} usage: the text of the \ct{Transcr
 [1 / 0] ifCurtailed: [Transcript show: 'This is displayed after selecting Abandon in the debugger'; cr]
 \end{code}
 
-Although \ct{ifCurtailed:} and \ct{ensure:} are implemented as primitives in \pharo, 
+Although in \pharo \ct{ifCurtailed:} and \ct{ensure:} are implemented using a a marker primitive (described at the end of the chapter), 
 %\lr{That's not true, primitive 198 and 199 are no-ops and just act as a markers. Today the same could be done using method annotations, but that was not possible when the exceptions were implemented. The methods \ct{isHandlerContext} and \ct{isUnwindContext} just check for the presence of these marker primitives and are called by \ct{findNextHandlerContextStarting} and \ct{findNextUnwindContextUpTo:} to find the contexts. The two latter methods are primitives for efficiency reasons, but apart from that the complete exception handling is implemented at the Smalltalk level without primitive support.}\sd{exactly, but this is not wrong: ensure: is still a primitive, we talk about that at the end of the chapter}, 
 in principle \ct{ifCurtailed:} could be implemented using \ct{ensure:} as follows:
 
