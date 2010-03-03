@@ -376,31 +376,30 @@ As you have probably guessed already, other collection such as set and dictionar
 \end{figure}
 
 
-\section{Profiling in Pharo} 
+\section{Code profiling in Pharo} 
 
-Alors que la m\'ethode \ct{timeToRun} nous indique le temps total d'une execution, elle ne nous aide pas vraiment \`a d\'eterminer comment les envois de messages qui composent la fonctionalit\'e se partage le temps d'ex\'ecution.
-Pour cela l'outil \ct{MessageTally} permet une analyse fine du temps pass\'e. 
-%\ct{SpaceTally} qu'en \`a lui analyse l'espace m\'emoire utilis\'e. 
+The \ct{timeToRun} method is useful to tell how long an expression takes to be executed. But it is not really adequate to understand how the execution time is distributed over the computation triggered by evaluating the expression. Pharo comes with \ct{MessageTally}, a code profiler to precisely analyze the time distribution over a computation. 
 
 
 \subsection{MessageTally}
-L'outil principal pour la mesure des performances dans Pharo est impl\'ement\'e par la classe \ct{MessageTally}. On utilise le message \ct{spyOn:} en passant un block en param\`etre (\ct{MessageTally spyOn: ["your expression here"]}) pour recevoir les informations suivantes:
+\ct{MessageTally} is a implemented as a unique class having the same name. Using it is quite simple. A message \ct{spyOn:} needs to be sent to \co{MessageTally} with a block expression as argument to obtained a detailed execution analysis. Evaluating \ct{MessageTally spyOn: ["your expression here"]} open a window that contains the following information:
 
 \begin{enumerate}
-\item Une liste hierarchique montrant quelles m\'ethodes et combien de temps sont utilis\'es par l'expression analys\'ee.
-\item Une liste montrant le temps total pass\'e dans chacune des m\'ethodes.
-\item Des statistiques de l'utilisation de la m\'emoire incluant la taille de m\'emoire utilis\'e et des infos du Garbage Collector.
-\end{enumerate}
-Nous allons revenir en d\'etail sur ces diff\'erents aspects.
+\item a hierarchy list showing the methods executed with their associated execution time during the expression execution.
 
-La \figref{MessageTallyOne} montre le resultat de l'execution de l'expression: 
-\ct{MessageTally spyOn: [20 timesRepeat: [Transcript show: 100 factorial printString]]}.
-Le message \ct{spyOn:} montre tous les processus activ\'es lors de l'ex\'ecution. Le message \ct{spyAllOn:} montre tous les processus actif du syst\`eme durant l'ex\'ecution. 
+\item the method leaves of the execution. A method leave is a method implemented as a primitive. It does not execute any other method therefore.
+
+\item statistic about the memory consumption and garbage collector involvement 
+
+\end{enumerate}
+Each of these points will be described later on.
+
+\figref{MessageTallyOne} shows the result of the expression \ct{MessageTally spyOn: [20 timesRepeat: [Transcript show: 100 factorial printString]]}.
+The message \ct{spyOn:} execute the provided block in a new process. The analysis focus on the process. The message \ct{spyAllOn:} relates all active processes during the execution. 
 
 %Le message \ct{spyAt:on:} permet de s\'electionner le niveau de processus. Par exemple pour ne voir que le temps pris par l'expression utilisez \ct{MessageTally spyAt: 40 on: [20 timesRepeat: [Transcript show: 100 factorial printString]]}
 
-
-Quand vous utilisez les options par d\'efaut de la classe \ct{MessageTally} un outil un peu plus accommodant le \ct{TimeProfileBrowser} permet de voir la d\'efinition des m\'ethodes qui sont invoqu\'ees (\figref{TimeProfiler}). Pour cela il suffit de substituer \ct{MessageTally} par \ct{TimeProfileBrowser}.
+A tool a bit less crude than \ct{MessageTally} is \ct{TimeProfileBrowser}. It shows the implementation of the executed method in addition (\figref{TimeProfiler}).  \ct{TimeProfileBrowser} understand the message \ct{spyOn:}.
 
 
 \begin{figure}
@@ -413,14 +412,11 @@ Quand vous utilisez les options par d\'efaut de la classe \ct{MessageTally} un o
 \end{figure}
 
 
-\subsection{Int\'egration dans Pharo}
-Pharo int\`egre ce profiler dans sa boite \`a outils. Ce dernier est facilement accessible de plusieurs mani\`eres, en fonction de l'objectif souhait\'e. Il y a trois acc\`es en fonction de la granularit\'e souhait\'ee.
+\subsection{Integration in the programming environment}
+As shown previously, the profiler may be directly invoked by sending \ct{spyOn:} and \ct{spyAllOn:} to the \ct{MessageTally} class. It may be accessed through a number of additional ways.
 
-\paragraph{Via le Menu.}
-Le premier acc\`es s'effectue dans l'environnement de Pharo. On y acc\`ede par le menu "World" comme pr\'esent\'e dans la \figref{menu}. Il y a deux acc\`es diff\'erents: l'un pour profiler tout les processus (\ct{Start profiling all processes}), l'autre pour profiler uniquement l'interface (\ct{Start profiling UI})
-Ce mode de profiling permet d'analyser l'ensemble de l'environnement. Ainsi, on peut voir globalement les m\'ethodes les plus appel\'ees. La deuxi\`eme technique est surtout utilis\'ee pour les am\'eliorations li\'ees \`a Morphic: l'interface utilisateur.
-%You have two entries one to start profiling all the processes and the other one to focus on the UI main process. 
-
+\paragraph{Via the World menu.}
+The World menu (obtained by clicking outside any Pharo window) offers some profiling facilities under the \ct{Debug} submenu (\figref{menu}). \ct{Start profiling all processes} creates a block from a text selection and invokes \ct{spyAllOn:}. The entry \ct{Start profiling UI} profiles the user interface process. This is quite handy when debugging a user interface!
 
 \begin{figure}[h]
 	\begin{center}
@@ -432,8 +428,8 @@ Ce mode de profiling permet d'analyser l'ensemble de l'environnement. Ainsi, on 
 
 
 
-
-\paragraph{Via le Test Runner.}
+@@HERE
+\paragraph{Via Test Runner.}
 Le deuxi\`eme acc\`es se fait au niveau du browseur de tests unitaires. En effet, le profillage fait tr\`es bon m\'enage avec les tests unitaires. Dans Pharo, il y a donc dans l'outil d'ex\'ecution de tests nomm\'e "Test Runner" un bouton "Run Profiled" pr\'esent\'e dans la \figref{testRunner}. Ce bouton permet d'executer les tests s\'electionn\'es tout en obtenant un rapport du profileur. Cet acc\`es au profileur est simple et permet de profiler directement les tests.
 
 \begin{figure}[h]
