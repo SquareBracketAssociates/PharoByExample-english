@@ -502,18 +502,7 @@ The first line gives the overall execution time and the number of samplings (als
 
 \subsection{**Tree**: Cumulative information}
 
-The \ct{**Tree**} section represents the execution tree per processes. The tree tells the time the \pharo interpreter spent in each method. It also tells about the call graph.
-
-@@HERE 
-
- La partie **Tree** repr\'esente l'arbre d'\'execution par
- processus. Cet arbre repr\'esente le temps pass\'e dans les
- m\'ethodes principalement appel\'ees \emph{ainsi que} leur flot
- d'ex\'ecution. Cela veut dire que l'on connait le temps total pass\'e
- \`a ex\'ecuter une m\'ethode. La partie d\'elimit\'ee par les tirets
- montre la priorit\'e du processus dont le r\'esultat est
- montr\'e. Ici nous voyons un processus de priority 40.  Dans
- l'exemple, il apparait:
+The \ct{**Tree**} section represents the execution tree per processes. The tree tells the time the \pharo interpreter spent in each method. It also tells  the different invocation using a call graph. Different execution flows are kept separated according to the process in which they have been executed. The process priority is also displayed, this helps distinguishing between different processes. The example tells:
 
 \begin{sf}
 \begin{small}
@@ -528,25 +517,17 @@ Process: (40s)  1175: nil
 \end{small}
 \end{sf}
 
+This tree shows that 19.8\% of the total execution time is spent in the method \ct{SequenceableCollection>>copyReplaceFrom:to:with:}. This method is called when concatenating character strings using the message comma (\ct{,}), itself indirectly invoking \ct{new:} and some virtual machine primitives.
 
-Cet arbre nous indique que 19.8\% du temps est pass\'e dans la m\'ethode
-\ct{SequenceableCollection>>copyReplaceFrom:to:with:} qui est en effet
-appel\'ee par la concat\'enation de chaine "\ct{,}". Cette m\'ethode
-appelle les m\'ethodes \ct{new:} et des primitives  --- une primitive
-est une m\'ethode dont une impl\'ementation C est directement
-disponible dans la machine virtuelle, elle n'est donc pas ex\'ecut\'ee
-au niveau de l'interpretation de code smalltalk mais directement dans
-la machine virtuelle. 
-
-La somme des pourcentages ne fait pas 100\% car il y a d'autres processus qui
-consomment du temps d'ex\'ecution. On voit ici que l'expression arrive 
-rapidement sur des primitives et donc semble d\'ej\`a rapidement. Nous
-verrons plus loin que cette expression peut \^etre grandement
-optimis\'ee. 
+The execution takes 19.8\% of the execution time, this means that the interpreter effort is shared with other processes. The invocation chain from the code to the primitives is relatively short. Reaching hundreds of nested calls is no exception for most of applications. We will optimize this example later on.
 
 
+\subsection{**Leaves**: leaf methods}
 
-\subsection{**Leaves**: feuilles seules}
+The \ct{** Leaves**} part 
+
+@@HERE 
+
 La partie **Leaves** repr\'esente le temps pass\'e dans une m\'ethode
 \emph{sans} le temps pass\'e dans les m\'ethodes appel\'ees par
 celle-ci. Dans l'exemple pr\'ec\'edent, il apparait:
