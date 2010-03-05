@@ -32,14 +32,20 @@
 \sloppy
 %=================================================================
 \chapter{The Settings Framework}
-%what is a preference
-In this chapter we present the Settings framework which allows the management of preferences. A preference is a particular value which is usually accessible from everywhere. Basically such a preference value is stored in a class variable or in an instance variable of a singleton and is directly managed through the use of simple accessors.
+
+When an application gets mature we often needs to provide variations such as the default selection color, the default font and the default font size... Often such variations represent user preferences of possible software customizations. 
+Pharo1.1 contains and uses the Settings framework to manage its preferences. However Settings is not limited to manage Pharo preferences but can be used by any applications. The nice thing about Settings is that it is 
+not intrusive, support a modular decomposition of software and can be added to an application after its inception. 
+This is what we will see now.
+
+\section{Settings in a nutshell}
+A preference is a particular \emph{value} which is usually accessible from everywhere. Basically such a preference value is stored in a class variable or in an instance variable of a singleton and is directly managed through the use of simple accessors.
 
 Pharo contains numerous preferences. As examples, the user interface theme, the desktop background color or a boolean flag to allow or prohibit the use of sound are currently declared as preferences. Pharo users need to browse existing preferences and eventually change their value, this is the role of the settings browser presented in section~\ref{sec:TheSettingBrowser}. 
 
-In order to be viewed and updated through the setting browser, a preference must be described by a setting. Such a setting is built by a particular method tagged with a pragma. The section~\ref{sec:DeclaringASetting} explains how to declare a setting.
+A setting is a \emph{declaration} (description) of a preference value. To be viewed and updated through the setting browser, a preference value must be described by a setting. Such a setting is built by a particular method tagged with a pragma. The section~\ref{sec:DeclaringASetting} explains how to declare a setting.
 
-Depending on where and when you are using Pharo, some preferences can change often. As an example, when you are doing a demonstration, you may want to have bigger fonts, at work you may need to set a proxy whereas at home none is needed. Having to change a set of preferences depending on where you are and what you are doing can be very unconfortable and boring. With the setting browser it is possible to save the current set of preference values in a named style that can be reloaded later. Setting style management is presented in chapter~\ref{sec:SettingStylesManagement}
+Depending on where and when you are using Pharo, some preferences can change often. As an example, when you are doing a demonstration, you may want to have bigger fonts, at work you may need to set a proxy whereas at home none is needed. Having to change a set of preferences depending on where you are and what you are doing can be very tedious and boring. With the setting browser it is possible to save the current set of preference values in a named style that can be reloaded later. Setting style management is presented in Section~\ref{sec:SettingStylesManagement}.
 
 \section{The Setting browser}
 \label{sec:TheSettingBrowser}
