@@ -35,7 +35,7 @@
 %what is a preference
 In this chapter we present the Settings framework which allows the management of preferences. A preference is a particular value which is usually accessible from everywhere. Basically such a preference value is stored in a class variable or in an instance variable of a singleton and is directly managed through the use of simple accessors.
 
-Pharo contains numerous preferences. As examples, the user interface theme, the desktop background color or a boolean flag to allow or prohibit the use of sound are currently declared as preferences. Pharo users needs to browse existing preferences and eventually change their value, this is the role of the settings browser presented in section~\ref{sec:TheSettingBrowser}. 
+Pharo contains numerous preferences. As examples, the user interface theme, the desktop background color or a boolean flag to allow or prohibit the use of sound are currently declared as preferences. Pharo users need to browse existing preferences and eventually change their value, this is the role of the settings browser presented in section~\ref{sec:TheSettingBrowser}. 
 
 In order to be viewed and updated through the setting browser, a preference must be described by a setting. Such a setting is built by a particular method tagged with a pragma. The section~\ref{sec:DeclaringASetting} explains how to declare a setting.
 
@@ -46,7 +46,7 @@ Depending on where and when you are using Pharo, some preferences can change oft
 
 \begin{figure}[tbh]
 \begin{center}
-\includegraphics[scale=0.4]{SettingBrowser.png}
+\includegraphics[scale=0.3]{SettingBrowser}
 \caption{The setting browser}
 \figlabel{fig:TheSettingBrowser}
 \end{center}
@@ -54,22 +54,60 @@ Depending on where and when you are using Pharo, some preferences can change oft
 
 \section{Declaring a setting}
 \label{sec:DeclaringASetting}
+
+
+
 \section{Setting styles management}
 \label{sec:SettingStylesManagement}
 
-%\section{Getting started}
-%
-%First we need to load the package:
-%
-%\begin{code}{}
-% Gofer new
-%     wiresong: 'mc';
-%     package: 'Filesystem';
-%     load.
-%\end{code}     
-%
-%The framework supports different kinds of filesystems that can be used interchangeably and that can transparently work with each other. The most obvious one is the filesystem on your hard disk. We are going to work with that one for now:
-%
+
+\section{Design of the Settings Framework}
+
+The design of the Settings framework is based on the three following points: (1) a preference is not defined in a global class but local to the package that uses it, (2) settings can be declared independently from the application they refer to, (3) any setting declaration can be loaded even if the Settings framework is not loaded. 
+
+Let's explain now these two points since they have an impact on the modular structure of Pharo. 
+
+\begin{figure}[tbh]
+\begin{center}
+\includegraphics[scale=0.3]{Principles}
+\caption{The Settings principles}
+\figlabel{principles}
+\end{center}
+\end{figure}
+
+\paragraph{Local value and with a local flow.}
+
+The Settings framework supports the idea that a preference value is local to a package. A package should define either a singleton or a class variable defined somewhere on a class. The methods of the class are able to refer to the variable. The package should provide some way to get and set the value of the preference.
+
+here give an example
+
+Understanding the difference to previous design as implemented in Squeak3.9 or Pharo1.0 is important.
+In previous versions, the class Preferences was the place where the preferences were defined as well as methods to change their values. This implies that code using preferences was during its execution referencing the class Preferences.
+The flow of control was clearly not local the class using the preferences but always executing some methods on the Preferences class.
+
+
+
+@@
+here show an example of the old way
+@@
+
+
+\paragraph{Declaration definition.}
+While the actual value of a setting should be defined and used locally to a package, the setting declaration (so that the setting value) can be defined externally to the package using class extension or other mecanisms.
+In essence a setting declaration is description of a value: it describes how to get its value, how to change it...
+
+This means that you are not forced to define setting declaration in a package that defines a preference value.
+
+@@ here an example@@
+
+
+\paragraph{No explicit dependency on the Setting Framework.}
+Finally when declaring a setting, the code does not refer explicitly to the setting class. This has the good property 
+that you can load code containing setting declaration even if the Settings framework is not loaded. This way we make sure 
+that we get a modular system. In case the settings framework is not loaded, the method containing the setting declaration 
+is just not used by the system.
+
+
 %\begin{code}{}
 %| working |
 %working := FSDiskFilesystem current working.
