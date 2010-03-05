@@ -31,9 +31,31 @@
 %\renewmessage{\nnbb}[2]{} % Disable editorial comments
 \sloppy
 %=================================================================
-\chapter{The Settings}
+\chapter{The Settings Framework}
+%what is a preference
+In this chapter we present the Settings framework which allows the management of preferences. A preference is a particular value which is usually accessible from everywhere. Basically a preference value is stored in a class variable or an instance variable of a singleton and is directly managed through the use of accessors.
 
-In this chapter we present the Settings framework which allows the management of global preferences throught the use of the Settings browser. A global preference is a special value which is usually used in order to initialize some state of a system. As an example, the desktop color, the text font or a boolean.
+Pharo contains numerous preferences. As examples, the user interface theme, the desktop background color or a boolean flag to allow or prohibit the use of sound are currently declared as preferences. Pharo users needs to browse existing preferences and eventually change their value, this is the role of the settings browser presented in section~\ref{sec:TheSettingBrowser}. 
+
+In order to be viewed and updated through the setting browser, a preference must be described by a setting. Such a setting is built by a particular method tagged with a pragma. The section~\ref{sec:DeclaringASetting} explains how to declare a setting.
+
+Depending on where and when you are using Pharo, some preference could change often. As an example, if you are doing a demonstration, you may want to have bigger fonts, at work you may need to set a proxy whereas at home none is needed. Having to change a set of preferences depending on the context can be very unconfortable and boring. With the setting browser  
+
+\section{The Setting browser}
+\label{sec:TheSettingBrowser}
+
+\begin{figure}[tbh]
+\begin{center}
+\includegraphics[width=\textwidth]{SettingBrowser.png}
+\caption{The setting browser}
+\figlabel{fig:TheSettingBrowser}
+\end{center}
+\end{figure}
+
+\section{Declaring a setting}
+\label{sec:DeclaringASetting}
+\section{Setting styles management}
+\label{sec:SettingStylesManagement}
 
 %\section{Getting started}
 %
