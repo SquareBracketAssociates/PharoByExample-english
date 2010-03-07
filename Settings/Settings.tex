@@ -34,14 +34,14 @@
 \chapter{The Settings Framework}
 
 When an application gets mature we often needs to provide variations such as the default selection color, the default font and the default font size... Often such variations represent user preferences of possible software customizations. 
-Pharo1.1 contains and uses the Settings framework to manage its preferences. However Settings is not limited to manage Pharo preferences but can be used by any applications. The nice thing about Settings is that it is 
-not intrusive, support a modular decomposition of software and can be added to an application after its inception. 
+Since the 1.1 release, Pharo contains and uses the Settings framework to manage its preferences. However Settings is not limited to manage Pharo preferences but can be used by any applications. The nice thing about Settings is that it is 
+not intrusive, it supports a modular decomposition of software and can be added to an application after its inception. 
 This is what we will see now.
 
 \section{Settings in a nutshell}
 A preference is a particular \emph{value} which is usually accessible from everywhere. Basically such a preference value is stored in a class variable or in an instance variable of a singleton and is directly managed through the use of simple accessors.
 
-Pharo contains numerous preferences. As examples, the user interface theme, the desktop background color or a boolean flag to allow or prohibit the use of sound are currently declared as preferences. Pharo users need to browse existing preferences and eventually change their value, this is the role of the settings browser presented in section~\ref{sec:TheSettingBrowser}. 
+Pharo contains numerous preferences. As examples, the user interface theme, the desktop background color or a boolean flag to allow or prohibit the use of sound are currently declared as preferences. Pharo users need to browse existing preferences and eventually change their value, this is the major role of the settings browser presented in section~\ref{sec:TheSettingBrowser}. 
 
 A setting is a \emph{declaration} (description) of a preference value. To be viewed and updated through the setting browser, a preference value must be described by a setting. Such a setting is built by a particular method tagged with a pragma. The section~\ref{sec:DeclaringASetting} explains how to declare a setting.
 
@@ -49,7 +49,11 @@ Depending on where and when you are using Pharo, some preferences can change oft
 
 \section{The Setting browser}
 \label{sec:TheSettingBrowser}
-
+The setting browser, shown in figure~\figref{fig:TheSettingBrowser}, mainly allows the browsing of all currently declared settings and to change related preference values. To open it, just use the World menu (\menu{World \go System \go Settings}) or evaluate the following expression:
+\begin{code}{}
+SettingBrowser open
+\end{code}
+The settings are presented in several trees in the middle panel. Setting searching and filtering is available from the top toolbar whereas the bottom panels show currently selected setting description (left bottom panel) and current package set (right bottom panel). 
 \begin{figure}[tbh]
 \begin{center}
 \includegraphics[scale=0.3]{SettingBrowser}
@@ -58,6 +62,8 @@ Depending on where and when you are using Pharo, some preferences can change oft
 \end{center}
 \end{figure}
 
+\subsection{Browsing and changing preference values}
+Setting declarations are organized in trees which can be browsed in the middle panel.
 \section{Declaring a setting}
 \label{sec:DeclaringASetting}
 
