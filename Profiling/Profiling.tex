@@ -445,7 +445,7 @@ Pressing this button runs the selected unit tests and generates a message tally 
 \section{Read and interpret the results} 
 The message tally profiler essentially provides two kind of information:
 \begin{itemize}
-\item execution time is represented using a tree representing the profiled code execution (\ct{**Tree**}. Each node of this tree is annotated with the time spend in each leave method (\ct{**Leaves**}). 
+\item execution time is represented using a tree representing the profiled code execution (\ct{**Tree**}. Each node of this tree is annotated with the time spend in each leaf method (\ct{**Leaves**}). 
 
 \item memory activity contains the memory consumption (\ct{**Memory**} and the garbage collector usage (**GC**).
 \end{itemize}
@@ -504,8 +504,7 @@ The first line gives the overall execution time and the number of samplings (als
 
 The \ct{**Tree**} section represents the execution tree per processes. The tree tells the time the \pharo interpreter spent in each method. It also tells  the different invocation using a call graph. Different execution flows are kept separated according to the process in which they have been executed. The process priority is also displayed, this helps distinguishing between different processes. The example tells:
 
-\begin{sf}
-\begin{small}
+\begin{code}
 **Tree**
 --------------------------------
 Process: (40s)  1175: nil
@@ -514,8 +513,7 @@ Process: (40s)  1175: nil
   |14.0% {2790ms} primitives
   |5.9% {1176ms} ByteString class(String class)>>new:
 7.7% {1534ms} primitives
-\end{small}
-\end{sf}
+\end{code}
 
 This tree shows that 19.8\% of the total execution time is spent in the method \ct{SequenceableCollection>>copyReplaceFrom:to:with:}. This method is called when concatenating character strings using the message comma (\ct{,}), itself indirectly invoking \ct{new:} and some virtual machine primitives.
 
@@ -524,25 +522,27 @@ The execution takes 19.8\% of the execution time, this means that the interprete
 
 \subsection{**Leaves**: leaf methods}
 
-The \ct{** Leaves**} part 
+The \ct{** Leaves**} part lists \emph{leaf methods} for the code block that has been profiled. A leaf method is a method that does not call other methods. More exactly, it is a method \ct{m} for which no method invoked by $m$ have been ``detected''. This is the case for variable accessors (\eg  \ct{Point>>>x}), primitive methods and methods that are very quickly executed. For the previous example, we have:
 
-@@HERE 
-
-La partie **Leaves** repr\'esente le temps pass\'e dans une m\'ethode
-\emph{sans} le temps pass\'e dans les m\'ethodes appel\'ees par
-celle-ci. Dans l'exemple pr\'ec\'edent, il apparait:
-
-\begin{small}
-\begin{sf}
+\begin{code}
 **Leaves**
 52.7% {10502ms} SmallInteger(Integer)>>timesRepeat:
 14.0% {2790ms} ByteString(SequenceableCollection)>>copyReplaceFrom:to:with:
 8.8% {1754ms} UndefinedObject>>DoIt
 7.7% {1534ms} ByteString(SequenceableCollection)>>,
 5.9% {1176ms} ByteString class(String class)>>new:
-\end{sf}
-\end{small}
+\end{code}
 
+Some leaf methods may not appear in the information tree described above. Leaf methods are obtained by regularly introspecting the method call stack. The information tree is a method call arborescence. A method for which the callers cannot be identified are not part of the tree. This happens when the control flow is modified by other means than a simple method call: 
+
+\begin{itemize}
+\item when a primitive invokes a method. This is the case of \ct{doesNotUnderstand:} for example. 
+\item when an exception is raised
+\item block evaluation
+\item process creation
+\end{itemize}
+
+@@HERE
 
 Toutes les m\'ethodes n'apparaissent pas dans la section
 **Leaves**. Une m\'ethode apparaissant dans cette section signifie
