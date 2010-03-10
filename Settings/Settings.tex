@@ -39,7 +39,7 @@ not intrusive, it supports a modular decomposition of software and can be added 
 This is what we will see now.
 
 \section{Settings in a nutshell}
-A preference is a particular \emph{value} which is usually accessible from everywhere. Basically such a preference value is stored in a class variable or in an instance variable of a singleton and is directly managed through the use of simple accessors. Pharo contains numerous preferences. As examples, the user interface theme, the desktop background color or a boolean flag to allow or prohibit the use of sound are currently declared as preferences. Although this is not really the subject of this chapter, the point of declaring a preferences is covered by section~\ref{sec:DeclaringPreferences}. 
+A preference is a particular \emph{value} which is usually accessible from everywhere. Basically such a preference value is stored in a class variable or in an instance variable of a singleton and is directly managed through the use of simple accessors. Pharo contains numerous preferences. As examples, the user interface theme, the desktop background color or a boolean flag to allow or prohibit the use of sound are currently declared as preferences. Although this is not really the subject of this chapter, the point of programming a preferences is covered by section~\ref{sec:ProgrammingAPreference}. 
 
 Pharo users need to browse existing preferences and eventually change their value, this is the major role of the settings browser presented in section~\ref{sec:TheSettingBrowser}.
 
@@ -85,7 +85,7 @@ Depending on the selected setting, it may be different. Three versions of it are
 \begin{itemize}
 \item \textbf{Browse (b)}: opens a system browser on the method which declares the setting. It is also accessible via the keyboard shortcut \textit{cmd-b} or if you double-click on a setting. It is very handy if you want to change the setting implementation or simply see how it is implemented in order to understand the framework by investigating some examples (how to declare a setting is explained in section~\ref{sec:DeclaringASetting}).
 \item \textbf{Set to default (d)}: set the selected setting value to the default one. It is very handy if, as an example, you have played with a setting to observe its effect and finally decide to come back to its default. It is also possible to set to default all settings is one single action, this is explained is section \ref{sec:SettingStylesManagement}.
-\item \textbf{Empty list (e)}: If the input widget is an editable drop-list, this menu item allows to forget previously entered value by emptying the recorded list.
+\item \textbf{Empty list (e)}: If the input widget is an editable drop-list, this menu item allows to forget previously entered values by emptying the recorded list.
 \end{itemize}
 
 \subsection{Searching and filtering settings}
@@ -102,8 +102,8 @@ Depending on the selected setting, it may be different. Three versions of it are
 \section{Extending the setting browser}
 \label{sec:ExtendingTheSettingBrowser}
 
-\section{Some points about the declaring of preferences}
-\label{sec:DeclaringPreferences}
+\section{Programming a preference}
+\label{sec:ProgrammingAPreference}
 
 \section{Design of the Settings Framework}
 The design of the Settings framework is based on the three following points: (1) a preference is not defined in a global class but local to the package that uses it, (2) settings can be declared independently from the application they refer to, (3) any setting declaration can be loaded even if the Settings framework is not loaded. 
