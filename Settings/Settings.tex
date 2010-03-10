@@ -39,9 +39,9 @@ not intrusive, it supports a modular decomposition of software and can be added 
 This is what we will see now.
 
 \section{Settings in a nutshell}
-A preference is a particular \emph{value} which is usually accessible from everywhere. Basically such a preference value is stored in a class variable or in an instance variable of a singleton and is directly managed through the use of simple accessors.
+A preference is a particular \emph{value} which is usually accessible from everywhere. Basically such a preference value is stored in a class variable or in an instance variable of a singleton and is directly managed through the use of simple accessors. Pharo contains numerous preferences. As examples, the user interface theme, the desktop background color or a boolean flag to allow or prohibit the use of sound are currently declared as preferences. Although this is not really the subject of this chapter, the point of declaring a preferences is covered by section~\ref{sec:DeclaringPreferences}. 
 
-Pharo contains numerous preferences. As examples, the user interface theme, the desktop background color or a boolean flag to allow or prohibit the use of sound are currently declared as preferences. Pharo users need to browse existing preferences and eventually change their value, this is the major role of the settings browser presented in section~\ref{sec:TheSettingBrowser}. 
+Pharo users need to browse existing preferences and eventually change their value, this is the major role of the settings browser presented in section~\ref{sec:TheSettingBrowser}.
 
 A setting is a \emph{declaration} (description) of a preference value. To be viewed and updated through the setting browser, a preference value must be described by a setting. Such a setting is built by a particular method tagged with a pragma. The section~\ref{sec:DeclaringASetting} explains how to declare a setting.
 
@@ -63,7 +63,34 @@ The settings are presented in several trees in the middle panel. Setting searchi
 \end{figure}
 
 \subsection{Browsing and changing preference values}
-Setting declarations are organized in trees which can be browsed in the middle panel.
+Setting declarations are organized in trees which can be browsed in the middle panel. In order to get a description for a setting, just click on it: the setting is selected and the left bottom panel is updated with informations about the selected setting. 
+
+Changing a preference value is simply done through the browser: each line holds a widget on the right with which you can update the value. The kind of widget depends on the actual type of the preference value. Whereas a preference value can be of any kind, the setting browser is currently able to present an input widget for the following types: \textit{Boolean}, \textit{Color}, \textit{FilePath}, \textit{Font}, \textit{Number}, \textit{Point} and \textit{String}. A drop-list, a password field or a range input widget using a slider can also be used. Of course, the list of possible widgets is not closed as it is possible to make the setting browser support new kind of preference values or use different input widgets. This point is explained in section~\ref{sec:ExtendingTheSettingBrowser}.
+
+If the actual type of a setting is either \textit{String}, \textit{FilePath}, \textit{Number} or \textit{Point}, in order to change a value, the user has to enter some text in a editable drop-list widget. In such a case, the input must be confirmed by hinting the return key (or with cmd-s). If such a setting value is changed often, the drop-list widget is very handy because you can retrieve and use previously entered values in one click !
+
+Other possible actions are all acessible from the contextual menu.
+Depending on the selected setting, it may be different. Three versions of it are shown in figure \figref{fig:TheSettingBrowserPopupMenu}.
+\begin{figure}[tbh]
+\begin{center}
+\begin{tabular}{ccc}
+\includegraphics[scale=0.5]{popup0.png} & 
+	\includegraphics[scale=0.5]{popup1.png} & 
+	\includegraphics[scale=0.5]{popup2.png} \\ 
+\end{tabular} 
+\caption{The contextual popup menu}
+\figlabel{fig:TheSettingBrowserPopupMenu}
+\end{center}
+\end{figure}
+\begin{itemize}
+\item \textbf{Browse (b)}: opens a system browser on the method which declares the setting. It is also accessible via the keyboard shortcut \textit{cmd-b} or if you double-click on a setting. It is very handy if you want to change the setting implementation or simply see how it is implemented in order to understand the framework by investigating some examples (how to declare a setting is explained in section~\ref{sec:DeclaringASetting}).
+\item \textbf{Set to default (d)}: set the selected setting value to the default one. It is very handy if, as an example, you have played with a setting to observe its effect and finally decide to come back to its default. It is also possible to set to default all settings is one single action, this is explained is section \ref{sec:SettingStylesManagement}.
+\item \textbf{Empty list (e)}: If the input widget is an editable drop-list, this menu item allows to forget previously entered value by emptying the recorded list.
+\end{itemize}
+
+\subsection{Searching and filtering settings}
+@ two points here: searching (token of regexp) and filtering by selecting packages @
+
 \section{Declaring a setting}
 \label{sec:DeclaringASetting}
 
@@ -72,9 +99,13 @@ Setting declarations are organized in trees which can be browsed in the middle p
 \section{Setting styles management}
 \label{sec:SettingStylesManagement}
 
+\section{Extending the setting browser}
+\label{sec:ExtendingTheSettingBrowser}
+
+\section{Some points about the declaring of preferences}
+\label{sec:DeclaringPreferences}
 
 \section{Design of the Settings Framework}
-
 The design of the Settings framework is based on the three following points: (1) a preference is not defined in a global class but local to the package that uses it, (2) settings can be declared independently from the application they refer to, (3) any setting declaration can be loaded even if the Settings framework is not loaded. 
 
 Let's explain now these two points since they have an impact on the modular structure of Pharo. 
