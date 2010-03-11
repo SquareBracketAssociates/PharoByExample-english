@@ -19,6 +19,7 @@
 % 2009-10-21 - Hernan Wilkinson comments
 % 2010-03-02 - posted as draft chapter for PBE2 on web site
 % 2010-03-03 - Henrik Sperre Johansen spotted an error. Alexandre fixed it
+% 2010-03-11 - Various corrections from Max Leske - fixed by Oscar
 
 %=================================================================
 \ifx\wholebook\relax\else
@@ -473,7 +474,7 @@ The current \pharo virtual machine does actually use full Smalltalk objects all 
 
 \index{BlockClosure!on:do:}
 When we send \lct{\emph{aBlock} on: \emph{ExceptionClass} do: \emph{actionHandler}}, we intend to associate an exception handler (\lct{\emph{actionHandler}}) with a given class of exceptions (\lct{\emph{ExceptionClass}}) for the activation context of the protected block \lct{\emph{aBlock}}.
-This information is used to identify and execute \lct{\emph{actionHandler}} whenever an exception of an appropriate class is signaled; \lct{\emph{actionHandler}} can be found by traversing the stack starting from the top (the most resent message-send) and working down to the context that sent the \ct{on:do:} message.
+This information is used to identify and execute \lct{\emph{actionHandler}} whenever an exception of an appropriate class is signaled; \lct{\emph{actionHandler}} can be found by traversing the stack starting from the top (the most recent message-send) and working down to the context that sent the \ct{on:do:} message.
 
 If there is no exception handler on the stack, the message \ct{defaultAction} will be sent either by \cmind{ContextPart}{handleSignal:} or by \cmind{UndefinedObject}{handleSignal:}. The latter is associated with the bottom of the stack, and is defined as follows:
 
@@ -653,7 +654,7 @@ Here we can clearly see that the value of \ct{MyResumableTestError signal} is th
 
 The message \ct{resume} is equivalent to \ct{resume: nil}.
 
-The usefulness of resuming an exception is illustrated by the class \ct{Installer}, which implements an automatic package loading mechanism. When installing packages, warnings may be signaled. Warnings should not be considered fatal errors, so the installer should simply ignore the warning and continue installing. \lr{Maybe better use something from Pharo-Core like \ct{UndeclaredVariableWarning} or \ct{TimedOut}.}
+The usefulness of resuming an exception is illustrated by the class \lct{Installer}, which implements an automatic package loading mechanism. When installing packages, warnings may be signaled. Warnings should not be considered fatal errors, so the installer should simply ignore the warning and continue installing. \lr{Maybe better use something from Pharo-Core like \ct{UndeclaredVariableWarning} or \ct{TimedOut}.}
 \ab{St\'{e}ph and I failed to find a better example.  If you have one, go ahead and replace this one.}
 
 \begin{code}{}
@@ -693,7 +694,7 @@ ResumableLoader>>>readConfiguration
 \end{code}
 
 \noindent
-Depending on user input, the handler in \ct{readConfiguration} might \ct{return} \ct{nil}, or it might \ct{resume} the exception, causing the \ct{signal} message send in \ct{readOptionsFrom:} to return and the parsing of the options stream to continue.
+Depending on user input, the handler in \ct{readConfiguration} might \lct{return} \lct{nil}, or it might \ct{resume} the exception, causing the \ct{signal} message send in \ct{readOptionsFrom:} to return and the parsing of the options stream to continue.
 
 Note that \ct{InvalidOption} must be resumable; it suffices to define it as a subclass of \ct{Exception}.
 
@@ -815,7 +816,7 @@ If there is no next handler on the stack, the \ct{defaultAction} message is sent
 
 The goal of this section has been to demonstrate the power of exceptions.
 It should be clear that while you can do almost anything with exceptions, the code
-that results not is always easy to understand.   
+that results is not always easy to understand.   
 There is often a simpler way to get he same effect without exceptions; see \mthref{simplerObjectPerfromAll} on page \pageref{mth:simplerObjectPerfromAll} for a better way to implement \ct{performAll:}.
 
 %=================================================================
@@ -992,7 +993,7 @@ Now that we know where the information is stored, let's have a look at how it is
 We might think that the primitive 199 is complex to write. 
 But it too is trivial, because primitive 199 \emph{always} fails!
 Because the primitive always fails, the \st{} body of \ct{on:do:} is always executed.
-However, the presence of the \ct{<primitive 199>} bytecode marks the executing context in a unique way. 
+However, the presence of the \ct{<primitive: 199>} bytecode marks the executing context in a unique way. 
 
 The source code of the primitive is found in \ct{Interpreter>>>primitiveMarkHandlerMethod} in the \pkgind{VMMaker} \sqsrc project: 
 
@@ -1119,7 +1120,7 @@ In some situations, it will never makes sense to resume an exception.
 In such a case you should signal a non-resumable subclass\,---\,either an existing one or one of your own creation.
 In other situations, it will always be OK to resume an exception, without the handler having to do anything.
 In fact, this gives us another way of characterizing a notification:
-a \ct{Notification} is a resumable \ct{Exception} that can be safely resumed them without first modifying the state of the system.
+a \ct{Notification} is a resumable \ct{Exception} that can be safely resumed without first modifying the state of the system.
 More often, it will be safe to resume an exception only if the state of the system is first modified in some way.
 So, if you signal a resumable exception, you should be very clear about what you expect an exception handler to do before it resumes the exception.
 
@@ -1163,7 +1164,7 @@ In this chapter we saw how to use exceptions to signal and handle abnormal situa
 
 \item Use \lct{\emph{protectedBlock} ifCurtailed: \emph{actionBlock}} to ensure that \lct{\emph{actionBlock}} will be performed \emph{only} if \lct{\emph{protectedBlock}} terminates abnormally.
 
-\item Exceptions are objects. Exceptions classes form a hierarchy with the class \ct{Exception} at the root of the hierarchy.
+\item Exceptions are objects. Exception classes form a hierarchy with the class \ct{Exception} at the root of the hierarchy.
 
 \item Use \lct{\emph{protectedBlock} on: \emph{ExceptionClass} do: \emph{handlerBlock}} to catch exceptions that are instances of \lct{\emph{ExceptionClass}} (or any of its subclasses). The \lct{\emph{handlerBlock}} should take an exception instance as its sole argument.
 

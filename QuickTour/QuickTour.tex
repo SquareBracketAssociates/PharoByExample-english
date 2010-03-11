@@ -645,7 +645,7 @@ The leftmost two panes are a bit like the top panes in the browser.  The left pa
 \end{figure}
 
 You should see a message like that shown in \figref{testRunnerTestShout}, which indicates that there was an error in running the tests.  The list of tests that gave rise to errors is shown in the bottom right pane; as you can see, \ct{StringTest>>>#testShout} is the culprit.
-(Note that \ct{StringTest>>#testShout} is the Smalltalk way of identifying the \mthind{StringTest}{testShout} method of the \ct{StringTest} class.)
+(Note that \ct{StringTest>>>#testShout} is the Smalltalk convention to identify the \mthind{StringTest}{testShout} method of the \ct{StringTest} class.)
 If you \click on that line of text, the erroneous test will run again, this time in such a way that you see the error happen: ``\ct{MessageNotUnderstood: ByteString>>>shout}''.
 \seeindex{\ct{>>}}{Behavior, \ct{>>}}
 \cmindex{Behavior}{>>}

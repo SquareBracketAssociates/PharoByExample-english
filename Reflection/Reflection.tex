@@ -381,7 +381,7 @@ For example, to discover which methods are newly introduced in a given class, \i
 \end{code}
 
 A compiled method does not simply store the bytecode of a method.
-It is also an object the provides numerous useful methods for querying the system.
+It is also an object that provides numerous useful methods for querying the system.
 One such method is \ct{isAbstract} (which tells if the method sends \ct{subclassResponsibility}).
 We can use it to identify all the abstract methods of an abstract class
 \needlines{4}
@@ -424,7 +424,7 @@ The refactoring browser provides us with an elegant way to restrict our query to
 \dothis{Open a browser on the class \ct{Collection}.
 \actclick on the class name and select \menu{refactoring scope>subclasses with}.
 This will open a new Browser Environment on just the \ct{Collection} hierarchy.
-Within this restricted scope select \menu{refactoring scope>super-sends} to open a new environment with all methods that perform super-sends within the \ct{Collectuon} hierarchy.
+Within this restricted scope select \menu{refactoring scope>super-sends} to open a new environment with all methods that perform super-sends within the \ct{Collection} hierarchy.
 Now \click on any method and select \menu{refactor>code critics}.
 Navigate to \menu{Lint checks>Possible bugs>Sends different super message} and \actclick to select \menu{browse}.}
 
@@ -715,7 +715,7 @@ DynamicAcccessors>>>doesNotUnderstand: aMessage
 \end{code}
 Any message not understood is trapped here. If an instance variable with the same name as the message sent exists, then we ask our class to compile an accessor for that instance variables and we re-send the message.
 
-Suppose the class \ct{DynamicAcccessors} has an (uninitialized) instance variable \ct{x} but no pre-defined accessor. Then the following will generate the accessor dynamically and retrieve the value:
+Suppose the class \ct{DynamicAccessors} has an (uninitialized) instance variable \ct{x} but no pre-defined accessor. Then the following will generate the accessor dynamically and retrieve the value:
 \needlines{2}
 \begin{code}{}
 myDA := DynamicAccessors new.
@@ -777,10 +777,10 @@ We can now remove the fake method as follows:
 Demo methodDict removeKey: #answer42 ifAbsent: []
 \end{code}
 
-If we take a closer look at \ct{ObjectsAsMethodsExample}, we will see that its superclass also implements the methods \ct{flushcache}, \ct{methodClass:} and \lct{selector:}, but they are all empty.  These messages may be sent to a compiled methods, so they need to be implemented by an object pretending to be a compiled method.  (\ct{flushcache} is the most important method to be implemented; others may be required depending on whether the method is installed using \clsmthind{Behavior}{addSelector:withMethod:} or directly using \clsmthind{MethodDictionary}{at:put:}.)
+If we take a closer look at \ct{ObjectsAsMethodsExample}, we will see that its superclass also implements the methods \ct{flushcache}, \ct{methodClass:} and \lct{selector:}, but they are all empty.  These messages may be sent to a compiled method, so they need to be implemented by an object pretending to be a compiled method.  (\ct{flushcache} is the most important method to be implemented; others may be required depending on whether the method is installed using \clsmthind{Behavior}{addSelector:withMethod:} or directly using \clsmthind{MethodDictionary}{at:put:}.)
 
 %-------------------------------------------------------------------------
-\subsection{Using methods wrappers to perform test coverage}
+\subsection{Using method wrappers to perform test coverage}
 
 Method wrappers are a well-known technique for intercepting messages \cite{Bran98a}.
 In the original implementation\footnote{http://www.squeaksource.com/MethodWrappers.html}, a method wrapper is an instance of a subclass of \ct{CompiledMethod}. When installed, a method wrapper can perform special actions before or after invoking the original method.
@@ -866,7 +866,7 @@ Method wrappers can be used to perform any kind of suitable behaviour before or 
 A \emphind{pragma} is an annotation that specifies data about a program, but is not involved in the execution of the program. Pragmas have no direct effect on the operation of the method they annotate.
 Pragmas have a number of uses, among them:
 \begin{itemize}
-\item Information for the compiler: \indmain{pragmas} can be used by the compiler to make a method call a primitive function. This function has to be defined by the virtual machine or by an external plugging.
+\item Information for the compiler: \indmain{pragmas} can be used by the compiler to make a method call a primitive function. This function has to be defined by the virtual machine or by an external plug-in.
 \item Runtime processing: Some pragmas are available to be examined at runtime.
 \end{itemize}
 
@@ -930,7 +930,7 @@ Reflection refers to the ability to query, examine and even modify the metaobjec
 \item The Inspector uses \ct{instVarAt:} and related methods to query and modify ``private'' instance variables of objects.
 \item Send \ct{Behavior>>>allInstances} to query instances of a class.
 \item The messages \ct{class}, \ct{isKindOf:}, \ct{respondsTo:} \etc  are useful for gathering metrics or building development tools, but they should be avoided in regular applications: they violate the encapsulation of objects and make your code harder to understand and maintain.
-\item \ct{SystemNavigation} is a utility class holding many useful queries for navigation and browsing the \ct class hierarchy. For example, use \ct{SystemNavigation default browseMethodsWithSourceString: 'pharo'.} to find and browse all methods with a given source string. (Slow, but thorough!)
+\item \ct{SystemNavigation} is a utility class holding many useful queries for navigation and browsing the class hierarchy. For example, use \ct{SystemNavigation default browseMethodsWithSourceString: 'pharo'.} to find and browse all methods with a given source string. (Slow, but thorough!)
 \item Every \st class points to an instance of \ct{MethodDictionary} which maps selectors to instances of \ct{CompiledMethod}. A compiled method knows its class, closing the loop.
 \item \ct{MethodReference} is a leightweight proxy for a compiled method, providing additional convenience methods, and used by many \st tools. 
 \item \ct{BrowserEnvironment}, part of the Refactoring Browser infrastructure, offers a more refined interface than \ct{SystemNavigation} for querying the system, since the result of a query can be used as a the scope of a new query. Both GUI and programmatic interfaces are available.

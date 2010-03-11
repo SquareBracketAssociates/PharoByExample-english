@@ -162,7 +162,7 @@ The second, with the magnifying glass, opens an object inspector on the currentl
 The third, with the coloured circles, displays the \ind{CSS} style sheet for this component. 
 At the top right, the \link{R} and \link{S} let you toggle between the rendered and source views of the web page. 
 Experiment with all of these links. 
-Note that the \link{++} and \link{--} links are also active in the source view.
+Note that the \link{++} and \link{{-}{-}} links are also active in the source view.
 Contrast the nicely-formatted source view provided by the Halos with the unformatted source view offered by your browser.}
 
 The Seaside class browser and object inspector can be very convenient when the server is running on another computer, especially when the server does not have a display, or if it is in remote place. 
@@ -374,7 +374,7 @@ Aside from instance and class-side initialization methods, there is nothing else
 As you can see from these examples, Seaside does not use templates to generate web pages.
 Instead it generates XTHML programmatically.
 The basic idea is that every Seaside component should override the method \mthind{WAPresenter}{renderContentOn:}; this message will be sent by the framework to each component that needs to be rendered.
-This \ct{renderContentOn:} message will have argument that is an \seeindex{canvas}{html canvas} \emphind{html canvas} onto which the component should render itself.  By convention, the html canvas parameter is called \ct{html}.
+This \ct{renderContentOn:} message will have an argument that is an \seeindex{canvas}{html canvas} \emphind{html canvas} onto which the component should render itself.  By convention, the html canvas parameter is called \ct{html}.
 An html canvas is analogous to the graphics canvas used by Morphic (and most other drawing frameworks) to abstract away from the device-dependent details of drawing.
  
 
@@ -435,7 +435,7 @@ SeasideDemo>>>children
 
 Notice that there are two different ways of instantiating the \ct{heading} brush.
 The first way is to set the text directly by sending the message \ct{heading:}.
-The second way is instantiate the brush by sending \ct{heading}, and then to send a cascade of messages to the brush to set its properties and render it.
+The second way is to instantiate the brush by sending \ct{heading}, and then to send a cascade of messages to the brush to set its properties and render it.
 Many of the available brushes can be used in these two ways.
 
 \important{If you send a \ind{cascade} of messages to a brush including the message \mthind{WABrush}{with:}, then \ct{with:} should be the \emph{final} message.
@@ -1332,7 +1332,7 @@ Instead of manually adding the library, you may also do it programmatically when
 \begin{code}{}
 MyCalculator class>>>initialize
 	(self registerAsApplication: 'rpn')
-		addLibrary: SULibrary}}
+		addLibrary: SULibrary
 \end{code}
 
 \begin{figure}[ht]

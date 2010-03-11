@@ -201,7 +201,7 @@ Let us briefly survey some of the key differences:
   \item {\bf Heterogeneous:}
   	Most collections will hold any kind of element.
 	A \clsind{String}, \clsind{CharacterArray} or \clsind{Symbol}, however, only holds \ct{Character}s.
-	An \clsind{Array} will hold any mix of objects, but a \lct{ByteArray} only holds \ct{Byte}s, an \clsind{IntegerArray} only holds \ct{Integer}s and a \clsind{FloatArray} only holds \ct{Float}s.
+	An \clsind{Array} will hold any mix of objects, but a \lct{ByteArray} only holds \lct{Byte}s, an \clsind{IntegerArray} only holds \ct{Integer}s and a \clsind{FloatArray} only holds \ct{Float}s.
 	A \clsind{LinkedList} is constrained to hold elements that conform to the \prot{Link \go accessing} protocol.
 
 \end{itemize}
@@ -316,7 +316,7 @@ There are several ways to create instances of the class \clsind{Array}. We can u
 \paragraph{Creation with \mthind{Array class}{new:}} \ct{new: anInteger} creates an array of size \ct{anInteger}.
 \ct{Array new: 5} creates an array of size 5.
 
-\paragraph{Creation with \mthind{Array class}{with:}} \ct{with:} methods allows one to specify the value of the elements.  
+\paragraph{Creation with \mthind{Array class}{with:}} \ct{with:} methods allow one to specify the value of the elements.  
 The following code creates an array of three elements consisting of the number \ct{4}, the fraction \ct{3/2} and the string \ct{'lulu'}.
 
 \begin{code}{@TEST | anArray |}
@@ -466,7 +466,7 @@ The class \clsindmain{Dictionary} clearly illustrates that the collection hierar
 
 \needlines{5}
 \begin{code}{@TEST | colors |}
-colors := Dictionary newFrom: { #blue->Color blue. #red->Color red. #yellow->Color yellow }.
+colors := Dictionary newFrom: { #blue->Color blue . #red->Color red . #yellow->Color yellow }.
 colors removeKey: #blue.
 colors associations --> {#yellow->Color yellow . #red->Color red}
 \end{code}

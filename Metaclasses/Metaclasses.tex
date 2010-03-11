@@ -321,7 +321,7 @@ We can see the complete picture in \figref{inheritbehavior}.
 \paragraph{Where is \lct{new} defined?}
 To understand the importance of the fact that metaclasses inherit from \ct{Class} and \ct{Behavior}, it helps to ask where \ct{new} is defined and how it is found. When the message \ct{new} is sent to a class it is looked up in its metaclass chain and ultimately in its superclasses \ct{Class}, \ct{ClassDescription} and \ct{Behavior} as shown in \figref{sendingnew}.
 
-The question \emph{``Where \ct{new} is defined?''} is crucial. \mthind{Behavior}{new} is first defined in the class \ct{Behavior}, and it can be redefined in its subclasses, including any of the metaclass of the classes we define, when this is necessary. Now when a message \ct{new} is sent to a class it is looked up, as usual, in the metaclass of this class, continuing up the superclass chain right up to the class \ct{Behavior}, if it has not been redefined along the way.
+The question \emph{``Where is \ct{new} defined?''} is crucial. \mthind{Behavior}{new} is first defined in the class \ct{Behavior}, and it can be redefined in its subclasses, including any of the metaclass of the classes we define, when this is necessary. Now when a message \ct{new} is sent to a class it is looked up, as usual, in the metaclass of this class, continuing up the superclass chain right up to the class \ct{Behavior}, if it has not been redefined along the way.
 
 Note that the result of sending \ct{TranslucentColor new} is an instance of \clsind{TranslucentColor} and \emph{not} of \ct{Behavior}, even though the method is looked-up in the class \ct{Behavior}!  \ct{new} always returns an instance of \self, the class that receives the message, even if it is implemented in another class.
 

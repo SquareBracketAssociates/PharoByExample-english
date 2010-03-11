@@ -442,7 +442,7 @@ Possibly the most useful menu item is \menu{find class\ldots (f)} in the package
 \index{class!finding}
 \index{class!recent}
 
-You can also search for a specific class or method by typing the name into the query box at the top left of the browse.  When you enter return, a query will be posed on the system, and the query results will be displayed.  Note that by prefixing your query with \ct{#}, you can search for references to a class or senders of a message.
+You can also search for a specific class or method by typing the name into the query box at the top left of the browser.  When you enter return, a query will be posed on the system, and the query results will be displayed.  Note that by prefixing your query with \ct{#}, you can search for references to a class or senders of a message.
 %To browse to a particular method, you can 
 %In the class pane, there are two menu items \menu{find method} and \menu{find method wildcard\ldots} that can be useful if you want to browse a particular method.  
 If you are searching for a particular method of the selected class, it is often quicker to browse the \prot{-{}-all-{}-} protocol (which is the default), place the mouse in the method pane, and type the first letter of the name of the method that you are looking for.
@@ -782,7 +782,7 @@ Note that you can navigate directly to the objects representing the method dicti
 	\begin{center}
 		\includegraphics[width=0.5\textwidth]{ExploreObject}
 	\end{center}
-	\caption{Exploring a \ct{ExploreObject}}
+	\caption{Exploring a \ct{Object}}
 	\figlabel{ExploreObject}
 \end{figure}
 
@@ -1185,7 +1185,7 @@ The larger pane on the left-hand side can be used to navigate the file system in
 When a directory is selected, the files that it contains (but not the directories) are displayed on the right.
 This list of files can be filtered by entering a Unix-style pattern in the small box at the top-left of the window.  
 Initially, this pattern is \ct{*}, which matches all file names, but you can type a different string there and accept it, changing the pattern.  (Note that a \ct{*} is implicitly prepended and appended to the pattern that you type.)
-The sort order of the files can be changes using the \button{name}, \button{date} and \button{size} buttons.
+The sort order of the files can be changed using the \button{name}, \button{date} and \button{size} buttons.
 The rest of the buttons depend on the name of the file selected in the browser.
 In \figref{fileList}, the file name has the suffix \ct{.cs}, so the browser assumes that it is a change set, and provides buttons to \button{install} it (which \textit{files it in} to a new change set whose name is derived from the name of the file),  to browse the \button{changes} in the file, to examine the \button{code} in the file, 
 and to \button{filein} the code into the \emph{current} change set.
@@ -1251,7 +1251,7 @@ Restart \pharo from the most recent snapshot, and select \menu{World\go{}Tools \
 
 % If you execute \ct{ChangeList browseRecentLog}, you will be given 
 
-This will give the opportunity to decide how far back in history you wish to browse. 
+This will give you the opportunity to decide how far back in history you wish to browse. 
 Normally, it's sufficient to browse changes as far back as the last snapshot. (You can get much the same effect by editing \ct{ChangeList browseRecent: 2000} so that the number \ct{2000} becomes something else, using trial and error.)
 
 One you have a \emph{recent changes} browser, showing, say, changes back as far as your last snapshot, you will have a list of everything that you have done to \pharo during that time. 

@@ -373,12 +373,12 @@ Here we need the \ind{parentheses} to force sending \ct{lowMajorScaleOn:} before
 %   'www.altavista.digital.com/av/pix/default/av-adv.gif') display
 
 \paragraph{Example.}
-The message \ct{(65@325 extent: 134 @ 100) center} returns the center of a rectangle whose top left point is $(65, 325)$ and whose size is $134{\times}100$. \Egref{decExtent} shows how the message is decomposed and sent. First the message between parentheses is sent: it contains two binary messages \ct{65@325} and \ct{134@100} that are sent first and return points, and a keyword message \ct{extent:} which is then sent and returns a rectangle. Finally the unary message \ct{center} is sent to the rectangle and a point is returned. 
+The message \ct{(65@325 extent: 134@100) center} returns the center of a rectangle whose top left point is $(65, 325)$ and whose size is $134{\times}100$. \Egref{decExtent} shows how the message is decomposed and sent. First the message between parentheses is sent: it contains two binary messages \ct{65@325} and \ct{134@100} that are sent first and return points, and a keyword message \ct{extent:} which is then sent and returns a rectangle. Finally the unary message \ct{center} is sent to the rectangle and a point is returned. 
 Evaluating the message without parentheses would lead to an error because the object \ct{100} does not understand the message \ct{center}.
 
 \needlines{9}
 \begin{example}[decExtent]{Example of Parentheses.}{}
-      (65 @ 325 extent: 134 @ 100) center
+      (65@325 extent: 134@100) center
 (1)   65@325                                                    "binary"
     --> aPoint
 (2)                                134@100                     "binary"
@@ -557,7 +557,7 @@ So in \lct{(\emph{expression})}, the \lct{\emph{expression}} will \emph{always} 
 
 %=============================================================
 \section{Expression sequences}
-Expressions (\ie messages sends, assignments\dots) separated by periods are evaluated in sequence.
+Expressions (\ie message sends, assignments\dots) separated by periods are evaluated in sequence.
 Note that there is no period between a variable definition and the following expression.
 The value of a sequence is the value of the last expression. The values returned by all the 
 expressions except the last one are ignored. Note that the period is a \subind{statement}{separator} and not a terminator. Therefore a final period is optional.

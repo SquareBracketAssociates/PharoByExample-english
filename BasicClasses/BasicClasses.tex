@@ -201,7 +201,7 @@ Complex>>>hash
 
 Although you should override \ct{=} and \ct{hash} together, you should \emph{never} override \ct{==}. (The semantics of object identity is the same for all classes.)  \ct{==} is a primitive method of \clsind{ProtoObject}.
 
-Note that \pharo has some strange behaviour compared to other Smalltalks: for example a symbol and a string can be equal. (We consider this be a bug, not a feature.)
+Note that \pharo has some strange behaviour compared to other Smalltalks: for example a symbol and a string can be equal. (We consider this to be a bug, not a feature.)
 
 \begin{code}{@TEST}
 #'lulu' = 'lulu' --> true
