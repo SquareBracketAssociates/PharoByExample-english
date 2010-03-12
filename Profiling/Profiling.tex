@@ -464,8 +464,7 @@ MessageTally spyOn:
 
 The complete result is:
 
-\begin{footnotesize}
-\begin{sf}
+\begin{code}
  - 19915 tallies, 19928 msec.
 
 **Tree**
@@ -495,8 +494,7 @@ Process: (40s)  1175: nil
 	incr		4500 totalling 923ms (5.0% uptime), avg 0.0ms
 	tenures		0
 	root table	0 overflows
-\end{sf}
-\end{footnotesize}
+\end{code}
 
 The first line gives the overall execution time and the number of samplings (also called \emph{tallies}, we will come back on sampling at the end of the chapter). 
 
@@ -535,6 +533,7 @@ The \ct{** Leaves**} part lists \emph{leaf methods} for the code block that has 
 
 Some leaf methods may not appear in the information tree described above. Leaf methods are obtained by regularly introspecting the method call stack. The information tree is a method call arborescence. A method for which the callers cannot be identified are not part of the tree. This happens when the control flow is modified by other means than a simple method call: 
 
+@@TODO
 \begin{itemize}
 \item when a primitive invokes a method. This is the case of \ct{doesNotUnderstand:} for example. 
 \item when an exception is raised
@@ -544,33 +543,26 @@ Some leaf methods may not appear in the information tree described above. Leaf m
 
 @@HERE
 
-Toutes les m\'ethodes n'apparaissent pas dans la section
-**Leaves**. Une m\'ethode apparaissant dans cette section signifie
-soit que la m\'ethode r\'ealise beaucoup d'op\'erations, soit qu'elle
-est appell\'ee de nombreuses fois par d'autres m\'ethodes.
-Ici on voit que la m\'ethode \ct{copyReplaceFrom:to:with:} qui prenait
-pr\`es de 20\% du temps total prend seulement 14\% pour son ex\'ecution
-propre. Regardez la d\'efinition de la m\'ethode pour voir qu'elle
-fait effectivement plus que quelques envois de messages. 
+% The following is not quite exact
+%Toutes les m\'ethodes n'apparaissent pas dans la section
+%**Leaves**. Une m\'ethode apparaissant dans cette section signifie
+%soit que la m\'ethode r\'ealise beaucoup d'op\'erations, soit qu'elle
+%est appell\'ee de nombreuses fois par d'autres m\'ethodes.
+%Ici on voit que la m\'ethode \ct{copyReplaceFrom:to:with:} qui prenait
+%pr\`es de 20\% du temps total prend seulement 14\% pour son ex\'ecution
+%propre. Regardez la d\'efinition de la m\'ethode pour voir qu'elle
+%fait effectivement plus que quelques envois de messages. 
 
 
- \subsection{**Memory**}
+ \subsection{**Memory** and **GCs**}
 
-La partie statistique m\'emoire fournit des informations \`a propos
-des changements observ\'es dans la m\'emoire. 
-Pour comprendre ces informations, il faut savoir que le
-ramasse-miettes (garbage collector) de Pharo est
-un scavenging GC dont le principe est bas\'e sur la
-remarque qu'un objet vieux \`a de moins fortes chances de ne plus
-\^etre r\'ef\'erenc\'e et que les objets jeunes pour leur part sont
-souvent rapidement d\'er\'ef\'erenc\'es. Ainsi plusieurs zones
-m\'emoires sont consid\'er\'ees et une migration de l'espace des
-objets jeunes vers les objets vieux est possible lorsqu'un objet
-jeune a surv\'ecu quelques GC --- Il est promu (``tenured''). Ce qui veut dire,
-par analogique aux universitaires am\'ericain, qu'il a obtenu un poste
-fixe. 
+The statistical part on memory consumption tells the observed changes on the quantity of memory allocated and the garbage collector usage. To fully understand this information, one needs to keep in mind that Pharo's garbage collector (GC) is a scavenging GC, relying on the principle that an old object has greater change to live even longer. It is designed following the fact that an old object will probably be kept referenced in the future. On the contrary, a young object has greater change to be quickly dereferenced. 
 
-Le profiler montre alors quatre \'etats de la m\'emoire :
+Several memory zones are considered and the migration of a young object to the space dedicated for old object is qualified as tenured. (Following the metaphor of American academic scientists, when a permanent position is obtained.)
+
+\ct{MessageTally} describes the memory usage using 4 metrics:
+
+@@HERE
 
 \begin{enumerate}
 \item old: d\'ecrit les "objets anciens". Cette valeur repr\'esente la
