@@ -541,8 +541,6 @@ Some leaf methods may not appear in the information tree described above. Leaf m
 \item process creation
 \end{itemize}
 
-@@HERE
-
 % The following is not quite exact
 %Toutes les m\'ethodes n'apparaissent pas dans la section
 %**Leaves**. Une m\'ethode apparaissant dans cette section signifie
@@ -560,62 +558,41 @@ The statistical part on memory consumption tells the observed changes on the qua
 
 Several memory zones are considered and the migration of a young object to the space dedicated for old object is qualified as tenured. (Following the metaphor of American academic scientists, when a permanent position is obtained.)
 
-\ct{MessageTally} describes the memory usage using 4 metrics:
-
-@@HERE
+\ct{MessageTally} describes the memory usage using four values:
 
 \begin{enumerate}
-\item old: d\'ecrit les "objets anciens". Cette valeur repr\'esente la
-  partie qui n'est pas incluse dans le ramasse miettes incr\'emental
-  (incremental GC),  mais seulement durant un ramasse miettes complet
-  (full GC). Cet espace m\'emoire est li\'e au m\'ecanisme de tenure. Une large croissance de cet espace m\'emoire indique
-  clairement un probl\`eme car cela veut dire que de nombreux objets  jeunes ont \'et\'e promus dans la m\'emoire vielle.
 
-\item young: d\'ecrit l'espace "jeune" en m\'emoire. C'est la partie
-  qui est scann\'ee par le  ramasse miettes incr\'emental. En
-  g\'en\'eral les changements dans cet espace sont tr\`es fr\'equent
-  et donc cette information est peu utile.
+\item the \ct{old} value is about the grow of the memory space dedicated to old objects. An object is qualified as ``old'' when it survives a number of incremental garbage collections \alex{how many? I need to check}. This memory space is cleaned by a full garbage collection only. (An incremental GC does not reduce its size therefore). 
 
-\item used: repr\'esente la taille de m\'emoire totale  utilis\'ee.
+An increase of the old memory space clearly is likely to be due to a \emph{memory leak}: the virtual machine is unable to release memory, promoting young objects as old.
 
-\item free: repr\'esente la taille de m\'emoire inutilis\'ee.
+\item the \ct{young} value tells about the increase of the memory space dedicated to young objects. When an object is created, it is physically located in this memory space. The size of this memory space changes frequently. 
+
+\item the \ct{used} value is the total amount of used memory.
+
+\item the \ct{free} value is the remaining amount of memory available.
 \end{enumerate}
 
-Dans notre exemple, il n'y a pas de nouveaux objets dans la partie "vielle". Il y a
-2 803 380 octets utilis\'es par le processus dans l'espace jeune. Il y a
-donc au total 2 803 380 octets utilis\'es par l'ex\'ecution de
-l'expression et donc autant d'octets occup\'es (-2 803 380 octets).
+In our example, none of the objects created during the execution have been promoted as old. 2 803 380 bytes are used by the current process, located in the young memory space. The amount of available memory has been reduced accordingly.
 
 \subsection{**GCs**}
 
-La partie statistique **GCs** fournit des informations sur le
-ramasse-miettes lui-m\^eme. Les deux derni\`eres informations sont
-pour des experts. 
+The \ct{**GCs**} provides statistics about the garbage collector. Four values are available.
 
 \begin{enumerate}
-\item full: repr\'esente le nombre de ramasse-miettes complets et le
-  temps pass\'e. Avoir des ramasses-miettes complets reste en
-  g\'en\'eral tr\'es rare. Ils sont souvent dus \`a l'allocation
-  r\'ep\'et\'ee de gros blocs de m\'emoire. 
+\item The \ct{full} value totals the amount of full garbage collections and the amount of time it took. Full garbage collection are not that frequent. They results from often allocating large memory chunks.
 
-\item incr: repr\'esente le nombre de ramasse-miettes incrementaux. Le
-  temps pass\'e par les ramasses-miettes incr\'ementaux sont rapides
-  et souvent inf\'erieurs \`a 2ms en moyenne. De plus leurs lancements
-  est fr\'equent `a savoir plusieurs fois par seconde. Cependant 
-le temps total pass\'e en ramasse-miettes incr\'ementaux doit \^etre g\'en\'eralement inf\'erieur \`a 10\% autrement, c'est signe qu'il y a un probl\`eme. Si le temps est sup\'erieur \`a 25\%, il y a vraiment un probl\`eme.
+\item The \ct{incr} is about incremental garbage collections. Incremental GCs are usually frequent (several times per second) and quickly performed (about 1 or 2 ms). It is wise to keep the amount of time spent in incremental GCs below 10\%. 
 
-\item tenures: La promotion d'objets jeunes en objet vieux est
-  d\'eclench\'ee lors que l'espace des objects jeunes arrive a un
-  seuil limite d'occupation. Dans ce cas, la taille de l'espace des
-  jeunes est pass\'ee dans l'espace des vieux objets ce qui correspond
-  au ``old'' pr\'ec\'edent. La promotion d'objets jeunes  est souvent
-  le signe que votre application n'a pas atteint son stade de
-  croisi\'ere --- que tous les objets n\'ecessaires n'ont pas pas
-  \'et\'e cr\'e\'es et r\'ef\'erenc\'es. En g\'en\'eral apr\`es une
-  phase de promotions, une application fait rarement des phases de
-  promotions. 
+% \alex{why 25%?}
+% Si le temps est sup\'erieur \`a 25\%, il y a vraiment un probl\`eme.
 
-\item root table overflows: La table des racines repr\'esente un
+\item The number of \ct{tenures} tells the amount of objects that migrated to the old memory space. This migration happens when the size of the young memory space is above a given threshold. This typically happens when lunching an application, when all the necessary objects haven't been created and referenced. 
+
+@@HERE
+\item The \ct{root table overflows} is the amount of root objects used by the garbage collector to navigate the image. 
+
+: La table des racines repr\'esente un
   ensemble d'objets \`a partir duquel les GC sont lanc\'es. Ce chiffre
   d\'ecrit les rares cas o\`u le nombre de "racines" destin\'ees au
 GC incremental d\'epasse la table interne de racine. Ce cas force un
