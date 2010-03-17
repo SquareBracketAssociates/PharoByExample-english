@@ -589,64 +589,30 @@ The \ct{**GCs**} provides statistics about the garbage collector. Four values ar
 
 \item The number of \ct{tenures} tells the amount of objects that migrated to the old memory space. This migration happens when the size of the young memory space is above a given threshold. This typically happens when lunching an application, when all the necessary objects haven't been created and referenced. 
 
-@@HERE
-\item The \ct{root table overflows} is the amount of root objects used by the garbage collector to navigate the image. 
+\item The \ct{root table overflows} is the amount of root objects used by the garbage collector to navigate the image. This navigation happens when the system is running short on memory and need to collect all the objects relevant for the future program execution. The overflow value identifies the rare situation when the number of roots used by the incremental GC is greater than the its internal table. This situation forces the GC to promote some objects as tenured. \alex{Does this force full garbage collection?}
 
-: La table des racines repr\'esente un
-  ensemble d'objets \`a partir duquel les GC sont lanc\'es. Ce chiffre
-  d\'ecrit les rares cas o\`u le nombre de "racines" destin\'ees au
-GC incremental d\'epasse la table interne de racine. Ce cas force un
-GC incr\'emental ainsi qu'une phase de promotion. Ce nombre est
-affichait afin que vous puissiez comprendre les rares cas o\u` cela
-peut arriver --- le syst\`eme faisant alors des GC complets sans
-raison apparente. 
+
+%: La table des racines repr\'esente un
+%  ensemble d'objets \`a partir duquel les GC sont lanc\'es. Ce chiffre
+%  d\'ecrit les rares cas o\`u le nombre de "racines" destin\'ees au
+%GC incremental d\'epasse la table interne de racine. Ce cas force un
+%GC incr\'emental ainsi qu'une phase de promotion. Ce nombre est
+%affichait afin que vous puissiez comprendre les rares cas o\u` cela
+%peut arriver --- le syst\`eme faisant alors des GC complets sans
+%raison apparente. 
 \end{enumerate}
 
+In the example, we see that only the incremental GC is used. As we will subsequently see, the amount of created objects is quite relevant when one wants to optimize performances.
 
-Dans l'exemple on voit que seul le GC incr\'emental est utilis\'e. 
-Comme nous allons le voir il est int\'eressant de mesurer la
-quantit\'e d'objets cr\'ees car cela peut avoir des incidences sur les
-performances.
+\section{Illustrative analysis}
 
+Understanding the result obtained when profiling is the very first step when one wants to optimize an application. However, as you probably started to feel, understanding why a computation is costly is not trivial. Based on a number of examples, we will see how comparing different profiling results greatly helps to identify costly message calls. 
 
-
-
+The method "\ct{,}" is known to be slow since it creates a new character string and copy both the receiver and the argument into it. Using a \ct{Stream} is a significant faster approach to concatenate character strings. However, \ct{nextPut:} and \ct{nextPutAll:} must be carefully employed!
 
 
-\section{Illustrons une analyse}
-Comprendre les r\'esultats du profiler est la premi\`ere \'etape pour
-optimiser, cependant comme vous pouvez le voir il n'est pas simple de
-comprendre si un algorithme est dispendieux. Nous montrons maintenant
-au travers d'exemples comment la comparaison de l'ex\'ecution de
-diff\'erentes expressions peut faire jaillir de la connaissance.
-
-%La figure \ref{workspace} montre effectivement trois m\'ethodes de concat\'enation de chaines execut\'ees 9000 fois afin d'obtenir des r\'esultats plus caract\'eristiques. Attention toutefois dans le cas d'ajout d'\'el\'ements dans un dictionnaire par exemple. En effet les dictionnaires (comme toutes autres collections) ont ce que l'on peut appeler des tailles optimales pour lesquelles ils sont plus efficaces.
-
-%\begin{figure}
-% 	\begin{center}
-% 	\includegraphics[width=.8\linewidth]{workspace}
-% 	\caption{Acc\`es par lignes de code}
-% 	\figlabel{workspace}
-% 	\end{center}
-% \end{figure}
-
-L'utilisation de la m\'ethode "\ct{,}" est connue pour \^etre lente car
-elle cr\'ee une nouvelle chaine r\'esultante de la
-concat\'enation. Nous allons donc regarder comment l'utilisation d'une
-Stream peut am\'eliorer les performances. Nous pouvons par exemple
-comparer l'utilisation des m\'ethodes nextPut: et nextPutAll: ainsi
-que mesurer l'impact de la pr\'eallocation des chaines r\'esultantes. 
-
-\paragraph{Utilisation d'une Stream.}
-Commen\c cons par utiliser une Stream. Alors que l'on pourrait croire
-que la cr\'eation d'une Stream doit \^etre couteuse au point de ne pas
-apporter un b\'en\'efice. En fait le r\'esultat du profiler est
-\'eloquent, la nouvelle expression qui cr\'e\'e une Stream puis y
-ajoute des caract\`eres est quasiment 10 fois plus rapide. Ceci est
-compr\'ehensible car lorsque nous concat\'enons 9000 fois une chaine,
-nous cr\'eons 8999 chaines intermediates et copions leur contenu alors
-qu'avec une Stream nous ajoutons simplement un caract\`ere dans la
-Stream \`a chaque it\'eration. 
+\paragraph{Using a \ct{Stream}.}
+At the first glance, one could think that creating a stream is costly since it is frequently used with relatively slow inputs and outputs (\eg network socket, disk accesses, Transcript). But replacing the string concatenation employed in the previous example by a stream operation is almost 10 times faster! This is easily understandable since concatenating 9000 times a character strings creates 8999 intermediately objects, each being filled with the content of another. Using a stream, we simply have to append a character at each iteration.
 
 \begin{code}{}
 MessageTally spyOn: 
@@ -684,6 +650,8 @@ Process: (40s)  1175: nil
 	tenures		0
 	root table	0 overflows
 \end{code}
+
+@@HERE
 
 \paragraph{Utiliser nextPutAll: \`a la place de nextPut:}
 Nous allons maintenant \'etudier l'impact de la m\'ethode utilis\'ee
