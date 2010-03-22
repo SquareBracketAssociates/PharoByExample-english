@@ -93,7 +93,390 @@ Depending on the selected setting, it may be different. Three versions of it are
 
 \section{Declaring a setting}
 \label{sec:DeclaringASetting}
+A setting is declared by a particular class method which must be coded as follow: it takes a builder as argument and it is tagged by the <systemsettings> simple pragma. As an example: 
+\begin{code}{}
+AClassInMyPackage class>>systemSettingOn: aBuilder
+  <systemsettings>
+  (aBuilder group: #MySettings)
+    label:'My settings' ...
+\end{code}
+The argument \textit{aBuilder} serves as a facade for setting declarations building and the pragma allows the SettingBrowser to dynamically discover current setting declarations.
 
+The important point is that a setting declaration must be package specific. It means that each package is responsible for the declaring of its own settings. For a particular package, specific settings are declared by one or several of its classes. The consequence is that when the package is loaded, then its settings are automatically loaded and that when a package is unloaded, then its settings are automatically unloaded. 
+
+Settings are of two main kinds: setting nodes and settings with associated preference~: 
+%\begin{itemize}
+%\item
+%A setting node is used to logically organize  your settings by grouping sub-settings, it represents a node . Such a setting is declared by a method which simply returns a SystemSettingNode instance. Any setting can declare any setting node as its parent.
+%\item
+%A setting with value is an instance of SettingValue or of one of its subclasses. Such a setting holds a useful global system parameter and is made persistent: it is stored in a class variable which is initialized by the method that declares the setting.
+%\end{itemize}
+
+%1 DECLARING A SETTING NODE
+%
+%All System settings are organized in trees. Each tree root is a setting with no parent (parent set to nil). Whatever setting can be a root. If a root doesn't need to keep any value, then it can be an instance of SystemSettingNode. Such a setting is instanciated with: #SettingManager class>>newNode:. The argument is the name of the node. A setting node is mostly useful for the grouping of several related settings. The dialog instance variable can be set to the name of a dialog class. Then, the SystemSettingBrowser shows a button for this dialog: when pressed, the class which name is the dialog instance variable value receives the #open message. It can be useful in order to open a complex or handy dialog for the input of some settings.
+%
+%The example below shows a root node named 'System' declared in a SystemSettings class.
+%------------------
+%SystemSettings class>>systemSettingNode
+%	<setting>
+%	^ (SettingManager newNode: 'System') description: 'All standard system settings'
+%------------------
+%
+%The example below shows a the declaration of a subnode of systemSettingNode, it is declared in a UISettings class:
+%------------------
+%UISettings class>>UINode
+%	<setting>
+%	^ (SettingManager newNode: 'User interface') 
+%			description: 'Paramaters for the user interface'; 
+%			parent: #systemSettingNode
+%------------------
+%		
+%2 DECLARING SIMPLE VALUE SETTINGS
+%
+%2.1 PRESENTATION
+%A simple value setting is a setting which value is a Boolean, a String, a Symbol, a Number, a Font or a Color. Such a setting is hold by a SettingValue which is instanciated with #SettingManager class>>newSetting:. The argument is the name of the setting.
+%If the setting has a default value, then, the setting is declared with the default value as below:
+%------------------
+%MyPackageSettings class>>mySetting
+%	<setting>
+%	^ MySetting 
+%		ifNil: [MySetting := (SettingManager newSetting: 'My setting name') 
+%											description: 'A useful description'; 
+%											default: aDefaultValue]
+%------------------
+%where:
+%- MyPackageSettings is a class of MyPackage package (a system setting is declared class side)
+%- mySetting is the getter for the setting
+%- MySetting is the name of the class variable which value is the setting (instance of SettingValue)
+%- 'My setting label' and 'A useful description' are respectively, the name and the description shown by the SystemSettingBrowser.
+%- aDefaultValue is the default value for the setting
+%
+%If the setting doesn't have any default value (or if its default value is nil):
+%------------------
+%MyPackageSettings class>>mySetting
+%	<setting>
+%	^ MySetting 
+%		ifNil: [MySetting := (SettingManager newSetting: 'My setting name') 
+%											description: 'A useful description'; 
+%											type: aTypeSymbol]
+%------------------
+%
+%aTypeSymbol is a symbol used by the setting browser in order to know how to build the input widget. By default, possible values are #Boolean, #String, #Symbol, #Integer, #Float, #Font or #Color. It can be of another value but in that case, the class which name is the type value should understand the #settingInputWidgetForNode: message.
+%
+%Classically, a SettingValue is not a root: it is declared as a child of one or several nodes in order to ease its managing. 
+%------------------
+%MyPackageSettings class>>mySetting
+%	<setting>
+%	^ MySetting 
+%		ifNil: [MySetting := (SettingManager newSetting: 'My setting name') 
+%											description: 'A useful description'; 
+%											parent: aParentNodeSelector;
+%											type: aTypeSymbol]
+%------------------
+%
+%aParentNodeSelector is a symbol which is the parent node method selector.
+%
+%A setting node may have several parents:
+%------------------
+%MyPackageSettings class>>mySetting
+%	<setting>
+%	^ MySetting 
+%		ifNil: [MySetting := (SettingManager newSetting: 'My setting name') 
+%											description: 'A useful description'; 
+%											parent: firstParentNodeSelector;
+%											parent: secondParentNodeSelector;
+%											type: aTypeSymbol]
+%------------------
+%or
+%------------------
+%MyPackageSettings class>>mySetting
+%	<setting>
+%	^ MySetting 
+%		ifNil: [MySetting := (SettingManager newSetting: 'My setting name') 
+%											description: 'A useful description'; 
+%											parents: #(firstParentNodeSelector secondParentNodeSelector);
+%											type: aTypeSymbol]
+%------------------
+%
+%
+%2.2 SIMPLE VALUE SETTING EXAMPLES
+%
+%2.2.1 Boolean settings
+%Definition of the boolean setting "newbyMode" with only a label and a default value:
+%------------------
+%MyClass class>>newbyMode
+%	<setting>
+%	^ NewbyMode ifNil: [NewbyMode := (SettingManager newSetting: 'Newby mode') default: false].
+%------------------
+%						
+%A description could be very helpful when using the SystemSettingBrowser: 			
+%------------------
+%MyClass class>>newbyMode
+%	<setting>
+%	^ NewbyMode ifNil: [NewbyMode := (SettingManager newSetting: 'Newby mode') 
+%			default: false; 
+%			description: 'the useful description goes here...'].
+%------------------
+%
+%The default value is optional. If not present, the declaration must explicitly initialize the setting type:
+%------------------
+%MyClass class>>newbyMode
+%	<setting>
+%	^ NewbyMode ifNil: [NewbyMode := (SettingManager newSetting: 'Newby mode') 
+%			type: #Boolean; 
+%			description: 'the useful description goes here...'].
+%------------------
+%
+%2.2.4 Color setting
+%Note that the default can be a valuable. Here, the default is given by a MessageSend instance:
+%------------------
+%MyClass class>>desktopColor
+%	<setting>
+%	^ DesktopColor
+%		ifNil: [DesktopColor := (SettingManager newSetting: 'Desktop color') 
+%					parent: #uiColors;
+%					description: 'The color used for the desktop background';
+%					default: (MessageSend receiver: Color selector: #green)]
+%------------------
+%
+%You can also use a block for the default:
+%------------------
+%MyClass class>>desktopColor
+%	<setting>
+%	^ DesktopColor
+%		ifNil: [DesktopColor := (SettingManager newSetting: 'Desktop color') 
+%					parent: #uiColors;
+%					description: 'The color used for the desktop background';
+%					default: [Color green]]
+%------------------
+%
+%2.2.5 Font setting
+%Here the default is an instance of LogicalFont:
+%------------------
+%MyClass class>>codeFont
+%	<setting>
+%	^ CodeFont
+%		ifNil: [CodeFont := (SettingManager newSetting: 'Code') description: 'The code font';
+%						 parent: #fontSettingNode;
+%						 default: (LogicalFont familyName: 'DejaVu Sans' 
+%												fallbackFamilyNames: nil 
+%												pointSize: 12 
+%												stretchValue: 5 
+%												weightValue: 400 
+%												slantValue: 0)]
+%------------------
+%
+%The default can also be set with a MessageSend instance:
+%------------------
+%MyClass class>>codeFont
+%	<setting>
+%	^ CodeFont
+%		ifNil: [CodeFont := (SettingManager newSetting: 'Code') description: 'The code font';
+%						 parent: #fontSettingNode;
+%     				 default: (MessageSend receiver: self selector: #defaultStandardFont)]
+%
+%MyClass class>>defaultStandardFont
+%	^ LogicalFont
+%		familyName: 'DejaVu Sans'
+%		fallbackFamilyNames: nil
+%		pointSize: 12
+%		stretchValue: 5
+%		weightValue: 400
+%		slantValue: 0
+%------------------
+%
+%3 DECLARING A SETTING WITH FINITE SET OF VALUES
+%
+%3.1 PRESENTATION
+%A setting can be defined so that its value is get from a restricted set of values. The setting is an instance of MultipleSettingValue. It is instanciated with #SettingManager class>>newMultiple:. The argument is the name of the setting. The collection of values from which a multiple setting takes its value is always a set of FixedSettingValue. A FixedSettingValue is created with #SettingManager class>>newFixed:.
+%
+%Such a setting can be of two different kinds :
+%- if the valid value list is known at declaration time and is constant, then the list of values is set by sending the #domainValues: message to the setting. The argument is an array of fixed values. 
+%
+%Such a setting can be declared as below:
+%------------------
+%MyPackageSettings class>>mySetting
+%	<setting>
+%	^ MySetting 
+%		ifNil: [MySetting := (SettingManager newMultiple: 'My setting name') 
+%						description: 'A useful description'; 
+%						default: aDefaultValue;
+%						domainValues: aListOfFixedSettingValues]
+%------------------
+%					
+%The default should be one of the valid values: a real value which is token from the list of possible values. 
+%
+%- if the valid value list is not known at declaration time, then the list of possible values is dynamically computed by the SystemSettingBrowser by evaluating the block or the MessageSend stored as the getter instance variable value. The getter instance variable is set by sending the #domainValuesGetter: message to the setting.
+%
+%Such a setting can be declared as below:
+%------------------
+%MyPackageSettings class>>mySetting
+%	<setting>
+%	^ MySetting 
+%		ifNil: [MySetting := (SettingManager newMultiple:'My setting name') 
+%						description: 'A useful description'; 
+%						default: aDefaultValue;
+%						domainValuesGetter: aBlockOrAMessageSend]
+%------------------
+%The argument of #domainValuesGetter: can be a block or a instance of MessageSend. This valuable takes no argument. 
+%
+%3.2 EXAMPLES 
+%
+%The declaration gives all possibles values for the setting. Each possible domain value is a fixed setting (read-only setting). Here is the example of #hintingSetting which value can be #Light, #Normal, #Full or #None:
+%------------------
+%MyClass class>>hintingSetting
+%	<setting>
+%	^ HintingSetting
+%		ifNil: [HintingSetting := (SettingManager newMultiple: 'Hinting')
+%						 description: 'Defines the glyph shapes' translated;
+%						 parent: #freeTypeSettingNode;
+%						 domainValues: {
+%							SettingManager newFixed value: #Light. 
+%							SettingManager newFixed value: #Normal. 
+%							SettingManager newFixed value: #Full. 
+%							SettingManager newFixed value: #None
+%						}].
+%------------------
+%
+%In the case where domain values are of simple type, as Symbol for example, the shorter declaration given below can be used:		
+%------------------
+%MyClass class>>hintingSetting
+%	<setting>
+%	^ HintingSetting
+%		ifNil: [HintingSetting := (SettingManager newMultiple: 'Hinting')
+%						 description: 'Defines the glyph shapes' translated;
+%						 parent: #freeTypeSettingNode;
+%						 domainValues: {#Light. #Normal. #Full. #None}]
+%------------------
+%
+%The value domain can also be made of a set of complex objects. The example below shows #themeSetting setting. The value domain is an array with two fixed settings, for UIThemeStandardSqueak and for UIThemeWatery2:
+%------------------
+%MyClass class>>themeSetting
+%	<setting>
+%	^ ThemeSetting
+%		ifNil: [ThemeSetting := (SettingManager newMultiple: 'UITheme')
+%						description: 'The theme to use for UI look and feel';
+%						parent: #uiSettingNode;
+%						type: #UITheme;
+%						default: UIThemeWatery2;
+%						domainValues: {
+%							(SettingManager newFixed: 'Standard Squeak') value: UIThemeStandardSqueak. 
+%							(SettingManager newFixed: 'Watery 2') description: 'Similar to a nice OS'; value: UIThemeWatery2}]
+%------------------
+%
+%The shorter declaration given below can also be used. The domain values is a list of association. Each association key is used as the name of the fixed setting, and the corresponding association value is used as the value of the fixed setting:
+%------------------
+%MyClass class>>themeSetting
+%	<setting>
+%	^ ThemeSetting
+%		ifNil: [ThemeSetting := (SettingManager newMultiple: 'UI theme')
+%						 description: 'The theme to use for UI look and feel';
+%						 parent: #uiSettingNode;
+%						 type: #UITheme;
+%						 default: UIThemeWatery2;
+%						 domainValues: {'Standard' -> UIThemeStandardSqueak. 'Watery 2' -> UIThemeWatery2}]
+%------------------
+%
+%Previous version has a serious drawback: the list of possible values is fixed, then the first time the setting is read, the list is definitively built. After its building, there is no way to update the list except by the reinitializing of the corresponding class variable (hard reset). 
+%Regarding the themeSetting example, the problem is that new instances of UITheme can be added in the system after the setting has been created and initialized. In order be able to take into account system dependent domain values, you can makes the list dynamically computed. A getter instance variable can be set to a block or to an instance of a MessageSend. Such a valuable is dynamically evaluated by the SystemSettingBrowser in order to get current and up-to-date list of valid values. Here is the themeSetting example revisited:
+%
+%------------------
+%MyClass class>>themeSetting
+%	<setting>
+%	^ ThemeSetting
+%		ifNil: [ThemeSetting := (SettingManager newMultiple:'UI theme')
+%						parent: #uiSettingNode;
+%						default: UIThemeWatery2;
+%						domainValuesGetter: [UITheme allSubclasses collect: [:cls | SettingManager newFixed value: cls]]]
+%------------------
+%
+%or with a much simpler version
+%------------------
+%MyClass class>>themeSetting
+%	<setting>
+%	^ ThemeSetting
+%		ifNil: [ThemeSetting := (SettingManager newMultiple:'UI theme')
+%						parent: #uiSettingNode;
+%						default: UIThemeWatery2;
+%						domainValuesGetter: [UITheme allSubclasses]]
+%------------------
+%
+%4 DECLARING RANGE SETTING
+%
+%4.1 PRESENTATION
+%A setting for which all possible values are given by a range is an instance of RangeSettingValue. Such a setting is instanciated with #SettingManager class>>newRange:. The argument is the name of the setting. The range is set by sending a #range: message to a setting. The argument is an Interval instance.
+%
+%Such a setting can be declared as below:
+%------------------
+%MyPackageSettings class>>mySetting
+%	<setting>
+%	^ MySetting 
+%		ifNil: [MySetting := (SettingManager newRange: 'My setting name') 
+%						description: 'A useful description'; 
+%						default: aDefaultValue;
+%						range: anInterval]
+%------------------
+%The range is an instance of Interval. It is set by the #range: message and is evaluated by the SystemSettingBrowser when choosing a new value.
+%Note that the SystemSettingBrowser presents an input field and a slider. 
+%
+%4.2 EXAMPLE
+%
+%------------------
+%FontSettings class>>glyphContrast
+%	<setting>
+%	^ GlyphContrast
+%		ifNil: [GlyphContrast := (SettingManager newRange: 'Glyph contrast') 
+%						description: 'Change the contrast level for glyphs. This is an integer between 1 and 100';
+%						parent: #freeTypeSettingNode;
+%						default: 50;
+%						range: (1 to: 100)]
+%------------------
+%
+%5 USING SPECIFIC DIALOG
+%For setting browsing and editing, it could be useful to use a specific dialog instead of SystemSettingBrowser simple input widgets. For that purpose, the dialog attribute can be set with the name of a dialog class. While browsing a setting with a dialog, the SystemSettingBrowser presents a button for the dialog opening. The only constraint is that the dialog class must understand the #open message.
+%
+%For a node with children, it can be very useful in order to be able to use a cool dialog for the input of all children instead of being forced to input them one by one as it is the case with the SystemSettingrowser.
+%
+%Here is an example of a setting node with its dialog instance variable set to the value #FontSettingDialog. In the case of fonts, it could be useful in order to allow the using of a specific cool dialog for font preferences settings.
+%------------------
+%FontSettings class>>fontSettingNode
+%	<setting> 
+%	^ (SettingManager newNode: 'Fonts')
+%		description: 'System fonts settings';
+%		dialog: #FontSettingDialog;
+%		parent: #uiSettingNode 
+%------------------
+%
+%The dialog instance variable can be set for a setting value too. Then, neither the default value nor the type is needed:
+%------------------
+%UISettings class>>uiStyle
+%	<setting>
+%	^ UIStyle ifNil: [UIStyle := (SettingManager newSetting: 'UI style') 
+%			dialog: #UIStyleChooserDialog; 
+%			description: 'System style'].
+%------------------
+%
+%6 SIMPLE SETTING WITH CHILDREN
+%A setting value can be a parent for another setting value. As an example, #gradientButtonLook can be a child of a boolean setting #advancedGUISetting:
+%------------------
+%MyClass class>>advancedGUISetting
+%	<setting>
+%	^ AdvancedGUISetting
+%		ifNil: [AdvancedGUISetting := 
+%						(SettingManager newSetting: 'Advanced GUI settings')
+%						parent: #uiSettingNode;
+%						default: true]
+%					
+%MyClass class>>gradientButtonLook
+%	<setting>
+%	^ GradientButtonLook
+%		ifNil: [GradientButtonLook := 
+%						(SettingManager newSetting: 'Gradient look for buttons')
+%						parent: #advancedGUISetting;
+%						default: true]
+%------------------
+%
 
 
 \section{Setting styles management}
