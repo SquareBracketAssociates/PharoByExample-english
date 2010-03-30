@@ -651,13 +651,7 @@ Process: (40s)  1175: nil
 	root table	0 overflows
 \end{code}
 
-@@HERE
-
-\paragraph{Utiliser nextPutAll: \`a la place de nextPut:}
-Nous allons maintenant \'etudier l'impact de la m\'ethode utilis\'ee
-pour ajouter des \'el\'ements dans la Stream. En effet, la m\'ethode
-\ct{nextPut: aCharacter} ajoute un caract\`ere. Essayons avec la m\'ethode
-\ct{nextPutAll: aString}.
+\paragraph{Replacing \ct{nextPut:} by \ct{nextPutAll:}} We will now study an alternative way to add characters in a stream. The \ct{nextPut: aCharacter} method accepts a single character. Adding a string of characters is realized via \ct{nextPutAll: aString}.
 
 \begin{code}{}
 MessageTally spyOn: 
@@ -666,6 +660,9 @@ MessageTally spyOn:
                     str := WriteStream on: (String new). 
                     9000 timesRepeat: [ str nextPutAll: 'A' ]]].
 \end{code}
+
+@@HERE
+The first intuition will We could first thing that adding a character is faster than adding a string character, but 
 
 On pourrait penser qu'ajouter un
 caract\`ere est plus rapide qu'ajouter une chaine compos\'ee du m\^eme 
