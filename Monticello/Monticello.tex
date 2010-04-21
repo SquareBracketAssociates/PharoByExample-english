@@ -710,6 +710,22 @@ When our package is loaded, this code will be evaluated and the instance variabl
 %\alex{Probably, but this seems to be broken with \MC}
 
 %=================================================================
+\section{Getting a change set from two versions}
+%:\alex{Change set were seen in Chapter 6, page 135 of the version 1 of PBE}
+A Monticello version is the snapshot of one or more packages. A version contains the complete set of class and method definitions that constitute the underlying packages. Sometimes, it is useful to have a ``patch'' from two versions. A patch is the set of all necessary side effect in the system to go from one version A to another version B. 
+
+\emph{Change set} is a \pharo built-in mechanism to define system patches. A change set is composed of global side effects on the system. New change set may be created and edited from the \emph{Change Sorter}. This tool is available from the \emph{Tool} entry of the \emph{World menu}.
+
+The difference between two Monticello versions may be easily captured by creating a new change set before loading a second version of a package. As an illustration, we will capture the differences between version 1 and 2 of the \ct{Perfect} package:
+\begin{enumerate}
+\item Load version 1 of \ct{Perfect} from the Monticello browser
+\item Open a change sorter and create a new change set. Let's name it \ct{DiffPerfect}
+\item Load version 2
+\item In the change sorter, you should now see the difference between version 1 and 2. The change set may be saved on the filesystem by right clicking on it and selecting \ct{file out}. A \ct{DiffPerfect.X.cs} file is now located next to your \pharo image.
+\end{enumerate}
+
+
+%=================================================================
 \section{Kinds of repositories}
 \seclabel{monti:repositories}
 
@@ -764,6 +780,19 @@ It's a read-write repository, so it makes a good ``working'' repository where ve
 
 \index{Monticello!SMTP repository}
 \paragraph{SMTP} SMTP repositories are useful for sending versions by mail. When creating an SMTP repository, you specify a destination email address. This could be the address of another developer\,---\,the package's maintainer, for example\,---\,or a mailing list such as pharo-project. Any versions saved in such a repository will be emailed to this address.  SMTP repositories are write-only.
+
+\paragraph{Programmatically adding repositories} For particular purposes, it may be necessary to programmatically add new repositories. This happens when managing configuration and large set of distributed monticello packages or simply customizing the entries available in the Monticello browser. For example, the following code spinet programmatically adds new directory repositories
+
+\begin{code}
+| repo |
+{'/path/to/repositories/project-1/'. 
+'/path/to/repositories/project-2/'. 
+'/path/to/repositories/project-3/'. } do: 
+[ :path |
+	repo := MCDirectoryRepository new directory: 
+		(FileDirectory on: path).
+	MCRepositoryGroup default addRepository: repo ].
+\end{code}
 
 %\paragraph{\sqmap Release} This is a write-only repository used for publishing releases of a package to \sqmap. To configure the repository enter the name of the package on \sqmap, your \sqmap initials and your \sqmap password. Now any versions saved to the repository will be uploaded to your \sqmap account, and registered as a new release with \sqmap.  
 
@@ -942,6 +971,7 @@ The following points were covered:
 %\ab{ditto}
 \end{itemize}
 
+%ACK: Dale Henrichs
 %=================================================================
 
 %\section{Packages in \MC: PackageInfo}
