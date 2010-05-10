@@ -360,7 +360,7 @@ OrderedCollection>>select: selectBlock thenCollect: collectBlock
     ^ newCollection
 \end{code}
 
-As you have probably guessed already, other collection such as set and dictionary do not benefit from an optimized version. We leave as an exercise the cost of not having this optimization. No not forget to submit your contribution to Pharo if you come up with an optimized version of \ct{select:thenCollect:}.
+As you have probably guessed already, other collection such as set and dictionary do not benefit from an optimized version. We leave as an exercise the cost of not having this optimization. As part of the community effort, do not forget to submit your contribution to Pharo if you come up with an optimized and better version of \ct{select:thenCollect:}.
 
 %%%%%%%%%%%%
 %%%%%%%%%%%%
@@ -661,14 +661,7 @@ MessageTally spyOn:
                     9000 timesRepeat: [ str nextPutAll: 'A' ]]].
 \end{code}
 
-@@HERE
-The first intuition will We could first thing that adding a character is faster than adding a string character, but 
-
-On pourrait penser qu'ajouter un
-caract\`ere est plus rapide qu'ajouter une chaine compos\'ee du m\^eme 
-caract\`ere mais l'analyse de cette solution nous montre que notre
-hypoth\`ese est fausse. On est plus rapide: 1610 ms contre 1790 ms
-et ce m\^eme en occupant le double de m\'emoire. 
+The first intuition tells us that adding a single character is faster than adding a string composed of the character solely. However, a simple benchmark shows the opposite. It is faster to add a one character string than a single character: 1610 ms against 1790 ms while using the double of memory.
 
 \begin{code}{}
  - 1617 tallies, 1618 msec.
@@ -697,15 +690,9 @@ Process: (40s)  1175: nil
 	root table	0 overflows
 \end{code}
 
-\paragraph{Influence de la pr\'eallocation de la chaine.}
-En Smalltalk, l'utilisation d'\ct{OrderedCollection} sans
-pr\'e-allocation de la taille finale de la collection est connue pour
-\^etre une op\'eration couteuse. En effet, \`a chaque fois que la
-collection est pleine et doit grandir il faut copier une partie de la
-collection. Maintenant regarder si la pr\'eallocation de la chaine
-sur laquelle la stream va op\'erer a un impact. On utilise alors le
-message \ct{new: aNumber} \`a la place de \ct{new}.
 
+
+\paragraph{String preallocation} In Smalltalk, using \ct{OrderedCollection} without a preallocation of the collection is well known for being costly. Each time the collection is full, its content has to be copied into a larger collection. Carefully choosing a preallocation has an impact of using ordered collections. The message \ct{new: aNumber} could be used instead of \ct{new}.
 
 \begin{code}{}
 MessageTally spyOn: 
@@ -715,33 +702,17 @@ MessageTally spyOn:
                     9000 timesRepeat: [ str nextPutAll: 'A' ]]].
 \end{code}
 
-\paragraph{Une exp\'erience.}
-L'expression que l'on profile a clairement un impact sur le
-r\'esultat. A titre d'exemple si l'on remplace les deux nombres 9000 par 500,
- on obtient des r\'esultats int\'eressants. Faites cette
-manipulation sur les deux premi\`eres expressions. 
-On obtient un facteur 2,7 (5100 ms contre 1850 ms) au lieu d'un facteur 10
-entre la concat\'enation bas\'ee sur la m\'ethode \ct{,} et
-l'utilisation d'une stream. On voit alors l'importance de
-connaitre la longueur des chaines manipul\'ees. 
+\paragraph{An experiment.}
+Doing benchmarks shines when different executions are compared. In the previous piece of code, replacing the value 9000 by 500 is very valuable. The time taken with 9000 iterations is 2.7 times slower than with 500. Using the string concatenation (\ie using the \ct{,} method) instead of a stream widens the gap with a factor 10. This experiment clearly illustrates the importance of knowing the list of the string characters manipulated. 
 
-Notez que de la m\^eme mani\`ere la validit\'e du r\'esultat d\'epend
-aussi de la dur\'ee d'\'echantillon. Comme le profiler utilise un
-technique d'analyse de haut de pile (PC-Sampling), il est important de
-s'assurer que l'on fait tourner l'expression de mani\`ere suffisante
-pour que la probabilit\'e que l'\'echantillon en haut de pile soit significatif.
+The time of the profiled execution is also an important quality factor for the result. MessageTally employs a sampling technique to profile code. Per default, MessageTally sample the current executing thread each millisecond. It is therefore necessary that all the methods involved in the computation are executed a ``fair'' amount of time to appear in the result report. If the application to profile is very short (few milliseconds only), then executing it a number of times help improving the accuracy of the report. 
 
 
 
+\section{Counting messages}
+The profiling we have realized so far is focused on method execution time. The advantage of method call stack sampling is that it has a relatively low impact on the execution. The disadvantage is the relatively imprecision of the result. Even though the obtained results are sufficient in most of the case, they are always an approximation of the real execution.
 
-
-\section{Comptons les messages}
-Il est aussi possible d'avoir un rapport d\'etaill\'e non plus bas\'e
-sur l'\'echantillonnage de la pile d'ex\'ecution mais en
-interpr\'etant le programme. En utilisant le message \ct{tallySends:},
-on obtient ainsi une figure exacte des messages ex\'ecut\'es. La
-\figref{sendTally} montre le r\'esultat obtenu en ex\'ecutant
-l'expression suivante \ct{MessageTally tallySends:[ 1000 timesRepeat:  [3.14159 printString]]}:
+MessageTally allows for a profiling based on program interpretation. The idea is to use a bytecode interpreter instead of execution sampler. The main advantage is the exactness of the result. The information obtained with the message \ct{tallySends:} indicates the amount of time each method involved in a computation has been executed. \figref{sendTally} gives the result obtained by executing \ct{MessageTally tallySends:[ 1000 timesRepeat:  [3.14159 printString]]}.
 
 \begin{figure}
 	\begin{center}
@@ -751,48 +722,41 @@ l'expression suivante \ct{MessageTally tallySends:[ 1000 timesRepeat:  [3.14159 
 	\end{center}
 \end{figure}
 
-Faire un tallySend: prend usuellement plus de temps car cette m\'ethode utilise un
-interpr\`ete de bytecode. 
+The downside of \ct{tallySend:} is the time taken to execute the provided block. The block to profile is executed by an interpreter written in Pharo, which is slower then the one of the virtual machine. The interpreter is available from the method \ct{ContextPart>>>runSimulated: aBlock contextAtEachStep: block2}.
 
 %%%%%%%%%%%%
 %%%%%%%%%%%%
+\section{Memoizing Fibonacci}
+As a small application of the techniques we have seen, consider the Fibonacci function ($fib (n) = fib (n-1) + fib(n-2)$ with $fib(1)=1, fib(2)=1$). We will study two versions of it: a highly recursive version and a memoizing version.
 
-
-\section{Fibonacci M\'emorisant}
-Comme exercice nous vous proposons d'\'etudier l'impact d'une
-m\'emorisation des calculs interm\'ediaires dans le cas de la suite de
-fibonacci dont la d\'efinition est $fib (n) = fib (n-1) + fib(n-2)$
-avec $fib(1)=1, fib(2)=1$.
-
-Donnons d'abord une d\'efinition non m\'emorisante.
+Consider the following definition, close to the mathematical definition:
 \begin{code}{}
-Integer>>fibSlow
+Integer>>>fibSlow
 	self assert: self >= 1.
-	(self == 1) ifTrue: [ ^1].
-	(self == 2) ifTrue: [ ^1].
+	(self == 1) ifTrue: [ ^ 1].
+	(self == 2) ifTrue: [ ^ 1].
 	^ (self - 1) fibSlow + (self - 2) fibSlow
 \end{code}
 
-Maintenant la version m\'emorisante stocke dans un cache (une collection ordonn\'ee) 
-lorsque les r\'esultats ne sont pas connus  et utilise
-ce cache lors des calculs. Au vu de la d\'efinition de fibonacci le
-cache empeche donc de calculer une formule sur deux. Les caches peuvent
-avoir bien plus d'impact lorsque le domaine
-le permet. 
+The method \ct{fibSlow} is relatively inefficient. Each recursion implies a duplication of the computation. The same result is computed twice, by each branch of the recursion.
+
+A more efficient (but also slightly more complicated) version is obtained by using a cache that keeps intermediary computed values. The advantage is to not duplicate computations since each value is computed once. This classical way of optimizing program is called memoizing. 
       
 \begin{code}{}
-Integer>>fib
+Integer>>>fib
 	self assert: self >= 1.
-	^ Self fibWithCache: OrderedCollection new.
+	^ self fibWithCache: OrderedCollection new.
 
-Integer>>fibLookup: cache
+Integer>>>fibLookup: cache
 	^ cache at: self ifAbsentPut: [ self fibWithCache: cache ] 
 
-Integer>>fibWithCache: cache
+Integer>>>fibWithCache: cache
 	(self == 1) ifTrue: [ ^1].
 	(self == 2) ifTrue: [ ^1].
 	^ ((self - 1) fibLookup: cache) + ((self - 2) fibLookup: cache)
 \end{code}
+
+As an exercise, profile \ct{1200 fibSlow} and \ct{1200 fib} to be convinced of the gain of memoizing. Preallocating the ordered collection plays an important role again.
 
 Profilez \ct{1200 fibSlow} et \ct{1200 fib} pour voir l'impact d'un tel
 cache. Vous pouvez aussi mesurer l'impact de la pr\'eallocation de la
@@ -812,36 +776,25 @@ taille de la collection en utilisant \ct{OrderedCollection new: self}.
 1.9% {118ms} LargePositiveInteger(Integer)>>+
 \end{code}
 
-Il est int\'eressant de voir que la pr\'eallocation n'a que peu
-d'effet et que la m\'ethode \ct{makeRoomAtLast} n'\'etant ex\'ecut\'ee
-qu'une seule fois par calcul de \ct{fib} ne prend que peu de temps de
-calcul. Par contre on peut voir que la m\'ethode \ct{at:ifAbsentPut:} 
-prend une part importante. Nous allons donc proposer et \'evaluer une
- nouvelle impl\'ementation. Nous changeons donc la collection
- ordonn\'ee par un tableau pr\'e-allou\'e et nous d\'efinissons une
- nouvelle m\'ethode d'acc\'es au cache. 
-
-
+It is interesting that the preallocation for this example is not that significant. Replace \ct{OrderedCollection new} by {(OrderedCollection new: self)} in the definition of \ct{fib}. You should also take care of the garbage collector (it increases the overall time execution when triggered). The cost of  \ct{makeRoomAtLast} is not significative. However, the method \ct{at:ifAbsentPut:} is costly. Replacing an ordered collection by an array will improve the Fibonacci definition. Consider \ct{fib2}:
 
 \begin{code}{}
-fib2
+Integer>>>fib2
 	self assert: self >= 1.
 	^ self fibWithCache2: (Array new: self).
 
-fibLookup2: cache
-	|res|
+Integer>>>fibLookup2: cache
+	| res |
 	res := cache at: self.
-	^ res ifNil: [cache at: self put: (self fibWithCache2: cache) ]
+	^ res ifNil: [ cache at: self put: (self fibWithCache2: cache) ]
 		
-fibWithCache2: cache
- 	(self == 1) ifTrue: [ ^1].
- 	(self == 2) ifTrue: [ ^1].
+Integer>>>fibWithCache2: cache
+ 	(self == 1) ifTrue: [ ^ 1 ].
+ 	(self == 2) ifTrue: [ ^ 1 ].
  	^ ((self - 1) fibLookup2: cache) + ((self - 2) fibLookup2: cache)
 \end{code}
 
-Nous avons obtenus une diff\'erence int\'eressante qui illustre 
-que
-l'exp\'erimentation et la mesure sont la base de l'optimisation. 
+The two different versions can be easily compared:
 
 \begin{code}{}
 [1200 fib2] bench  '559.288142371526 per second.'
@@ -849,19 +802,14 @@ l'exp\'erimentation et la mesure sont la base de l'optimisation.
 \end{code}
 
 
+%:====================
+\section{SpaceTally for Memory Consumption per Class}
 
---------
-\section{Consommation de m\'emoire par classe: SpaceTally}
+It is often important to know the amount of instances and the memory consumption of a given class. The class \ct{SpaceTally} offers this functionality. 
 
-Il est parfois important de connaitre le nombre d'instances d'une
-classe ou sa consommation m\'emoire. La classe SpaceTally offre cette
-fonctionalit\'e. 
+The expression \ct{SpaceTally new printSpaceAnalysis} runs over all the classes of the system and gathers for each of them its code size, the amount of instances and the total memory space taken by the instances. The result is sorted along the total memory space taken by instances and is stored in a file named \ct{STspace.text}, located next to the Pharo image.
 
-\ct{SpaceTally new printSpaceAnalysis} montre la consommation
-m\'emoire de la classe au niveau de ses m\'ethodes, du nombre
-d'instances et de la m\'emoire utilis\'ees par les instances. Il n'est pas
-surprenant de voir que les chaines et les m\'ethodes compil\'ees
-prennent 30\% de la m\'emoire en Pharo.
+It is not surprising to see that strings, compiled methods and bitmaps represents the largest part of the Pharo memory.
 
 \begin{code}{}
 Class                           code space # instances  inst space percent
@@ -872,7 +820,8 @@ Array                                     2478       96671       3015172    12.4
 ByteSymbol                        920       40109       1009703     4.1
 \end{code}
 
-Vous pouvez aussi ex\'ecuter cette fonctionnalit\'e sur une s\'election de classes: 
+\ct{SpaceTally} may also be executed on a reduced set of classes. Consider:
+
 \begin{code}{}
 ((SpaceTally new spaceTally: (Array with: TextMorph with: Point)) 
 	asSortedCollection: [:a :b | a spaceForInstances > b spaceForInstances]) 
@@ -880,34 +829,13 @@ Vous pouvez aussi ex\'ecuter cette fonctionnalit\'e sur une s\'election de class
 
 
 
-\section{Quelques conseils pour finir}
+\section{Few advices}
 
-Nous vous avons montr\'e comment utiliser le profiler et montr\'e
-quelques approches comme la comparaison de deux analyses pour
-d\'eterminer une impl\'ementation plus judicieuse. L'utilisation d'un
-cache est une technique tr\`es int\'eressante quand le domaine s'y
-pr\^ete. Voici quelques conseils pour appr\'ehender des optimisations:
-Ne commencez pas par optimiser les feuilles mais essayez de comprendre
-l'algorithme dans son ensemble. Consid\'erez d'autres fa\c cons
-d'obtenir le m\^eme r\'esultat.  Exploitez la m\'eta-information de
-l'algorithme.
-Consid\'erez les caract\'eristiques d'ex\'ecution des structures de
-donn\'ees. Ainsi dans un graphe cyclique si on utilise une
-collection ordonn\'ees ou une liste pour stocker les \'el\'ements d\'ej\`a
-visit\'es, chaque ex\'ecution va potentiellement parcourir un grand nombre de fois
-la liste pour savoir si l'\'el\'ement y est. Utiliser un
-ensemble offre d\'ej\`a un temps d'acc\`es plus raisonable. Utiliser
-un dictionaire peut \^etre aussi une solution lorsque les \'el\'ements ont
-une bonne distribution de leur hash. 
+We have seen a number of strategies to measure and optimize a program. The examples we use were relatively small. Optimizing a program is not always an easy task. Identifying method candidate for inserting a cache is simple and efficient once (i) you know when to invalidate the cache and (ii) when you're aware of the impact on the overall execution when inserting the code.
 
-N'oubliez pas de penser \`a la m\'emoire consomm\'ee lors de
-l'algorithme. En effet ce n'est pas parce que le ramasse-miette peut
-absorber la cr\'eation d'objets temporaires que le stresser est
-anodin. Penser \`a la cr\'eation inutile de collection
-interm\'ediaire.  En effet, ce n'est pas parce que Smalltalk poss\`ede
-une superbe biblioth\`eques d'iterateurs qu'enchainer des select: et
-collect: n'implique pas de multiples parcours de collections
-ainsi que la g\'en\'eration de collections inutiles. 
+In general, it is more valuable to understand the overall algorithm than trying to optimize leaf methods. The way data are structured may also provide opportunities for optimization. For example, using an ordering collection or a linked list may not be appropriated to represent an acyclic graph. Using a set may offer better performance or a dictionary in the case that hash values are reasonably well distributed.
+
+The memory consumption may plays an important role. The overall performance may significantly decreases if the garbage collector is often solicited. Recycling objects and avoiding unnecessary object creations helps reducing the solicitation of the garbage collector.
 
 \section {How MessageTally is implemented?}
 
@@ -916,7 +844,14 @@ ainsi que la g\'en\'eration de collections inutiles.
 %\bibliography{scg,lse}
 %}
 
+%=================================================================
+\section{Chapter Summary}
 
+This chapter has presented the functionalities of MessageTally and introduced a number of principles for resorbing performance bottleneck. The following points were covered:
+
+\begin{itemize}
+\item 
+\end{itemize}
 
 %=================================================================
 
