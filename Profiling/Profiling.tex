@@ -565,7 +565,7 @@ Several memory zones are considered and the migration of a young object to the s
 
 \begin{enumerate}
 
-\item the \ct{old} value is about the grow of the memory space dedicated to old objects. An object is qualified as ``old'' when it survives a number of incremental garbage collections \alex{how many? I need to check}. This memory space is cleaned by a full garbage collection only. (An incremental GC does not reduce its size therefore). 
+\item the \ct{old} value is about the grow of the memory space dedicated to old objects. An object is qualified as ``old'' when its physical memory location is in the ``old memory space''. This happens when a full garbage collector is triggered, or when there are too many object survivors (according to some threshold specified in the virtual machine). This memory space is cleaned by a full garbage collection only. (An incremental GC does not reduce its size therefore). 
 
 An increase of the old memory space clearly is likely to be due to a \emph{memory leak}: the virtual machine is unable to release memory, promoting young objects as old.
 
