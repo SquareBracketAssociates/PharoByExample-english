@@ -373,7 +373,7 @@ As you have probably guessed already, other collection such as set and dictionar
 \begin{figure}
 	\begin{center}
 	\includegraphics[width=.8\linewidth]{MessageTallyOne}
-	\caption{MessageTally en action.}
+	\caption{MessageTally in action.}
 	\figlabel{MessageTallyOne}
 	\end{center}
 \end{figure}
@@ -408,7 +408,7 @@ A tool a bit less crude than \ct{MessageTally} is \ct{TimeProfileBrowser}. It sh
 \begin{figure}
 	\begin{center}
 	\includegraphics[width=.8\linewidth]{TimeProfiler}
-	\caption{Le TimeProfiler utilise MessageTally et permet de consulter les m\'ethodes ex\'ecut\'ees.
+	\caption{TimeProfiler uses MessageTally and navigates in executed methods.
 	\ct{TimeProfileBrowser spyOn:  [20 timesRepeat: [Transcript show: 100 factorial printString]]}}
 	\figlabel{TimeProfiler}
 	\end{center}
@@ -424,7 +424,7 @@ The World menu (obtained by clicking outside any Pharo window) offers some profi
 \begin{figure}[h]
 	\begin{center}
 	\includegraphics[width=.6\linewidth]{menu}
-	\caption{Acc\`es par le menu.}
+	\caption{Access by the menu.}
 	\figlabel{menu}
 	\end{center}
 \end{figure}
@@ -439,7 +439,7 @@ Pressing this button runs the selected unit tests and generates a message tally 
 \begin{figure}[h]
 	\begin{center}
 	\includegraphics[width=.8\linewidth]{testRunner}
-	\caption{Acc\`es par le TestRunner}
+	\caption{Button to generate a message Tally in the TestRunner}
 	\figlabel{testRunner}
 	\end{center}
 \end{figure}
@@ -538,8 +538,8 @@ Some leaf methods may not appear in the information tree described above. Leaf m
 
 @@TODO
 \begin{itemize}
-\item when a primitive invokes a method. This is the case of \ct{doesNotUnderstand:} for example. 
-\item when an exception is raised
+\item when a primitive invokes a method. This is the case of \ct{doesNotUnderstand:} for example. \ja{I do not understand: a primitive should not invoke a method.} \ja{doesNotUnderstand: is not a primitive.}
+\item when an exception is raised \ja{when an exception is raised, tally crashes}
 \item block evaluation
 \item process creation
 \end{itemize}
@@ -592,7 +592,7 @@ The \ct{**GCs**} provides statistics about the garbage collector. Four values ar
 
 \item The number of \ct{tenures} tells the amount of objects that migrated to the old memory space. This migration happens when the size of the young memory space is above a given threshold. This typically happens when lunching an application, when all the necessary objects haven't been created and referenced. 
 
-\item The \ct{root table overflows} is the amount of root objects used by the garbage collector to navigate the image. This navigation happens when the system is running short on memory and need to collect all the objects relevant for the future program execution. The overflow value identifies the rare situation when the number of roots used by the incremental GC is greater than the its internal table. This situation forces the GC to promote some objects as tenured. \alex{Does this force full garbage collection?}
+\item The \ct{root table overflows} is the amount of root objects used by the garbage collector to navigate the image. This navigation happens when the system is running short on memory and need to collect all the objects relevant for the future program execution. The overflow value identifies the rare situation when the number of roots used by the incremental GC is greater than the its internal table. This situation forces the GC to promote some objects as tenured. \alex{Does this force full garbage collection?}\ja{we should ask John because it depends on the vm}
 
 
 %: La table des racines repr\'esente un
@@ -720,7 +720,7 @@ MessageTally allows for a profiling based on program interpretation. The idea is
 \begin{figure}
 	\begin{center}
 	\includegraphics[width=.8\linewidth]{sendTally}
-	\caption{Tous les messages execut\'es lors d'une ex\'ecution.}
+	\caption{All executed messages during an execution.}
 	\figlabel{sendTally}
 	\end{center}
 \end{figure}
@@ -841,7 +841,7 @@ In general, it is more valuable to understand the overall algorithm than trying 
 The memory consumption may plays an important role. The overall performance may significantly decreases if the garbage collector is often solicited. Recycling objects and avoiding unnecessary object creations helps reducing the solicitation of the garbage collector.
 
 \section {How MessageTally is implemented?}
-
+\ja{For stats: It takes VMparameters, launches the block, takes a new vmParameters and make the diffs}
 %\bibliographystyle{alpha}
 %{\small
 %\bibliography{scg,lse}
