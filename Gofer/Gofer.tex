@@ -1,0 +1,327 @@
+% $Author: jannik $
+% $Date: 2010-05-13 23:11:04 +0200 (Thu, 13 May 2010) $
+% $Revision: 32942 $
+
+% HISTORY:
+% 2010-05-14 - Jannik started chapter
+
+%=================================================================
+\ifx\wholebook\relax\else
+% --------------------------------------------
+% Lulu:
+	\documentclass[a4paper,10pt,twoside]{book}
+	\usepackage[
+		papersize={6.13in,9.21in},
+		hmargin={.75in,.75in},
+		vmargin={.75in,1in},
+		ignoreheadfoot
+	]{geometry}
+	\input{../common.tex}
+	\pagestyle{headings}
+	\setboolean{lulu}{true}
+% --------------------------------------------
+% A4:
+%	\documentclass[a4paper,11pt,twoside]{book}
+%	\input{../common.tex}
+%	\usepackage{a4wide}
+% --------------------------------------------
+    \graphicspath{{figures/} {../figures/}}
+	\begin{document}
+	% \renewcommand{\nnbb}[2]{} % Disable editorial comments
+	\sloppy
+\fi
+%=================================================================
+
+%=================================================================
+
+
+\chapter{Gofer: how to script the load of packages}
+
+\section{Package Management system}
+
+%Un systme de gestion de versions aide au stockage de versions et garde l'historique d'Žvolution du systme. En plus, il permet de gŽrer les accs concurrents ˆ un rŽpertoire de code source. Il garde les traces de tous les changements sauvegardŽs et permet donc ˆ plusieurs dŽveloppeurs de collaborer. Plus un projet grandit, plus il est important d'utiliser un systme de gestion.
+%Monticello dŽfinit le systme de packages et de gestion de versions de Pharo. En Pharo, les classes (changement de superclasse, changement de variables d'instance...) et les mŽthodes (ajout, modification, suppression) sont les unitŽs ŽlŽmentaires versionnŽes par Monticello. Une Source est un serveur HTTP qui permet d'hŽberger des projets (en particulier des packages) gŽrŽs avec Monticello. C'est l'Žquivalent d'une forge : Elle offre la gestion des contributeurs et leur statuts, des informations de visibilitŽ, un wiki avec RSS feed. Une source offerte ˆ tous est http://www.squeaksource.com/.
+%La gestion des versions est faite principalement interactivement. Dans cet article nous prŽsentons Gofer, un outil permettant de scripter la gestion des packages. Il permet d'automatiser certaines actions de versioning.
+
+\section{What is Gofer ?}
+
+%Gofer est un petit outil au dessus de Monticello. Il permet de crŽer simplement des scripts pour charger, sauvegarder, fusionner, mettre ˆ jour, revenir ˆ une version prŽcŽdente, recompiler, vŽrifier les diffŽrences, dŽcharger des packages...
+%Contrairement aux outils existants, Gofer s'assure que les opŽrations sont exŽcutŽes le plus proprement possible, et le plus clairement possible. Par exemple, aprs le chargement des packages, Gofer nettoie le code et ne laisse ni classe, ni catŽgorie vide (une catŽgorie est une sorte d'identifiant de package). 
+%Il permet de charger des packages se situant dans des rŽpertoires diffŽrents en une simple opŽration. En utilisant un certain prŽfixe, Gofer peut charger la dernire version stable ou la dernire version en cours de dŽveloppement. Gofer est utilisŽ par Metacello le gestionnaire de configurations que nous prŽsenterons ultŽrieurement. 
+%Gofer fait parti de la distribution de base depuis la version 1.0 de Pharo. Il est possible de mettre ˆ jour l'outil en Žvaluant la ligne suivante dans un Workspace, dans l'environnement de Pharo:
+%Gofer gofer update
+
+\section{Using Gofer}
+
+%Gofer est simple par son utilisation. Le scŽnario de chargement de package dans Pharo est toujours le mme. Il consiste en trois Žtapes: d'abord, on spŽcifie une URL o se trouve le package, ensuite on spŽcifie le package ˆ charger depuis cette adresse et finalement on invoque les opŽrations (souvent charger ou sauvegarder).
+
+\subsection{Indicate URL}
+
+%Gofer permet de spŽcifier une URL d'un rŽpertoire Monticello. Cette dernire a gŽnŽralement la forme suivante:
+%MCHttpRepository 
+%    location: 'http://www.squeaksource.com/MonPackage'
+%    user: 'pharoUser' 
+%    password: 'pharoPwd'
+%Pour ceci, les mŽthodes url:, url:username:password: or directory: sont disponibles. Les deux premires permettent de spŽcifier des accs HTTP ou FTP, la troisime permet de spŽcifier tout type d'URL. Cette dernire sera utilisŽe dans des cas particuliers comme charger des packages depuis un dossier local.
+%Il existe dans l'API des mŽthodes de raccourci, par exemple ÇÊsqueaksource:ÊÈ, ÇÊwiresong:ÊÈ ou ÇÊgemsource:ÊÈ permettent respectivement de se connecter aux serveurs de squeaksource (http://www.squeaksource.com/), de wiresong (http://source.wiresong.ca/) et de gemsource (http://seaside.gemstone.com/ss/). Ces mŽthodes sont souvent utilisŽes car elle pointent vers les serveurs le plus populaires de la communautŽ.
+%En supplŽment, Gofer dŽclare par dŽfaut le rŽpertoire local de cache comme une URL. Dans le cas o Gofer n'arriverait pas ˆ charger un package dans l'URL spŽcifiŽ, il va donc chercher dans le rŽpertoire ÇÊcacheÊÈ ˆ la racine de Pharo. Il est possible de dŽsactiver cette option en utilisant la mŽthode ÇÊdisablePackageCacheÊÈ ou de la rŽactiver en utilisant la mŽthode ÇÊenablePackageCacheÊÈ.
+%De la mme manire, Gofer retourne une erreur si l'un des rŽpertoires n'est pas joignable. Pour ignorer ces erreurs, il suffit d'utiliser la mŽthode ÇÊdisableRepositoryErrorsÊÈ. Pour rŽactiver cette fonctionnalitŽ, il suffit d'utiliser la mŽthode ÇÊenableRepositoryErrorsÊÈ.
+%Gofer new
+%    "on travaille sur le projet GoferLinuxMag"
+%    url: 'http://www.squeaksource.com/GoferLinuxMag'	
+%    "on spŽcifie un nom d'utilisateur"
+%    username: 'pharoUser'
+%    "on spŽcifie un mot de passe" 
+%    password: 'pharoPwd'; 
+%    "on ajoute le package souhaitŽ"
+%    package:'GoferLinuxMag'; 
+%    "on dŽsactive la recherche dans la cache local"
+%    disablePackageCache; 
+%    "on dŽsactive les erreurs de rŽpertoire"
+%    disableRepositoryErrors; 
+%    "on charge les packages spŽcifiŽs"
+%    load.
+%"on exŽcute la commande open"
+%(Smalltalk at: #ButtonsBar) open.
+%Ce code charge un ensemble de boutons permettant chacun de charger des projets diffŽrents. Vous pouvez regarder le code, le modifier ou en ajouter. Le rŽsultat du message ÇÊopenÊÈ donne la figure suivante:
+%/// Image : resultButtonsBar.png ///
+%Nous vous encourageons ˆ modifier ce projet avec des scripts diffŽrents, et ˆ profiter de l'API de Gofer pour gŽrer vos sources dŽlocalisŽe.
+
+\subsection{Specify package}
+
+%Une fois l'URL spŽcifiŽe et les options dŽfinies, on spŽcifie le ou les packages sur lesquels on souhaite travailler. Pour cela on utilise la mŽthode ÇÊversion:ÊÈ pour travailler sur une version particulire du package, ou la mŽthode ÇÊpackage:ÊÈ pour travailler sur la dernire version du package dans l'ensemble des rŽpertoires donnŽs. 
+%Il est Žgalement possible de spŽcifier des contraintes de chargement de packages. La mŽthode ÇÊpackage:constraint:ÊÈ permet de passer un block en paramtre pour dŽfinir certaines conditions.
+%Par exemple, le code suivant permet de rŽcupŽrer la dernire version du package ÇGoferLinuxMagÈ sauvegardŽe par le dŽveloppeur nommŽ ÇÊjannik_lavalÊÈ.
+%Gofer new
+%    squeaksource: 'GoferLinuxMag';
+%    package: 'GoferLinuxMag' constraint: [ :version | version author = 'jannik_laval' ];
+%    load
+%Un deuxime exemple qui rŽcupre la version 2 du package ÇGoferLinuxMagÈ:
+%Gofer new
+%    squeaksource: 'GoferLinuxMag';
+%    version: 'GoferLinuxMag-jannik_laval.2';
+%    load
+
+\subsection{Do actions}
+%Une fois l'instance de Gofer paramŽtrŽ, nous pouvons faire de multiple manipulations. Dans ce paragraphe, nous listons les actions possibles suivies d'une courte description. Certaines seront dŽtaillŽes plus loin dans l'article.
+%
+%load
+%charge les packages spŽcifiŽs dans Pharo
+%update
+%met ˆ jour les versions locales des packages
+%merge
+%fusionne la version distante avec la version local des packages
+%localChanges
+%affiche la liste des changements entre la version de base et la version en cours de modification
+%remoteChanges
+%affiche les changements entre la version en cours et la version distante.
+%cleanup
+%nettoie les packages spŽcifiŽs: il efface les catŽgories inutiles du package.
+%commit / commit:
+%sauvegarde les packages sur le serveur distant spŽcifiŽ. La deuxime mŽthode permet d'ajouter un message de log.
+%revert
+%rŽinitialise les packages dans leur dernires versions chargŽes
+%recompile
+%recompile les package
+%unload
+%supprime de Pharo les packages spŽcifiŽs
+%fetch
+%charge les packages depuis des rŽpertoires distants dans le rŽpertoire local
+%push
+%sauvegarde les versions de package locales dans le rŽpertoire distant
+
+\subsection{Installing a package}
+
+%Comme nous l'avons ŽvoquŽ dans les paragraphes prŽcŽdents, on peut utiliser Gofer pour charger une version spŽcifique d'un package, charger la dernire version sauvegardŽe sur le serveur distant, ou encore  charger la dernire version sauvegardŽ par un programmeur particulier:
+%Gofer new
+%    "on travaille sur le projet Seaside sauvegardŽ sur le serveur Squeaksource "
+%    squeaksource: 'MetacelloRepository';
+%    "on traite la dernire version du package sauvegardŽ" 
+%    package: 'ConfigurationOfSeaside30'; 
+%    load	
+%"Cette dernire ligne permet de charger le code source de Seaside30"
+%(Smalltalk at: #ConfigurationOfSeaside30) load.
+%Attention cette action va charger tout Seaside (quelques 70 packages dans votre systme), cela prend un certain temps, nous vous suggŽrons de ne pas le faire immŽdiatement.
+
+\subsection{\ldots or several}
+%Nous pouvons spŽcifier le chargement de plusieurs packages provenant de plusieurs serveurs diffŽrents gr‰ce ˆ Gofer. Le code ci-dessous est ˆ exŽcuter aprs celui chargeant Seaside (code prŽcŽdent). Il charge diffŽrents packages provenant de deux serveurs diffŽrents. La sŽquence de chargement est respectŽe: le script charge dans l'ordre Pier-All, Picasa-Model et Picasa-Seaside.
+%Gofer new 		
+%    renggli: 'pier';
+%    package: 'Pier-All';
+%    squeaksource: 'PicasaClient';
+%    package: 'Picasa-Model';
+%    package: 'Picasa-Seaside';
+%    load.
+%Cet exemple semble montrer que Pier-All est cherchŽ dans le rŽpertoire Pier de du serveur ÇÊrenggliÊÈ, et que Picasa-Model et Picasa-Seaside sont cherchŽs dans le rŽpertoire PicasaClient de SqueakSource. Or, en rŽalitŽ, Gofer ne prend pas en compte cet ordre. L'ensemble des packages sont cherchŽs dans les deux rŽpertoires. En l'absence de numŽro de version, le script chargera le package le plus rŽcent sur l'ensemble des deux serveurs.
+%On peut donc Žcrire le script de cette faon:
+%Gofer new 
+%    squeaksource: 'PicasaClient';		
+%    renggli: 'pier';
+%    package: 'Pier-All';
+%    package: 'Picasa-Model';
+%    package: 'Picasa-Seaside';
+%    load.
+%Dans certains cas, nous souhaitons spŽcifier une source particulire pour un package. Dans ce cas, nous crŽons plusieurs script, comme ceci:
+%Gofer new
+%    squeaksource: 'PicasaClient';
+%    package: 'Picasa-Model';
+%    package: 'Picasa-Seaside';
+%    load.
+%Gofer new
+%    squeaksource: 'PicasaClientLightbox';
+%    package: 'Picasa-Model';
+%    package: 'Picasa-Seaside';
+%    load.
+%Notez que ces scripts chargent les dernires versions des packages, donc ils sont fragiles car si une personne publie un nouveau package avec un bug vous allez le charger. SpŽcifier la version est une faon de se protŽger des changements que l'on ne contr™le pas. 
+
+\subsection{Other protocols}
+
+%Gofer offre Žgalement le protocole FTP et la recherche dans le rŽpertoire local. Pour cela nous utilisons les mmes commandes que les scripts prŽcŽdents ˆ quelques diffŽrences prs.
+%Pour FTP, nous spŽcifions l'url prŽcŽdŽe de l'entte ftp://
+%Gofer new
+%    url: 'ftp://wtf-is-ftp.com/code';
+%    ...
+%Pour un rŽpertoire local, nous utilisons la commande ÇÊdirectory:ÊÈ suivi du chemin absolu du rŽpertoire contenant les fichiers ˆ charger.
+%Gofer new
+%    directory: '/home/jlaval/repository';
+%    ...
+%Pour finir, il est possible de chercher les fichiers dans le rŽpertoire et tous ces sous-rŽpertoires en utilisant ÇÊ*ÊÈ
+%Gofer new
+%    directory: '/home/jlaval/repository/*';
+%    ...
+
+\subsection{Synchronizing with a remote server}
+
+%Lorsque l'on travaille avec un package chargŽ depuis un serveur distant, il est important de synchroniser les versions. La synchronisation fonctionne dans les deux sens: ÇÊserveur vers clientÊÈ pour mettre ˆ jour la version locale, ÇÊclient vers serveurÊÈ pour sauvegarder le travail effectuŽ.
+%Dans une partie prŽcŽdente, nous avons utilisŽ particulirement la commande ÇÊloadÊÈ correspondant au sens ÇÊserveur vers clientÊÈ. L'utilisation des autres commandes est similaire: dŽfinition d'une URL, dŽfinition d'un projet, opŽration ˆ exŽcuter.
+
+\paragraph{Merge, update and revert}
+
+%La commande ÇÊmergeÊÈ permet de fusionner la version distance avec la version en cours de travail, en modifiant la version locale. Si il y a des conflits entre les deux versions, une fentre s'affiche pour laisser le choix ˆ l'utilisateur. Dans le cas contraire, la fusion se fait en silence.
+%Gofer new
+%    squeaksource: 'GoferLinuxMag';
+%    package: 'GoferLinuxMag';
+%    merge
+%La commande ÇÊupdateÊÈ, quant ˆ elle, met ˆ jour le ou les packages spŽcifiŽs de la machine locale avec la version du serveur distant. Cette commande efface les modifications effectuŽes en locale et non-sauvegardŽe.
+%La commande ÇÊrevertÊÈ met ˆ l'Žtat initial la version locale. En quelques mots, elle charge une nouvelle fois la version prŽcŽdemment chargŽe. Elle efface dons les modifications effectuŽes par l'utilisateur.
+
+\paragraph{commit and commit:}
+
+%Maintenant qu'on a appris ˆ crŽer un script pour installer un package et manipuler le code en local, on peut sauvegarder les informations sur le serveur. Cette fonctionnalitŽ est assurŽe par deux mŽthodes: ÇÊcommitÊÈ et ÇÊcommit:ÊÈ. La premire sauvegarde sans laisser de commentaires, la seconde prend une chaine de caractre en paramtre pour commenter la version sauvegardŽe.
+%Gofer new
+%    " on sauvegarde le packages dans le rŽpertoire GoferLinuxMag "
+%    squeaksource: 'GoferLinuxMag';
+%    package: 'GoferLinuxMag';
+%
+%    " on commente les changements effectuŽ, et on sauvegarde "
+%    commit: 'changed a lot of things'
+%Dans le cas d'une sauvegarde, il est important de travailler sur la dernire version du projet. Souvent lorsque plusieurs dŽveloppeurs travaillent sur le mme projet, les versions locales ne sont pas ˆ jour. Une solution pour palier ce problme au moment de la sauvegarde est de fusionner les dernires versions avant de sauvegarder. Voici un exemple:
+%Gofer new
+%    " on sauvegarde le packages dans le rŽpertoire GoferLinuxMag "
+%    squeaksource: 'GoferLinuxMag';
+%    package: 'GoferLinuxMag';
+%
+%    "on s'assure de travailler avec la dernire version du package "
+%    merge;
+%
+%    "on commente les changements effectuŽ, et on sauvegarde "
+%    commit: 'changed a lot of things'
+
+\paragraph{localChanges and remoteChanges}
+
+%Parfois avant de charger une nouvelle version du package ou de sauvegarder, il peut tre utile de regarder les changements effectuŽs en local ou sur le serveur. Pour cela les mŽthodes ÇÊlocalChangesÊÈ et ÇÊremoteChangesÊÈ permettent pour la premire d'afficher les changements entre la dernire version tŽlŽchargŽe et la version en cours de modification ; pour la seconde d'afficher les changements entre la version en cours et la dernire version sauvegardŽe sur le serveur distant. Ces deux mŽthodes retournent une liste de changements.
+%Gofer new
+%    squeaksource: 'GoferLinuxMag';
+%    "on ajoute la dernire version de GoferLinuxMag"
+%    package: 'GoferLinuxMag'; 
+%    "on obtient une liste des changements locaux par rapport aux packages spŽcifiŽs au dessus"
+%    localChanges
+%Il est possible d'afficher et de naviguer dans ces changements en utilisant le visualiseur standard de changement de Monticello en utilisant les mŽthodes ÇÊbrowseLocalChangesÊÈ et ÇÊbrowseRemoteChangesÊÈ
+%Gofer new
+%    squeaksource: 'GoferLinuxMag';
+%    "on ajoute la dernire version de GoferLinuxMag"
+%    package: 'GoferLinuxMag';
+%    "on navigue dans les changements effectuŽs sur le serveur"
+%    browseRemoteChanges		
+%/// Image : screenshot.png ///
+
+\paragraph{Unload}
+
+%Gofer permet de supprimer gr‰ce ˆ des scripts des packages de Pharo. La mŽthode ÇÊunloadÊÈ permet de supprimer proprement les packages spŽcifiŽs et l'ensemble de leurs classes et mŽthodes contenus.
+%Le script suivant permet de supprimer le package ÇÊGoferLinuxMagÊÈ de l'image Pharo:
+%Gofer new
+%    squeaksource: 'GoferLinuxMag';
+%    package: 'GoferLinuxMag';
+%    unload
+%A notŽ qu'il n'est pas possible de supprimer Gofer par ce biais. La commande ÇÊGofer gofer unloadÊÈ ne fonctionne pas.
+
+\paragraph{Fetch, push: two functions for offline synchronizing}
+
+%Les deux mŽthodes ÇÊfetchÊÈ et ÇÊpushÊÈ permettent ˆ Gofer d'avoir le comportement d'un Git. Ce paragraphe montre l'une des fonctionnalitŽs les plus importante de Gofer lorsque l'on travaille hors ligne.
+%- ÇÊfetchÊÈ rŽcupre les packages du serveur distant et remplit le rŽpertoire d'installation local. Il ne les charge  pas dans l'image Pharo mais rŽcupre uniquement les sources d'installations. Cela permet ensuite, hors ligne, d'installer les packages dans Pharo sans connexion internet.
+%Gofer new
+%    squeaksource: 'GoferLinuxMag';
+%    package: 'GoferLinuxMag';
+%    fetch
+%Aprs avoir utilisŽ cette mŽthode, il est important lors du chargement du package de ne pas dŽsactiver la recherche dans le rŽpertoire local (mŽthodes disablePackageCache et enablePackageCache).
+%- ÇÊpushÊÈ effectue l'opŽration inverse: cette mŽthode prend les packages du rŽpertoire local et les sauvegarde sur le rŽpertoire distant. Aprs avoir sauvegardŽ les modifications dans le rŽpertoire local via Monticello, il est possible ˆ la prochaine connexion ˆ Internet de sauvegarder les scripts d'installations sur le serveur distant en toute transparence.
+%Gofer new
+%    squeaksource: 'GoferLinuxMag';
+%    package: 'GoferLinuxMag';
+%    push
+%Cela permet de constituer une base de donnŽes locale et de charger les packages hors connexion: le dossier local est toujours analysŽ avant le rŽpertoire distant.
+%Ainsi avec ces deux fonctions, il est facile de rŽaliser un script de synchronisation des rŽpertoires local et distant:
+%sync
+% "synchroniser les rŽpertoires local et distant"
+% Gofer new
+%     squeaksource: 'GoferLinuxMag';
+%     package: 'GoferLinuxMag';
+%     push
+% Gofer new
+%     squeaksource: 'GoferLinuxMag';
+%     package: 'GoferLinuxMag';
+%     fetch
+
+\subsection{Automate responses}
+
+%Pharo dans son ensemble fournit des mŽthodes pratiques permettant d'avoir un systme compltement maitrisŽ. Bien que le sujet ici ne soit pas Pharo dans son ensemble, la mŽthode ÇÊvalueSupplyingAnswers:ÊÈ nous intŽresse particulirement. Elle Žvalue un bloc avec une liste de questions/rŽponses qui peuvent tre appelŽes durant l'exŽcution du script dans le bloc (entre crochets). Cela permet de gŽrer les valeurs ˆ spŽcifier manuellement et d'y rŽpondre automatiquement. L'exemple suivant montre 4 questions/rŽponses possibles dans un script.
+%[ Gofer new
+%	squeaksource: 'Seaside30';
+%	package: 'LoadOrderTests';
+%	load ]
+%	valueSupplyingAnswers: {
+%		{'Load Seaside'. True}.
+%		{'SqueakSource User Name'. 'pharoUser'}.
+%		{'SqueakSource Password'. 'pharoPwd'}.
+%		{'Run tests'. false}.
+%	}
+%Ainsi, il est possible de compltement automatiser les scripts de chargement de vos applications.
+
+\section{Conclusion}
+
+%Nous vous avons prŽsentŽ Gofer, un outil pour scripter la gestion des packages dans Pharo. Cet outil fonctionne avec l'ensemble des packages sur Pharo, il est donc trs facile de crŽer un script permettant d'installer tous vos packages prŽfŽrŽs. 
+%Un package indispensable au bon apprentissage de l'environnement Pharo est le programme ÇÊProfStefÊÈ. Vous pouvez le charger avec Gofer en exŽcutant le code suivant:
+%Gofer it
+%    squeaksource: 'MetacelloRepository';
+%    package: 'ConfigurationOfProfStef';
+%    load.
+%((Smalltalk at: #ConfigurationOfProfStef) project version:'1.0')load.
+%(Smalltalk at: #ProfStef) go.
+%Amusez-vous bien !
+
+%\begin{code}
+%**Leaves**
+%52.7% {10502ms} SmallInteger(Integer)>>timesRepeat:
+%14.0% {2790ms} ByteString(SequenceableCollection)>>copyReplaceFrom:to:with:
+%8.8% {1754ms} UndefinedObject>>DoIt
+%7.7% {1534ms} ByteString(SequenceableCollection)>>,
+%5.9% {1176ms} ByteString class(String class)>>new:
+%\end{code}
+
+%=================================================================
+
+\ifx\wholebook\relax\else\end{document}\fi
+%=================================================================
+
+%-----------------------------------------------------------------
+
