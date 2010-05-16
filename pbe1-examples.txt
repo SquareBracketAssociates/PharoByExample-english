@@ -18,7 +18,7 @@ about testing, see the Wiki link under:
 
 http://www.squeaksource.com/PharoByExample.html
 
-Last update: 2010-03-11T11:55:02+01:00
+Last update: 2010-05-16T12:50:36+02:00
 
 ===== CHAPTER: Preface ==========
 
@@ -262,7 +262,7 @@ nums "--> #(6 2 3 4 5)"
  (2) send this sound to FMSound as argument to the lowMajorScaleOn: keyword message.
  (3) play the resulting sound."
 -----
-      (65 @ 325 extent: 134 @ 100) center
+      (65@325 extent: 134@100) center
 (1)   65@325 "binary"
  "--> aPoint"
 (2)                                134@100 "binary"
@@ -995,7 +995,7 @@ colors at: #yellow "--> Color yellow"
 colors keys "--> a Set(#blue #yellow #red)"
 colors values "--> {Color blue . Color yellow . Color red}"
 -----
-colors := Dictionary newFrom: { #blue->Color blue. #red->Color red. #yellow->Color yellow }.
+colors := Dictionary newFrom: { #blue->Color blue . #red->Color red . #yellow->Color yellow }.
 colors removeKey: #blue.
 colors associations "--> {#yellow->Color yellow . #red->Color red}"
 -----
@@ -2039,7 +2039,7 @@ MyKeypad>>renderStackButton: text callback: aBlock colSpan: anInteger on: html
 -----
 MyCalculator class>>initialize
 	(self registerAsApplication: 'rpn')
-		addLibrary: SULibrary}}
+		addLibrary: SULibrary
 -----
 new Ajax.Updater(
 	'display',
