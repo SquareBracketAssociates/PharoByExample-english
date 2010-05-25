@@ -89,14 +89,18 @@ Depending on the selected setting, it may be different. Three versions of it are
 \end{itemize}
 
 \subsection{Searching and filtering settings}
-@ two points here: searching (token of regexp) and filtering by selecting packages @
+Pharo contains a lot of settings and finding one of them can be tedious. 
+You can filter the settings list by entering something in the text field of the top bar of the SettingsBrowser. Then, only the settings which name or description contains the text you've entered will be shown. The text can be a regular expression if the "Regexp" checkbox is checked.
+
+Another way to filter the list of settings is to choose them by package. Just click on the "Choose package" button, then a dialog is opened with the list of packages in which some settings are declared. If you choose one or several of them, then, only settings which are declared in the selected packages will be shown. Notice that the bottom right text pane is updated with the name of the selected packages.
+
 
 \section{Declaring a setting}
 \label{sec:DeclaringASetting}
-A setting is declared by a particular class method which must be coded as follow: it takes a builder as argument and it is tagged by the <systemsettings> simple pragma. As an example: 
+A setting is declared by a particular class method which must be coded as follow: it takes a builder as argument and it is tagged by the \textit{<systemSettings>} simple pragma. As an example: 
 \begin{code}{}
-AClassInMyPackage class>>systemSettingOn: aBuilder
-  <systemsettings>
+AClassInMyPackage class>>settingOn: aBuilder
+  <systemSettings>
   (aBuilder group: #MySettings)
     label:'My settings' ...
 \end{code}
