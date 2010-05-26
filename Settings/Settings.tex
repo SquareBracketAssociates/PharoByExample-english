@@ -41,15 +41,15 @@ This is what we will see now.
 \section{Settings in a nutshell}
 A preference is a particular \emph{value} which is usually accessible from everywhere. Basically such a preference value is stored in a class variable or in an instance variable of a singleton and is directly managed through the use of simple accessors. Pharo contains numerous preferences. As examples, the user interface theme, the desktop background color or a boolean flag to allow or prohibit the use of sound are currently declared as preferences. Although this is not really the subject of this chapter, the point of programming a preferences is covered by section~\ref{sec:ProgrammingAPreference}. 
 
-Pharo users need to browse existing preferences and eventually change their value, this is the major role of the settings browser presented in section~\ref{sec:TheSettingBrowser}.
+Pharo users need to browse existing preferences and eventually change their value, this is the major role of the settings browser presented in section~\ref{sec:TheSettingsBrowser}.
 
 A setting is a \emph{declaration} (description) of a preference value. To be viewed and updated through the setting browser, a preference value must be described by a setting. Such a setting is built by a particular method tagged with a pragma. The section~\ref{sec:DeclaringASetting} explains how to declare a setting.
 
 Depending on where and when you are using Pharo, some preferences can change often. As an example, when you are doing a demonstration, you may want to have bigger fonts, at work you may need to set a proxy whereas at home none is needed. Having to change a set of preferences depending on where you are and what you are doing can be very tedious and boring. With the setting browser it is possible to save the current set of preference values in a named style that can be reloaded later. Setting style management is presented in Section~\ref{sec:SettingStylesManagement}.
 
 \section{The Setting browser}
-\label{sec:TheSettingBrowser}
-The setting browser, shown in figure~\figref{fig:TheSettingBrowser}, mainly allows the browsing of all currently declared settings and to change related preference values. To open it, just use the World menu (\menu{World \go System \go Settings}) or evaluate the following expression:
+\label{sec:TheSettingsBrowser}
+The setting browser, shown in figure~\figref{fig:TheSettingsBrowser}, mainly allows the browsing of all currently declared settings and to change related preference values. To open it, just use the World menu (\menu{World \go System \go Settings}) or evaluate the following expression:
 \begin{code}{}
 SettingBrowser open
 \end{code}
@@ -57,20 +57,20 @@ The settings are presented in several trees in the middle panel. Setting searchi
 \begin{figure}[tbh]
 \begin{center}
 \includegraphics[scale=0.3]{SettingBrowser}
-\caption{The setting browser}
-\figlabel{fig:TheSettingBrowser}
+\caption{The settings browser}
+\figlabel{fig:TheSettingsBrowser}
 \end{center}
 \end{figure}
 
 \subsection{Browsing and changing preference values}
 Setting declarations are organized in trees which can be browsed in the middle panel. In order to get a description for a setting, just click on it: the setting is selected and the left bottom panel is updated with informations about the selected setting. 
 
-Changing a preference value is simply done through the browser: each line holds a widget on the right with which you can update the value. The kind of widget depends on the actual type of the preference value. Whereas a preference value can be of any kind, the setting browser is currently able to present an input widget for the following types: \textit{Boolean}, \textit{Color}, \textit{FilePath}, \textit{Font}, \textit{Number}, \textit{Point} and \textit{String}. A drop-list, a password field or a range input widget using a slider can also be used. Of course, the list of possible widgets is not closed as it is possible to make the setting browser support new kind of preference values or use different input widgets. This point is explained in section~\ref{sec:ExtendingTheSettingBrowser}.
+Changing a preference value is simply done through the browser: each line holds a widget on the right with which you can update the value. The kind of widget depends on the actual type of the preference value. Whereas a preference value can be of any kind, the setting browser is currently able to present an input widget for the following types: \textit{Boolean}, \textit{Color}, \textit{FilePath}, \textit{FileDirectory}, \textit{Font}, \textit{Number}, \textit{Point} and \textit{String}. A drop-list, a password field or a range input widget using a slider can also be used. Of course, the list of possible widgets is not closed as it is possible to make the setting browser support new kind of preference values or use different input widgets. This point is explained in section~\ref{sec:ExtendingTheSettingsBrowser}.
 
-If the actual type of a setting is either \textit{String}, \textit{FilePath}, \textit{Number} or \textit{Point}, in order to change a value, the user has to enter some text in a editable drop-list widget. In such a case, the input must be confirmed by hinting the return key (or with cmd-s). If such a setting value is changed often, the drop-list widget is very handy because you can retrieve and use previously entered values in one click !
+If the actual type of a setting is either \textit{String}, \textit{FilePath}, \textit{FileDirectory}, \textit{Number} or \textit{Point}, in order to change a value, the user has to enter some text in a editable drop-list widget. In such a case, the input must be confirmed by hinting the return key (or with cmd-s). If such a setting value is changed often, the drop-list widget is very handy because you can retrieve and use previously entered values in one click !
 
 Other possible actions are all acessible from the contextual menu.
-Depending on the selected setting, it may be different. Three versions of it are shown in figure \figref{fig:TheSettingBrowserPopupMenu}.
+Depending on the selected setting, it may be different. Three versions of it are shown in figure \figref{fig:TheSettingsBrowserPopupMenu}.
 \begin{figure}[tbh]
 \begin{center}
 \begin{tabular}{ccc}
@@ -79,7 +79,7 @@ Depending on the selected setting, it may be different. Three versions of it are
 	\includegraphics[scale=0.5]{popup2.png} \\ 
 \end{tabular} 
 \caption{The contextual popup menu}
-\figlabel{fig:TheSettingBrowserPopupMenu}
+\figlabel{fig:TheSettingsBrowserPopupMenu}
 \end{center}
 \end{figure}
 \begin{itemize}
@@ -90,7 +90,7 @@ Depending on the selected setting, it may be different. Three versions of it are
 
 \subsection{Searching and filtering settings}
 Pharo contains a lot of settings and finding one of them can be tedious. 
-You can filter the settings list by entering something in the text field of the top bar of the SettingsBrowser. Then, only the settings which name or description contains the text you've entered will be shown. The text can be a regular expression if the "Regexp" checkbox is checked.
+You can filter the settings list by entering something in the search text field of the top bar of the SettingsBrowser. Then, only the settings which name or description contains the text you've entered will be shown. The text can be a regular expression if the "Regexp" checkbox is checked.
 
 Another way to filter the list of settings is to choose them by package. Just click on the "Choose package" button, then a dialog is opened with the list of packages in which some settings are declared. If you choose one or several of them, then, only settings which are declared in the selected packages will be shown. Notice that the bottom right text pane is updated with the name of the selected packages.
 
@@ -487,7 +487,7 @@ Settings are of two main kinds: setting nodes and settings with associated prefe
 \label{sec:SettingStylesManagement}
 
 \section{Extending the setting browser}
-\label{sec:ExtendingTheSettingBrowser}
+\label{sec:ExtendingTheSettingsBrowser}
 
 \section{Programming a preference}
 \label{sec:ProgrammingAPreference}
