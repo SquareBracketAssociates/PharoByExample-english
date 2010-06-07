@@ -120,7 +120,7 @@ ParagraphEditor class>>caseSensitiveFinds: aBoolean
 	CaseSensitiveFinds := aBoolean
 \end{code}
 
-In order to be able to change the \textit{CaseSensitiveFinds} class variable from the settings browser, the following method declaration can be implemented:
+In order to be able to change the \textit{CaseSensitiveFinds} class variable from the settings browser, the method below can be implemented. The result is shown in the screenshot of the \figref{fig:caseSensitiveFinds1}. 
 
 \begin{code}{}
 CodeHolderSystemSettings class>>caseSensitiveFindsSettingsOn: aBuilder
@@ -130,7 +130,6 @@ CodeHolderSystemSettings class>>caseSensitiveFindsSettingsOn: aBuilder
 		target: ParagraphEditor;
 		description: 'If true, then the "find" command in text will always make its searches in a case-sensitive fashion' translated.
 \end{code}
-Thanks to the \textit{<systemsettings>} pragma, the settings browser is automatically updated when this method is compiled. The result is shown in the screenshot of the \figref{fig:caseSensitiveFinds1}.
 
 \begin{figure}[tbh]
 \begin{center}
@@ -140,11 +139,23 @@ Thanks to the \textit{<systemsettings>} pragma, the settings browser is automati
 \end{center}
 \end{figure}
 
-Let's study this setting declaration with more details. First the header of the method:
+Now, let's study this setting declaration with more details. 
+
+\subsubsection{The header}
 \begin{code}{}
 CodeHolderSystemSettings class>>caseSensitiveFindsSettingsOn: aBuilder
 \end{code}
-This class method is declared in CodeHolderSystemSettings. In fact, this class contains nothing but settings declarations. This is the way settings are declared at least in the core. 
+This class method is declared in CodeHolderSystemSettings. This class is dedicated to settings and contains nothing but settings declarations. But this is not mandatory, in fact any class can have settings declarations. 
+
+This method takes a builder as argument. This object serves as a facade for settings buildings: the contents of the method essentially consists in sending messages to the builder in order to declare a sub-tree of settings.
+
+\subsubsection{The pragma}
+A setting declaration is tagged with the \textit{systemsettings} pragma.
+\begin{code}{}
+CodeHolderSystemSettings class>>caseSensitiveFindsSettingsOn: aBuilder
+	<systemsettings>
+\end{code}
+In fact, when the settings browser is opened, it first collects all settings declarations by searching all methods with the \textit{<systemsettings>} pragma. More, if you compile a setting declaration method while a settings browser is opened then it is automatically updated with the new setting. 
 
 %Settings are of two main kinds: setting nodes and settings with associated preference~: 
 %\begin{itemize}
