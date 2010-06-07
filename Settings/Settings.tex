@@ -97,18 +97,56 @@ Another way to filter the list of settings is to choose them by package. Just cl
 
 \section{Declaring a setting}
 \label{sec:DeclaringASetting}
-A setting is declared by a particular class method which must be coded as follow: it takes a builder as argument and it is tagged by the \textit{<systemSettings>} simple pragma. As an example: 
+All global preferences of Pharo can be viewed or changed from the \textit{SettingBrowser}. A preference is typically a class variable or an instance variable of a singleton. If one want to be able to change its value from the \textit{SettingsBrowser}, then a setting must be declared for it.
+A setting is declared by a particular class method which must be coded as follow: it takes a builder as argument and it is tagged by the \textit{<systemsettings>} simple pragma. 
+%As an example: 
+%\begin{code}{}
+%AClassInMyPackage class>>settingOn: aBuilder
+%  <systemSettings>
+%  (aBuilder group: #MySettings)
+%    label:'My settings' ...
+%\end{code}
+The argument \textit{aBuilder} serves as a facade for setting declarations building and the pragma allows the \textit{SettingBrowser} to dynamically discover current setting declarations.
+
+The important point is that a setting declaration must be package specific. It means that each package is responsible for the declaring of its own settings. For a particular package, specific settings are declared by one or several of its classes. The direct benefit is that when the package is loaded, then its settings are automatically loaded and that when a package is unloaded, then its settings are automatically unloaded. 
+
+\subsection{A simple setting}
+Let's take the example of the \textit{caseSensitiveFinds} preference. It is a boolean preference which is used for text searching. If it is \textit{true}, then a text finding is case sensitive. This preference is stored in the \textit{CaseSensitiveFinds} class variable in \textit{ParagraphEditor}. Its value can be queried and changed by, respectively, \textit{ParagraphEditor class>>caseSensitiveFinds} and \textit{ParagraphEditor class>>caseSensitiveFinds:} given below:
 \begin{code}{}
-AClassInMyPackage class>>settingOn: aBuilder
-  <systemSettings>
-  (aBuilder group: #MySettings)
-    label:'My settings' ...
+ParagraphEditor class>>caseSensitiveFinds
+	^ CaseSensitiveFinds ifNil: [CaseSensitiveFinds := false]
+
+ParagraphEditor class>>caseSensitiveFinds: aBoolean
+	CaseSensitiveFinds := aBoolean
 \end{code}
-The argument \textit{aBuilder} serves as a facade for setting declarations building and the pragma allows the SettingBrowser to dynamically discover current setting declarations.
 
-The important point is that a setting declaration must be package specific. It means that each package is responsible for the declaring of its own settings. For a particular package, specific settings are declared by one or several of its classes. The consequence is that when the package is loaded, then its settings are automatically loaded and that when a package is unloaded, then its settings are automatically unloaded. 
+In order to be able to change the \textit{CaseSensitiveFinds} class variable from the settings browser, the following method declaration can be implemented:
 
-Settings are of two main kinds: setting nodes and settings with associated preference~: 
+\begin{code}{}
+CodeHolderSystemSettings class>>caseSensitiveFindsSettingsOn: aBuilder
+	<systemsettings>
+	(aBuilder setting: #caseSensitiveFinds) 
+		label: 'Case sensitive search' translated;
+		target: ParagraphEditor;
+		description: 'If true, then the "find" command in text will always make its searches in a case-sensitive fashion' translated.
+\end{code}
+Thanks to the \textit{<systemsettings>} pragma, the settings browser is automatically updated when this method is compiled. The result is shown in the screenshot of the \figref{fig:caseSensitiveFinds1}.
+
+\begin{figure}[tbh]
+\begin{center}
+\includegraphics[scale=0.4]{caseSensitiveFinds_setting_declaration1}
+\caption{First version of the \textit{caseSensitiveFinds} setting}
+\figlabel{fig:caseSensitiveFinds1}
+\end{center}
+\end{figure}
+
+Let's study this setting declaration with more details. First the header of the method:
+\begin{code}{}
+CodeHolderSystemSettings class>>caseSensitiveFindsSettingsOn: aBuilder
+\end{code}
+This class method is declared in CodeHolderSystemSettings. In fact, this class contains nothing but settings declarations. This is the way settings are declared at least in the core. 
+
+%Settings are of two main kinds: setting nodes and settings with associated preference~: 
 %\begin{itemize}
 %\item
 %A setting node is used to logically organize  your settings by grouping sub-settings, it represents a node . Such a setting is declared by a method which simply returns a SystemSettingNode instance. Any setting can declare any setting node as its parent.
