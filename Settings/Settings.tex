@@ -128,7 +128,8 @@ CodeHolderSystemSettings class>>caseSensitiveFindsSettingsOn: aBuilder
 	(aBuilder setting: #caseSensitiveFinds) 
 		target: ParagraphEditor;
 		label: 'Case sensitive search' translated;
-		description: 'If true, then the "find" command in text will always make its searches in a case-sensitive fashion' translated.
+		description: 'If true, then the "find" command in text will always make its searches in a case-sensitive fashion' translated;
+		parent: #codeEditing.
 \end{code}
 
 \begin{figure}[tbh]
@@ -176,15 +177,20 @@ CodeHolderSystemSettings class>>caseSensitiveFindsSettingsOn: aBuilder
 	(aBuilder setting: #caseSensitiveFinds) 
 		target: ParagraphEditor
 \end{code}
-This very short version is enough to be compiled and taken into account by the settings browser as shown by the screenshot below:
+This very short version is enough to be compiled and taken into account by the settings browser as shown by the screenshot of the \figref{fig:caseSensitiveFinds2}.
 \begin{figure}[tbh]
 \begin{center}
-\includegraphics[scale=0.45]{caseSensitiveFinds_setting_declaration2}
+\includegraphics[scale=0.4]{caseSensitiveFinds_setting_declaration2}
 \caption{the very simple version of the \textit{caseSensitiveFinds} setting}
 \figlabel{fig:caseSensitiveFinds2}
 \end{center}
 \end{figure}
-
+Unfortunately, the presentation is not user-friendly because:
+\begin{itemize}
+\item the label shown in the settings browser is its identifier,
+\item there is no description or explanation available for this setting and,
+\item the new setting is simply add at root
+\end{itemize}
 
 %Settings are of two main kinds: setting nodes and settings with associated preference~: 
 %\begin{itemize}
