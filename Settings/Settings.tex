@@ -46,9 +46,6 @@ Pharo users need to browse existing preferences and eventually change their valu
 
 A setting is a \emph{declaration} (description) of a preference value. To be viewed and updated through the setting browser, a preference value must be described by a setting. Such a setting is built by a particular method tagged with a pragma. The section~\ref{sec:DeclaringASetting} explains how to declare a setting.
 
-
-
-
 \section{The Setting Browser}
 \label{sec:TheSettingsBrowser}
 
@@ -185,7 +182,6 @@ CodeHolderSystemSettings class>>caseSensitiveFindsSettingsOn: aBuilder
 	(aBuilder setting: #caseSensitiveFinds) 
 		target: ParagraphEditor
 \end{code}
-This very short version is enough to be compiled and taken into account by the settings browser as shown by \figref{fig:caseSensitiveFinds2}.
 \begin{figure}[tbh]
 \begin{center}
 \includegraphics[scale=0.4]{caseSensitiveFinds_setting_declaration2}
@@ -193,12 +189,30 @@ This very short version is enough to be compiled and taken into account by the s
 \figlabel{fig:caseSensitiveFinds2}
 \end{center}
 \end{figure}
+This very short version is enough to be compiled and taken into account by the settings browser as shown by \figref{fig:caseSensitiveFinds2}.
 Unfortunately, the presentation is not user-friendly because:
 \begin{itemize}
 \item the label shown in the settings browser is its identifier,
 \item there is no description or explanation available for this setting and,
 \item the new setting is simply added at the root of the setting tree. 
 \end{itemize}
+You can indicate a label and a description with respectively the \ct{#label:} and \ct{#description:} messages which take a string as argument. Don't forget to send \ct{#translated} to the label and the description strings, it will greatly facilitate the translation in other languages.
+
+Concerning the classification of your setting, there are several ways to do it and this point is fully detailed in Section~\ref{sec:OrganisingYourSettings}. For now, the simplest way to declare your setting as a child of another setting is to use the \ct{#parent:} message with the identifier of the parent setting passed as argument. 
+
+\begin{code}{}
+CodeHolderSystemSettings class>>caseSensitiveFindsSettingsOn: aBuilder
+	<systemsettings>
+	(aBuilder setting: #caseSensitiveFinds) 
+		target: ParagraphEditor;
+		label: 'Case sensitive search' translated;
+		description: 'If true, then the "find" command in text will always make its searches in a case-sensitive fashion' translated;
+		parent: #codeEditing.
+\end{code}
+
+
+\section{Organising your settings}
+\label{sec:OrganisingYourSettings}
 
 %Settings are of two main kinds: setting nodes and settings with associated preference~: 
 %\begin{itemize}
