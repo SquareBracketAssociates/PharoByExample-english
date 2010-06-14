@@ -140,7 +140,7 @@ CodeHolderSystemSettings class>>caseSensitiveFindsSettingsOn: aBuilder
 \begin{figure}[tbh]
 \begin{center}
 \includegraphics[scale=0.4]{caseSensitiveFinds_setting_declaration1}
-\caption{First version of the \textit{caseSensitiveFinds} setting}
+\caption{The \textit{caseSensitiveFinds} setting}
 \figlabel{fig:caseSensitiveFinds1}
 \end{center}
 \end{figure}
@@ -198,8 +198,14 @@ Unfortunately, the presentation is not user-friendly because:
 \end{itemize}
 You can indicate a label and a description with respectively the \ct{#label:} and \ct{#description:} messages which take a string as argument. Don't forget to send \ct{#translated} to the label and the description strings, it will greatly facilitate the translation in other languages.
 
-Concerning the classification of your setting, there are several ways to do it and this point is fully detailed in Section~\ref{sec:OrganisingYourSettings}. For now, the simplest way to declare your setting as a child of another setting is to use the \ct{#parent:} message with the identifier of the parent setting passed as argument. 
+Concerning the classification of your setting, there are several ways to do it and this point is fully detailed in the next section.
 
+\subsection{Organising your settings}
+
+Within the settings browser, settings are organised in trees where related settings are shown as children of the same parent. 
+
+\subsubsection{Declaring a parent}
+The simplest way to declare your setting as a child of another setting is to use the \ct{#parent:} message with the identifier of the parent setting passed as argument. In the example below, the parent node is an existing node declared with the \ct{#codeEditing} identifier. 
 \begin{code}{}
 CodeHolderSystemSettings class>>caseSensitiveFindsSettingsOn: aBuilder
 	<systemsettings>
@@ -209,10 +215,18 @@ CodeHolderSystemSettings class>>caseSensitiveFindsSettingsOn: aBuilder
 		description: 'If true, then the "find" command in text will always make its searches in a case-sensitive fashion' translated;
 		parent: #codeEditing.
 \end{code}
+Then, it means that the \ct{#codeEditing} node is also declared somewhere in the system. As an example, it could be declared as follow:
+\begin{code}{}
+CodeHolderSystemSettings class>>codeEditingSettingsOn: aBuilder
+	<systemsettings>
+	(aBuilder group: #codeEditing) 
+		label: 'Editing' translated;
+		parent: #codeBrowsing.
+\end{code}
+Notice that the \ct{#codeEditing} node is created by sending the \ct{#group:} message to the builder with its identifier passed as argument. A group is a simple node without any value and which is only used for children grouping. Notice also that, as shown in the \figref{fig:caseSensitiveFinds1}, the \ct{#codeEditing} node is not at root because it is declared itself as a child of the \ct{#codeBrowsing} node.
 
-
-\section{Organising your settings}
-\label{sec:OrganisingYourSettings}
+\subsubsection{declaring a sub-tree}
+Being able to declare its own settings as a child of a pre-existing node is very useful especially when a package wants to enrich existing standard settings.  
 
 %Settings are of two main kinds: setting nodes and settings with associated preference~: 
 %\begin{itemize}
