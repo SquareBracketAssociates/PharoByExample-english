@@ -226,7 +226,24 @@ CodeHolderSystemSettings class>>codeEditingSettingsOn: aBuilder
 Notice that the \ct{#codeEditing} node is created by sending the \ct{#group:} message to the builder with its identifier passed as argument. A group is a simple node without any value and which is only used for children grouping. Notice also that, as shown in the \figref{fig:caseSensitiveFinds1}, the \ct{#codeEditing} node is not at root because it is declared itself as a child of the \ct{#codeBrowsing} node.
 
 \subsubsection{declaring a sub-tree}
-Being able to declare its own settings as a child of a pre-existing node is very useful especially when a package wants to enrich existing standard settings.  
+Being able to declare its own settings as a child of a pre-existing node is very useful especially when a package wants to enrich existing standard settings. But it can also be very tedious especially for settings which are very application specific. 
+
+Thus, directly declaring a sub-tree of settings in one method is also possible. Then, typically, a root group is declared for the application settings and the children settings themselves are also declared within the same method. This is simply done through the sending of the \ct{with:} message to the root group. The \ct{with:} message takes a block as argument. In this block, a new setting built by the builder is implicitely declared as a child of the root group (the receiver of the \ct{with:} message). As an example, take a look at how the \textit{Refactoring Browser} is declaring settings related to the \textit{Configurable Formatter}:
+\begin{code}{}
+RBConfigurableFormatter class>>settingsOn: aBuilder
+	<systemsettings>	
+	(aBuilder group: #configurableFormatter)
+		parent: #refactoring;
+		label: 'Configurable Formatter' translated;
+		description: 'Settings related to the formatter' translated;
+		with: [
+			(aBuilder setting: #formatCommentWithStatements)
+				target: self;
+				label: 'Format comment with statements' translated.
+			(aBuilder setting: #indentString)
+				target: self;
+				label: 'Indent string' translated]
+\end{code}
 
 %Settings are of two main kinds: setting nodes and settings with associated preference~: 
 %\begin{itemize}
