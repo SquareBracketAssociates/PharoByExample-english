@@ -255,7 +255,6 @@ RBConfigurableFormatter class>>settingsOn: aBuilder
 
 \subsubsection{Optional sub-tree}
 Sometime, depending on the value of a particular preference, one might want to hide some settings because it doesn't make sense to show them. As an example, if the background color of the desktop is plain then it doesn't make sense to show settings which are related to gradient background. Instead, if the user wants a gradient background, then a second color, the gradient direction and the gradient origin settings should be presented. 
-
 Look at the \figref{fig:optional-subtree}:
 \begin{itemize}
 \item on the left, the \textit{Gradient} widget is unchecked meaning that its actual value is \ct{false}; in this case, it has no children, 
@@ -264,20 +263,56 @@ Look at the \figref{fig:optional-subtree}:
 \begin{figure}[tbh]
 \begin{center}
 \begin{minipage}[t]{0.49\linewidth}
-\includegraphics[scale=0.38]{smart-subtree1}
+\includegraphics[scale=0.35]{smart-subtree1}
 \end{minipage}
 \begin{minipage}[t]{0.49\linewidth}
-\includegraphics[scale=0.38]{smart-subtree2}
+\includegraphics[scale=0.35]{smart-subtree2}
 \end{minipage}
 \caption{Example of optional subtree}
 \figlabel{fig:optional-subtree}
 \end{center}
 \end{figure}
 
-In order to handle such optional settings the only thing is to declare them as children of a parent setting which actual value is a boolean. In this case, children settings are shown only if the parent value is \ct{true}.
+In order to handle such optional settings the only thing is to declare them as children of a boolean parent setting. In this case, children settings are shown only if the parent value is \ct{true}. Concerning the desktop gradient example, the setting is declared in \ct{PolymorphSystemSettings} as given below:
+\begin{code}{}
+	(aBuilder setting: #useDesktopGradientFill)
+		label: 'Gradient';
+		description: 'If true, then more settings will be available in order to define the desktop background color gradient';
+		with: [
+			(aBuilder setting: #desktopGradientFillColor)
+				label: 'Other color';
+				description: 'This is the second color of your gradient (the first one is given by the "Color" setting' translated.
+			(aBuilder pickOne: #desktopGradientDirection)
+				label: 'Direction';
+				domainValues: {#Horizontal. #Vertical. #Radial}.
+			(aBuilder pickOne: #desktopGradientOrigin)
+				label: 'Origin';
+				domainValues: {
+					'Top left' translated -> #topLeft. ...
+\end{code} 
+The parent setting value is given by evaluating \ct{PolymorphSystemSettings class>>#useDesktopGradientFill}. If it returns \ct{true}, then the children \ct{#desktopGradientFillColor}, \ct{#desktopGradientDirection} and \ct{#desktopGradientOrigin} are shown.
 
+\subsection{Restricting the value domain}
+By default, the possible value set is not restricted and is given by the actual type of the preference. As examples, for a color preference, the widget allows you to choose whatever color, for a number, the widget allows the user to enter whatever number.
+But, in some cases, only a particular set of values are desired. As an example, for the standard browser or for the user interface theme settings, the choice must be made among a finite set of classes, for the free type cache size, only a range from 0 to 50000 is allowed. In these cases, the widget must allow only particular values. So far, the domain value set can be constrained either with a range or with a list of values.
 
+\subsubsection{Declaring a range setting}
+\begin{figure}[tbh]
+\begin{center}
+\includegraphics[scale=0.38]{fullScreenMargin}
+\caption{Example of range setting}
+\figlabel{fig:range-setting}
+\end{center}
+\end{figure}
 
+\subsubsection{Selecting among a list}
+\begin{figure}[tbh]
+\begin{center}
+\includegraphics[scale=0.38]{userInterfaceTheme}
+\caption{Example of list setting}
+\figlabel{fig:list-setting}
+\end{center}
+\end{figure}
 %2.2.5 Font setting
 %Here the default is an instance of LogicalFont:
 %------------------
