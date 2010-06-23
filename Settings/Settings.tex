@@ -297,6 +297,8 @@ By default, the possible value set is not restricted and is given by the actual 
 But, in some cases, only a particular set of values are desired. As an example, for the standard browser or for the user interface theme settings, the choice must be made among a finite set of classes, for the free type cache size, only a range from 0 to 50000 is allowed. In these cases, the widget must allow only particular values. So far, the domain value set can be constrained either with a range or with a list of values.
 
 \subsubsection{Declaring a range setting}
+As an example, let's consider the full screen margin preference shown in the \figref{fig:range-setting}. Its value constitutes the margin size in pixels that is let around a window when it is expanded. 
+
 \begin{figure}[tbh]
 \begin{center}
 \includegraphics[scale=0.38]{fullScreenMargin}
@@ -304,6 +306,26 @@ But, in some cases, only a particular set of values are desired. As an example, 
 \figlabel{fig:range-setting}
 \end{center}
 \end{figure}
+
+It's value is an integer but it makes no sense to set -100 or 5000 to it. 
+Instead, a minimum of -5 and a maximum of 100 constitute a good range of values. One can use this range in order to constraint the setting widget. As shown by the example below, comparing to a simple setting, the only two differences are:
+\begin{itemize}
+\item 
+	to declare the new setting with the \ct{#range:} message instead of the \ct{#setting:} message and
+\item
+	to declare the valid range by sending the \ct{#range:} message to the newly declared setting with an \ct{Interval} as argument.
+\end{itemize}
+
+\begin{code}{}
+screenMarginSettingOn: aBuilder
+	<systemsettings>
+	(aBuilder range: #fullScreenMargin)
+		target: SystemWindow;
+		parent: #windows;
+		label: 'Full screen margin' translated;
+		description: 'Specify the amount of space that is let around a windows when it''s opened fullscreen' translated;
+		range: (-5 to: 100).
+\end{code}
 
 \subsubsection{Selecting among a list}
 \begin{figure}[tbh]
