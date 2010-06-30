@@ -8,6 +8,18 @@ PHARO BOOK 1
 -----------------------------------------------------------------------------
 TO DO:
 - Incorporate Thomas Schrader's formatting suggestions? (See Regex/ToSh-Regex.tex)
+- From: "symingz" <symingz@foxmail.com>
+Date: April 10, 2010 13:57:36 GMT+02:00
+The correct way of determining message send order using these rules is like this.
+First, use the rules to find the fully parenthesized equivalent of a given expression, 
+e.g. '1 + 2 + x a' should equals '(1 + 2) + (x a)', not '((1 + 2) + x) a' or '1 + (2 + (x a))'.
+Second, evaluate the fully parenthesized expression from left to right, from inside to outside.
+What the book says is different, though. For example, when '(1 + 2) + (x a)' is evaluated, '+ 2' is be sent before 'a', but if we follow the book, the reverse will be assumed. If '+' and 'a' are replaced with some selector with side effects, following the book will lead to error.
+_______________________________________________
+Sbe-discussion mailing list
+Sbe-discussion@iam.unibe.ch
+https://www.iam.unibe.ch/mailman/listinfo/sbe-discussion
+
 -----------------------------------------------------------------------------
 TO DO for old chapters
 ----------------------
