@@ -172,8 +172,8 @@ Then, the content of variable \ct!data! is processed.
 ] on: ConnectionTimedOut 
 do: [:timeOutException|
 	Transcript 
-		cr;
-		show: No data received!'; 
+		cr; 
+		show: No data received!';
 		space;
 		show: 'Network connection is too slow or server is down.']
 \end{script}
@@ -203,15 +203,15 @@ Note that there exist a variant \ct!closeAndDestroy: seconds! which gets as a pa
 
 \begin{script}[closeAndDestroy]{Closing a TCP Socket After Connection to a Web Site.}
 | clientSocket serverAddress httpQuery htmlText |
+httpQuery := 'GET / HTTP/1.1', String crlf, 
+	'Host: www.esug.org:80', String crlf, 
+	'Accept: text/html', String crlfcrlf.
 Transcript cr; cr; show: 'Attempt to get a web page...'.
 serverAddress := NetNameResolver addressForName: 'www.esug.org'.
 clientSocket := Socket newTCP.
 [clientSocket 
 	connectTo: serverAddress port: 80;
 	waitForConnectionFor: 10.
- httpQuery := 'GET / HTTP/1.1', String crlf, 
-	'Host: www.esug.org:80', String crlf, 
-	'Accept: text/html', String crlfcrlf.
  clientSocket sendData: httpQuery.
  htmlText  := clientSocket receiveDataTimeout: 5.
  Transcript cr; show: htmlText.
@@ -253,7 +253,7 @@ The server listens for incoming client's connection requests through {\em socket
 The server can even simultaneously exchange data with multiple clients through different sockets.
 In the following, we describe a simple server class and explain the server's life-cycle and related concurrency issues.
 
-\subsection{Simple Server Class}
+\subsection{Simple Echo Server Class}
 
 
 \section{SocketStream}
