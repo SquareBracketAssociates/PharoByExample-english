@@ -290,7 +290,16 @@ In our example, we wait for data from the client, next we display it on the \ct!
 Last, we finish the interaction with the client by closing the interaction socket.
 
 \begin{script}[echoClient]{Echo Client.}
-| clientSocket serverAddress echoString |serverAddress := NetNameResolver addressForName:'127.0.0.1'.clientSocket := Socket newTCP.[clientSocket 	connectTo: serverAddress port: 9999;	waitForConnectionFor: 10. clientSocket sendData: 'Hello PharoBANG'. echoString  := clientSocket receiveDataTimeout: 5. Transcript cr; show: echoString.] ensure: [clientSocket closeAndDestroy].
+| clientSocket serverAddress echoString |
+serverAddress := NetNameResolver addressForName:'127.0.0.1'.
+clientSocket := Socket newTCP.
+[clientSocket 
+	connectTo: serverAddress port: 9999;
+	waitForConnectionFor: 10.
+ clientSocket sendData: 'Hello PharoBANG'.
+ echoString  := clientSocket receiveDataTimeout: 5.
+ Transcript cr; show: echoString.
+] ensure: [clientSocket closeAndDestroy].
 \end{script}
 
 In order to test the above example, you have to use two different images, one that runs the server code and one for the client code.
@@ -301,13 +310,13 @@ Note that you have to run the server code first.
 %An alternative to using the client is to use the netcat on Unix machines
 
 \subsection{Echo Server Class}
-We define here the class of a TCP echo server that sends back to clients whatever data it received.
-Class \ct!EchoServer! definition is provided as \clsref{echoServerClassDef}.
-It does declare three instance variables.
+We define here the  \ct!EchoServer! class that deals with concurrency issues.
+It allows dealing concurrently with multiple client queries and it does not freeze the UI.
+As we can see in the definition labelled as \clsref{echoServerClassDef}, the \ct!EchoServer! declares three instance variables.
 The first one (\ct! connectionSocket!) refers to the socket used for listening to client connections.
-The two last instance variables (\ct!isRunning! and \ct!isRunningLock!) are used to manage the server process life-cycle.
+The two last instance variables (\ct!isRunning! and \ct!isRunningLock!) are used to manage the server process life-cycle while dealing with synchronization issues.
  
-\begin{classdef}[echoServerClassDef]{\ct!EchoServer! Class}
+\begin{classdef}[echoServerClassDef]{\ct!EchoServer! Class Definition}
 Object subclass: #EchoServer
 	instanceVariableNames: 'connectionSocket isRunning isRunningLock'
 	classVariableNames: ''
@@ -315,16 +324,41 @@ Object subclass: #EchoServer
 	category: 'SimpleSocketServer'
 \end{classdef}
 
-%SimpleEchoServer>>initialize 
-%	super initialize.
-%	isRunningLock := Mutex new.
-%	self isRunning: false
-%
-%isRunning
-%	^isRunningLock critical: [isRunning]
-%
-%isRunning: aBoolean
-%	isRunningLock critical: [isRunning := aBoolean]
+\begin{method}[meth:serverInitialize]{The \ct!EchoServer>>>initialize! Method}
+EchoServer>>>initialize 
+	super initialize.
+	isRunningLock := Mutex new.
+	self isRunning: false
+\end{method}
+
+\begin{method}[meth:isRunningRead]{The \ct!EchoServer>>>isRunning! Read Accessor}
+EchoServer>>>isRunning
+	^isRunningLock critical: [isRunning]
+\end{method}
+
+\begin{method}[meth:isRunningWrite]{The \ct!EchoServer>>>isRunning:! Write Accessor}
+EchoServer>>>isRunning: aBoolean
+	isRunningLock critical: [isRunning := aBoolean]
+\end{method}
+
+The \ct! isRunning! instance variable is a flag that is set to \ct!true! while the serving is running.
+As we'll see below, it can be accessed by different processes.
+Therefore, we use the mutex (see \mthref{meth:serverInitialize}) stored in the \ct!isRunningLock! instance variable in order to ensure that only one process can read or write the value of \ct!isRunning! (use of the \ct!critical:! message in \mthref{meth:isRunningRead} and \mthref{meth:isRunningWrite}).
+
+\begin{method}[meth:stop]{The \ct!EchoServer>>>stop! Method}
+EchoServer>>>stop	self isRunning: false
+\end{method}
+
+\begin{method}[meth:start]{The \ct!EchoServer>>>start! Method}
+start	isRunningLock critical: [		self isRunning ifTrue: [^self].		self isRunning: true].	connectionSocket := Socket newTCP.	connectionSocket listenOn: 9999 backlogSize: 10.	[self serve] fork
+\end{method}
+
+In order to manage the life-cycle of our server, we introduced two methods \ct!EchoServer>>>start! and \ct!EchoServer>>>stop!.
+Let's start with the simplest one \ct!EchoServer>>>stop! which definition is provided as \mthref{meth:stop}.
+It simply sets the \ct!isRunning! flag  to false.
+This will have the consequence of stopping the serving process created by the \ct!EchoServer>>>start! (see the last line of \mthref{meth:start}).
+%%%%%%CONTINUE FROM HERE
+In order to avoid duplicating servers...
 
 \section{SocketStream}
 \section{Network Interface Initialization?}
