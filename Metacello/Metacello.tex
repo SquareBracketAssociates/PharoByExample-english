@@ -1,166 +1,904 @@
+\documentclass[a4paper,10pt,twoside]{book}
+\usepackage[
+	papersize={6in,9in},
+	hmargin={.75in,.75in},
+	vmargin={.75in,1in},
+	ignoreheadfoot
+]{geometry}
 
-% $Author: oscar $
-% $Date: 2009-01-13 10:57:05 +0100 (Tue, 13 Jan 2009) $
-% $Revision: 23887 $
-
+\usepackage{allsf}
+\input
+{common.tex}
 
 %=================================================================
-\ifx\wholebook\relax\else
-% --------------------------------------------
-% Lulu:
-	\documentclass[a4paper,10pt,twoside]{book}
-	\usepackage[
-		papersize={6.13in,9.21in},
-		hmargin={.75in,.75in},
-		vmargin={.75in,1in},
-		ignoreheadfoot
-	]{geometry}
-	\input{../common.tex}
-	\pagestyle{headings}
-	\setboolean{lulu}{true}
-% --------------------------------------------
-% A4:
-%	\documentclass[a4paper,11pt,twoside]{book}
-%	\input{../common.tex}
-%	\usepackage{a4wide}
-% --------------------------------------------
-    \graphicspath{{figures/} {../figures/}}
-	\begin{document}
-	% \renewcommand{\nnbb}[2]{} % Disable editorial comments
-	\sloppy
-\fi
+% A4
+%\documentclass[a4paper,11pt,twoside]{book}
+%\input{common.tex}
+%\usepackage{a4wide}
 %=================================================================
-\chapter{Metacello}\chalabel{metacello}
+% Add the path for the figures of each chapter here:
+\graphicspath{
+	{figures/}
+	{BasicClasses/figures/}
+	{Collections/figures/}
+	{Environment/figures/}
+	{FirstApp/figures/}
+	{Messages/figures/}
+	{Metaclasses/figures/}
+	{Model/figures/}
+	{Morphic/figures/}
+	{Preface/figures/}
+	{Profiling/figures/}
+	{QuickTour/figures/}
+	{SUnit/figures/}
+	{Streams/figures/} 
+	{Syntax/figures/}
+}
+%=================================================================
+\let\wholebook=\relax
+\makeindex
+\makeglossary
+%=================================================================
+%\renewcommand{\nnbb}[2]{#2} % Disable editorial comments
 
-\section{Naming your configuration}
-ConfigurationOfXXX is a good convention I think ... The package name and the class name match and by beginning with ConfigurationOfxxx it is easier to scan through repository listings and class categories ... it is also very convenient to have the configurations grouped together rather than jumping around in the browser ... with that said it is a convention and moving forward the convention can be less necessary with tools support... 
 
-We call it ConfigurationOf* because like this you will get all configurations in the same place. This has two advantages:
+\begin{document}
+%\synctex=1
+
+\chapter{Managing projects with Metacello}
+
+
+\sd{we use project but using configuration could be better when talking about ConfigurationOf...}
+
+
+Have you ever had a problem when trying to load a nice project where you got an error because a package that you were not even aware of  is missing or not correct? You've probably seen such a problem. The problem probably occurred because the project loaded fine for the  developer but only because he has a different context than yours. The project developer did not use a \emph{package management system} to explicitly manage the dependencies between his packages. In this chapter we will show you how to use Metacello, a package management system and the power that you can get using it. 
+
+\section{Introduction}
+
+Metacello is a package \textit{management} system for Monticello. But, exactly what is a \textit{Package Management System}?
+It is a collection of tools to automate the process of installing, upgrading, configuring, and removing a set of software packages. It also groups packages to help eliminate user confusion and manages dependencies \ie which versions of what components should be loaded to make sure that the complete system is coherent.
+
+%Packages are distributions of software and metadata such as the software's full name, description of its purpose, version number, author, changes of a version, among others, and a list of dependencies necessary for the software to run properly. Upon installation, metadata can be stored in a local package database, in code or any other scheme.
+
+
+A package management system provides a consistent method of installing packages. A package management system is sometimes incorrectly referred to as an installer. This can lead to confusion between them. Just for those who are familiar, package management systems for other technologies include Envy (in VisualAge Smalltalk), Maven in Java, apt-get/aptitude in Debian or Ubuntu, etc.
+
+One of the key points of good package management is that \emph{any package should be correctly loaded without needing to manually install anything other than what is specified in the package configuration}. Each dependency, and the dependencies of the dependencies must also be loaded in the correct order. 
+
+If it was not clear enough, the idea is that when using Metacello, you can take a PharoCore image, for example, and load {\em any} package of {\em any} project without any problems with dependencies. Of course, Metacello does not do magic so it is up to the developer  to define the dependencies properly.
+
+% The software is often downloaded from a number of software repositories. It is also common to have a central repository where all the software is submitted but this is totally orthogonal issue.
+
+\section{One tool for each job}
+
+To manage software in this century we use several tools that are very closely related. In Pharo we have three tools: Monticello (which manages versions of source code), Gofer (which is a scripting API for Monticello) and Metacello (which is a package management system).
+% it might make sense to talk about Monticello as a Source Code Management system or SCM here? %
+
+
+%As a principle, we have to know that we need {\em a tool for each job}. A tool cannot do everything. Each tool satisfies a limited amount of problems and it will probably delegate to another tool to do certain tasks. If you read the first Pharo By Example book you may noticed that this concept is quite similar to Object-Oriented Design: we don't want to have only one object that does everything and we rather to have multiple objects where each object has certain behavior and they collaborate together to do a specific task. 
+%So we have 
+
+\begin{description}
+
+\item{\textbf{Monticello: Source code versioning.}}
+Source code versioning is the process of assigning either unique version names or unique version numbers to unique software states. At a fine-grained level, revision control incrementally keeps track of different versions of ``pieces of software''. In object-oriented programming, these ``pieces of software'' are methods, classes or packages. A versioning system tool lets you commit a new version, update to a new one, merge, diff, revert, etc. Monticello is the source code versioning system used in Pharo and the ``pieces of software'' are the Monticello packages. With Monticello we can do most of the above operations on packages but there is no way to specify dependencies, identify stable versions, or group packages into meaningful units.  Monticello just manages package versions. Metacello manages package dependencies and the notion of projects.
+
+\item {\textbf{Gofer: Monticello Scripting API.}}
+Gofer is a small tool on top of Monticello that loads, updates, merges, diffs, reverts, commits, recompiles and unloads groups of Monticello packages. Contrary to existing tools Gofer makes sure that these operations are performed as cleanly as possible. Gofer is a scripting API to Monticello.
+
+% If Monticello would have a nice scripting API, Gofer would not need to exist. 
+% probably not necessary to mention this
+
+\item{\textbf{Metacello: Package Management System.}} Metacello manages projects (sets of related Monticello packages) and their dependencies as well as project metadata. Metacello managaes also dependencies between packages.
+\end{description}
+
+
+
+%Metacello does not use Monticello directly, but uses Gofer to perform these tasks. However, most of the time when using Metacello, you %won't even need to know about that as this is an internal detail of how Metacello works. 
+
+
+\sd{Would be nice to have a table with the same in the linux world with apt-get.... once somebody sent that into the mailing-list}
+
+\section{Metacello features}
+
+Metacello is consistent with the important features of Monticello. It is based on the following points.
+
 \begin{itemize}
-\item find the configuration package easier in the Monticello package list
-\item do not get any conflict with Monticello package naming (for example, we have the Mondrian package and this might conflict with the MondrianConfiguration)
-\item when you have to manage multiple Configurations in the PackageBrowser
-\item  given that the name is slightly counter intuitive, it also has very few changes to collide with other names
+\item Declarative modeling. A Metacello project has named versions consisting of lists of explicit Monticello package versions. Dependencies are explicitly expressed in terms of named versions of required projects. A \emph{required project} is a reference to another Metacello project.
+
+\item Distributed repositories. Metacello project metadata is represented as instance methods in a class therefore the Metacello project metadata is stored in a Monticello package. As a result, it is easy for distributed groups of developers to collaborate on ad-hoc projects.
+
+\item Optimistic development. With Monticello-based packages, concurrent updates to the project metadata can be easily managed. Parallel versions of the metadata can be merged just like parallel versions of the code base itself. 
+
 \end{itemize}
 
-\section{Baseline}
-  
-  The baseline should define the structure of a project using just
-  names of packages ... as structure changes the baseline should be
-  updated. The version should just have package name and package
-  versions listed...in the absence of structural changes, the changes in
-  package versions is what is interesting.
+Additionally, the following points are important considerations for Metacello:
 
+\begin{itemize}
+\item Cross-platform operations. Metacello must run on all platforms that support Monticello: currently Pharo, Squeak and GLASS.
+\item Conditional Monticello package loading. For projects that are expected to run on multiple platforms, it is essential that platform-specific Monticello packages can be conditionally loaded. 
+\end{itemize}
 
-\section{Default}
- 'default' version is a \#baseline, but it is just a version
- name. I am version oriented, so I want my baseline names and version
- names to correspond - that way if/when branching occurs the history
- can be traced, so I agree with your plan. 
+\section{A Simple Case}
 
+\sd{may be we should have a real example.}
+\sd{would be good to have some diagrams. especially for the end when we will need to explain projects dependency.}
 
-\section{Project}
-The \#project:... messages are used when referencing an external project configuration. For example, you would use the \#project:... form to reference the Moose configuration from your configuration.
+Let's start using Metacello for managing a software project called CoolBrowser. The first step is to create a configuration for the project by simply copying the class MetacelloConfigTemplate and naming it ConfigurationOfCoolBrowser (by convention the class name for a Metacello configuration is composed by prefixing the name of the project with 'ConfigurationOf'). To do this, right click in the class MetacelloConfigTemplate and select the option ``copy''. 
 
-
-
-  \begin{code}{}
-  baseline01: spec 
-  	<version: '1.1-baseline'>
-  	
-  	spec for: #common do: [
-  		spec blessing: #baseline.
-  		spec repository: 'http://www.squeaksource.com/CAnalyzer'.
-  		spec 
-  			package: 'CAnalyzer';
-  			package: 'XML-Parser' with: [spec repository: 'http://www.squeaksource.com/XMLSupport'];
-  			package: 'Pastell' with: [spec repository: 'http://www.squeaksource.com/Pastell'];
-  			package: 'Rio' with: [spec repository: 'http://www.squeaksource.com/Rio']
-  			]
-	\end{code}
-
-Just a quick note ... you probably want to specify package dependencies in the above as part of your baseline definition...the dependencies are used for load order, but also used if you were to load \#('Rio'), you might need XML-Parser loaded first... 
-
-
-how can I specify to install two packages?
- 
+This is the class definition:
 \begin{code}{}
-baseline01: spec 
- 	<version: '1.1-baseline'>
- 	
- 	spec for: #common do: [
- 		spec blessing: #baseline.
- 		spec repository: 'http://www.squeaksource.com/CAnalyzer'.
- 		spec 
- 			package: 'CAnalyzer';
- 			package: 'XML-Parser' with: [spec repository: 'http://www.squeaksource.com/XMLSupport'];
- 			package: 'Pastell' with: [spec repository: 'http://www.squeaksource.com/Pastell'];
- 			package: 'Rio-Kernel' with: [spec repository: 'http://www.squeaksource.com/Rio'];
- 			package: 'Rio-Grande' with: [spec repository: 'http://www.squeaksource.com/Rio']
- 			]
+Object subclass: #ConfigurationOfCoolBrowser
+	instanceVariableNames: 'project'
+	classVariableNames: 'LastVersionLoad'
+	poolDictionaries: ''
+	category: 'Metacello-MC-Model'
+\end{code}
+
+You will notice that the \ct{ConfigurationOfCoolBrowser} has some instance and class side methods. We will explain later how they are used. Notice that this class inherits from \ct{Object}.  Metacello configurations should be written such that they can be loaded without any prerequisites, including Metacello itself. So (at least for the time being) Metacello configurations cannot rely on a common superclass.
+
+Now, imagine that the project ``Cool Browser'' has different versions, for example, 1.0, 1.0.1, 1.4, 1.67, etc. 
+With Metacello you create an instance side method for each version of the project. Method names for version methods are unimportant as long as the method is annotated with the <version:> pragma as shown below.
+
+By convention the version method is named 'versionXXX:', where XXX is the version number with illegal characters (like '.') removed.
+
+Suppose for the moment that our project ``Cool Browser'' has two packages: \ct{CoolBrowser-Core} and \ct{CoolBrowser-Tests} we name the method \ct{ConfigurationOfCoolBrowser>>version01: spec} as shown below:
+
+\begin{code}{}
+ConfigurationOfCoolBrowser>>version01: spec 
+	<version: '0.1'>
+	
+	spec for: #common do: [
+		spec repository: 'http://www.example.com/CoolBrowser'.
+		spec 
+			package: 'CoolBrowser-Core' with: 'CoolBrowser-Core-MichaelJones.10';
+			package: 'CoolBrowser-Tests' with: 'CoolBrowser-Tests-JohnLewis.3' ].
 \end{code}
 
 
+In this example, there are a lot of things we need to explain:
 
-\paragraph{Pattern.} For GLASS I've come up with a convention that I'm using a ConfigurationOfGsMisc configuration (http://seaside.gemstone.com/ss/GLASSproject) to manage the versions of all of my one-off packages like XML-Parser, SMacc, etc. If a project has more than one package and/or the package has dependencies upon other configurations, then I create a separate configuration for those guys (so the dependency/version information can be re-used by other projects) ... See ConfigurationOfGsScaffolding in http://seaside.gemstone.com/ss/ScaffoldingGS for an example. Finally I tie all of the separate configuration together in ConfigurationOfGLASS (http://seaside.gemstone.com/ss/GLASSproject)...I expose the useful set of configurations. For Seaside3.0, all that is necessary to load it is the following expression:
+\begin{itemize}
+\item Immediately after the method selector you see the pragma definition:  {\em <version: '0.1'>}. The pragma indicates that the version created in this method should be associated with version '0.1' of the CoolBrowser project. That's why we said that the name of the method is not that important. Metacello uses the pragma to identify the version being constructed.
 
- (ConfigurationOfGLASS project version: '1.0-beta.2') load: 'Seaside3.0 Dev'.
+\item Looking a little closer you see that the argument to the method, \ct{spec}, is the only variable in
+the method and it is used as the receiver to four different messages:   \ct{for:do:},   \ct{package:with:},  \ct{file:}  and  \ct{repository:}.
 
-So for your configuration I would be real tempted to put Rio into it's own configuration and then reference that configuration using the \#project:... form.
+\item Each time a block expression is executed a new object is pushed on a stack and the messages within the block are sent to the object on the top of the stack.
+
+\item In addition to \ct{#common}, there are pre-defined attributes for each of the platforms upon which Metacello runs (\ct{#pharo}, \ct{#squeak}, \ct{#gemstone} and \ct{#squeakCommon}). Later in the chapter we will detail this feature. 
+\end{itemize}
 
 
 
-\section{About naming your version methods}
-What I see is that you only want baseline01, 02 to represent different
-baseline and not version of the baseline.
+The  method \ct{version01:} should be read as: Create version '0.1'. The common code for version '0.1' (specified using the message \ct{for:do:}) consists of the packages named 'CoolBrowser-Core' (specified using the message \ct{package:with:}) and 'CoolBrowser-Tests'  whose files are named 'CoolBrowser-Core-MichaelJones.10' and 'CoolBrowser-Tests-JohnLewis.3' and whose repository is \ct{'http://www.example.com/CoolBrowser'} (specified using the message \ct{repository:}).
 
-The versions you have then on squeaksource. Now the tag inside the version represents the version.
+We can access the specification created for version 0.1 by executing the following expression: \ct{(ConfigurationOfCoolBrowser project version: '0.1') spec}. 
 
- So this is why I have 
-
-\begin{code}{} 
-	baseline01: spec 
- 	<version: '1.1-baseline'>
- 
- 	and not 
- 	baseline11: spec 
- 	<version: '1.1-baseline'>
-\end{code} 
-
- What is the pattern that you use (In the tutorial I understand that
- you give different names because like that people can just load one
- version and get the complete history but in practices I would not
- (except if I want to reuse parts as we do for baseline: for example).
-
-Now this is better to have the method name match the version itself. I would name you '1.1-baseline' method \#baseline110:. I tack the 0 on the end to allow for minor versions to be created ... I like to have the method names indicate the version and I like to have the methods sort in version order so I might even be tempted to name your method \#baseline1100 if I thought I might run through more than 9 minor version ... I've done that with Metacello already and renamed methods along the way so that the sort order is maintained...
-
-In the tutorial the 01 corresponded to version '0.1' and when I hit ten version if went to version '1.0' ... probably a bit misleading:)
-
-\section{Conditional Loading}
-Conditional loads are controlled by attributes, so to do a load based on whether or not OB is installed, you would define your 
-\#project method doing something like the following example (adapted from ConfigurationOfGemTools in http://seaside.gemstone.com/ss/GLASSClient):
+\paragraph{Creating a new version.}
+Let us assume that the version 0.2 consists of the files 'CoolBrowser-Core-MichaelJones.15' and 'CoolBrowser-Tests-JohnLewis.8' and a new package 'CoolBrowser-Addons' with version 'CoolBrowser-Addons-JohnLewis.3'. Then, all you have to do is to create the following method named \ct{version:}.
 
 \begin{code}{}
-project
+ConfigurationOfCoolBrowser>>version02: spec 
+	<version: '0.2'>
+	
+	spec for: #common do: [
+		spec repository: 'http://www.example.com/CoolBrowser'.
+		spec 
+			package: 'CoolBrowser-Core' with: 'CoolBrowser-Core-MichaelJones.15';
+			package: 'CoolBrowser-Tests' with: 'CoolBrowser-Tests-JohnLewis.8' ;
+			package: 'CoolBrowser-Addons' with: 'CoolBrowser-Addons-JohnLewis.3']
+\end{code}
+ 
 
-   versionString  
- ^ project ifNil: [
-   "Bootstrap Metacello if it is not already loaded"
-   self class ensureMetacello.
-   "Construct Metacello project"
-   project := MetacelloMCProject new.
-   "conditionally define #OB attribute when OBNode class missing"
-   Smalltalk at: #OBNode ifAbsent: [project projectAttributes: #( #OB ) ].
-   (Smalltalk at: #MetacelloVersionConstructor) on: self project: project.
-   project]
-  \end{code}
+\section{Naming your configuration}
 
-Then you'd add a 'spec for: \#OB do: []' clause with the OB package info.
+In the previous section, we learned that we have to create a class for our configuration. It is not necessary to name this class with a particular name. Nevertheless there is a convention that we recommend you follow. The convention is to name the class \ct{ConfigurationOfXXX} where XXX is your project. In our example, it is \ct{ConfigurationOfCoolBrowser}.
+
+There is a convention also to create a particular package with the same name as the configuration class and put the class there. In our case you will have the package \ct{ConfigurationOfCoolBrowser} with only one class, \ct{ConfigurationOfCoolBrowser}. 
+
+The package name and the class name match and by starting with ConfigurationOfXXX it is easier to scan through a repository listing the available projects. It is also very convenient to have the configurations grouped together rather than jumping around in the browser. That is why the repository \ct{http://www.squeaksource.com/Pharo10MetacelloRepository}, \ct{http://www.squeaksource.com/Pharo11MetacelloRepository} were created. They contain the configurations of several tools and applications and serve as a central repository. 
+
+Having all configurations in the same place has several advantages:
+\begin{itemize}
+\item Finding the configuration package is easier in the Monticello browser package list.
+\item Do not have any conflict with Monticello package naming (for example, you can have the CoolBrowser package and this might conflict with the CoolBrowserConfiguration).
+\item When you have to manage multiple Configurations in the PackageBrowser.
+\item Given that the name is slightly counter intuitive, it also has very few chances to collide with other names.
+\end{itemize}
+
+As a general practice, we suggest that you save the Configuration package in your working project and when you decide 
+it is ready you can copy it into the MetacelloRepository. 
 
 
-%=================================================================
-\ifx\wholebook\relax\else\end{document}\fi
-%=================================================================
 
-%-----------------------------------------------------------------
-\subsection{XXX}
+\subsection{Loading a Metacello configuration}
+Of course, the point of specifying packages in Metacello is to be able to load a coherent set of package versions. Here are a couple of examples for loading versions of the CoolBrowser project. 
+
+If you print the result of each expression, you will see the list of packages in load order. Metacello records not only which packages are loaded but also the order. 
+
+\begin{code}{}
+  (ConfigurationOfCoolBrowser project version: '0.1') load.
+  (ConfigurationOfCoolBrowser project version: '0.2') load.
+\end{code}
+  
+Note that in each case, all of the packages associated with the version are loaded \--- this  
+is the default behavior. If you want to load a subset of the packages in a project, you should list 
+the packages that you are interested in as an argument to the \ct{load:} method as shown below:
+
+\begin{code}{}
+  (ConfigurationOfCoolBrowser project version: '0.2') load: { 'CoolBrowser-Core' 'CoolBrowser-Addons' }.
+\end{code}
+
+
+\section{Managing packages internal dependencies}
+
+A project is generally composed of several packages which often have dependencies on other packages.  It is probable that a certain package depends on a specific version to behave correctly. Handling dependencies correctlyis really important and this is what Metacello does for us. 
+
+There are two types of dependencies:
+\begin{itemize}
+\item Internal packages dependencies: Inside a certain project there are several packages and some of them depend on other packages in the same project. 
+\item Dependencies between projects. It is common also that a project depends on another project or just on some packages of it. For example Pier (a meta-described cms) depends on Magritte (a meta-data modeling framework) and Seaside (a framework for web application development).
+\end{itemize}
+
+For now we will focus on the first case. In our example, imagine that the package \ct{CoolBrowser-Tests} and \ct{CoolBrowser-Addons} depends on \ct{CoolBrowser-Core}. \sd{add a picture}
+The new configuration \ct{'0.3'} is defined as follows:
+
+\begin{code}{}
+ConfigurationOfCoolBrowser>>version03: spec 
+	<version: '0.3'>
+	
+	spec for: #common do: [
+		spec repository: 'http://www.example.com/CoolBrowser'.
+		spec 
+			package: 'CoolBrowser-Core' with: 'CoolBrowser-Core-MichaelJones.15';
+			package: 'CoolBrowser-Tests' with: [
+				spec 
+					file: 'CoolBrowser-Tests-JohnLewis.8';
+					requires: 'CoolBrowser-Core' ];
+			package: 'CoolBrowser-Addons' with: [
+				spec 
+					file: 'CoolBrowser-Addons-JohnLewis.3';
+					requires: 'CoolBrowser-Core' ]].
+\end{code}
+
+In \ct{version03:} we've added dependency information using the \ct{requires:} directive.
+Both \ct{CoolBrowser-Tests} and  \ct{CoolBrowser-Addons} require \ct{CoolBrowser-Core} to be loaded before they are loaded. Pay attention that since we did not specify the exact version number for the \ct{Cool-Browser} package, we can have some problems (but do not worry, we will address this problem soon!).
+
+
+
+
+With this version we are mixing structural information (required packages and repository) with the file version info. It is expected that over time the file version info will change from
+version to version while the structural information will remain relatively the same. To resolve this, Metacello introduces the concept of {\em Baselines}.
+
+
+\section{Baselining}
+A baseline is a concept related to Software Configuration Management (SCM). From this point of view, a baseline is a well-defined, well-documented reference that serves as the foundation for other activities. Generally, a baseline may be a distributed work product, or conflicting work products that can be used as a logical basis for comparison. 
+
+In Metacello, a baseline represents the skeleton of a project in terms of the structural dependencies between packages or projects. A baseline defines the structure of a project using just package names. When the structure changes, the baseline should be updated. In the absence of structural changes, the changes are limited to package versions.
+
+Now, let's continue with our example. First we modify it to use baselines: we create a method per baseline. \sd{is the blessing: baseline important if so we should say it}
+
+\begin{code}{}
+ConfigurationOfCoolBrowser>>baseline04: spec 
+	<version: '0.4-baseline'>
+	
+	spec for: #common do: [
+		spec blessing: #baseline.
+		spec repository: 'http://www.example.com/CoolBrowser'.
+		
+		spec 
+			package: 'CoolBrowser-Core';
+			package: 'CoolBrowser-Tests' with: [ spec requires: 'CoolBrowser-Core' ];
+			package: 'CoolBrowser-Addons' with: [ spec requires: 'CoolBrowser-Core' ] ].
+
+\end{code}
+
+Baseline \ct{baseline04:} will be used across several versions as for example the version \ct{'0.4'} defined below. In method \ct{baseline04:} the structure of version \ct{'0.4-baseline'} is specified. The baseline specifies a repository, the packages, but without version information, and the required packages (dependencies). We'll cover the \ct{blessing:} method  later.
+
+To define the version, we use another pragma \ct{<version:imports:>} as follows:
+
+\begin{code}{}
+ConfigurationOfCoolBrowser>>version04: spec 
+	<version: '0.4' imports: #('0.4-baseline')>
+	
+	spec for: #common do: [
+		spec 
+			package: 'CoolBrowser-Core' with: 'CoolBrowser-Core-MichaelJones.15';
+			package: 'CoolBrowser-Tests' with: 'CoolBrowser-Tests-JohnLewis.8';
+			package: 'CoolBrowser-Addons' with: 'CoolBrowser-Addons-JohnLewis.3' ].
+\end{code}
+
+
+In the method \ct{version04:} versions are specified. Note that the pragma \ct{version:imports:} specifies the list of versions that this version (version '0.4') is based upon. In fact, if you print the spec for '0.4-baseline' and then print the spec for '0.4' you will see that '0.4' is a composition of both versions.
+
+Using baseline the way to load this version is still the same:
+\begin{code}{}
+(ConfigurationOfCoolBrowser project version: '0.4') load.
+\end{code}
+
+
+\paragraph{Loading baselines.}
+Even though version \ct{'0.4-baseline'} does not have explicit package versions, you may load it. When the loader encounters a package name without version information it attempts to load the latest version of the package from the repository. Take into account that exactly the same happens if you define a package in a baseline but you don't specify a version for that package in a version method. 
+ 
+\begin{code}{}
+(ConfigurationOfCoolBrowser project version: '0.4-baseline') load.
+\end{code}
+
+Sometimes when a number of developers are working on a project it may be useful to load a \\ct{baseline} version so that you get the latest work from all of the project members.
+
+
+\paragraph{New version.}
+Now for example, we can have a new version \ct{'0.5'} that has the same baseline (the same structural information), but different packages versions. 
+
+\begin{code}{} 
+ConfigurationOfCoolBrowser>>version05: spec 
+	<version: '0.5' imports: #('0.4-baseline')>
+	
+	spec for: #common do: [
+		spec 
+			package: 'CoolBrowser-Core' with: 'CoolBrowser-Core-MichaelJones.20';
+			package: 'CoolBrowser-Tests' with: 'CoolBrowser-Tests-JohnLewis.8';
+			package: 'CoolBrowser-Addons' with: 'CoolBrowser-Addons-JohnLewis.6' ].
+\end{code}
+
+Note that version \ct{'0.5'} uses the same baseline as version \ct{'0.4'}: \ct{'0.4-baseline'}.
+
+After all these explanations you may have noticed that creating a baseline for a big project may require time. This is because you must know all the dependencies of all the packages and other things we will see later (this was a simple baseline). Once the baseline is defined, creating new versions of the project is very easy and takes very little time. 
+
+\section{Groups}
+Suppose that now the CoolBrowser project is getting better and someone wrote tests for the addons. We have a new package \ct{'CoolBrowser-AddonsTests'}. This package depends on \ct{'CoolBrowser-Addons'} and \ct{'CoolBrowser-Tests'}. \sd{add a figure}
+
+Now we may want to load projects with or without tests. In addition, it would be convenient to be able to load all of the tests with a simple expression like the following:
+
+\begin{code}{}
+(ConfigurationOfCoolBrowser project version: '1.0') load: 'Tests'.
+\end{code}
+
+instead of having to explicitly list all of the test projects like this:
+ 
+\begin{code}{} 
+(ConfigurationOfCoolBrowser project version: '1.0') 
+	load: #('Example-Tests' 'Example-AddOnTests').
+\end{code}
+ 
+To solve this problem, Metacello offers the notion of group. A group is a list of items: packages, projects (as we will see in \ref{}) or even other groups. 
+ 
+Groups are very useful because they let you customize different groups of items of different interests. Maybe you want to offer the  user te possibility to install just the core, or with add-ons and development features. So...let's go back to our example. Here we defined a new baseline \ct{'0.6-baseline'} which defines 6 groups. 
+
+To define a group we use the method \ct{group: groupName with: group elements}. The parameter of \ct{with:} can be a package name, a project, another group, or even an collection of those items. This way you can compose groups by using other groups. 
+ 
+\begin{code}{}
+ConfigurationOfCoolBrowser>>baseline06: spec 
+	<version: '0.6-baseline'>
+	
+	spec for: #common do: [
+		spec blessing: #baseline.
+		spec repository: 'http://www.example.com/CoolBrowser'.
+		
+		spec 
+			package: 'CoolBrowser-Core';
+			package: 'CoolBrowser-Tests' with: [ spec requires: 'CoolBrowser-Core' ];
+			package: 'CoolBrowser-Addons' with: [ spec requires: 'CoolBrowser-Core' ] ;
+			package: 'CoolBrowser-AddonsTests' with: [ 
+				spec requires: #('CoolBrowser-Addons' 'CoolBrowser-Tests' ) ].
+		spec 
+			group: 'default' with: #('CoolBrowser-Core' 'CoolBrowser-Addons' );
+			group: 'Core' with: #('CoolBrowser-Core');
+			group: 'Extras' with: #('CoolBrowser-Addon');
+			group: 'Tests' with: #('CoolBrowser-Tests' 'CoolBrowser-AddonsTests' );
+			group: 'CompleteWithoutTests' with: #('Core' 'Extras' );
+			group: 'CompleteWithTests' with: #('CompleteWithoutTests' 'Tests' )
+		 ].
+\end{code}
+ 
+Note that we are defining the groups in the baseline version, since groups are a structural component. The package version is the same as version 0.5 in the previous example but with the new package \ct{CoolBrowser-AddonsTests}.
+ 
+\begin{code}{}
+ConfigurationOfCoolBrowser>>version06: spec 
+	<version: '0.6' imports: #('0.6-baseline')>
+	
+	spec for: #common do: [
+		spec blessing: #development.
+		spec 
+			package: 'CoolBrowser-Core' with: 'CoolBrowser-Core-MichaelJones.20';
+			package: 'CoolBrowser-Tests' with: 'CoolBrowser-Tests-JohnLewis.8';
+			package: 'CoolBrowser-Addons' with: 'CoolBrowser-Addons-JohnLewis.6' ;
+			package: 'CoolBrowser-AddonsTests' with: 'CoolBrowser-AddonsTests-JohnLewis.1' ].
+\end{code}
+ 
+
+\paragraph{Examples.} Once you have defined group, the idea is that you can use the name of a group anywhere that you would use the name of project or package. The \ct{load:}  method takes as parameter the name of a package, a project, a group or even an collection of those items.  Any of the following statements are then possible:
+
+can receive 
+ 
+\begin{code}{}
+(ConfigurationOfCoolBrowser project version: '1.0') load: 'CoolBrowser-Core'. 
+	''Load a single package''
+
+(ConfigurationOfCoolBrowser project version: '1.0') load: 'Core'. 
+	''Load a single group''
+
+(ConfigurationOfCoolBrowser project version: '1.0') load: 'CompleteWithTests'.  
+	''Load a single group''
+ 
+(ConfigurationOfCoolBrowser project version: '1.0') load: #('CoolBrowser-Core' 'Tests').   
+	''Loads a package and a group''
+
+(ConfigurationOfCoolBrowser project version: '1.0') load: #('CoolBrowser-Core' 'CoolBrowser-Addons' 'Tests'). 
+	''Loads two packages and a group'' 
+
+ (ConfigurationOfCoolBrowser project version: '1.0') load: #('CoolBrowser-Core' 'CoolBrowser-Tests').
+	''Loads two packages''
+  
+(ConfigurationOfCoolBrowser project version: '1.0') load: #('Core' 'Tests'). 
+	''Loads two groups''
+\end{code}
+
+
+\paragraph{Default group.} The \ct{'default'} group is a special one and when a default group is defined, the \ct{load} method loads the members of the 'default' group instead of all of the packages:
+   
+\begin{code}{}
+(ConfigurationOfCoolBrowser project version: '1.0') load.
+\end{code}
+
+In such a case, if you want to load all the packages of a project, you should use the pseudo group named \ct{'ALL'} as shown below: 
+
+\begin{code}{}
+(ConfigurationOfCoolBrowser project version: '1.0') load: 'ALL'.
+\end{code}
+ 
+
+ 
+\section{Project version attributes}
+ 
+% First, let us tell you something. Metacello not only includes all what we have been learning and what we will be still learning along this chapter, but also a complete set of tools with UI (user interface). These tools are based on OmniBrowser (OB), and thus, they are called OB-Metacello. This tool lets you save packages, spawn new versions, update package methods, load latest packages, save projects, update projects, among others. Unfortunately, this topic is not covered in this chapter. That's all you need to know for the moment.  
+ 
+A configuration can have several optional attributes such as   
+an author, a description, a blessing and a timestamp.  Let's see an example with a new version 0.7 of our project.
+ 
+\begin{code}{}
+ConfigurationOfCoolBrowser>>version07: spec 
+	<version: '0.7' imports: #('0.7-baseline')>
+	
+	spec for: #common do: [
+		
+		spec blessing: #release.
+		spec description: 'In this release .....'.
+		spec author: 'JohnLewis'.
+		spec timestamp: '10/12/2009 09:26'.
+	
+		spec 
+			package: 'CoolBrowser-Core' with: 'CoolBrowser-Core-MichaelJones.20';
+			package: 'CoolBrowser-Tests' with: 'CoolBrowser-Tests-JohnLewis.8';
+			package: 'CoolBrowser-Addons' with: 'CoolBrowser-Addons-JohnLewis.6' ;
+			package: 'CoolBrowser-AddonsTests' with: 'CoolBrowser-AddonsTests-JohnLewis.1' ].
+\end{code}
+ 
+We will describe each attribute in detail:
+ 
+\begin{itemize}
+\item Author: the name of the author who created the version. When using the OB-Metacello tools the author field is automatically updated to reflect the current author as defined in the image.
+\item Description: a textual description of the version. This may include a list of bug fixes or new features, changelog, etc.
+\item Timestamp: the date and time when the version was completed. When using the OB-Metacello tools the timestamp field is automatically updated to reflect the current date and time. Note that the timestamp must be a String.
+
+\end{itemize}
+
+\subsection{Blessings} 
+An important attribute is the blessing. In software development it is very common that packages or projects pass through several stages or steps during the software development process or life cycle such as for example, development, alpha, beta,  release, release candidate, etc. Sometimes we want to refer also to the state of a project.
+ %or sometimes we just want to use any other tag that may be useful. The blessing attribute can be used for all of these cases. --- would be better tohave separated tag: attributes.
+
+
+Blessings are taken into account by the load logic. The result of the following expression:
+\begin{code}{}
+ConfigurationOfCoolBrowser project latestVersion.
+\end{code}
+is not always the last version.  This is because \ct{latestVersion} answers the latest version whose blessing is {\em not} \ct{#development}, \ct{#broken}, or \ct{#blessing}. To find the latest \ct{#development} version for example, you should execute this expression:
+
+\begin{code}{}
+ConfigurationOfCoolBrowser project latestVersion: #development.
+\end{code}
+
+Nevertheless, you can get the very last version independently of blessing using the \ct{lastVersion} method as illustrated below
+
+\begin{code}{}
+ConfigurationOfCoolBrowser project lastVersion.
+\end{code}
+
+In general, the \ct{\#development} blessing should be used for any version that is unstable. Once a version has stabilized, a different blessing should be applied.
+
+The following expression will load the latest version of all of the packages for the latest \ct{#baseline} version:
+ \begin{code}{}
+(ConfigurationOfCoolBrowser project latestVersion: #baseline) load.
+\end{code}
+
+Since the latest \ct{#baseline} version should reflect the most up-to-date project structure, executing the previous expression loads the absolute bleeding edge version of the project. 
+
+
+
+To end this section, we show you can query this information. This illustrates that most of the information that you define in a Metacello version can then be queried. For example, you can evaluate the following expressions:
+
+\begin{code}{}
+(ConfigurationOfCoolBrowser project version: '0.7') author.
+(ConfigurationOfCoolBrowser project version: '0.6') blessing.
+(ConfigurationOfCoolBrowser project version: '0.7') blessing.
+(ConfigurationOfCoolBrowser project version: '0.7') description.
+(ConfigurationOfCoolBrowser project version: '0.7') timestamp.
+\end{code}
+
+
+\section{Pre and post code execution}
+
+Occasionally, you find that you need to perform some code either after or before a package or project is loaded. For example, if we are installing a System Browser it would be a good idea to register it as default after it is loaded. Or maybe you want to open some workspaces after the installation. 
+
+Metacello offers such feature by means of the two methods \ct{preLoadDoIt:} and \ct{postLoadDoIt:}.  The arguments passed to these methods are selectors of methods defined on the configuration class as shown below. For the moment, these pre and post scripts can be assigned to a single package or a whole project. 
+%Revisar cuando Dale soporte esto en grupos o a referencias de projectos. 
+
+Continuing with our example:
+
+
+\begin{code}{}
+ConfigurationOfCoolBrowser>>version08: spec 
+	<version: '0.8' imports: #('0.7-baseline')>
+	
+	spec for: #common do: [
+		spec blessing: #release.
+		spec description: 'In this release .....'.
+		spec author: 'JohnLewis'.
+		spec timestamp: '10/12/2009 09:26'.
+		spec 
+			package: 'CoolBrowser-Core' with: [
+				spec 
+					file: 'CoolBrowser-Core-MichaelJones.20';
+					preLoadDoIt: #preloadForCore;
+					postLoadDoIt: #postloadForCore:package: ];
+			package: 'CoolBrowser-Tests' with: 'CoolBrowser-Tests-JohnLewis.8';
+			package: 'CoolBrowser-Addons' with: 'CoolBrowser-Addons-JohnLewis.6' ;
+			package: 'CoolBrowser-AddonsTests' with: 'CoolBrowser-AddonsTests-JohnLewis.1' ].
+\end{code}
+
+\begin{code}{}
+ConfigurationOfCoolBrowser>>preloadForCore
+  	Transcript show: 'This is the preload script. Sorry I had no better idea'. 
+\end{code}
+
+\begin{code}{}
+ConfigurationOfCoolBrowser>>postloadForCore: loader package: packageSpec
+	Transcript cr; 
+		show: '#postloadForCore executed, Loader: ', loader printString, 
+			' spec: ', packageSpec printString.
+	
+	Smalltalk at: #SystemBrowser ifPresent: [:cl | cl default: (Smalltalk classNamed: #CoolBrowser)].
+\end{code}
+
+As you can notice there, both methods, \ct{preLoadDoIt:} and \ct{postLoadDoIt:} receive a selector that will be performed before or after the load. You can also note that the method  \ct{postloadForCore:package:} takes two parameters. The pre/post load methods may take 0, 1 or 2 arguments. The {\em loader} \sd{should explain that} is the first optional argument and the loaded packageSpec is the second optional argument. Depending on your needs you can choose which of those arguments do you want.
+
+These pre and post load scripts can be used not only in version methods but also in baselines. If a script depends on a version, then you can put it there. If it is likely it will not change among different versions, you can put it in the baseline method exactly in the same way.
+
+As we said before, these pre and post it can be at package level, but also at project level. For example, I can have the following configuration:
+
+\begin{code}{} 
+ConfigurationOfCoolBrowser>>version08: spec 
+	<version: '0.8' imports: #('0.7-baseline')>
+	
+	spec for: #common do: [
+		spec blessing: #release.
+		spec description: 'In this release .....'.
+		spec author: 'JohnLewis'.
+		spec timestamp: '10/12/2009 09:26'.
+		spec preLoadDoIt: #preLoadForCoolBrowser.
+		spec postLoadDoIt: #postLoadForCoolBrowser.
+	
+		spec 
+			package: 'CoolBrowser-Core' with: [
+				spec 
+					file: 'CoolBrowser-Core-MichaelJones.20';
+					preLoadDoIt: #preloadForCore;
+					postLoadDoIt: #postloadForCore:package: ];
+			package: 'CoolBrowser-Tests' with: 'CoolBrowser-Tests-JohnLewis.8';
+			package: 'CoolBrowser-Addons' with: 'CoolBrowser-Addons-JohnLewis.6' ;
+			package: 'CoolBrowser-AddonsTests' with: 'CoolBrowser-AddonsTests-JohnLewis.1' ].
+\end{code}
+
+In this example, we added pre and post load scripts at project level. Again, the selectors can receive 0, 1 or 2 arguments. We leave it to your imagination as to what these methods can do. 
+
+%Mostrar ejemplos con scripts a nivel de projecto o referencia a projectos.
+
+\section {Platform specific package}
+
+Suppose that we want to have different packages loaded depending on the platform the configuration is loaded in. In the context of our example our Cool Browser we can have a package called \ct{CoolBrowser-Platform}. There we can define abstract classes, APIs, etc. And then, we can have the following packages: \ct{CoolBrowser-PlatformPharo}, \ct{CoolBrowser-PlatformGemstone}, etc.
+
+Metacello automatically loads the package of the platform where we are loading the code. But in order to do that, we need to give Metacello some information using the method \ct{for:do:} as shown in the following example.
+
+\begin{code}{} 
+ConfigurationOfCoolBrowser>>version09: spec 
+	<version: '0.9' imports: #('0.9-baseline')>
+	
+	spec for: #common do: [
+		...
+		spec 
+			package: 'CoolBrowser-Core' with: 'CoolBrowser-Core-MichaelJones.20';
+			package: 'CoolBrowser-Tests' with: 'CoolBrowser-Tests-JohnLewis.8';
+			package: 'CoolBrowser-Addons' with: 'CoolBrowser-Addons-JohnLewis.6' ;
+			package: 'CoolBrowser-AddonsTests' with: 'CoolBrowser-AddonsTests-JohnLewis.1' ].
+	
+	spec for: #gemstone do: [
+		spec package: 'CoolBrowser-Platform' with: 'CoolBrowser-PlatformGemstone-MichaelJones.4'.].
+	spec for: #pharo do: [
+		spec package: 'CoolBrowser-Platform' with: 'CoolBrowser-PlatformPharo-JohnLewis.7'.].
+	spec for: #squeak do: [
+		spec package: 'CoolBrowser-Platform' with: 'CoolBrowser-JohnLewis-dkh.3'.].
+\end{code}
+
+You see that the version can handle different platform.
+
+
+\begin{code}{}
+ConfigurationOfCoolBrowser>>baseline09: spec 
+	<version: '0.9-baseline'>
+	
+	spec for: #common do: [
+		spec blessing: #baseline.
+		spec repository: 'http://www.example.com/CoolBrowser'.
+		
+		spec 
+			package: 'CoolBrowser-Core';
+			package: 'CoolBrowser-Tests' with: [ spec requires: 'CoolBrowser-Core' ];
+			package: 'CoolBrowser-Addons' with: [ spec requires: 'CoolBrowser-Core' ] ;
+			package: 'CoolBrowser-AddonsTests' with: [ 
+				spec requires: #('CoolBrowser-Addons' 'CoolBrowser-Tests' ) ].
+		spec 
+			group: 'default' with: #('CoolBrowser-Core' 'CoolBrowser-Addons' );
+			group: 'Core' with: #('CoolBrowser-Core' 'CoolBrowser-Platform' );
+			group: 'Extras' with: #('CoolBrowser-Addon');
+			group: 'Tests' with: #('CoolBrowser-Tests' 'CoolBrowser-AddonsTests' );
+			group: 'CompleteWithoutTests' with: #('Core', 'Extras' );
+			group: 'CompleteWithTests' with: #('CompleteWithoutTests', 'Tests' )].
+			
+	spec for: #gemstone do: [
+		spec package: 'CoolBrowser-Platform' with: 'CoolBrowser-PlatformGemstone'.].
+	spec for: #pharo do: [
+		spec package: 'CoolBrowser-Platform' with: 'CoolBrowser-PlatformPharo'.].
+	spec for: #squeak do: [
+		spec package: 'CoolBrowser-Platform' with: 'CoolBrowser-PlatformSqueak'.].
+\end{code}
+
+Notice that we add the package \ct{CoolBrowser-Platform} in the \ct{Core} group. As you can see, we can manage this package as any other and in a unified way. Thus, we have a lot of flexibility. At runtime, when you load CoolBrowser, Metacello automatically detects in which dialect the load is happening and loads the specific package for that dialect.  	
+	
+Finally, note that the method \ct{for:do:} is not only used to specify a platform specific package, but also for anything that has to do with different dialects. You can put whatever you want from the configuration inside that block. So, for example, you can define groups, packages, repositories, etc, that are dependent on a dialect. For example, you can do this:
+
+
+  \begin{code}{}
+ ConfigurationOfCoolBrowser>>baseline010: spec 
+	<version: '0.10-baseline'>
+	
+	spec for: #common do: [
+		spec blessing: #baseline.].
+	
+	spec for: #pharo do: [
+		spec repository: 'http://www.pharo.com/CoolBrowser'.
+		
+		spec 
+			...
+		spec 
+			group: 'default' with: #('CoolBrowser-Core' 'CoolBrowser-Addons' );
+			group: 'Core' with: #('CoolBrowser-Core' 'CoolBrowser-Platform' );
+			group: 'Extras' with: #('CoolBrowser-Addon');
+			group: 'Tests' with: #('CoolBrowser-Tests' 'CoolBrowser-AddonsTests' );
+			group: 'CompleteWithoutTests' with: #('Core', 'Extras' );
+			group: 'CompleteWithTests' with: #('CompleteWithoutTests', 'Tests' )].
+			
+	spec for: #gemstone do: [
+		spec repository: 'http://www.gemstone.com/CoolBrowser'.
+		
+		spec 
+			package: 'CoolBrowser-Core';
+			package: 'CoolBrowser-Tests' with: [ spec requires: 'CoolBrowser-Core' ];
+		spec 
+			group: 'default' with: #('CoolBrowser-Core' 'CoolBrowser-Addons' );
+			group: 'Core' with: #('CoolBrowser-Core' 'CoolBrowser-Platform' )].			
+
+\end{code}	
+	
+In this example, for Pharo we use a different repository than for Gemstone. In addition, the addons and tests are not available for Gemstone, and thus, those packages and groups are not included. So, as you can see, all what we have been doing inside the \ct{for: #common: do:} can be done inside another \ct{for:do:} for a specific dialect. 
+
+
+\section{Project configurations references}
+
+In the same way a package can depend on other packages, a project can depend on other projects. 
+For example, Pier which is a CMS using meta-description depends on Magritte and Seaside. 
+A project can depend completely on one or more other projects, on a group of packages of a project, or even just on one or more packages of a project. Here we have basically two scenarios depending whether the other projects is described or not using a metacello configurations. 
+
+\paragraph{Without configuration reference.} A package A from a Project X depends on a package B from project Y and project Y does not have any Metacello configuration (typically when there is only one package in the project). In this case do the following:
+\begin{code}{}
+		``In the baseline''
+		spec 
+			package: 'PackageA' with: [ 
+				spec 
+					requires: #('PackageB')];
+			package: 'PackageB' with: [ 
+				spec repository: 'http://www.squeaksource.com/ProjectB' ].	
+\end{code}
+
+\begin{code}{}
+		``In the version''
+		package: 'PackageB' with: 'PackageB-JuanCarlos.80'.
+\end{code}
+
+
+The problem here is that as the project B does not have a Metacello configurations, the dependencies of B are not managed. Thus, package B can have dependencies, but they will not be loaded. So, our recommendation is that in this case, you take the time to create a configuration for the project B.
+
+\paragraph{With configuration references.} Package A depends on a package or project B, but project B has also a configuration. This is the common case that we want to present now. 
+
+\sd{stopped there - we need a figure }
+To continue with our example, we introduce a new project called CoolToolSet which uses the packages from the CoolBrowser project. The configuration class is called ConfigurationOfCoolToolSet. We define two package in CoolToolSet called CoolToolSet-Core and CoolToolSet-Tests. Of couse, those packages depend on packages from CoolBrowser. Let's assume for a moment that the package that contains ConfigurationOfCoolBrowser class is called CoolBrowser-Metacello instead of also ConfigurationOfCoolBrowser (as we recommended). This will be better to understand each parameter. 
+
+
+Let's see the first version then:
+
+\begin{code}{}
+
+ConfigurationOfCoolToolSet >>version01: spec 
+	<version: '1.0' imports: #('1.0-baseline' )>
+	
+	spec for: #common do: [
+		spec blessing: #beta.
+		
+		spec 
+			package: 'CoolToolSet-Core' with: 'CoolToolSet-Core-anon.1';
+			package: 'CoolToolSet-Tests' with: 'CoolToolSet-Tests-anon.1'.].
+	
+\end{code}	
+
+\begin{code}{}
+
+ConfigurationOfCoolToolSet >>baseline01: spec 
+	<version: '0.1-baseline'>
+	
+	spec for: #common do: [
+		spec blessing: #baseline.
+		spec repository: 'http://www.example.com/CoolToolSet'.
+		spec
+			project: 'CoolBrowser ALL' with: [
+				spec
+					className: 'ConfigurationOfCoolBrowser';
+					versionString: '1.0';
+					loads: #('ALL' );
+					file: 'CoolBrowser-Metacello';
+					repository: 'http://www.example.com/CoolBrowser' ].
+		spec 
+			package: 'CoolToolSet-Core' with: [ spec requires: 'CoolBrowser ALL' ];
+			package: 'CoolToolSet-Tests' with: [ spec requires: 'CoolToolSet-Core' ].].
+	
+\end{code}	
+
+What we did here in baseline0.1 was to create a project reference for the CoolBrowser project. The \ct{className:} specifies the name of the class that contains the project metadata. If the class is not present in the image, then we need to supply all the necessary information so that Metacello can search and load the configuration for the project.
+
+The \ct{file:} and \ct{repository:} specifications give us the information needed to load the project metadata from a repository in case the configuration class is not already present in the image.
+
+Note that the values for the \ct{className:} and \ct{file:} attributes are the same: 'ConfigurationOfCoolBrowser'. As we've mentioned before, by convention the name of the configuration class and the configuration package should be the same, however, with Metacello it is not required that the two be the same.
+
+Finally, the \ct{versionString:} and \ct{loads:} tell us which version of the project to load and which packages or groups (the parameter of \ct{load:} can be the name of a package, or the name of a group or those keywords like 'ALL') to load from the project. 
+
+We've named the project reference 'CoolBrowser ALL' and in the specification for the 'CoolToolSet-Core' package, we've specified that 'CoolBrowser ALL' is required. The name of the project reference is arbitrary, you can select the name you want, although is recommended to put a name that make sense to that project reference.
+
+Now can now download CoolToolSet like this:
+
+\begin{code}{}
+(ConfigurationOfCoolToolSet project version: '0.1') load.
+\end{code}
+
+Note that the entire CoolBrowser project is loaded before 'CoolToolSet-Core'.
+
+Now...as is often the case, it is useful to separate the test package from the core packages for a project. So, we can write for example, the following baseline:
+
+\begin{code}{}
+ConfigurationOfCoolToolSet >>baseline02: spec 
+	<version: '0.2-baseline'>
+	
+	spec for: #common do: [
+		spec blessing: #baseline.
+		spec repository: 'http://www.example.com/CoolToolSet'.
+		spec
+			project: 'CoolBrowser default' with: [
+				spec
+					className: 'ConfigurationOfCoolBrowser';
+					versionString: '1.0';
+					loads: #('default' );
+					file: 'CoolBrowser-Metacello';
+					repository: 'http://www.example.com/CoolBrowser' ];
+			project: 'CoolBrowser Tests' with: [
+				spec
+					className: 'ConfigurationOfCoolBrowser';
+					versionString: '1.0';
+					loads: #('Tests' );
+					file: 'CoolBrowser-Metacello';
+					repository: 'http://www.example.com/CoolBrowser' ].
+		spec 
+			package: 'CoolToolSet-Core' with: [ spec requires: 'CoolBrowser default' ];
+			package: 'CoolToolSet-Tests' with: [ 
+				spec requires: #('CoolToolSet-Core'  'CoolBrowser Tests'  ) ].].			
+\end{code}
+
+
+ Here we created two project references. The reference named 'CoolBrowser default' loads the 'default' group and the reference named 'CoolBrowser Tests'  loads the 'Tests' group. We then made 'CoolToolSet-Core' require 'CoolBrowser default' and 'CoolToolSet-Tests' requires 'CoolToolSet-Core' and 'CoolBrowser Tests'.
+
+Now it is possible to load just the core packages:
+
+\begin{code}{}
+(ConfigurationOfCoolToolSet project version: '1.1') load: 'CoolToolSet-Core'.
+\end{code} 
+ 
+or the core including tests:
+ 
+\begin{code}{}
+  (ConfigurationOfCoolToolSet project version: '1.1') load: 'CoolToolSet-Tests'.
+\end{code}
+
+As you can see, in \ct{baseline02:} there is redundant information for each of the project references. To solve that situation, we can use the \ct{project:copyFrom:with:} method to eliminate the need to specify the bulk of the project information twice. Example:
+
+\begin{code}{}
+ConfigurationOfCoolToolSet >>baseline02: spec 
+	<version: '0.2-baseline'>
+	
+	spec for: #common do: [
+		spec blessing: #baseline.
+		spec repository: 'http://www.example.com/CoolToolSet'.
+		spec project: 'CoolBrowser default' with: [
+				spec
+					className: 'ConfigurationOfCoolBrowser';
+					versionString: '1.0';
+					loads: #('default' );
+					file: 'CoolBrowser-Metacello';
+					repository: 'http://www.example.com/CoolBrowser' ];
+			project: 'CoolBrowser Tests' 
+				copyFrom: 'CoolBrowser default' 
+				with: [ spec loads: #('Tests').].
+		spec 
+			package: 'CoolToolSet-Core' with: [ spec requires: 'CoolBrowser default' ];
+			package: 'CoolToolSet-Tests' with: [ 
+				spec requires: #('CoolToolSet-Core' 'CoolBrowser Tests') ].].
+\end{code}
+
+Not only in this baseline but also in baseline01 we did something that is not always useful: we put the version of the referenced projects in the baseline instead of in the version method. If you look at baseline01 or baseline02 you can see that we put \ct{versionString: '1.0'}. But sometimes, this information (the version of the referenced project) remains the same among different versions of the dependent project. 
+If the referenced project is very stable this technique works very well.
+
+On the other hand, if the referenced project will be changing over time, then  we recommend that you not specify the \ct{#versionString:} in the baseline method, but specify in the version method as follows:
+
+\begin{code}{}
+ConfigurationOfCoolToolSet >>version02: spec 
+	<version: '0.2' imports: #('0.2-baseline' )>
+	
+	spec for: #common do: [
+		spec blessing: #beta.
+		
+		spec 
+			package: 'CoolToolSet-Core' with: 'CoolToolSet-Core-anon.1';
+			package: 'CoolToolSet-Tests' with: 'CoolToolSet-Tests-anon.1';
+			project: 'CoolBrowser default' with: '1.3';
+			project: 'CoolBrowser Tests' with: '1.3'].
+\end{code}
+
+If we don't define a version String at all for 'CoolBrowser default'  and 'CoolBrowser Tests'  in the version method, then the version specified in the baseline will be used. If there is no version specified in the baseline method, then Metacello loads the latest version of the project.
+
+
+\section{Grouping projects} 
+
+Usually, a project has more than one package and/or the package has dependencies upon other configurations. If such is the case it is common to create a separate configuration for all those packages or projects. With this, I can reuse dependency and version information among other projects. 
+
+Maybe the sole purpose of this configuration is to group packages or projects and define stable version for them so that they can be used in different projects. 
+
+
+Missing conditional load
+Includes: vs requires.
+
+
+\end{document}
+
+
+%%% Local Variables: 
+%%% coding: utf-8
+%%% mode: latex
+%%% TeX-master: Lint.tex
+%%% TeX-PDF-mode: t
+%%% End:
