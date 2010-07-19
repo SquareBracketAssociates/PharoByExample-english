@@ -1,12 +1,15 @@
------------------------------------------------------------------------------
-		$Id$
------------------------------------------------------------------------------
-			This is the TODO list for "Pharo By Example",
-		listing pending actions and current status of chapters.
------------------------------------------------------------------------------
-PHARO BOOK 1
------------------------------------------------------------------------------
-TO DO:
+---
+# PBE TO-DO
+$Id$
+
+---
+
+This is the TODO list for "Pharo By Example", listing pending actions and current status of chapters.
+
+---
+# PHARO BOOK 1
+
+## TO DO:
 - Incorporate Thomas Schrader's formatting suggestions? (See Regex/ToSh-Regex.tex)
 - From: "symingz" <symingz@foxmail.com>
 Date: April 10, 2010 13:57:36 GMT+02:00
@@ -15,70 +18,85 @@ First, use the rules to find the fully parenthesized equivalent of a given expre
 e.g. '1 + 2 + x a' should equals '(1 + 2) + (x a)', not '((1 + 2) + x) a' or '1 + (2 + (x a))'.
 Second, evaluate the fully parenthesized expression from left to right, from inside to outside.
 What the book says is different, though. For example, when '(1 + 2) + (x a)' is evaluated, '+ 2' is be sent before 'a', but if we follow the book, the reverse will be assumed. If '+' and 'a' are replaced with some selector with side effects, following the book will lead to error.
-_______________________________________________
-Sbe-discussion mailing list
-Sbe-discussion@iam.unibe.ch
-https://www.iam.unibe.ch/mailman/listinfo/sbe-discussion
 
------------------------------------------------------------------------------
-TO DO for old chapters
-----------------------
-All chapters fixed except:
+- Sbe-discussion mailing list: Sbe-discussion@iam.unibe.ch
+<https://www.iam.unibe.ch/mailman/listinfo/sbe-discussion>
+
+## TO DO for old chapters
+
+- All chapters fixed except:
 * First App -- fix pretty-print instructions; file-out package
------------------------------------------------------------------------------
-Check/report these pharo bugs ...
+
+## Check/report these pharo bugs ...
 - Refactoring scope super-sends of Morphic package broken (issue 1311)
 - pretty print (r) shortcut does nothing (issue 1312)
 - context-clicking on process browser raises an error (issue 1313)
------------------------------------------------------------------------------
-SUPPRESS fi ligatures in headings:
-perl -pi -e 's/(\\(chapter|section|subsection).*)fi/\1f{}i/g;'  $*
------------------------------------------------------------------------------
-PHARO BOOK 2
------------------------------------------------------------------------------
-AUTHORS: Alexandre Bergel, Andrew Black, Stéphane Ducasse, Oscar Nierstrasz
-WITH: Damien Cassou, Jannick Menanteau, Damien Pollet, David Roethlisberger
-REVIEWERS: Fabrizio Perin, Jorge Ressia, Lukas Renggli
------------------------------------------------------------------------------
-STATUS OF NEW CHAPTERS
-----------------------
+
+## SUPPRESS fi ligatures in headings:
+- perl -pi -e 's/(\\(chapter|section|subsection).*)fi/\1f{}i/g;'  $*
+
+---
+# PHARO BOOK 2
+
+- AUTHORS: Alexandre Bergel, Andrew Black, Stéphane Ducasse, Oscar Nierstrasz
+- WITH: Damien Cassou, Jannick Menanteau, Damien Pollet, David Roethlisberger
+- REVIEWERS: Fabrizio Perin, Jorge Ressia, Lukas Renggli
+
+> Hi oscar
+> 
+> 
+> I'm starting to clean the pharo by example 2 folder. I will first identify the old folders of empty chapters.
+> After it would be nice if we could put on the web
+> 	- the OB chapter
+> 	- Profiler
+> 	- Setting
+> 	- Metacello once finished
+> 	- Gofer once translated from french
+> 
+> Alex could work on a new version of the mondrian tutorial.
+> 
+> Stef
+
+
+## STATUS OF NEW CHAPTERS
+
 * High priority for revision
 + Ready for public release
 - Draft or less
 
-[SW Development]
+## [SW Development]
 + Monticello -- pharo-ready -> STEF should check this?
 - Debugging (outline only!) -> STEF
 - Profiling -- Short draft. To be rewritten. -> ALEX * ANDREW
 - Installer and other cool packages: STEF has a draft (should continue)
 
-[Frameworks]
+## [Frameworks]
 - Magma (STEF ported the first version of the tutorial with the rights;
   to be rewritten with Chris Muller's help)
 + RegEx -- stable, stable, pharo-ready
 + OmniBrowser -- stable
 
-[Language]
+## [Language]
 + Exceptions -- stable -- do we need to replace BlockContext by BlockClosure? What about MethodContext?
 - Concurrency -- To do -> STEF
 - Announcements (dependency mechanism) -- To do -> STEF (STEF wrote a first little draft)
 
---- ABOVE: some stuff exists ; BELOW: not yet ---
-
+## [Planned]
 - Traits tutorial! -- STEF
 - Programming Pier -> OSCAR
 - We need a more practically oriented Morphic chapter.  The chapter in SBE 1 does not 	really show how to build a real GUI. [on -- from Mark Volkmann's comments]
 
 - Reflective programming (may be something for the tutorial organized by Ralf on transformation):  STEF: example of ActTalk
 
-[Building other languages]
+## [Building other languages]
 - New Compiler
 - Tutorial on Smacc 
 - Abstract Interpreter
 - Composable Parsers (should ask adrian kuhn for his blog in Smalltalk) * 
 
-Idioms and Style -- OSCAR ?
+- Idioms and Style -- OSCAR ?
 	- explain why getters and setters violate encapsulation
-Inheritance/Idioms -- To do. -> ANDREW
-Common Errors -- To do. -> ???
------------------------------------------------------------------------------
+- Inheritance/Idioms -- To do. -> ANDREW
+- Common Errors -- To do. -> ???
+
+---
