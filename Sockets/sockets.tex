@@ -23,12 +23,12 @@
 % --------------------------------------------
     \graphicspath{{figures/} {../figures/}}
 	\begin{document}
-	\renewcommand{\nnbb}[2]{} % Disable editorial comments
+	%\renewcommand{\nnbb}[2]{} % Disable editorial comments
 	\sloppy
 \fi
 %=================================================================
 %Noury's commands
-\newcommand{\nouryComment}[1]{\textcolor{red}{\textbf{\emph{#1}}}}
+\renewcommand{\nouryComment}[1]{\textcolor{red}{\textbf{\emph{#1}}}}
 
 %=================================================================
 
@@ -231,21 +231,21 @@ After sending the http query, we wait at most 5 seconds for the html text that w
 Socket connection, query sending and html reception are inside a block which execution is ensured to end with cleaning up socket related resources, by means of the \ct!closeAndDestroy! message.
 
 \section{A Simple TCP Server}
-Now let us build a simple TCP server. A \textit{TCP Server} is an application that awaits TCP connections from TCP clients. Once connection established, both the server and the client can send a receive data in any order. A big difference between the server and the client is that the server uses at least two sockets.
+Now let us build a simple TCP server. A \textit{TCP Server} is an application that awaits TCP connections from TCP clients. Once connection established, both the server and the client can send a receive data in any order. A big difference between the server and the client is that the server uses at least two sockets. \sd{why? so that it can get closed?}
 
 \subsection{TCP Socket Server Life-cyle}
 The life-cycle of a TCP server in \pharo  has 5 steps:
 \begin{enumerate}
 \item Create a first TCP socket, let's call it \textit{socket$_1$}.
 \item Wait for connections by making \textit{socket$_1$}  listen on some port.
-\item Accept a client request for connection. As a result,  \textit{socket$_1$} will build a second socket, let's call it \textit{socket$_2$}.
+\item Accept a client request for connection. As a result,  \textit{socket$_1$} will build a second socket, let's call it \textit{socket$_2$} \sd{why socket1 is creating a second socket and not the server?}.
 \item Exchange data with the client through \textit{socket$_2$}. In the meanwhile, \textit{socket$_1$} can continue to wait for connections, and possibly create new sockets to exchange data with other clients. 
 \item Close \textit{socket$_2$}.
 \item Close \textit{socket$_1$} when we decide to kill the server and stop accepting client connections.
 \end{enumerate}
 
 Concurrence is implicit in this life-cycle.
-The server listens for incoming client's connection requests through \textit{socket$_1$}, while exchanging data with some client through \textit{socket$_2$}.
+The server listens for incoming client's connection requests through \textit{socket$_1$}, while exchanging data with some clients through \textit{socket$_2$}.
 The server can even simultaneously exchange data with multiple clients through different sockets.
 In the following, we first illustrate the socket serving machinery.
 Then, we give a complete server class and explain the server's life-cycle and related concurrency issues.
@@ -253,7 +253,7 @@ Then, we give a complete server class and explain the server's life-cycle and re
 \subsection{Serving Basic Example}
 We illustrate the serving basics through a simple example of an echo TCP server that accepts a single client request.
 It sends back to clients whatever data it received and quits.
-The code is provided by \scrref{servingBasicExample}.
+The code is provided by \Scrref{servingBasicExample}.
 
 \begin{script}[servingBasicExample]{Basic Echo Server.}
 | connectionSocket interactionSocket |
@@ -269,20 +269,24 @@ interactionSocket closeAndDestroy.
 
 First, we create the socket that we will use for handling incoming connections.
 We set it up to listen on port 9999.
-The \ct!backlogSize! is set to 10 meaning, that we allocate a buffer for 10 connection requests.
-This backlog will not be actually used in this example.
+The \ct!backlogSize! is set to 10, meaning that we allocate a buffer for 10 connection requests. This backlog will not be actually used in this example.
 But, a more realistic server will have to handle connections and then process connection requests in the backlog.
 
-Once the connection socket is prepared, with make it starting listening for client connections.
+Once the connection socket is prepared, it starts listening for client connections.
 The \ct!waitForAcceptFor: 60! message makes the socket wait connection requests for 60 seconds.
 If no client attempts to connect during these 60 seconds, the message answers \ct!nil!.
 Otherwise, we get a new socket \ct!interactionSocket! connected the client's socket.
 At this point, we don't need the connection socket anymore, so we can close it (\ct!closeAndDestroy! message).
 
-Since the interaction socket is already connected connected to the client, we can use it to exchange data.
+Since the interaction socket is already connected to the client, we can use it to exchange data.
 Messages \ct!receiveData! and \ct!sendData:! presented above (see section~\ref{sec:exchangeData}) can be used to this end.
 In our example, we wait for data from the client, next we display it on the \ct!Transcript!, and last we send it back to the client prefixed with the \ct!'ECHO: '! string.
 Last, we finish the interaction with the client by closing the interaction socket.
+
+Now you cannot test this script totally without having another image that will execute the client code. 
+Therefore use two different images, one that runs the server code and one for the client code. Indeed, since we use the user interaction process, the \pharo UI will be frozen at some points, such as during the \ct!waitForAcceptFor:!.
+\Scrref{echoClient} provides the code to run on the client image.
+Note that you have to run the server code first.
 
 \begin{script}[echoClient]{Echo Client.}
 | clientSocket serverAddress echoString |
@@ -297,10 +301,7 @@ clientSocket := Socket newTCP.
 ] ensure: [clientSocket closeAndDestroy].
 \end{script}
 
-In order to test the above example, you have to use two different images, one that runs the server code and one for the client code.
-Indeed, since we use the user interaction process, the \pharo UI will be frozen at some points, such as during the \ct!waitForAcceptFor:!.
-\scrref{echoClient} provides the code to run on the client image.
-Note that you have to run the server code first.
+\sd{here}
 
 %An alternative to using the client is to use the netcat on Unix machines
 
