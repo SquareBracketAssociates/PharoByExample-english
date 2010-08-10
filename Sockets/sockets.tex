@@ -33,58 +33,48 @@
 %=================================================================
 
 \chapter{Sockets}\label{cha:sockets}
-Modern softwares are often distributed on multiple devices and collaborate through a network in order to achieve some task.
-The basic approach to set up such a collaboration is to use {\em sockets}.
-A typical use is in the World Wide Web.
-Browsers and servers do interact through HTTP sockets.
+Modern [applications][applications][application never plural] are often distributed on multiple devices and collaborate through a network to achieve some task.
+The basic approach to set up such a collaboration is to use [\textit{sockets}][\textit{sockets}][em is the old latex interface].
+A typical use is in the World Wide Web. Browsers and servers interact through HTTP sockets.
 
-The concept of socket was first introduced by researchers from Berkley University in the \nouryComment{1960's}.
-They defined the first socket API for the C programming language in the context of Unix operating systems.
-Since then, the concept of socket was spread out to other operating systems.
-It's API was ported to other programming languages including Smalltalk.
+The concept of socket was first introduced by researchers from Berkeley University in the 1960's. They defined the first socket API for the C programming language in the context of Unix operating systems. Since then, the concept of socket was spread out to other operating systems. [It's][Its] API was ported to most existing programming languages including Smalltalk.
 
 In this chapter, we present the socket's API in the context of Pharo Smalltalk.
 We show through some examples how to to use sockets for building both clients and servers.
 
 \section{Basic Concepts}
 \subsection{Socket}
-A remote communication involves at least two softwares exchanging some data bytes through a network.
-Each software accesses the network through at least one socket (see figure~\ref{fig:socketConcept}).
-A socket can then be defined as a {\em plug on a communication network}.
+A remote communication involves at least two applications exchanging some data bytes through a network. Each application accesses the network through at least one socket (see [f][F]igure~\ref{fig:socketConcept}).
+A socket can then be defined as a \textit{plug on a communication network}.
 
 \begin{figure}[ht]\centering
 	\includegraphics[width=.75\linewidth]{socketConcept.pdf}
-	\caption{Softwares Remote Communication Through Sockets.}
+	\caption{Applications Remote Communication Through Sockets.}
 	\label{fig:socketConcept}
 \end{figure}
 
-Sockets are used to achieve a bidirectional communication.
-They allow both sending and receiving data.
-Such interaction can be done according to some communication protocol which is encapsulated by the used sockets.
-On the Internet and other networks such as ethernet LANs\footnote{Local Area Networks.}, two basic protocols widely used are {\em TCP/IP} and {\em UDP/IP}.
+Sockets are used to achieve a bidirectional communication. They allow both sending and receiving data. Such interaction can be done according to communication protocols which are encapsulated in sockets. On the Internet and other networks such as ethernet LANs\footnote{Local Area Networks.}, two basic protocols widely used are \textit{TCP/IP} and \textit{UDP/IP}.
 
-\subsection{TCP/IP vs UDP/IP}
-TCP/IP stands for {\em Transmission Control Protocol / Internet Protocol} (TCP for short).
-The use of TCP guarantees a reliable communication (no data loss).
-It requires that softwares involves in the communication get connected before actually communicating. 
-Once a connection is established interacting parties can send and receive an arbitrary amount of bytes.
-This is often referred to as {\em stream communication}.
+\subsection{TCP/IP vs. UDP/IP}
+TCP/IP stands for \textit{Transmission Control Protocol / Internet Protocol} (TCP for short).
+TCP use guarantees a reliable communication (no data loss). It requires that applications involved in the communication get connected before actually communicating. 
+Once a connection is established interacting parties can send and receive an arbitrary amount of bytes. This is often referred to as a \textit{stream communication}.
 Data reach the destination in the same order of their sending.
 
-UDP/IP stands for {\em User Datagram Protocol / Internet Protocol} (UDP for short).
+UDP/IP stands for \textit{User Datagram Protocol / Internet Protocol} (UDP for short).
 Datagrams are chunks of data which size can not exceed 64KB.
 UDP is an unreliable protocol because of two reasons.
 First, UDP does not guarantee that  datagrams will actually reach there destination.
-The second reason why UDP is qualified as unreliable is that the order of receptions of multiple datagrams from a single sender to some particular receiver may arrive in an arbitrary order.
-However UDP is faster than TCP since no connection is required before sending data.
-A typical use of UDP is  ``heart-beating'' as used in server-based social software, where clients need to notify the server their status (e.g. Requesting interactions, or Invisible).
+The second reason why UDP is qualified as unreliable is that the reception order of multiple datagrams from a single sender to some particular receiver may arrive in an arbitrary order.
+However, UDP is faster than TCP since no connection is required before sending data.
+A typical use of UDP is  ``heart-beating'' as used in server-based social application, where clients need to notify the server their status (\eg Requesting interactions, or Invisible).
 
 \nouryComment{In a future version we will present UDP. But, so  far UDP does not work in \pharo.}
 In the reminder of this chapter we will focus on TCP Sockets.
 We first will present how to develop a simple client application using a socket
  
-\section{Simple TCP Client}
-We call {\em TCP client}  a software that initiates a TCP connection in order to exchange data with another software: the {\em server}.
+\section{A Simple TCP Client}
+We call \textit{TCP client}  an application that initiates a TCP connection to exchange data with another application: the \textit{server}.
 It is important to mention that the client and the server may be developed in different languages.
 The life-cycle of such a client in \pharo decomposes into 4 steps:
 \begin{enumerate}
@@ -98,22 +88,21 @@ The life-cycle of such a client in \pharo decomposes into 4 steps:
 \pharo provides a single socket class.
 At creation, the socket type (TCP or UDP) is provided to the socket plugin of the virtual machine.
 To create a TCP socket, you need to evaluate the following message 
-\begin{center}
-\ct!Socket newTCP!.
-\end{center}
+\begin{code}{}
+Socket newTCP
+\end{code}
 Method \ct!newTCP! hands out the tcp type (which is stored in the class variable \ct!TCPSocketType!) to set up a TCP socket.
 
 \subsection{Connect a TCP Socket to some Server}
-In order to connect a TCP Socket to some server, you need to have the object representing the IP address of the server.
-This address is a instance of \ct!SocketAddress!.
+To connect a TCP Socket to a server, you need to have the object representing the IP address of that server. This address is a instance of \ct!SocketAddress!.
 A handy way to create it is to use \ct!NetNameResolver! that  provides IP style network name lookup and translation facilities.
 
-\scrref{creatingSocketAddress} provides two examples of socket address creation.
-The first one creates an address from a string from the server name (\ct!'www.esug.org'!), while the second does the creation from a string representing the server's IP address (\ct!'127.0.0.1'!).
-Note that to use the \ct!NetNameResolver! you need a network connection.
-The only exception is for retrieving the local host address.
+\Scrref{creatingSocketAddress} provides two examples of socket address creation.
+The first one creates an address from a string describing the server name (\ct!'www.esug.org'!), while the second does the creation from a string representing the server's IP address (\ct!'127.0.0.1'!).
+Note that to use the \ct!NetNameResolver! you need a \sd{working} network connection.
+The only exception is for retrieving the local host address. \sd{explain the last sentence}
 
-\nouryComment{There are dedicated methods for retreiving the localhost address but they are buggy at the time of writing this text.}
+\nouryComment{There are dedicated methods for retrieving the localhost address but they are buggy at the time of writing this text.}
 \nouryComment{The NameLookupFailure exception is used ONLY in NetNameResolver class>>addressForName:timeout:. It should be more widely used.}
 
 \begin{script}[creatingSocketAddress]{Creating a Socket Address}
@@ -122,17 +111,18 @@ esugAddress := NetNameResolver addressForName: 'www.esug.org'.
 localAddress := NetNameResolver addressForName: '127.0.0.1'.
 \end{script}
 
-Now we can connect our TCP socket to our server as shown in \scrref{connectingTcpSocket}.
+\begin{figure}[h]
+\begin{center}
+\includegraphics[width=6cm]{addressForName}
+\end{center}
+\end{figure}
+
+Now we can connect our TCP socket to the server as shown in \Scrref{connectingTcpSocket}.
 Message \ct!connectTo:port:! attempts to connect the socket to the server which address and port are provided as parameters.
 \nouryComment{SocketAddress can also store the port of the server. 
 However, NetNameResolver does NOT support building socket address WITH port.}
-This message returns immediately after issuing to the system (through a primitive call) the request to connect the socket.
-Message \ct!waitForConnectionFor: 10! suspends the current process until the socket is connected to the server.
-It waits at most \ct!10! seconds as provided in the parameter.
-If the socket is not connected after 10 seconds, the \ct!ConnectionTimedOut! exception is signaled. 
-Otherwise, the execution can carry on by evaluating the expression \ct!clientSocket isConnected! which obviously answers \ct!true!.
 
-\begin{script}[connectingTcpSocket]{Connecting a TCP Socket to some Server.}
+\begin{script}[connectingTcpSocket]{Connecting a TCP Socket to ESUG Server.}
 | clientSocket serverAddress |
 clientSocket := Socket newTCP.
 serverAddress := NetNameResolver addressForName: 'www.esug.org'.
@@ -142,6 +132,14 @@ clientSocket
 clientSocket isConnected
 \end{script}
 
+This message \sd{which one} returns immediately after issuing to the system (through a primitive call) the request to connect the socket.
+Message \ct!waitForConnectionFor: 10! suspends the current process until the socket is connected to the server.
+It waits at most \ct!10! seconds as requested by the parameter.
+If the socket is not connected after 10 seconds, the \ct!ConnectionTimedOut! exception is signaled. 
+Otherwise, the execution can carry on by evaluating the expression \ct!clientSocket isConnected! which obviously answers \ct!true!.
+
+
+
 \subsection{Exchange Data with Server}
 \label{sec:exchangeData}
 Once connection is established, the client can send/receive data to/from the server.
@@ -150,7 +148,7 @@ Typically, the client sends some request to the server and then expects receivin
 Web browsers act according to this schema.
 A web browser is a client that issues a request to some web server identified by the URL.
 Such request is often the path to some resource on the server such as an html file or a picture.
-Then, the browser awaits the server response (e.g. html code, picture bytes).
+Then, the browser awaits the server response (\eg html code, picture bytes).
 
 \begin{script}[dataExhangeWithTcpSocket]{Exchanging Data with some Server through a TCP Socket.}
 |clientSocket data|
@@ -160,10 +158,10 @@ data := clientSocket receiveData.
 ... ``Process data''
 \end{script}
 
-\scrref{dataExhangeWithTcpSocket} shows the protocol to send and receive data through a client socket.
-Here, we send the string \ct-'Hello server!'- to the server using the the \ct!sendData:! message.
+\Scrref{dataExhangeWithTcpSocket} shows the protocol to send and receive data through a client socket.
+Here, we send the string \ct-'Hello server!'- to the server using the \ct!sendData:! message.
 Next, we send the \ct!receiveData! to our client socket to make it wait for data reception.
-Then, the content of variable \ct!data! is processed.
+Then, the contents of variable \ct!data! is processed.
 
 \begin{script}[dataReceptionTimeOut]{Bounding the Maximum Time for Data Reception.}
 |clientSocket data|
@@ -182,7 +180,7 @@ do: [:timeOutException|
 %Timeout
 Note that by using  \ct!receiveData!, the client waits until the server either sends no more data, or close the connection.
 This means that the client may wait indefinitely.
-An alternative would be to have the client signal a \ct!ConnectionTimedOut! exception if it had waited too much as shown in \scrref{dataReceptionTimeOut}.
+An alternative is to have the client signal a \ct!ConnectionTimedOut! exception if it had waited too much as shown in \Scrref{dataReceptionTimeOut}.
 We use message \ct!receiveDataTimeout:! to ask the client socket to wait for 5 seconds.
 If data is received during this period of time, it is processed silently.
 But if no data is received during the 5 seconds, a \ct!ConnectionTimedOut! is signaled.
@@ -193,12 +191,11 @@ A socket remains alive while devices at both ends are connected.
 Once the interaction is over, either the server or the client can decide to close the socket.
 This can be done by sending the \ct!close! message to the socket.
 The image where this message is evaluated will then send a close request to the other side.
-The socket remains connected until the other side close it.
+The socket remains connected until the other side closes it.
 However, this may last indefinitely when there is an network failure or when the other side is down.
-This is why sockets also answer the \ct!destroy! message, that frees system resources required by the socket.
+This is why sockets also answer the \ct!destroy! message, which frees system resources required by the socket.
 
-In practice we do use \ct!closeAndDestroy!.
-It first attempts to close the socket by sending the \ct!close! message.
+In practice we use \ct!closeAndDestroy!. It first attempts to close the socket by sending the \ct!close! message.
 Then, if the socket is still connected after a duration of 20 seconds, the socket is destroyed.
 Note that there exist a variant \ct!closeAndDestroy: seconds! which gets as a parameter the duration to wait before destroying the socket.
 
@@ -220,7 +217,7 @@ clientSocket := Socket newTCP.
 Transcript cr; show: '...Done'
 \end{script}
 
-To summarize all steps described so far, we use the example of getting a web page from a server in \scrref{closeAndDestroy}.
+To summarize all steps described so far, we use the example of getting a web page from a server in \Scrref{closeAndDestroy}.
 First, we retrieve the IP address of the \url{www.esug.org} server.
 Then, we create a TCP socket and connect it to the server.
 We use the IP address we get in the previous step and the default port for web servers: 80.
@@ -233,24 +230,22 @@ Since, we intend to display the result of our query on the \ct!Transcript!, we s
 After sending the http query, we wait at most 5 seconds for the html text that we display on the \ct!Transcript!.
 Socket connection, query sending and html reception are inside a block which execution is ensured to end with cleaning up socket related resources, by means of the \ct!closeAndDestroy! message.
 
-\section{Simple TCP Server}
-A {\em TCP Server} is a software that awaits TCP connections from TCP clients.
-Once connection established, both the server and the client can send a receive data in any order.
-A big difference between the server and the client is that the server uses at least two sockets.
+\section{A Simple TCP Server}
+Now let us build a simple TCP server. A \textit{TCP Server} is an application that awaits TCP connections from TCP clients. Once connection established, both the server and the client can send a receive data in any order. A big difference between the server and the client is that the server uses at least two sockets.
 
 \subsection{TCP Socket Server Life-cyle}
 The life-cycle of a TCP server in \pharo  has 5 steps:
 \begin{enumerate}
-\item Create a first TCP socket, let's call it {\em socket$_1$}.
-\item Wait for connections by making {\em socket$_1$}  listen on some port.
-\item Accept a client request for connection. As a result,  {\em socket$_1$} will build a second socket, let's call it {\em socket$_2$}.
-\item Exchange data with the client through {\em socket$_2$}. In the meanwhile, {\em socket$_1$} can continue to wait for connections, and possibly create new sockets to exchange data with other clients. 
-\item Close {\em socket$_2$}.
-\item Close {\em socket$_1$} when we decide to kill the server and stop accepting client connections.
+\item Create a first TCP socket, let's call it \textit{socket$_1$}.
+\item Wait for connections by making \textit{socket$_1$}  listen on some port.
+\item Accept a client request for connection. As a result,  \textit{socket$_1$} will build a second socket, let's call it \textit{socket$_2$}.
+\item Exchange data with the client through \textit{socket$_2$}. In the meanwhile, \textit{socket$_1$} can continue to wait for connections, and possibly create new sockets to exchange data with other clients. 
+\item Close \textit{socket$_2$}.
+\item Close \textit{socket$_1$} when we decide to kill the server and stop accepting client connections.
 \end{enumerate}
 
 Concurrence is implicit in this life-cycle.
-The server listens for incoming client's connection requests through {\em socket$_1$}, while exchanging data with some client through {\em socket$_2$}.
+The server listens for incoming client's connection requests through \textit{socket$_1$}, while exchanging data with some client through \textit{socket$_2$}.
 The server can even simultaneously exchange data with multiple clients through different sockets.
 In the following, we first illustrate the socket serving machinery.
 Then, we give a complete server class and explain the server's life-cycle and related concurrency issues.
@@ -346,11 +341,18 @@ As we'll see below, it can be accessed by different processes.
 Therefore, we use the mutex (see \mthref{meth:serverInitialize}) stored in the \ct!isRunningLock! instance variable in order to ensure that only one process can read or write the value of \ct!isRunning! (use of the \ct!critical:! message in \mthref{meth:isRunningRead} and \mthref{meth:isRunningWrite}).
 
 \begin{method}[meth:stop]{The \ct!EchoServer>>>stop! Method}
-EchoServer>>>stop	self isRunning: false
+EchoServer>>>stop
+	self isRunning: false
 \end{method}
 
 \begin{method}[meth:start]{The \ct!EchoServer>>>start! Method}
-start	isRunningLock critical: [		self isRunning ifTrue: [^self].		self isRunning: true].	connectionSocket := Socket newTCP.	connectionSocket listenOn: 9999 backlogSize: 10.	[self serve] fork
+start
+	isRunningLock critical: [
+		self isRunning ifTrue: [^self].
+		self isRunning: true].
+	connectionSocket := Socket newTCP.
+	connectionSocket listenOn: 9999 backlogSize: 10.
+	[self serve] fork
 \end{method}
 
 In order to manage the life-cycle of our server, we introduced two methods \ct!EchoServer>>>start! and \ct!EchoServer>>>stop!.
