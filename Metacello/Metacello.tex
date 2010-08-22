@@ -857,7 +857,7 @@ ConfigurationOfCoolToolSet >>baseline02: spec
 		spec 
 			package: 'CoolToolSet-Core' with: [ spec requires: 'CoolBrowser default' ];
 			package: 'CoolToolSet-Tests' with: [ 
-				spec requires: #('CoolToolSet-Core' 'CoolBrowser Tests') ].].
+				spec requires: #('CoolToolSet-Core' 'CoolBrowser Tests') ].].					
 \end{code}
 
 Not only in this baseline but also in baseline01 we did something that is not always useful: we put the version of the referenced projects in the baseline instead of in the version method. If you look at baseline01 or baseline02 you can see that we put \ct{versionString: '1.0'}. But sometimes, this information (the version of the referenced project) remains the same among different versions of the dependent project. 
@@ -889,8 +889,109 @@ Usually, a project has more than one package and/or the package has dependencies
 Maybe the sole purpose of this configuration is to group packages or projects and define stable version for them so that they can be used in different projects. 
 
 
-Missing conditional load
-Includes: vs requires.
+
+\section{Project definition}
+
+We have already explained that for creating your configuration class the easiest way was to copy the existing MetacelloConfigTemplate class. If we now take a deeper understanding of such class we can see that it implements the method \ct{project}. Maybe you did not notice it but we used this method everywhere, for example, to load a version:
+
+\begin{code}{}
+  (ConfigurationOfCoolToolSet project version: '1.1') load: 'CoolToolSet-Tests'.
+\end{code}
+
+In this method \ct{project} you can specify and customize your project definitions. For example, you can specify the Metacello constructor, the load type, project attributes, etc. Later in this chapter we will go a little deeper with some of these topics. This is a typical implementation of \ct{project} method: 
+
+\begin{code}{}
+ConfigurationOfCoolToolSet >>project
+
+	^ project ifNil: [ | constructor |
+		"Bootstrap Metacello if it is not already loaded"
+		self class ensureMetacello.
+		"Construct Metacello project"
+		constructor := (Smalltalk at: #MetacelloVersionConstructor) on: self.
+		project := constructor project.
+		project loadType: #linear.
+		project ]
+
+\end{code}
+
+
+\section{Conditional loading}
+When loading a project it is common the situation where you would like to decide whether to load or or not certain packages depending on a certain condition, for example, the existence of certain other packages in the image. As an example, suppose you want to load Seaside (or any other web framework) in your image. Seaside has a tool that depends on OmniBrowser and it is for managing instances of web servers. What can be done with that little tool can also by done by code. Sometimes you would like to load such tool, but you need OmniBrowser. However, others may not need such package. An alternative would be to provide different groups, one that includes such package and one that does not. The problem is that the final user should be aware of this and load different groups in different situations.  With conditional loading you can for example, load that Seaside tool only if OmniBrowser is present in the image. This will be done automatically by Metacello and there is no need to explicitly load a particular group. 
+
+Suppose that our CoolToolSet starts to provide much more features. We first split the core in two packages: 'CoolToolSet-Core' and 'CoolToolSet-CB'. CoolBrowser can be present in one image, but not in another one. We want to load the package 'CoolToolSet-CB' by default only and if CoolBrowser is present. 
+
+The mentioned conditionals are achieved in Metacello by using the \emph{project attributes} we saw in the previous section. They are defined in the \ct{project} method. Example:
+
+
+\begin{code}{}
+ConfigurationOfCoolBrowser >>project
+	|  | 
+	^ project ifNil: [ | constructor |
+		"Bootstrap Metacello if it is not already loaded"
+		self class ensureMetacello.
+		"Construct Metacello project"
+		constructor := (Smalltalk at: #MetacelloVersionConstructor) on: self.
+		project := constructor project.
+		projectAttributes :=  ((Smalltalk at: #CBNode ifAbsent: []) == nil
+			ifTrue: [ #( #'CBNotPresent' ) ]
+			ifFalse: [ #( #'CBPresent' ) ]).
+		project projectAttributes:  projectAttributes.
+		project loadType: #linear.
+		project ]
+
+\end{code}
+
+As you can see in the code, we check if CBNode class (a class from CoolBrowser) is present and depending on that we set an specific project attribute.
+This is flexible enough to let you define your own conditions and set the amount of project attributes you wish (you can define an array of attributes).  
+Now the questions is how to use these project attributes. In the following baseline we see an example:
+
+\begin{code}{}
+ConfigurationOfCoolToolSet >>baseline02: spec 
+	<version: '0.2-baseline'>
+	
+	spec for: #common do: [
+		spec blessing: #baseline.
+		spec repository: 'http://www.example.com/CoolToolSet'.
+		spec project: 'CoolBrowser default' with: [
+				spec
+					className: 'ConfigurationOfCoolBrowser';
+					versionString: '1.0';
+					loads: #('default' );
+					file: 'CoolBrowser-Metacello';
+					repository: 'http://www.example.com/CoolBrowser' ];
+			project: 'CoolBrowser Tests' 
+				copyFrom: 'CoolBrowser default' 
+				with: [ spec loads: #('Tests').].
+		spec 
+			package: 'CoolToolSet-Core';
+			package: 'CoolToolSet-Tests' with: [ 
+				spec requires: #('CoolToolSet-Core') ];
+			package: 'CoolToolSet-CB';			
+		spec for: #CBPresent do: [
+			spec
+				group: 'default' with: #('CoolToolSet-CB' )
+				yourself ].
+		spec for: #CBNotPresent do: [
+			spec 
+				package: 'CoolToolSet-CB' with: [ spec requires: 'CoolBrowser default' ];
+				yourself ].
+			].
+		
+\end{code}
+
+You can notice that the way to use project attributes is using the existing method \ct{for:do:}. And inside that method you can do whatever you want: define groups, dependencies, etc. In our case, if CoolBrowser is present then we just add 'CoolToolSet-CB' to the default group. If it is not present, then  
+'CoolBrowser default' is added to dependency to 'CoolToolSet-CB'. In this case we do not add it to the default group because we do not want that. If desired the user should explicitly load also that package. 
+
+Again, notice that inside the \ct{for:do:} you are free to do what you want. 
+
+
+\section{Load types}
+
+
+
+
+%Missing conditional load
+%Includes: vs requires.
 
 
 \end{document}
