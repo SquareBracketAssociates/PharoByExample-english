@@ -81,7 +81,7 @@ To manage software in this century we use several tools that are very closely re
 \begin{description}
 
 \item{\textbf{Monticello: Source code versioning.}}
-Source code versioning is the process of assigning either unique version names or unique version numbers to unique software states. At a fine-grained level, revision control incrementally keeps track of different versions of ``pieces of software''. In object-oriented programming, these ``pieces of software'' are methods, classes or packages. A versioning system tool lets you commit a new version, update to a new one, merge, diff, revert, etc. Monticello is the source code versioning system used in Pharo and the ``pieces of software'' are the Monticello packages. With Monticello we can do most of the above operations on packages but there is no way to specify dependencies, identify stable versions, or group packages into meaningful units.  Monticello just manages package versions. Metacello manages package dependencies and the notion of projects.
+Source code versioning is the process of assigning either unique version names or unique version numbers to unique software states. At a fine-grained level, revision control incrementally keeps track of different versions of ``pieces of software''. In object-oriented programming, these ``pieces of software'' are methods, classes or packages. A versioning system tool lets you commit a new version, update to a new one, merge, diff, revert, etc. Monticello is the source code versioning system used in Pharo and the ``pieces of software'' are the Monticello packages. With Monticello we can do most of the above operations on packages but there is no way to easily specify dependencies, identify stable versions, or group packages into meaningful units.  Monticello just manages package versions. Metacello manages package dependencies and the notion of projects.
 
 \item {\textbf{Gofer: Monticello Scripting API.}}
 Gofer is a small tool on top of Monticello that loads, updates, merges, diffs, reverts, commits, recompiles and unloads groups of Monticello packages. Contrary to existing tools Gofer makes sure that these operations are performed as cleanly as possible. Gofer is a scripting API to Monticello.
@@ -170,8 +170,13 @@ the method and it is used as the receiver to four different messages:   \ct{for:
 \end{itemize}
 
 
-
 The  method \ct{version01:} should be read as: Create version '0.1'. The common code for version '0.1' (specified using the message \ct{for:do:}) consists of the packages named 'CoolBrowser-Core' (specified using the message \ct{package:with:}) and 'CoolBrowser-Tests'  whose files are named 'CoolBrowser-Core-MichaelJones.10' and 'CoolBrowser-Tests-JohnLewis.3' and whose repository is \ct{'http://www.example.com/CoolBrowser'} (specified using the message \ct{repository:}).
+
+Sometimes, a Monticello repository can be restricted and requires username and password. In such case the following message can be used:
+
+\begin{code}{}
+       sepc repository: 'http://www.example.com/private' username: 'foo' password: 'bar' 
+\end{code}
 
 We can access the specification created for version 0.1 by executing the following expression: \ct{(ConfigurationOfCoolBrowser project version: '0.1') spec}. 
 
@@ -359,7 +364,7 @@ instead of having to explicitly list all of the test projects like this:
  
 \begin{code}{} 
 (ConfigurationOfCoolBrowser project version: '1.0') 
-	load: #('Example-Tests' 'Example-AddOnTests').
+	load: #('CoolBrowser-Tests' 'CoolBrowser-AddonsTests').
 \end{code}
  
 To solve this problem, Metacello offers the notion of group. A group is a list of items: packages, projects (as we will see in \ref{}) or even other groups. 
@@ -774,7 +779,7 @@ ConfigurationOfCoolToolSet >>baseline01: spec
 
 What we did here in baseline0.1 was to create a project reference for the CoolBrowser project. The \ct{className:} specifies the name of the class that contains the project metadata. If the class is not present in the image, then we need to supply all the necessary information so that Metacello can search and load the configuration for the project.
 
-The \ct{file:} and \ct{repository:} specifications give us the information needed to load the project metadata from a repository in case the configuration class is not already present in the image.
+The \ct{file:} and \ct{repository:} specifications give us the information needed to load the project metadata from a repository in case the configuration class is not already present in the image. If the Monticello repository is protected, then you have to use the message: \ct{repository:username:password:}.
 
 Note that the values for the \ct{className:} and \ct{file:} attributes are the same: 'ConfigurationOfCoolBrowser'. As we've mentioned before, by convention the name of the configuration class and the configuration package should be the same, however, with Metacello it is not required that the two be the same.
 
