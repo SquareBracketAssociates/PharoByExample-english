@@ -897,7 +897,7 @@ Maybe the sole purpose of this configuration is to group packages or projects an
 
 \section{Project definition}
 
-We have already explained that for creating your configuration class the easiest way was to copy the existing MetacelloConfigTemplate class. If we now take a deeper understanding of such class we can see that it implements the method \ct{project}. Maybe you did not notice it but we used this method everywhere, for example, to load a version:
+We have already explained that the easiest way to create a configuration class is to copy the existing MetacelloConfigTemplate class. If we now take a deeper understanding of such class, we can see that it implements the method \ct{project}. In case you did not notice, we have used this method everywhere along this chapter. For example, we have used it to load a version:
 
 \begin{code}{}
   (ConfigurationOfCoolToolSet project version: '1.1') load: 'CoolToolSet-Tests'.
@@ -921,9 +921,9 @@ ConfigurationOfCoolToolSet >>project
 
 
 \section{Conditional loading}
-When loading a project it is common the situation where you would like to decide whether to load or or not certain packages depending on a certain condition, for example, the existence of certain other packages in the image. As an example, suppose you want to load Seaside (or any other web framework) in your image. Seaside has a tool that depends on OmniBrowser and it is for managing instances of web servers. What can be done with that little tool can also by done by code. Sometimes you would like to load such tool, but you need OmniBrowser. However, others may not need such package. An alternative would be to provide different groups, one that includes such package and one that does not. The problem is that the final user should be aware of this and load different groups in different situations.  With conditional loading you can for example, load that Seaside tool only if OmniBrowser is present in the image. This will be done automatically by Metacello and there is no need to explicitly load a particular group. 
+When loading a project, usually the user wants to decide whether to load or not certain packages depending on a specific condition, for example, the existence of certain other packages in the image. Suppose you want to load Seaside (or any other web framework) in your image. Seaside has a tool that depends on OmniBrowser and it is used for managing instances of web servers. What can be done with this little tool can also be done by code. If you want to load such tool you need OmniBrowser. However, other users may not need such package. An alternative could be to provide different groups, one that includes such package and one that does not. The problem is that the final user should be aware of this and load different groups in different situations.  With conditional loading you can, for example, load that Seaside tool only if OmniBrowser is present in the image. This will be done automatically by Metacello and there is no need to explicitly load a particular group. 
 
-Suppose that our CoolToolSet starts to provide much more features. We first split the core in two packages: 'CoolToolSet-Core' and 'CoolToolSet-CB'. CoolBrowser can be present in one image, but not in another one. We want to load the package 'CoolToolSet-CB' by default only and if CoolBrowser is present. 
+Suppose that our CoolToolSet starts to provide much more features. We first split the core in two packages: 'CoolToolSet-Core' and 'CoolToolSet-CB'. CoolBrowser can be present in one image but not in another one. We want to load the package 'CoolToolSet-CB' by default only and if CoolBrowser is present. 
 
 The mentioned conditionals are achieved in Metacello by using the \emph{project attributes} we saw in the previous section. They are defined in the \ct{project} method. Example:
 
@@ -984,10 +984,9 @@ ConfigurationOfCoolToolSet >>baseline02: spec
 		
 \end{code}
 
-You can notice that the way to use project attributes is using the existing method \ct{for:do:}. And inside that method you can do whatever you want: define groups, dependencies, etc. In our case, if CoolBrowser is present then we just add 'CoolToolSet-CB' to the default group. If it is not present, then  
-'CoolBrowser default' is added to dependency to 'CoolToolSet-CB'. In this case we do not add it to the default group because we do not want that. If desired the user should explicitly load also that package. 
+You can notice that the way to use project attributes is through the existing method \ct{for:do:}. Inside that method you can do whatever you want: define groups, dependencies, etc. In our case, if CoolBrowser is present, then we just add 'CoolToolSet-CB' to the default group. If it is not present, then 'CoolBrowser default' is added to dependency to 'CoolToolSet-CB'. In this case, we do not add it to the default group because we do not want that. If desired, the user should explicitly load that package also. 
 
-Again, notice that inside the \ct{for:do:} you are free to do what you want. 
+Again, notice that inside the \ct{for:do:} you are free to do whatever you want.
 
 
 \section{Load types}
