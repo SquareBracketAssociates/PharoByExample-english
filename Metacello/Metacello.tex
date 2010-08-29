@@ -483,14 +483,7 @@ ConfigurationOfCoolBrowser>>version07: spec
 We will describe each attribute in detail:
  
 \begin{itemize}
-\item Author: the name of the author who created the version. When using the OB-Metacello tools the author field is automatically updated to reflect the current author as defined in the image.
-\item Description: a textual description of the version. This may include a list of bug fixes or new features, changelog, etc.
-\item Timestamp: the date and time when the version was completed. When using the OB-Metacello tools the timestamp field is automatically updated to reflect the current date and time. Note that the timestamp must be a String.
-
-\end{itemize}
-
-\subsection{Blessings} 
-An important attribute is the blessing. In software development it is very common that packages or projects pass through several stages or steps during the software development process or life cycle such as for example, development, alpha, beta,  release, release candidate, etc. Sometimes we want to refer also to the state of a project.
+\item Blessing: in software development it is very common that packages or projects pass through several stages or steps during the software development process or life cycle such as for example, development, alpha, beta,  release, release candidate, etc. Sometimes we want to refer also to the state of a project.
  %or sometimes we just want to use any other tag that may be useful. The blessing attribute can be used for all of these cases. --- would be better tohave separated tag: attributes.
 
 
@@ -520,14 +513,18 @@ The following expression will load the latest version of all of the packages for
 Since the latest \ct{#baseline} version should reflect the most up-to-date project structure, executing the previous expression loads the absolute bleeding edge version of the project. 
 
 
+\item Description: a textual description of the version. This may include a list of bug fixes or new features, changelog, etc.
+\item Author: the name of the author who created the version. When using the OB-Metacello tools the author field is automatically updated to reflect the current author as defined in the image.
+\item Timestamp: the date and time when the version was completed. When using the OB-Metacello tools the timestamp field is automatically updated to reflect the current date and time. Note that the timestamp must be a String.
+
+\end{itemize}
 
 To end this section, we show you can query this information. This illustrates that most of the information that you define in a Metacello version can then be queried. For example, you can evaluate the following expressions:
 
 \begin{code}{}
-(ConfigurationOfCoolBrowser project version: '0.7') author.
-(ConfigurationOfCoolBrowser project version: '0.6') blessing.
 (ConfigurationOfCoolBrowser project version: '0.7') blessing.
 (ConfigurationOfCoolBrowser project version: '0.7') description.
+(ConfigurationOfCoolBrowser project version: '0.7') author.
 (ConfigurationOfCoolBrowser project version: '0.7') timestamp.
 \end{code}
 
@@ -578,7 +575,7 @@ ConfigurationOfCoolBrowser>>postloadForCore: loader package: packageSpec
 
 As you can notice there, both methods, \ct{preLoadDoIt:} and \ct{postLoadDoIt:} receive a selector that will be performed before or after the load. You can also note that the method  \ct{postloadForCore:package:} takes two parameters. The pre/post load methods may take 0, 1 or 2 arguments. The {\em loader} \sd{should explain that} is the first optional argument and the loaded packageSpec is the second optional argument. Depending on your needs you can choose which of those arguments do you want.
 
-These pre and post load scripts can be used not only in version methods but also in baselines. If a script depends on a version, then you can put it there. If it is likely it will not change among different versions, you can put it in the baseline method exactly in the same way.
+These pre and post load scripts can be used not only in version methods but also in baselines. If a script depends on a version, then you can put it there. If it is likely not to change among different versions, you can put it in the baseline method exactly in the same way.
 
 As we said before, these pre and post it can be at package level, but also at project level. For example, I can have the following configuration:
 
@@ -605,7 +602,7 @@ ConfigurationOfCoolBrowser>>version08: spec
 			package: 'CoolBrowser-AddonsTests' with: 'CoolBrowser-AddonsTests-JohnLewis.1' ].
 \end{code}
 
-In this example, we added pre and post load scripts at project level. Again, the selectors can receive 0, 1 or 2 arguments. We leave it to your imagination as to what these methods can do. 
+In this example, we added pre and post load scripts at project level. Again, the selectors can receive 0, 1 or 2 arguments. 
 
 %Mostrar ejemplos con scripts a nivel de projecto o referencia a projectos.
 
@@ -669,7 +666,7 @@ ConfigurationOfCoolBrowser>>baseline09: spec
 \end{code}
 
 Notice that we add the package \ct{CoolBrowser-Platform} in the \ct{Core} group. As you can see, we can manage this package as any other and in a unified way. Thus, we have a lot of flexibility. At runtime, when you load CoolBrowser, Metacello automatically detects in which dialect the load is happening and loads the specific package for that dialect.  	
-	
+
 Finally, note that the method \ct{for:do:} is not only used to specify a platform specific package, but also for anything that has to do with different dialects. You can put whatever you want from the configuration inside that block. So, for example, you can define groups, packages, repositories, etc, that are dependent on a dialect. For example, you can do this:
 
 
@@ -705,7 +702,9 @@ Finally, note that the method \ct{for:do:} is not only used to specify a platfor
 
 \end{code}	
 	
-In this example, for Pharo we use a different repository than for Gemstone. In addition, the addons and tests are not available for Gemstone, and thus, those packages and groups are not included. So, as you can see, all what we have been doing inside the \ct{for: #common: do:} can be done inside another \ct{for:do:} for a specific dialect. 
+In this example, for Pharo we use a different repository than for Gemstone. However, this is not mandatory, since both can have the same repository and differ in other things like versions, post and pre code executions, dependencies, etc. 
+
+In addition, the addons and tests are not available for Gemstone, and thus, those packages and groups are not included. So, as you can see, all what we have been doing inside the \ct{for: #common: do:} can be done inside another \ct{for:do:} for a specific dialect. 
 
 
 \section{Project configurations references}
@@ -736,7 +735,7 @@ The problem here is that as the project B does not have a Metacello configuratio
 \paragraph{With configuration references.} Package A depends on a package or project B, but project B has also a configuration. This is the common case that we want to present now. 
 
 \sd{stopped there - we need a figure }
-To continue with our example, we introduce a new project called CoolToolSet which uses the packages from the CoolBrowser project. The configuration class is called ConfigurationOfCoolToolSet. We define two package in CoolToolSet called CoolToolSet-Core and CoolToolSet-Tests. Of couse, those packages depend on packages from CoolBrowser. Let's assume for a moment that the package that contains ConfigurationOfCoolBrowser class is called CoolBrowser-Metacello instead of also ConfigurationOfCoolBrowser (as we recommended). This will be better to understand each parameter. 
+To continue with our example, we introduce a new project called CoolToolSet which uses the packages from the CoolBrowser project. The configuration class is called ConfigurationOfCoolToolSet. We define two packages in CoolToolSet called CoolToolSet-Core and CoolToolSet-Tests. Of course, those packages depend on packages from CoolBrowser. Let's assume for a moment that the package that contains ConfigurationOfCoolBrowser class is called CoolBrowser-Metacello instead of also ConfigurationOfCoolBrowser (as we recommended). This will be better to understand each parameter. 
 
 
 Let's see the first version then:
@@ -990,11 +989,42 @@ Again, notice that inside the \ct{for:do:} you are free to do whatever you want.
 
 
 \section{Load types}
+Metacello lets you specify the way packages are loaded through its ``load types''. For the time of this writing, there are only two possible load types: \emph{atomic} and \emph{linear}. 
+
+Atomic loading is used where packages have been partitioned in such a way that they can't be loaded individually. The definitions from each package are munged together into one giant load by the Monticello package loader. Class side \ct{initialize} methods and pre/post code execution are performed for the whole set of packages, not individually. 
+
+If you use a linear load, then each package is loaded in order. Class side \ct{initialize} methods and pre/post code execution are performed just before or after loading that specific package.
+
+It is important to notice that managing dependences does not imply the order packages will be loaded. That a package \emph{A} depends on package \emph{B} doesn't mean that B will be loaded before \emph{A}. It just guarantees that if you want to load \emph{A}, then \emph{B} will be loaded too. 
+
+A problem with this happens also with methods override. If a package overrides a method from another package, and the order is not preserved, then this can be a problem because we are not sure the order they will load, and thus, we cannot be sure which version of the method will be finally loaded. 
+
+When using atomic loading the package order is lost and we have the mentioned problems. However, if we use the linear mode, then each package is loaded in order. Moreover, the methods override should be preserved too. 
+
+A possible problem with linear mode is the following: suppose project \emph{A} depends has dependencies on other two projects \emph{B} and \emph{C}. \emph{B} depends on the project \emph{D} version 1.1 and \emph{C} depends on project \emph{D} version 1.2 (the same project but another version). First question, which \emph{D} version does \emph{A} have at the end?  By default (you can change this using the method \ct{operator:} in the \ct{project} method), Metacello will finally load version 1.2.
+
+However, and here is the relation with load types, in atomic loading \emph{only} 1.2 is loaded. In linear loading, \emph{both} versions may (depending on the dependency order) be loaded, although 1.2 will be finally loaded. But this means that 1.1 may be loaded first and then 1.2. Sometimes this can be a problem because an older version of a package or project may not even load in the Pharo image we are using. 
+
+For all the mentioned reasons, the default mode is linear. Users should use atomic loading in particular cases and when they are completely sure. 
+
+Finally, if you want to explicitly set a load type, you have to do it in the \ct{project} method. Example:
+
+\begin{code}{}
+ConfigurationOfCoolToolSet >>project
+
+	^ project ifNil: [ | constructor |
+		"Bootstrap Metacello if it is not already loaded"
+		self class ensureMetacello.
+		"Construct Metacello project"
+		constructor := (Smalltalk at: #MetacelloVersionConstructor) on: self.
+		project := constructor project.
+		project loadType: #linear. '"or #atomic'"
+		project ]
+
+\end{code}
 
 
 
-
-%Missing conditional load
 %Includes: vs requires.
 
 
