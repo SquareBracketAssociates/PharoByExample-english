@@ -28,23 +28,27 @@
 \fi
 %=================================================================
 %Noury's commands
-\renewcommand{\nouryComment}[1]{\textcolor{red}{\textbf{\emph{#1}}}}
+\newcommand{\nouryComment}[1]{\textcolor{red}{\textbf{\emph{#1}}}}
 
 %=================================================================
 
 \chapter{Sockets}\label{cha:sockets}
-Modern [applications][applications][application never plural] are often distributed on multiple devices and collaborate through a network to achieve some task.
-The basic approach to set up such a collaboration is to use [\textit{sockets}][\textit{sockets}][em is the old latex interface].
+
+\vspace*{-1.5cm}{\em Please send comments and feedback to:\\{\bf Noury Bouraqadi} {\sf (bouraqadi@gmail.com)}}\\[2cm]
+
+Modern application are often distributed on multiple devices and collaborate through a network to achieve some task.
+The basic approach to set up such a collaboration is to use \textit{sockets}.
 A typical use is in the World Wide Web. Browsers and servers interact through HTTP sockets.
 
-The concept of socket was first introduced by researchers from Berkeley University in the 1960's. They defined the first socket API for the C programming language in the context of Unix operating systems. Since then, the concept of socket was spread out to other operating systems. [It's][Its] API was ported to most existing programming languages including Smalltalk.
+The concept of socket was first introduced by researchers from Berkeley University in the 1960's. They defined the first socket API for the C programming language in the context of Unix operating systems. Since then, the concept of socket was spread out to other operating systems. 
+Its API was ported to most existing programming languages including Smalltalk.
 
 In this chapter, we present the socket's API in the context of Pharo Smalltalk.
 We show through some examples how to to use sockets for building both clients and servers.
 
 \section{Basic Concepts}
 \subsection{Socket}
-A remote communication involves at least two applications exchanging some data bytes through a network. Each application accesses the network through at least one socket (see [f][F]igure~\ref{fig:socketConcept}).
+A remote communication involves at least two applications exchanging some data bytes through a network. Each application accesses the network through at least one socket (see Figure~\ref{fig:socketConcept}).
 A socket can then be defined as a \textit{plug on a communication network}.
 
 \begin{figure}[ht]\centering
@@ -99,8 +103,8 @@ A handy way to create it is to use \ct!NetNameResolver! that  provides IP style 
 
 \Scrref{creatingSocketAddress} provides two examples of socket address creation.
 The first one creates an address from a string describing the server name (\ct!'www.esug.org'!), while the second does the creation from a string representing the server's IP address (\ct!'127.0.0.1'!).
-Note that to use the \ct!NetNameResolver! you need a \sd{working} network connection.
-The only exception is for retrieving the local host address. \sd{explain the last sentence}
+Note that to use the \ct!NetNameResolver! you need to have your machine connected to a network with a DNS\footnote{\emph{Domain Name System}: basically a directory that maps device names to their IP address.}.
+The only exception is for retrieving the local host address, i.e. \ct!127.0.0.1! which is the generic address to refer to the machine that runs your software (\pharo in our case).
 
 \nouryComment{There are dedicated methods for retrieving the localhost address but they are buggy at the time of writing this text.}
 \nouryComment{The NameLookupFailure exception is used ONLY in NetNameResolver class>>addressForName:timeout:. It should be more widely used.}
@@ -110,12 +114,6 @@ The only exception is for retrieving the local host address. \sd{explain the las
 esugAddress := NetNameResolver addressForName: 'www.esug.org'.
 localAddress := NetNameResolver addressForName: '127.0.0.1'.
 \end{script}
-
-\begin{figure}[h]
-\begin{center}
-\includegraphics[width=6cm]{addressForName}
-\end{center}
-\end{figure}
 
 Now we can connect our TCP socket to the server as shown in \Scrref{connectingTcpSocket}.
 Message \ct!connectTo:port:! attempts to connect the socket to the server which address and port are provided as parameters.
@@ -132,7 +130,7 @@ clientSocket
 clientSocket isConnected
 \end{script}
 
-This message \sd{which one} returns immediately after issuing to the system (through a primitive call) the request to connect the socket.
+The \ct!connectTo:port:!  message returns immediately after issuing to the system (through a primitive call) the request to connect the socket.
 Message \ct!waitForConnectionFor: 10! suspends the current process until the socket is connected to the server.
 It waits at most \ct!10! seconds as requested by the parameter.
 If the socket is not connected after 10 seconds, the \ct!ConnectionTimedOut! exception is signaled. 
@@ -231,14 +229,16 @@ After sending the http query, we wait at most 5 seconds for the html text that w
 Socket connection, query sending and html reception are inside a block which execution is ensured to end with cleaning up socket related resources, by means of the \ct!closeAndDestroy! message.
 
 \section{A Simple TCP Server}
-Now let us build a simple TCP server. A \textit{TCP Server} is an application that awaits TCP connections from TCP clients. Once connection established, both the server and the client can send a receive data in any order. A big difference between the server and the client is that the server uses at least two sockets. \sd{why? so that it can get closed?}
+Now let us build a simple TCP server. A \textit{TCP Server} is an application that awaits TCP connections from TCP clients. Once connection established, both the server and the client can send a receive data in any order. 
+A big difference between the server and the client is that the server uses at least two sockets.
+One socket is used for handling client connections, while the second serves for exchanging data with a particular client.
 
 \subsection{TCP Socket Server Life-cyle}
 The life-cycle of a TCP server in \pharo  has 5 steps:
 \begin{enumerate}
 \item Create a first TCP socket, let's call it \textit{socket$_1$}.
 \item Wait for connections by making \textit{socket$_1$}  listen on some port.
-\item Accept a client request for connection. As a result,  \textit{socket$_1$} will build a second socket, let's call it \textit{socket$_2$} \sd{why socket1 is creating a second socket and not the server?}.
+\item Accept a client request for connection. As a result,  \textit{socket$_1$} will build a second socket, let's call it \textit{socket$_2$} \nouryComment{\sd{why socket1 is creating a second socket and not the server?}}.
 \item Exchange data with the client through \textit{socket$_2$}. In the meanwhile, \textit{socket$_1$} can continue to wait for connections, and possibly create new sockets to exchange data with other clients. 
 \item Close \textit{socket$_2$}.
 \item Close \textit{socket$_1$} when we decide to kill the server and stop accepting client connections.
@@ -269,8 +269,8 @@ interactionSocket closeAndDestroy.
 
 First, we create the socket that we will use for handling incoming connections.
 We set it up to listen on port 9999.
-The \ct!backlogSize! is set to 10, meaning that we allocate a buffer for 10 connection requests. This backlog will not be actually used in this example.
-But, a more realistic server will have to handle connections and then process connection requests in the backlog.
+The \ct!backlogSize! is set to 10, meaning that we as the Operating System to allocate a buffer for 10 connection requests. This backlog will not be actually used in this example.
+But, a more realistic server will have to handle multiple connections and then store pending connection requests into the backlog.
 
 Once the connection socket is prepared, it starts listening for client connections.
 The \ct!waitForAcceptFor: 60! message makes the socket wait connection requests for 60 seconds.
@@ -282,11 +282,6 @@ Since the interaction socket is already connected to the client, we can use it t
 Messages \ct!receiveData! and \ct!sendData:! presented above (see section~\ref{sec:exchangeData}) can be used to this end.
 In our example, we wait for data from the client, next we display it on the \ct!Transcript!, and last we send it back to the client prefixed with the \ct!'ECHO: '! string.
 Last, we finish the interaction with the client by closing the interaction socket.
-
-Now you cannot test this script totally without having another image that will execute the client code. 
-Therefore use two different images, one that runs the server code and one for the client code. Indeed, since we use the user interaction process, the \pharo UI will be frozen at some points, such as during the \ct!waitForAcceptFor:!.
-\Scrref{echoClient} provides the code to run on the client image.
-Note that you have to run the server code first.
 
 \begin{script}[echoClient]{Echo Client.}
 | clientSocket serverAddress echoString |
@@ -301,9 +296,25 @@ clientSocket := Socket newTCP.
 ] ensure: [clientSocket closeAndDestroy].
 \end{script}
 
-\sd{here}
 
-%An alternative to using the client is to use the netcat on Unix machines
+You cannot test this script totally without having a second image that will execute the client code. 
+Therefore use two different images, one that runs the server code and one for the client code. Indeed, since we use the user interaction process, the \pharo UI will be frozen at some points, such as during the \ct!waitForAcceptFor:!.
+\Scrref{echoClient} provides the code to run on the client image.
+Note that you have to run the server code first.
+Otherwise, the client will fail.
+
+%An alternative to running your own Smalltalk client socket is to use an existing one.
+%On Unix machines, the \ct{nc}\footnote{\ct{nc} stands for \ct{netcat}.} utility is very handy for experimenting with sockets.
+%It can play either a client or a server role for both TCP and UDP.
+%To run an \ct{nc}-based client for our server, evaluate the following expression on terminal:
+%\begin{code}{}
+%cat | nc localhost 9999
+%\end{code}
+%
+%The \ct{cat} command allows you to type-in some text.
+%Once you're done, type \ct{ctrl-D}.
+%The pipe connects the output of \ct{cat} to the input of \ct{nc}.
+%Here, we use \ct{nc} as client that sends the text we provided to a server on the local host, listening on port 9999.
 
 \subsection{Echo Server Class}
 We define here the  \ct!EchoServer! class that deals with concurrency issues.
@@ -360,6 +371,7 @@ In order to manage the life-cycle of our server, we introduced two methods \ct!E
 Let's start with the simplest one \ct!EchoServer>>>stop! which definition is provided as \mthref{meth:stop}.
 It simply sets the \ct!isRunning! flag  to false.
 This will have the consequence of stopping the serving process created by the \ct!EchoServer>>>start! (see the last line of \mthref{meth:start}).
+
 %%%%%%CONTINUE FROM HERE
 In order to avoid duplicating servers...
 
