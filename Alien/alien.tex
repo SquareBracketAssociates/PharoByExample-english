@@ -1,0 +1,229 @@
+% $Author: luc $
+% $Date: 2010-08-01 13:46:12 +0100 $
+% $Revision: 0 $
+
+% HISTORY:
+% 2010-08-01 - Luc
+
+%=================================================================
+\ifx\wholebook\relax\else
+% --------------------------------------------
+% Lulu:
+	\documentclass[a4paper,10pt,twoside]{book}
+	\usepackage[
+		papersize={6.13in,9.21in},
+		hmargin={.75in,.75in},
+		vmargin={.75in,1in},
+		ignoreheadfoot
+	]{geometry}
+	\input{../common.tex}
+	\pagestyle{headings}
+	\setboolean{lulu}{true}
+% --------------------------------------------
+% A4:
+%	\documentclass[a4paper,11pt,twoside]{book}
+%	\input{../common.tex}
+%	\usepackage{a4wide}
+% --------------------------------------------
+    \graphicspath{{figures/} {../figures/}}
+	\begin{document}
+	% \renewcommand{\nnbb}[2]{} % Disable editorial comments
+	\sloppy
+\fi
+%=================================================================
+
+% Pharo 1.1 used 
+% Alien-Prereqs.5
+% Alien-Core-JoachimGeidel.64
+% Alien-Core-Tests.22
+% Alien-Examples.1
+% Alien-LibC.9
+% 40 tests green
+
+\chapter{Alien}\label{cha:alien}
+
+Despite of our aim of doing as much as possible directly in Smalltalk (as deeper as the virtual machine itself cf. ChapXX), it is still required in some special cases to call external code written in another language or even compiled in a binary library.
+Thanks to a Foreign Function Interface (FFI), it is possible to achieve this and interact with third-party libraries.
+Multiple FFI libraries are available in Pharo such as FFI (\url{http://wiki.squeak.org/squeak/1414}) and Alien (\url{http://www.squeaksource.com/Alien}).
+As an example the dynamic \texttt{OpenGL} library (.dll, .so or .dylib depending on the operating system) is used in Croquet through the FFI library and AlienOpenGL (\url{http://www.squeaksource.com/AlienOpenGL}) use it through the Alien library.
+
+In this chapter, we will describe what is a FFI library and how it works with the virtual machine. 
+We will then dive into the Alien library and learn how it can be used thanks to the AlienOpenGL example.
+
+\section{What is a FFI and how it works?}
+
+The Pharo image is loaded and executed by a virtual machine (VM) which is itself executed on the top of the operating system. 
+Two different virtual machines can be used for Pharo images: the squeak VM and the Cog VM.
+Regarding the general FFI mechanism, it is not really relevant to make a distinction\footnote{It worth noting that the Cog VM is younger and really faster than the Squeak VM but it still presents some small limitations and bugs at the time writing this book.} 
+Both are based on a plugin architecture.
+A plugin enable the Smalltalk code (in the image) to access third-party functionalities (outside the image and the VM).
+
+\begin{figure}[htbp]
+	\centering
+		\includegraphics[width=0.4\linewidth]{figs/plugins}
+	\caption{Pharo Architecture}
+	\label{fig:plugins}
+\end{figure}
+
+The Alien library uses the \emph{IA32ABI} plugin which ....
+
+
+
+\section{Using the Alien Library} \label{sec:the_alien_library} % (fold)
+
+\subsection{Installation} \label{sec:installation} % (fold)
+
+Alien is a Squeaksource project \url{http://www.squeaksource.com/Alien}. 
+Use the following code to install Alien in a Pharo 1.1 image:
+
+\begin{code}{}
+Gofer new
+	url: 'http://www.squeaksource.com/Alien' ;
+	package: 'ConfigurationOfAlien';
+	load.
+
+(Smalltalk at: #ConfigurationOfAlien) loadCore ; 
+	loadTests ; 
+	loadLibC.
+\end{code}
+
+Run the tests to ensure that Alien is well installed and that the VM plugin is correctly working.
+
+\subsection{First example} \label{subsec:first_example} % (fold)
+
+
+
+
+\subsection{Core Classes} 
+
+Figure~\ref{fig:alien_uml} shows an UML diagram of the Alien-Core package that contains the main classes of this library.
+
+\begin{figure}[htbp]
+	\centering
+		\includegraphics[width=0.9\linewidth]{figs/alien_uml}
+	\caption{Core classes of the Alien library}
+	\label{fig:alien_uml}
+\end{figure}
+
+
+
+\subsection{Memory management} \label{sec:memory_management} % (fold)
+
+
+\subsection{Calling an external C library from Smalltalk} \label{sec:calling_an_external_c_library_from_smalltalk} % (fold)
+
+
+\subsection{Callbacks from C to Smalltalk code} \label{sec:callbacks_from_c_to_smalltalk_code} % (fold)
+
+
+
+
+
+\section{Dissection of Alien} \label{sec:dissection_of_alien} % (fold)
+
+
+\paragraph{Alien}
+% copy/past from class comment
+% Instances of the Alien class represent actual parameters, return results and function pointers in FFI call-outs and call-backs and provide handles on external data.  See NewsqueakIA32ABIPlugin for the VM code that actually implements call-outs and call-backs.
+% 
+% 	See the class-side examples category for some simple example workspaces.
+% 
+% 	Aliens represent ABI (C language) data.  They can hold data directly in their bytes or indirectly by pointing to data on the C heap.  Alien instances are at least 5 bytes in length. The first 4 bytes of an Alien hold the size, as a signed integer, of the datum the instance is a proxy for.  If the size is positive then the Alien is "direct" and the actual datum resides in the object itself, starting at the 5th byte.  If the size is negative then the proxy is "indirect", is at least 8 bytes in length and the second 4 bytes hold the address of the datum, which is assumed to be on the C heap.  Any attempt to access data beyond the size will fail.  If the size is zero then the Alien is a pointer, the second 4 bytes hold a pointer, as for "indirect" Aliens, and accessing primitives indirect through the pointer to access data, but no bounds checking is performed.
+% 
+% 	When Aliens are used as parameters in FFI calls then all are "passed by value", so that e.g. a 4 byte direct alien will have its 4 bytes of data passed, and a 12-byte indirect alien will have the 12 bytes its address references passed.  Pointer aliens will have their 4 byte pointer passed.  So indirect and pointer aliens are equivalent for accessing data but different when passed as parameters, indirect Aliens passing the data and pointer Aliens passing the pointer.
+% 
+% 	Class Variables:
+% 	GCMallocedAliens <AlienWeakTable of <Alien -> Integer>> - weak collection of malloced aliens, used to free malloced memory of Aliens allocated with newGC:
+% 	LoadedLibraries <Dictionary of <String -> Alien>> - library name to library handle map
+% 	
+
+\paragraph{FFICallbackReturnValue} 
+% copy/past from class comment
+% An instance of FFICallbackReturnValue specifies a return value to be passed to a callback callee.  It is intended to have overlaid the following struct:
+% 
+% \begin{verbatim}
+% /*
+%  * Returning values from callbacks is done through a CallBackReturnSpec
+%  * which contains a type tag and values.  It is designed to be overlaid upon
+%  * an FFICallbackReturnProxy created at the Smalltalk level to return values.
+%  */
+% typedef struct {
+%     long type;
+% # define retint32  0 
+% # define retint64  1
+% # define retdouble 2
+% # define retstruct 3
+%     long _pad; /* so no doubt that valflt64 & valint32 et al are at byte 8 */
+%     union {
+%         long valint32;
+%         struct { long low, high; } valint64;
+%         double valflt64;
+%         struct { void *addr; long size; } valstruct;
+%     } rvs;
+% } CallBackReturnSpec;
+% \end{verbatim}
+
+
+\paragraph{FFICallbackThunk} 
+% copy/past from class comment
+
+% An instance of FFICallbackThunk is a reference to a machine-code thunk/trampoline that calls-back into the VM.  The reference can be passed to C code which can use it as a function pointer through which to call-back into Smalltalk.  The machine-code thunk/trampoline is different for each instance, hence its address is a unique key that can be used to assocuate the Smalltalk side of the call-back (e.g. a block) with the thunk.  Since thunks must be executable and some OSs may not provide default execute permission on memory returned by malloc we may not be able to use malloc directly.  Instead we rely on a primitive to provide memory that is guaranteed to be executable.  The FFICallbackThunk class>>allocateExectablePage primitive answers an Alien that references an executable piece of memory that is some (possiby unitary) multiple of the pagesize.  Class-side code then parcels out pieces of a page to individual thunks.  These pieces are recycled when thunks are reclaimed.  Since the first byte of a thunk is non-zero we can use it as a flag indicating if the piece is in use or not.
+% 
+% See Callback for the higher-level construct that represents a Smalltalk block to be run in response to a callback.  Callbacks wrap instances of FFICallbackThunk and arbitrary Alien instances that describe the stack layout for receiving arguments.
+% 
+% Class Variables
+% AccessProtect <Semaphore> critical section for ExecutablePages (de)allocation
+% AllocatedThunks <AlienWeakTable of <FFICallbackThunk -> Integer>> - weak collection of thunks, used to return thunk storage to the executable page pool.
+% ExecutablePages <Set of: Alien "executable page"> - collection of pages with execute permissions used to provide executable thunks
+
+
+\paragraph{UnsafeAlien}
+% copy/past from class comment
+
+% Instances of UnsafeAlien represent the addresses of heap-resident non-pointer Smalltalk objects as actual parameters in FFI call-outs.  An UnsafeAlien on (e.g.) a ByteString used as a parameter in an FFI call causes the FFI machinery to pass the address of the first byte in the ByteString.  THIS IS UNSAFE!  It is unsafe because
+% a) the garbage collector can potentially move the ByteString (or any other object) during the call, because the call may call-back, invoking the garbage collector,
+% b) if external code retains the address for longer than the duration of the call and dereferences it in a subsequent call the object may have moved in the mean time,
+% c) the address of the object is passed without any other potentially necessary conversions such as null-termination
+% d) the hundred other problems this benighted author hasn't thought of.
+% Hence UnsafeAlien is to be used carefully by clients that know that the usage is safe.
+% You have been warned ;)
+% 
+% Create instances via
+% 	UnsafeAlien forPointerTo: 'You are on your own!', (ByteString with: (Character value: 0))
+
+\paragraph{AlienLibrary}
+% copy/past from class comment
+
+\paragraph{Callback}
+% copy/past from class comment
+% Callbacks encapsulate callbacks from the outside world.  They allow Smalltalk blocks to be evaluated and answer their results to external (e.g. C) callees.
+% 
+% Instance Variables:
+% block <BlockContext> - The Smalltalk code to be run in response to external code invoking the callback.
+% thunk <FFICallbackThunk> - the wrapper around the machine-code thunk that initiates the callback and whose address should be passed to C
+% argsProxy <Alien> - the wrapper around the thunk's incomming stack pointer, used to extract arguments from the stack.
+% resultProxy <FFICalbackReturnValue> - the specification of the block's return value and its C type so that the result can be passed back in the right low-level form.
+% 
+% Class Variables:
+% ThunkToCallbackMap <Dictionary of: thunkAddress <Integer> -> callback <Callback>> - used to lookup the Callback associated with a specific thunk address on callback.  See FFICallbackThunk.
+
+\paragraph{AlienWeakTable}
+% copy/past from class comment
+
+% This class supports simple post-mortem finalization of values associated with gc'ed objects.  An object to be finalized is registered in the table together with another object called 'the tag'. The finalizable object is held onto by the table weakly, the tag object--strongly. A table is initialized with the owner object, which is the object that performs the actual finalization. Some time after a finalizable object is garbage-collected, the owner is sent the \#finalize: message with the object's tag as the argument.
+% 
+% Instance Variables:
+% 	accessProtect <Semaphore>  - A mutex protecting state
+% 	firstUnusedIndex <Integer> - The lowest index in strongArray that is empty (an invariant)
+% 	lastUsedIndex <Integer> - The highest index in strongArray that is not empty (an invariant)
+% 	weakArray <WeakArray> - The array of objects whose death we're interested in.
+% 	strongArray <Array> - The array of corresponding objects that wll be passed to the owner when their corresponding element in weakArray is garbage collected.
+% 	owner <Object> - The object that is sent finalize: with the tag of an object that has been garbage-collected.
+% 
+
+\section{Study Case: the AlienOpenGL package} \label{sec:example_the_alienopengl_package} % (fold)
+
+
+%=================================================================
+\ifx\wholebook\relax\else\end{document}\fi
+%=================================================================

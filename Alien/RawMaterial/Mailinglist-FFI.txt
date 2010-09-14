@@ -1,0 +1,207 @@
+
+FFI
+
+What is FFI and what is it used for?  Calling functions in libraries outside
+of the image...
+
+FFI, the Squeak Foreign Function Interface, is used to call functions
+located in shared libraries that are not part of the Squeak VM nor its
+plugins. It also provides means to read and write memory structures that are
+associated with the use of those shared libraries. A typical use is to
+directly invoke operating system APIs. As such, applications that use FFI
+can only be used on the platform(s) that support the particular API being
+used. C conventions are used throughout, though the external function could
+have been written by any language capable of generating object code that
+follows C conventions.  FFI is probably the easiest way to do the things it
+does. FFI is pretty fast too. Croquet uses FFI calls to OpenGL for all it's
+drawing routines.[1]
+
+How does FFI work?
+Technically what happens is:
+* you define what the interface is - the parameters, types etc.
+* when you make the call, the FFI logic assembles the data from the Squeak
+Objects into the proper structures according to the routine calling
+conventions for your architecture, and of course manages the return values.
+So no magic but perhaps just a little assembler in the plugin to properly
+deal with all the registers and condition flags.
+
+How do I use it?
+
+1. make a method (whose structure is similar to a named primitive method)
+
+Example: 
+system: aString "name (by convention is apiXxx: e.g. apiSystem:)"
+
+	<apicall: long 'system' (char*) module: 'libSystem.dylib'> "first line
+should be the external function specification"
+	^self externalCallFailed.
+
+Let's take it piece by piece:
+
+	system: aString
+		Method name - by convention named 'apiXxx'
+	
+	<apicall: long 'system' (char*) module: 'libSystem.dylib'>
+		Function specification
+			- should be the first line
+			- enclosed in angle brackets: < > containing:
+				1. Calling Convention, either apicall: (Pascal convention) or cdecl: (C
+convention)
+					- Mac - use either one
+					- Unix - use cdecl
+					- Windows - use apical
+				2. Return Type (see types)
+				3. External Function Name (literal string)
+				4. Argument Types (a literal array) 
+				5. Module - "module: " + [filename of the external library (literal
+string)] (see below).
+
+	self externalCallFailed.
+		Failure handler
+			- normal smalltalk code
+			- executed if the linking to or calling the external function fails
+			- API calls don't know how to communicate failure like Squeak primitives
+do, so:
+				- it does not tell you whether the external function succeeded
+				- the most common code is simply '^self externalCallFailed.'
+
+Argument Types
+	- must be names of ExternalTypes, either:
+		- atomic types (see ExternalType class>>initializeFFIConstants and
+ExternalType class>>initializeAtomicTypes):
+			void
+			bool
+			byte (unsigned)
+			sbyte (signed)
+			ushort (16-bit unsigned)
+			short (16-bit signed)
+			ulong (32-bit unsigned)
+			long (32-bit signed)
+			ulonglong (64-bit unsigned)
+			longlong (64-bit signed)
+			char (unsigned)
+			schar (signed)
+			float (single-precision float)
+			double (double-precision float)
+
+Structure Types [4]
+	- subclass of ExternalStructure
+		- class>>fields that returns an array of field descriptions (see below)
+			- Example:
+				fields
+					^#((red   'byte')(green 'byte')(blue  'byte'))           
+		- class>>initialize which includes "self defineFields" (which must be
+called before using the class)
+	- refer to as MyExternalStructure* (to indicate that the argument or return
+is a pointer to that structure)
+
+Field description [4]
+	- 2-element array (or three but that does something else, I'm not sure
+what):
+		- first element is the field name
+		- second is the type
+
+Mac Memory Allocation Issues [4] (not sure about this)
+
+If you allocate external structures, those with memory outside the Squeak
+process space, you may need to increase the amount of memory that is
+reserved outside the object heap for such use. The Mac OS (9 and previous)
+needs this, other platforms may be able to dynamically get more memory from
+the OS. To see how much memory is currently reserved printIt 'Smalltalk
+extraVMMemory'. To change it, execute 'Smalltalk extraVMMemory:
+someNumberofBytes' Then save your image and quit. When you next start up,
+the amount of memory you requested will be reserved. (JMM) Note the OSX
+versions of the VM ignore extraVMMemory because the memory model for
+OS-X/unix applications is quite different.
+
+Module Name 
+- depends on the platform
+	- Mac
+		- pre Snow Leopard: flexible, can eliminate leading lib or extension e.g.
+'libc.dylib' becomes 'libc', 'c.dylib', or 'c'
+		- Snow Leopard
+			- file name must be exact including extension (unless Info.plist is
+altered as in 'Library Location' below)
+		- With pre-mach-o VMs
+			- For Classic applications, use 'InterfaceLib'
+			- For Carbon libs, use 'CarbonLib'
+
+Module Location - where the external library file lives
+	- depends on the platform
+		- Mac
+			- pre Snow Leopard
+				- checks VM path and common library paths
+			- Snow Leopard
+				- only looks in VM bundle's Resources file, you must either [5]:
+					- store all external libraries there
+					- ln -s path/to/library path/to/VM/Resources/library_name
+					- Change the VM's Info.plist "SqueakPluginsBuiltInOrLocalOnly" key from
+"true" to "false."								
+Caveats
+	- security
+		- malicious users could call arbitrary functions in the OS e.g.  "format
+c:" from "system.dll" [7]
+		- VMs do not protect against buffer overflow from bad parameters [8]:
+			"this would require an attacker to execute arbitrary Smalltalk 
+			code on your server. Of course if they can do that they own you 
+			anyway, especially if you allow FFi or use the OSProcess plugin" - John
+McIntosh
+
+* difficulty
+	- if you make a mistake you'll not drop into the debugger but Squeak will
+just crash [2]
+	- If you crash Squeak when it is running the garbage collector, then you
+know your FFI code is leaking bits into object memory [2]
+
+What do I need to use FFI with Squeak?
+
+You need the FFI plugin, which is included with most VM's as of Squeak 3.6
+or so.
+
+You can also build the plugin yourself. See VMMaker.
+
+References:
+[1] http://wiki.squeak.org/squeak/1414
+[2] http://wiki.squeak.org/squeak/2424
+[3] http://wiki.squeak.org/squeak/5716
+[4] http://wiki.squeak.org/squeak/2426
+[5]
+http://forum.world.st/squeak-dev-Alien-Squeak-FFI-issues-on-Snow-Leopard-td85608.html
+[6] http://wiki.squeak.org/squeak/5846
+[7] http://forum.world.st/FFI-Callbacks-td54056.html#a54073
+[8] http://forum.world.st/Security-td99624.html#a99635:
+
+Other choices:
+In the fall of 2008, Alien the FFI interface (written by Cadence Design
+Systems, Inc.) was put into squeaksource:
+http://www.squeaksource.com/Alien.html. This API allows the primitive to
+call back to Smalltalk Code, and return error code information, and
+apparently is much faster due to a less complex call sequence.
+	* if you need callbacks
+	* mac-only?
+
+Plugins - write external code and dynamically link it to the VM
+	Pros:
+		* safest - users are limited to using the functionality you provide and
+can not call other external functions e.g. system rm /
+		* fast - faster than FFI
+		* you can create new functionality that doesn't exist in any library
+	Cons:
+		* harder to write
+		* plugin must be distributed with the Smalltalk code - there can be
+complications with platforms
+
+Primitive method - invokes behavior in the VM or a plugin [3]
+
+Questions:
+* why would you want to build the FFI plugin yourself?
+* api prefix or no for method names?
+* not sure about pre Snow Leopard library search
+* OSProcess - how does this fit into the bigger picture?
+* "^self externalCallFailed." or "self externalCallFailed." i.e. return self
+or return the result, or doesn't matter?
+* why would a field description have three elements?
+* Mac Memory Allocation Issues?
+-- 
+View this message in context: http://forum.world.st/FFI-Documentation-tp2225148p2225148.html
+Sent from the Pharo Smalltalk mailing list archive at Nabble.com.
