@@ -39,9 +39,11 @@
 
 \section{Package Management system}
 
-%Un système de gestion de versions aide au stockage de versions et garde l'historique d'évolution du système. En plus, il permet de gérer les accès concurrents à un répertoire de code source. Il garde les traces de tous les changements sauvegardés et permet donc à plusieurs développeurs de collaborer. Plus un projet grandit, plus il est important d'utiliser un système de gestion.
-%Monticello définit le système de packages et de gestion de versions de Pharo. En Pharo, les classes (changement de superclasse, changement de variables d'instance...) et les méthodes (ajout, modification, suppression) sont les unités élémentaires versionnées par Monticello. Une Source est un serveur HTTP qui permet d'héberger des projets (en particulier des packages) gérés avec Monticello. C'est l'équivalent d'une forge : Elle offre la gestion des contributeurs et leur statuts, des informations de visibilité, un wiki avec RSS feed. Une source offerte à tous est http://www.squeaksource.com/.
-%La gestion des versions est faite principalement interactivement. Dans cet article nous présentons Gofer, un outil permettant de scripter la gestion des packages. Il permet d'automatiser certaines actions de versioning.
+A version management system help for version storage and keep an history of system evolution. Moreover, it provides the management of concurrent accesses to a source code repository. It keep traces of all saved changes and allows us to collaborate with other engineers. More a project grows, more it is important to use a version management system.
+
+Monticello defines the package system and version management of Pharo. In Pharo, classes (superclass change, instance variable changes \ldots) and methods (adding, changing, deleting) are elementary entities which are versionned by Monticello. A source is an HTTP server which allows us to save projects (particularly packages) managed by Monticello. This is the equivalent of a forge: It provides the management of contributors and these status, visibility informations, a wiki with RSS feed. A source open to everybody est available at \url{http://www.squeaksource.com/}.
+
+Version management is done manually. In this chapter we introduce Gofer, a tool which allows us to script package management. It provides automatization of a part of versioning actions.
 
 \section{What is Gofer ?}
 
