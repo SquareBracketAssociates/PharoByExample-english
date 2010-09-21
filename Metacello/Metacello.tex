@@ -447,7 +447,7 @@ can receive
 (ConfigurationOfCoolBrowser project version: '1.0') load.
 \end{code}
 
-In such a case, if you want to load all the packages of a project, you should use the pseudo group named \ct{'ALL'} as shown below: 
+In such a case, if you want to load all the packages of a project, you should use the predefined group named \ct{'ALL'} as shown below: 
 
 \begin{code}{}
 (ConfigurationOfCoolBrowser project version: '1.0') load: 'ALL'.
@@ -782,7 +782,7 @@ The \ct{file:} and \ct{repository:} specifications give us the information neede
 
 Note that the values for the \ct{className:} and \ct{file:} attributes are the same: 'ConfigurationOfCoolBrowser'. As we've mentioned before, by convention the name of the configuration class and the configuration package should be the same, however, with Metacello it is not required that the two be the same.
 
-Finally, the \ct{versionString:} and \ct{loads:} tell us which version of the project to load and which packages or groups (the parameter of \ct{load:} can be the name of a package, or the name of a group or those keywords like 'ALL') to load from the project. 
+Finally, the \ct{versionString:} and \ct{loads:} tell us which version of the project to load and which packages or groups (the parameter of \ct{load:} can be the name of a package, or the name of a group or those predefined groups like 'ALL') to load from the project. 
 
 We've named the project reference 'CoolBrowser ALL' and in the specification for the 'CoolToolSet-Core' package, we've specified that 'CoolBrowser ALL' is required. The name of the project reference is arbitrary, you can select the name you want, although is recommended to put a name that make sense to that project reference.
 
