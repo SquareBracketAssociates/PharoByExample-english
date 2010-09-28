@@ -343,15 +343,39 @@ windowPositionStrategySettingsOn: aBuilder
 	(aBuilder pickOne: #usedStrategy) 
 		label: 'Window position strategy' translated;
 		target: RealEstateAgent;
-		domainValues: #('Reverse Stragger' 'Cascade' 'Standard')
+		domainValues: #(#'Reverse Stragger' #Cascade #Standard)
 \end{code}
 comparing to a simple setting, the only two differences are that:
 \begin{itemize}
 \item 
 	the new setting is created with the \ct{#pickOne:} message instead of the \ct{#setting:} message and
 \item
-	the list of authorized values is given by sending the \ct{#domainValues:} message to the newly declared setting, a \ct{Collection} is given as argument.
+	the list of authorized values is given by sending the \ct{#domainValues:} message to the newly declared setting, a \ct{Collection} is given as argument (the default value being the first one).
 \end{itemize}
+
+Concerning this window strategy example, the value set to the preference with \ct{RealEstateAgent class>>#usedStrategy:} would be either \ct{#'Reverse Stragger'} or \ct{#Cascade} or \ct{#Standard}. 
+
+Unfortunately, these values are not very handy for programming. A programmer may wish another value as a result of \ct{RealEstateAgent usedStrategy} as, for example, some kind of \textit{strategy object} or a \ct{Symbol} which could directly serve as a selector. In fact, this second solution has been chosen by the \ct{RealEstateAgent} class maintainers.
+If you inspect the value returned by \ct{RealEstateAgent usedStrategy} you will realise that the result is not a \ct{Symbol} among \ct{#(#'Reverse Stragger' #Cascade #Standard)} but another symbol. Then, if you look at the way the window position strategy setting is really implemented you will see that the declaration differs from the basic solution given previously: the \textit{domainValues:} argument is not an array of {Symbol}s but the array of \ct{Associations} given below:
+\begin{code}{}
+windowPositionStrategySettingsOn: aBuilder
+	<systemsettings> 
+	(aBuilder pickOne: #usedStrategy)
+	...
+	domainValues: {'Reverse Stragger' translated -> #straggerFor:initialExtent:world:. 'Cascade' translated -> #cascadeFor:initialExtent:world:. 'Standard' translated -> #standardFor:initialExtent:world:};
+\end{code}
+From the Settings Browser, the contents of the list is exactly the same and the user can't notice any difference because, if an array of Associations is given as argument to \ct{domainValues:}, then the keys of the Associations are used for the user interface. 
+
+Concerning the value of the preference itself, if you inspect \ct{RealEstateAgent usedStrategy}, you should notice that the result is a value among \ct{#(#straggerFor:initialExtent:world: #cascadeFor:initialExtent:world: #standardFor:initialExtent:world:)}. In fact, the values of the Associations are used to compute all possible real values for the setting. For the window position strategy example, this result is a selector that is directly used by \ct{RealEstateAgent} for window positioning.
+
+In fact, the list of possible values can be of any kind. As another example, let's take a look at the way the user interface theme setting is declared in the \ct{PolymorphSystemSettings} class:
+\begin{code}{}
+(aBuilder pickOne: #uiThemeClass)
+	label: 'User interface theme' translated;
+	target: self;
+	domainValues: (UITheme allThemeClasses collect: [:c | c themeName -> c])
+\end{code}
+In this example, \ct{#domainValues:} takes an array of associations which is computed each time a Settings Browser is opened. Each association is made of the name of the theme for the key and of the class which implements the theme for the value.
 
 %2.2.5 Font setting
 %Here the default is an instance of LogicalFont:
