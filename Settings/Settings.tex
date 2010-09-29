@@ -31,6 +31,7 @@
 %\renewmessage{\nnbb}[2]{} % Disable editorial comments
 \sloppy
 %=================================================================
+\newcommand{\apl}[1]{\nnbb{Alain}{#1}} % Plantec
 \chapter{The Settings Framework}
 
 When an application gets mature it often needs to provide variations such as the default selection color, the default font and the default font size... Often such variations represent user preferences of possible software customizations. 
@@ -67,6 +68,7 @@ Setting declarations are organized in trees which can be browsed in the middle p
 
 Changing a preference value is simply done through the browser: each line holds a widget on the right with which you can update the value. The kind of widget depends on the actual type of the preference value. Whereas a preference value can be of any kind, the setting browser is currently able to present a specific input widget for the following types: \textit{Boolean}, \textit{Color}, \textit{FilePath}, \textit{FileDirectory}, \textit{Font}, \textit{Number}, \textit{Point} and \textit{String}. A drop-list, a password field or a range input widget using a slider can also be used. Of course, the list of possible widgets is not closed as it is possible to make the setting browser support new kind of preference values or use different input widgets. This point is explained in section~\ref{sec:ExtendingTheSettingsBrowser}.
 \sd{do you explain how we can script also settings? }
+\apl{I don't really understand what you mean by "scripting settings"}
 
 If the actual type of a setting is either \textit{String}, \textit{FilePath}, \textit{FileDirectory}, \textit{Number} or \textit{Point},  to change a value, the user has to enter some text in a editable drop-list widget. In such a case, the input must be confirmed by hitting the return key (or with cmd-s). If such a setting value is changed often, the drop-list widget is very handy because you can retrieve and use previously entered values in one click!
 
@@ -353,10 +355,10 @@ comparing to a simple setting, the only two differences are that:
 	the list of authorized values is given by sending the \ct{#domainValues:} message to the newly declared setting, a \ct{Collection} is given as argument (the default value being the first one).
 \end{itemize}
 
-Concerning this window strategy example, the value set to the preference with \ct{RealEstateAgent class>>#usedStrategy:} would be either \ct{#'Reverse Stragger'} or \ct{#Cascade} or \ct{#Standard}. 
+Concerning this window strategy example, the value set to the preference would be either \ct{#'Reverse Stragger'} or \ct{#Cascade} or \ct{#Standard}. 
 
-Unfortunately, these values are not very handy for programming. A programmer may wish another value as a result of \ct{RealEstateAgent usedStrategy} as, for example, some kind of \textit{strategy object} or a \ct{Symbol} which could directly serve as a selector. In fact, this second solution has been chosen by the \ct{RealEstateAgent} class maintainers.
-If you inspect the value returned by \ct{RealEstateAgent usedStrategy} you will realise that the result is not a \ct{Symbol} among \ct{#(#'Reverse Stragger' #Cascade #Standard)} but another symbol. Then, if you look at the way the window position strategy setting is really implemented you will see that the declaration differs from the basic solution given previously: the \textit{domainValues:} argument is not an array of {Symbol}s but the array of \ct{Associations} given below:
+Unfortunately, these values are not very handy. A programmer may wish another value as, for example, some kind of \textit{strategy object} or a \ct{Symbol} which could directly serve as a selector. In fact, this second solution has been chosen by the \ct{RealEstateAgent} class maintainers.
+If you inspect the value returned by \ct{RealEstateAgent usedStrategy} you will realise that the result is not a \ct{Symbol} among \ct{#(#'Reverse Stragger' #Cascade #Standard)} but another symbol. Then, if you look at the way the window position strategy setting is really implemented you will see that the declaration differs from the basic solution given previously: the \textit{domainValues:} argument is not a simple array of {Symbol}s but an array of \ct{Associations} a you can see in the declaration below:
 \begin{code}{}
 windowPositionStrategySettingsOn: aBuilder
 	<systemsettings> 
@@ -364,11 +366,11 @@ windowPositionStrategySettingsOn: aBuilder
 	...
 	domainValues: {'Reverse Stragger' translated -> #straggerFor:initialExtent:world:. 'Cascade' translated -> #cascadeFor:initialExtent:world:. 'Standard' translated -> #standardFor:initialExtent:world:};
 \end{code}
-From the Settings Browser, the contents of the list is exactly the same and the user can't notice any difference because, if an array of Associations is given as argument to \ct{domainValues:}, then the keys of the Associations are used for the user interface. 
+From the Settings Browser point of view, the content of the list is exactly the same and the user can't notice any difference because, if an array of Associations is given as argument to \ct{domainValues:}, then the keys of the Associations are used for the user interface. 
 
-Concerning the value of the preference itself, if you inspect \ct{RealEstateAgent usedStrategy}, you should notice that the result is a value among \ct{#(#straggerFor:initialExtent:world: #cascadeFor:initialExtent:world: #standardFor:initialExtent:world:)}. In fact, the values of the Associations are used to compute all possible real values for the setting. For the window position strategy example, this result is a selector that is directly used by \ct{RealEstateAgent} for window positioning.
+Concerning the value of the preference itself, if you inspect \ct{RealEstateAgent usedStrategy}, you should notice that the result is a value among \ct{#(#straggerFor:initialExtent:world: #cascadeFor:initialExtent:world: #standardFor:initialExtent:world:)}. In fact, the values of the Associations are used to compute all possible real values for the setting.
 
-In fact, the list of possible values can be of any kind. As another example, let's take a look at the way the user interface theme setting is declared in the \ct{PolymorphSystemSettings} class:
+The list of possible values can be of any kind. As another example, let's take a look at the way the user interface theme setting is declared in the \ct{PolymorphSystemSettings} class:
 \begin{code}{}
 (aBuilder pickOne: #uiThemeClass)
 	label: 'User interface theme' translated;
