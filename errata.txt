@@ -1,7 +1,14 @@
----------------------------------------------------------------------------
-Errata to version 2009-09-28
----------------------------------------------------------------------------
-2010-03-11 Max Leske
+---
+# Errata to version 2009-09-28
+
+---
+# 2010-10-14 Georges M Louis <glou47@gmail.com>
+
+- In the LightsOut example, the empty mouseMove: method should be defined in class LOCell, not LOGame: Method 2.11: Overriding mouse move actions. LOGame»mouseMove: anEvent
+[To be fixed!]
+
+---
+# 2010-03-11 Max Leske
 p 23: Confusing to see both >> and guillemet - replaced >> by guillemet
 p 28: "consists of [a] rectangular array" - fixed
 p 69: Strange spacing of points - fixed
@@ -27,20 +34,23 @@ p 306: "Using method[s] wrappers" - fixed
 p 308: "an external [plugging -> plug-in]" - fixed
 p 310: "browsing the [lass hierarhy -> class hierarchy]"
 
-NOT FIXED:
+# NOT FIXED:
 p 264, second instruction: I found it very hard to follow the instructions because
 firstly, the seaside approach is so different from anything else I've ever used and secondly, there is no code example illustrating a possible solution. I had to load the example code to understand what the instructions actually meant (which is not really the issue though. I just feel that the difficulty level is not consistent with the rest of the coding examples)
 p 266: square brackets sometimes have a space before (after) them, sometimes they don't. This inconsistency is found all over the book
----------------------------------------------------------------------------
-2009-10-22 Eric Moyer
+
+---
+# 2009-10-22 Eric Moyer
 p 43. Lights Out toggles cells if you move the mouse between clicking and releasing. Fix is to override inherited SimpleSwitchMorph>>mouseMove: with an empty method.
 - fixed
 p 298. Delete incomplete sentence: "As a slightly more complex example, we can browse"
 - fixed
----------------------------------------------------------------------------
-Errata to preview version 2009-08-28
----------------------------------------------------------------------------
-2009-09-25 Martial Boniou
+
+---
+# Errata to preview version 2009-08-28
+
+---
+# 2009-09-25 Martial Boniou
 p 5. QuickTour: before 'First Interaction.' paragraph, {\sf x} should be the red
 button on the window title bar (OS X style by default?); we probably
 should remove all X for closing windows
@@ -62,12 +72,14 @@ it's on the right not on the left now
 p 93 Model: remove words about MVC in Model.tex / I did it in
 Morph>>openInWorld
 - fixed (mb)
----------------------------------------------------------------------------
-2009-09-18 Erwann Wernli
+
+---
+# 2009-09-18 Erwann Wernli
 p.34 Bounds in inspector don't change until we refresh with action-click refresh in inspector pane
 - replaced old inspector image and fixed text
----------------------------------------------------------------------------
-2009-09-14 Erwann Wernli
+
+---
+# 2009-09-14 Erwann Wernli
 p.10 Bouncing Morph not working for me – probably due to morph package
 - fixed in the latest image
 p. 14 Screenshot
@@ -121,4 +133,5 @@ Only few streams have random access capability.
 (3)  I would not use reflection to call faceX on p.234. A statically filled Dictionary would be more appropriate. Get the point set with “MyDict at: X”.
 - above comments integrated into the various chapters as editorial notes
 (4) Implementation of future in Smalltalk according to http://onsmalltalk.com/smalltalk-concurrency-playing-with-futures would be a nice concluding example of Smalltalk power.
----------------------------------------------------------------------------
+
+---
