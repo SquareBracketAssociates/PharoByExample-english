@@ -3,6 +3,10 @@ This is the source repository of the "Pharo by Example" books 1 and 2.
 
 The public web site of the books is: http://pharobyexample.org/
 
+All the source repos live here:
+
+http://github.com/SquareBracketAssociates/
+
 See PBE-TO-DO.txt for status of tasks for PBE 1 and 2.
 
 # To contribute to the book or to a translation project, please:
