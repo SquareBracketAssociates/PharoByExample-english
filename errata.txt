@@ -4,8 +4,14 @@
 ---
 # 2010-10-14 Georges M Louis <glou47@gmail.com>
 
-- In the LightsOut example, the empty mouseMove: method should be defined in class LOCell, not LOGame: Method 2.11: Overriding mouse move actions. LOGame»mouseMove: anEvent
-[To be fixed!]
+- In the LightsOut example, the empty mouseMove: method should be defined in class LOCell, not LOGame: Method 2.11: Overriding mouse move actions. LOGame»mouseMove: anEvent [To be fixed!]
+
+---
+# 2010-04-10 <symingz@foxmail.com>
+
+Section 4.3 (Message composition) presents the precedence of message types and the left association rule as the order in which messages are sent, but I think these are really just parsing rules. The correct way of determining message send order using these rules is like this. First, use the rules to find the fully parenthesized equivalent of a given expression, 
+e.g. '1 + 2 + x a' should equals '(1 + 2) + (x a)', not '((1 + 2) + x) a' or '1 + (2 + (x a))'. Second, evaluate the fully parenthesized expression from left to right, from inside to outside.
+What the book says is different, though. For example, when '(1 + 2) + (x a)' is evaluated, '+ 2' is be sent before 'a', but if we follow the book, the reverse will be assumed. If '+' and 'a' are replaced with some selector with side effects, following the book will lead to error. [To be fixed!]
 
 ---
 # 2010-03-11 Max Leske
