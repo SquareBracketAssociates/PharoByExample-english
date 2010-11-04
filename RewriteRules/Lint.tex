@@ -1,0 +1,200 @@
+\documentclass[a4paper,10pt,twoside]{book}
+\usepackage[
+	papersize={6in,9in},
+	hmargin={.75in,.75in},
+	vmargin={.75in,1in},
+	ignoreheadfoot
+]{geometry}
+
+\usepackage{allsf}
+\input
+{common.tex}
+
+%=================================================================
+% A4
+%\documentclass[a4paper,11pt,twoside]{book}
+%\input{common.tex}
+%\usepackage{a4wide}
+%=================================================================
+% Add the path for the figures of each chapter here:
+\graphicspath{
+	{figures/}
+	{BasicClasses/figures/}
+	{Collections/figures/}
+	{Environment/figures/}
+	{FirstApp/figures/}
+	{Messages/figures/}
+	{Metaclasses/figures/}
+	{Model/figures/}
+	{Morphic/figures/}
+	{Preface/figures/}
+	{Profiling/figures/}
+	{QuickTour/figures/}
+	{SUnit/figures/}
+	{Streams/figures/} 
+	{Syntax/figures/}
+}
+%=================================================================
+\let\wholebook=\relax
+\makeindex
+\makeglossary
+%=================================================================
+%\renewcommand{\nnbb}[2]{#2} % Disable editorial comments
+
+
+\begin{document}
+%\synctex=1
+
+
+\chapter{Validation et Transformations de code automatique en Pharo}
+SmallLint est un outil qui analyse du code Squeak et qui
+d\'etecte des bogues ou de possibles erreurs, et RewriteTool, qui permet
+d'exprimer la r\'ecriture de code par le biais de reconnaissance
+d'expressions (pattern matching) sur des arbres de syntaxes
+abstraites. 
+
+\section{ Analyse qualitative de code avec SmallLint}
+
+ SmallLint est un outil d'analyse de code. Il permet d'identifier une soixantaine de
+probl\`emes possibles allant du simple bogue, à la pr\'evision de bogue,
+en passant par la d\'etection de code inutile ou l'identification de
+m\'ethodes trop longues. SmallLint met en \'evidence des probl\`emes au
+niveau de m\'ethodes ou de classes qui utilisent l'h\'eritage, et d\'etecte
+certaines erreurs.  
+
+Pour ouvrir cet outil, ex\'ecutez l'expression
+LintDialog open ; vous obtenez une fenêtre comme celle qui est
+pr\'esent\'ee figure  qui montre le r\'esultat de l'application de
+quelques r\`egles sur les classes.
+
+
+@@ here rules@@
+ Pour vous en servir,
+vous devez choisir les jeux de r\`egles que vous souhaitez appliquer
+(dans le panneau, en haut à gauche), s\'electionner les r\`egles (panneau,
+en bas à gauche), les cat\'egories (panneau du milieu), les classes
+(panneau de droite), et finalement presser « Run ». Une fois que tout
+est affich\'e, vous pouvez avoir acc\`es aux m\'ethodes suspectes en
+cliquant sur les lignes qui d\'etaillent le r\'esultat.  Certaines
+soci\'et\'es imposent aux d\'eveloppeurs d'invoquer syst\'ematiquement
+SmallLint avant de d\'elivrer leur code. Notons que les r\`egles peuvent
+en être particularis\'ees et qu'il est possible d'en ajouter de
+nouvelles au jeu existant. La d\'efinition des r\`egles utilise la
+reconnaissance de code (pattern matching) propos\'e par le RewriteTool
+que nous allons maintenant \'etudier.
+
+\section{Identification de code avec RewriteTool}
+
+RewriteTool est un outil de r\'ecriture de code bas\'e sur la d\'efinition
+de reconnaissance de formes (pattern matching), appliqu\'ee sur des
+arbres de syntaxes abstraites. Une documentation plus compl\`ete est
+disponible à http://st-www.cs.uiuc.edu/~brant/RefactoringBrowser/
+Rewrite.html.
+
+Il semble que Squeak ne dispose pas actuellement d'interface graphique
+pour la r\'ecriture du code, mais uniquement pour identifier des
+morceaux de code.
+
+
+Cet outil de r\'ecriture de code est particuli\`erement utile lorsqu'on
+doit transformer d'une mani\`ere r\'ep\'etitive du code. On peut repr\'esenter
+dans les sch\'emas (patterns) de reconnais- sance des variables, des
+listes, des instructions r\'ecursives et des litt\'eraux.
+
+\begin{itemize}
+\item	Variable. Un sch\'ema peut contenir des variables en utilisant
+  le backquote ou accent grave. Ainsi, \ct{`key} repr\'esente n'importe
+  quelle variable, mais pas une expression.
+
+\item Liste. Pour repr\'esenter une expression potentiellement
+  complexe, on utilise \ct{@} qui caract\'erise une liste. Ainsi, `@key
+  peut repr\'esenter aussi bien une variable simple comme temp qu'une
+  expression comme \ct{(aDict at: self keyForDict)}. Par exemple, | `@Temps
+  | reconnaît une liste de variables temporaires. Le point . reconnaît
+  une instruction dans une s\'equence de code.\ct{`@.Statements}
+  reconnaît une liste d'instructions. Par exemple, foo `@message:
+  \ct{`@args} reconnaît n'importe quel message envoy\'e à foo.
+
+
+\item R\'ecursion. Pour que la reconnaissance s'effectue aussi à
+  l'int\'erieur de l'expression, il faut doubler la quote. La seconde
+  quote repr\'esente la r\'ecursion du sch\'ema cherch\'e. Ainsi,
+  \ct{``@object foo} reconnaît foo, à quelque objet qu'il soit envoy\'e,
+  mais observe \'egalement pour chaque reconnaissance si une
+  reconnaissance est possible dans la partie repr\'esent\'ee par la
+  variable \ct{``@object}.
+
+\item	Litt\'eraux. \ct{\#} repr\'esente les litt\'eraux ; ainsi, \ct{`\#literal}
+  reconnaît n'importe quel litt\'eral, par exemple 1, \ct{\#()}, "unechaine"
+  ou \ct{\#unSymbol}.
+\end{itemize}
+
+\section{Des exemples d'identification de sch\'emas}
+
+Si l'on veut identifier les expressions de type
+aDict at: aKey ifAbsent: aBlock dans lesquelles les variables peuvent être des expressions compos\'ees, on \'ecrit l'expression
+suivante :
+\ct{``@aDict at: ``@aKey ifAbsent: ``@aBlock.}
+Une telle expression identifie par exemple les expressions suivantes :
+
+\begin{code}{}
+instVarMap at: aClass name ifAbsent: [oldClass instVarNames]
+deepCopier references at: argumentTarget ifAbsent: [argumentTarget]
+bestGuesses at: anInstVarName ifAbsent: [self typesFor: anInstVarName]
+object at: (keyArray at: selectionIndex) ifAbsent: [nil]
+\end{code}
+
+Comme l'interface en Squeak ne permet pas encore de s\'electionner les
+classes sur lesquelles on veut travailler, le syst\`eme analyse les 1
+934 classes et quelque 42 869 m\'ethodes qui sont disponibles dans la
+distribution de base, ce qui peut sensiblement ralentir le traitement.
+
+Voici quelques exemples d'
+expressions qui pourraient être avantageusement transform\'ees :
+
+\begin{code}{}
+| `@Temps | ``@.Statements. ``@Boolean ifTrue: [^false]. ^true
+| `@Temps | ``@.Statements. ^``@Boolean not
+``@object not ifTrue: ``@block
+``@object ifFalse: ``@block.
+\end{code}
+
+
+% RBParseTreeRewriter new
+% 	replace: '``@aDictionary at: ``@key
+% 		ifAbsent:
+% 			[| `@Temps |
+% 			``@.Statements.
+% 			``@aDictionary at: ``@key put: ``@value]' with: '``@aDictionary at: ``@key
+% 		ifAbsentPut:
+% 			[| `@Temps |
+% 			``@.Statements.
+% 			``@value]';
+% 	yourself
+
+\begin{code}{}
+rule := RBUnderscoreAssignmentRule new.
+environment := BrowserEnvironment new forPackageNames: #('PackageA'
+'PackageB' ...).
+SmalllintChecker runRule: rule onEnvironment: environment.
+rule open
+\end{code}
+
+\begin{code}{}
+ORLintBrowser
+	openRule: (RBCompositeLintRule rules: (RBCompositeLintRule
+rulesGroupedFor: RBSpellingRule) name: 'Spelling')
+	environment: (BrowserEnvironment new forPackageNames: #('Kernel'
+'Collections-Abstract'))
+\end{code}
+
+
+\end{document}
+
+
+%%% Local Variables: 
+%%% coding: utf-8
+%%% mode: latex
+%%% TeX-master: Lint.tex
+%%% TeX-PDF-mode: t
+%%% End:
