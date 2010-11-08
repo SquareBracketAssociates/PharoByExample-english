@@ -426,11 +426,43 @@ b := [ :p |
 	t ifNil: [ t := p ] ].
 { b value: 1. b value: 2 }
 \end{code}
-In a non-closure image you get #(1 1) as result, because t is not a block 
-local variable even if it looks like one. In a closure image you get #(1 2)
+
+In a non-closure image you get \#(1 1) as result, because t is not a block 
+local variable even if it looks like one. In a closure image you get \#(1 2)
 because t is a block local variable.
 
 
+\begin{code}{}
+testValueWithExitBreak
+
+	| val |	
+	[ :break |
+	    1 to: 10 do: [ :i |
+			val := i.
+			i = 4 ifTrue: [break value].
+		] 
+	] valueWithExit.
+	self assert: val = 4.
+
+
+
+testValueWithExitContinue
+
+	| val last |	
+	val := 0. 
+	1 to: 10 do: [ :i |
+		[ :continue |
+			i = 4 ifTrue: [continue value].
+			val := val + 1.
+			last := i
+		] valueWithExit.
+	].
+	self assert: val = 9.
+	self assert: last = 10.	
+
+BlockClosure>>valueWithExit 
+	  self value: [ ^nil ]
+\end{code}
 
 %=========================================================
 \ifx\wholebook\relax\else
