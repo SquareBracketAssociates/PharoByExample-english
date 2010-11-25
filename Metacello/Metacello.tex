@@ -1022,7 +1022,94 @@ ConfigurationOfCoolToolSet >>project
 
 
 
-%Includes: vs requires.
+\section{Symbolic Versions}
+From the beginning Metacello has had the notion of loading the latest version. The expectation was that loading the latest release would
+always be the best thing to do.
+
+As Pharo has moved forward, aggressively cleaning up the base image, it has turned out that loading the latest version isn't always the
+best solution: code that runs in Pharo1.0 won't work in Pharo1.2 and vice versa.
+
+To solve this problem we need to be able to describe the 'latest version' on a platform by platform basis. 'latest version' is only one of the dimensions that we're interested in. At this point in time, there are really three version dimensions that are interesting:
+
+\begin{description}
+\item \ct{bleedingEdge} -- the latest mcz file defined in the latest baseline
+for a
+                       project.
+\item  \ct{development} -- the currently active development version
+\item  \ct{stable}      -- what we really want when we say 'latest version'
+
+\end{description}
+
+
+It may happen that over time there will be additional dimensions over time.
+For Metacello for example we could imagine \ct{earlyAccess} versions which are \ct{'stable'} development versions.
+
+The requirement is to be able to declare a \ct{stable} or \ct{development} version on a platform by platform basis. 
+To do so there are two additional pragmas that can be included in Configuration class methods:
+
+\begin{code}{}
+ <symbolicVersion: SYMBOLIC_VERSION_SYMBOL>
+ <defaultSymbolicVersion: SYMBOLIC_VERSION_SYMBOL>
+\end{code}
+
+The \ct{symbolicVersion:} pragma is similar to the version pragma (\ct{<version: VERSION_STRING>}). 
+A symbolic version may be used anywhere that a literal version may be used.
+The following is an example where a set
+of \ct{stable symbolic} versions are declared:
+
+\begin{code}{}
+ stable: spec
+	<symbolicVersion: #'stable'>
+
+	spec for: #'common' version: '1.0.2.1'.
+	spec for: #'pharo1.0.x' version: '1.0.2.1'.
+	spec for: #'pharo1.1.x' version: '1.0.3'.
+	spec for: #'pharo1.2.x' version: '1.0.4'.
+\end{code}
+
+The \ct{defaultSymbolicVersion:} is used in a method that is expected to be regular smalltalk code that returns a version string. The following is the definition for the \ct{bleedingEdge} symbolic version: \sd{not sure that it is ok to show here}
+
+\begin{code}{}
+bleedingEdge
+	<defaultSymbolicVersion: #bleedingEdge>
+
+	| bleedingEdgeVersion |
+	bleedingEdgeVersion := (self project map values select: [ :version |
+version blessing == #baseline ])
+		detectMax: [ :version | version ].
+	bleedingEdgeVersion ifNil: [ bleedingEdgeVersion := self project
+latestVersion ].
+	bleedingEdgeVersion
+		ifNil: [ self versionDoesNotExistError: #bleedingEdge ].
+	^ bleedingEdgeVersion versionString
+\end{code}
+
+When specifying a symbolic version with a \ct{symbolicVersion:} pragma it is legal to use another symbolic version like the following definition for the symbolic version \ct{stable}:
+
+\begin{code}{}
+stable: spec
+	<symbolicVersion: #'stable'>
+
+	spec for: #'gemstone' version: '1.5'.
+	spec for: #'squeak' version: '1.4'.
+	spec for: #'pharo1.0.x' version: '1.5'.
+	spec for: #'pharo1.1.x' version: '1.5'.
+	spec for: #'pharo1.2.x' version: #development.
+\end{code}
+
+Or to use the special symbolic version \ct{notDefined}: as in the following definition of the symbolic version \ct{development}:
+
+\begin{code}{}
+development: spec
+	<symbolicVersion: #'development'>
+
+	spec for: #'common' version: #notDefined.
+	spec for: #'pharo1.1.x' version: '1.6'.
+	spec for: #'pharo1.2.x' version: '1.6'.
+\end{code}
+
+Here this indicates that there are no version for the \ct{common} tag. 
+Using a symbolic version that resolves to \ct{notDefined} will result in a \ct{MetacelloSymbolicVersionNotDefinedError} being signaled.
 
 
 \end{document}
