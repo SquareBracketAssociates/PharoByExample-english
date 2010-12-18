@@ -46,7 +46,10 @@ Pharo offre des outils puissants pour la gestion du code au travers de son infra
 
 En Pharo, un package contient une liste de définition de classes et de définition de méthodes. Un package n'est pas associé à un espace de nom, par contre, un package peut étendre des classes définies dans d'autres packages (c'est-à-dire qu'un package, par exemple Network, peut ajouter des méthodes dans la classe String bien que String ne soit pas définie dans le package Network, mais dans le package Collection-Strings). Cette notion d'extension de classe se retrouve en Objective-C, Ruby et elle permet de structurer des applications de manière naturelle. 
 
-\includegraphics{classExtension}
+\begin{figure}
+\begin{center}\includegraphics[width=6cm]{classExtension}\end{center}
+\end{figure}
+
 /// Image : classExtension.png ///	
 En Pharo, le système de package Monticello permet de définir, stocker, fusionner, ... des packages. Pour définir un package il suffit d'ajouter un package avec le navigateur de packages et de définir une classe dont la catégorie est le nom du package. 
 "on définit la classe ButtonsBar sous-classe de Object dans le package Zork"
@@ -61,11 +64,18 @@ Object subclass: #ButtonsBar
 
 Pour les extensions de classes, il suffit de préfixer le nom de la catégorie de la méthode avec '*' et le nom du package. 
 
-\includegraphics[width=\linewidth]{browserExtension}
+\begin{figure}
+\begin{center}
+\includegraphics[width=8cm]{browserExtension}
+\end{center}
+\end{figure}
 
 On peut vérifier le contenu d'un package avant de le publier en cliquant sur le bouton « Changes » du Browser Monticello. 
-
-\includegraphics[width=\linewidth]{changeBrowser}
+\begin{figure}
+\begin{center}
+\includegraphics[width=8cm]{changeBrowser}
+\end{center}
+\end{figure}
 
 
 
@@ -78,14 +88,21 @@ image : ensemble d'objets et bytecode exécuté par la machine virtuelle.
 package chargé : il s'agit d'un package qui a été téléchargé d'un serveur distant ou d'un serveur local. Par défaut il se trouve dans le répertoire de cache. Par exemple le package a1 a été chargé depuis le serveur Squeaksource. Il n'a pas été modifié.
 package sale : un package chargé en mémoire et contenant des modifications non sauvegardées même localement. Le package b1 est chargé depuis le serveur YourSource.com mais il a été modifié localement dans l'image. Un package ne peut être sale que s'il a été chargé en mémoire (dans une image). 
 
-\includegraphics{Architecture}
+\begin{figure}
+\begin{center}
+\includegraphics[width=7cm]{Architecture}
+\end{center}
+\end{figure}
 
 Lorsque le package b.1 qui est sale est sauvegardé sur le serveur YourSource.com, il est muté en b.2 qui est alors sauvegardé dans le cache et sur le serveur distant.
+\begin{figure}
+\begin{center}
+\includegraphics[width=7cm]{Architecture2}
+\end{center}
+\end{figure}
 
-\includegraphics[width=\linewidth]{Architecture2}
 
-
-\paragraph{Package Versioning System}
+\paragraph{Package Versioning System.}
 A version management system helps for version storage and keeps an history of system evolution. Moreover, it provides the management of concurrent accesses to a source code repository. It keep traces of all saved changes and allows us to collaborate with other engineers. More a project grows, more it is important to use a version management system.
 
 Monticello defines the package system and version management of Pharo. In Pharo, classes (superclass change, instance variable changes \ldots) and methods (adding, changing, deleting) are elementary entities which are versioned by Monticello. A source is an HTTP server which allows us to save projects (particularly packages) managed by Monticello. This is the equivalent of a forge: It provides the management of contributors and their status, visibility information, a wiki with RSS feed. A source open to everybody est available at \url{http://www.squeaksource.com/}.
@@ -97,24 +114,31 @@ Version management is done manually. In this chapter we introduce Gofer, a tool 
 
 \section{What is Gofer ?}
 
-%Gofer est un petit outil au dessus de Monticello. Il permet de créer simplement des scripts pour charger, sauvegarder, fusionner, mettre à jour, revenir à une version précédente, recompiler, vérifier les différences, décharger des packages...
-%Contrairement aux outils existants, Gofer s'assure que les opérations sont exécutées le plus proprement possible, et le plus clairement possible. Par exemple, après le chargement des packages, Gofer nettoie le code et ne laisse ni classe, ni catégorie vide (une catégorie est une sorte d'identifiant de package). 
-%Il permet de charger des packages se situant dans des répertoires différents en une simple opération. En utilisant un certain préfixe, Gofer peut charger la dernière version stable ou la dernière version en cours de développement. Gofer est utilisé par Metacello le gestionnaire de configurations que nous présenterons ultérieurement. 
-%Gofer fait parti de la distribution de base depuis la version 1.0 de Pharo. Il est possible de mettre à jour l'outil en évaluant la ligne suivante dans un Workspace, dans l'environnement de Pharo:
-%Gofer gofer update
+Gofer est un petit outil au dessus de Monticello. Il permet de créer simplement des scripts pour charger, sauvegarder, fusionner, mettre à jour, revenir à une version précédente, recompiler, vérifier les différences, décharger des packages...
+Contrairement aux outils existants, Gofer s'assure que les opérations sont exécutées le plus proprement possible, et le plus clairement possible. Par exemple, après le chargement des packages, Gofer nettoie le code et ne laisse ni classe, ni catégorie vide (une catégorie est une sorte d'identifiant de package). 
+Il permet de charger des packages se situant dans des répertoires différents en une simple opération. En utilisant un certain préfixe, Gofer peut charger la dernière version stable ou la dernière version en cours de développement. Gofer est utilisé par Metacello le gestionnaire de configurations que nous présenterons ultérieurement. 
+Gofer fait parti de la distribution de base depuis la version 1.0 de Pharo. Il est possible de mettre à jour l'outil en évaluant la ligne suivante dans un Workspace, dans l'environnement de Pharo:
+
+\begin{code}
+Gofer gofer update
+\end{code}
 
 \section{Using Gofer}
 
-%Gofer est simple par son utilisation. Le scénario de chargement de package dans Pharo est toujours le même. Il consiste en trois étapes: d'abord, on spécifie une URL où se trouve le package, ensuite on spécifie le package à charger depuis cette adresse et finalement on invoque les opérations (souvent charger ou sauvegarder).
+Gofer est simple par son utilisation. Le scénario de chargement de package dans Pharo est toujours le même. Il consiste en trois étapes: d'abord, on spécifie une URL où se trouve le package, ensuite on spécifie le package à charger depuis cette adresse et finalement on invoque les opérations (souvent charger ou sauvegarder).
 
-\subsection{Indicate URL}
+\subsection{Specifying an URL}
 
-%Gofer permet de spécifier une URL d'un répertoire Monticello. Cette dernière a généralement la forme suivante:
-%MCHttpRepository 
-%    location: 'http://www.squeaksource.com/MonPackage'
-%    user: 'pharoUser' 
-%    password: 'pharoPwd'
-%Pour ceci, les méthodes url:, url:username:password: or directory: sont disponibles. Les deux premières permettent de spécifier des accès HTTP ou FTP, la troisième permet de spécifier tout type d'URL. Cette dernière sera utilisée dans des cas particuliers comme charger des packages depuis un dossier local.
+Gofer permet de spécifier une URL d'un répertoire Monticello. Cette dernière a généralement la forme suivante:
+
+\begin{code}
+MCHttpRepository 
+    location: 'http://www.squeaksource.com/MonPackage'
+    user: 'pharoUser' 
+    password: 'pharoPwd'
+\end{code}
+
+Pour ceci, les méthodes \ct{url:}, \ct{url:username:password:} or \ct{directory:} sont disponibles. Les deux premières permettent de spécifier des accès HTTP ou FTP, la troisième permet de spécifier tout type d'URL. Cette dernière sera utilisée dans des cas particuliers comme charger des packages depuis un dossier local.
 %Il existe dans l'API des méthodes de raccourci, par exemple « squeaksource: », « wiresong: » ou « gemsource: » permettent respectivement de se connecter aux serveurs de squeaksource (http://www.squeaksource.com/), de wiresong (http://source.wiresong.ca/) et de gemsource (http://seaside.gemstone.com/ss/). Ces méthodes sont souvent utilisées car elle pointent vers les serveurs le plus populaires de la communauté.
 %En supplément, Gofer déclare par défaut le répertoire local de cache comme une URL. Dans le cas où Gofer n'arriverait pas à charger un package dans l'URL spécifié, il va donc chercher dans le répertoire « cache » à la racine de Pharo. Il est possible de désactiver cette option en utilisant la méthode « disablePackageCache » ou de la réactiver en utilisant la méthode « enablePackageCache ».
 %De la même manière, Gofer retourne une erreur si l'un des répertoires n'est pas joignable. Pour ignorer ces erreurs, il suffit d'utiliser la méthode « disableRepositoryErrors ». Pour réactiver cette fonctionnalité, il suffit d'utiliser la méthode « enableRepositoryErrors ».
