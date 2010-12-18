@@ -35,15 +35,65 @@
 %=================================================================
 
 
-\chapter{Gofer: how to script the load of packages}
+\chapter{Gofer: how to script package loading}
 
-\section{Package Management system}
+Pharo offre des outils puissants pour la gestion du code au travers de son infrastructure de package nommée Monticello. Nous allons montrer les rudiments du système de package Monticello ainsi que la gestion de version distribuée. Nous montrons en particulier comment l'on peut scripter la manipulation de packages à l'aide de Gofer. Dans un prochain article nous montrerons comment gérer des configurations entières de packages à l'aide de Metacello.
 
-A version management system help for version storage and keep an history of system evolution. Moreover, it provides the management of concurrent accesses to a source code repository. It keep traces of all saved changes and allows us to collaborate with other engineers. More a project grows, more it is important to use a version management system.
 
-Monticello defines the package system and version management of Pharo. In Pharo, classes (superclass change, instance variable changes \ldots) and methods (adding, changing, deleting) are elementary entities which are versionned by Monticello. A source is an HTTP server which allows us to save projects (particularly packages) managed by Monticello. This is the equivalent of a forge: It provides the management of contributors and these status, visibility informations, a wiki with RSS feed. A source open to everybody est available at \url{http://www.squeaksource.com/}.
+\section{Preamble: Package management system}
+
+\paragraph{Packages}
+
+En Pharo, un package contient une liste de définition de classes et de définition de méthodes. Un package n'est pas associé à un espace de nom, par contre, un package peut étendre des classes définies dans d'autres packages (c'est-à-dire qu'un package, par exemple Network, peut ajouter des méthodes dans la classe String bien que String ne soit pas définie dans le package Network, mais dans le package Collection-Strings). Cette notion d'extension de classe se retrouve en Objective-C, Ruby et elle permet de structurer des applications de manière naturelle. 
+
+\includegraphics{classExtension}
+/// Image : classExtension.png ///	
+En Pharo, le système de package Monticello permet de définir, stocker, fusionner, ... des packages. Pour définir un package il suffit d'ajouter un package avec le navigateur de packages et de définir une classe dont la catégorie est le nom du package. 
+"on définit la classe ButtonsBar sous-classe de Object dans le package Zork"
+
+\begin{code}
+Object subclass: #ButtonsBar
+    instanceVariableNames: ''
+    classVariableNames: ''
+    poolDictionaries: ''
+    category: 'Zork'
+\end{code}    
+
+Pour les extensions de classes, il suffit de préfixer le nom de la catégorie de la méthode avec '*' et le nom du package. 
+
+\includegraphics[width=\linewidth]{browserExtension}
+
+On peut vérifier le contenu d'un package avant de le publier en cliquant sur le bouton « Changes » du Browser Monticello. 
+
+\includegraphics[width=\linewidth]{changeBrowser}
+
+
+
+\paragraph{Distributed architecture of Monticello.}
+
+Monticello offre un système de gestion de versions distribué tout comme Git. Cependant Monticello est dédié à Smalltalk: le système sait qu'il contient des classes et des méthodes Smalltalk. Il est donc possible de  gérer son code à la fois sur des serveurs distants et locaux. Gofer comme nous allons le voir permet de scripter les accès aux serveurs afin de publier, synchroniser... les versions des packages. 
+Monticello utilise un cache (un répertoire local), ainsi à chaque fois qu'un package est requis, il est recherché en premier lieu dans le répertoire local. De manière similaire, lors de la sauvegarde d'un package il est systématiquement sauvegardé dans le cache. Nous faisons aussi la distinction entre un package chargé dans l'image Pharo (image = bytecode et objets = mémoire de la machine virtuelle) et un package sauvegardé dans le cache mais non chargé. D'un point de vue physique, un package Monticello est un fichier au format zip contenant des méta-données et le code complet du package. 
+Pour aider à la compréhension de la suite nous définissons les termes suivants : 
+image : ensemble d'objets et bytecode exécuté par la machine virtuelle.
+package chargé : il s'agit d'un package qui a été téléchargé d'un serveur distant ou d'un serveur local. Par défaut il se trouve dans le répertoire de cache. Par exemple le package a1 a été chargé depuis le serveur Squeaksource. Il n'a pas été modifié.
+package sale : un package chargé en mémoire et contenant des modifications non sauvegardées même localement. Le package b1 est chargé depuis le serveur YourSource.com mais il a été modifié localement dans l'image. Un package ne peut être sale que s'il a été chargé en mémoire (dans une image). 
+
+\includegraphics{Architecture}
+
+Lorsque le package b.1 qui est sale est sauvegardé sur le serveur YourSource.com, il est muté en b.2 qui est alors sauvegardé dans le cache et sur le serveur distant.
+
+\includegraphics[width=\linewidth]{Architecture2}
+
+
+\paragraph{Package Versioning System}
+A version management system helps for version storage and keeps an history of system evolution. Moreover, it provides the management of concurrent accesses to a source code repository. It keep traces of all saved changes and allows us to collaborate with other engineers. More a project grows, more it is important to use a version management system.
+
+Monticello defines the package system and version management of Pharo. In Pharo, classes (superclass change, instance variable changes \ldots) and methods (adding, changing, deleting) are elementary entities which are versioned by Monticello. A source is an HTTP server which allows us to save projects (particularly packages) managed by Monticello. This is the equivalent of a forge: It provides the management of contributors and their status, visibility information, a wiki with RSS feed. A source open to everybody est available at \url{http://www.squeaksource.com/}.
 
 Version management is done manually. In this chapter we introduce Gofer, a tool which allows us to script package management. It provides automatization of a part of versioning actions.
+
+
+
 
 \section{What is Gofer ?}
 
