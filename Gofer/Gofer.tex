@@ -37,25 +37,21 @@
 
 \chapter{Gofer: how to script package loading}
 
-Pharo proposes powerful tools to manage source code. In particular as presented in the Monticello Chapter, Pharo uses a package system named Monticello. In this chapter after a first reminder of the key aspects of Monticello we will show how we can script package using Gofer. Gofer is a simple API for Monticello. It is used by Metacello, the language to manage package maps that we present in Chapter Metacello. 
+Pharo proposes powerful tools to manage source code such as semantics-based merging, three diff-merge, and a git-like distributed versioning system. In particular as presented in the Monticello Chapter, Pharo uses a package system named Monticello. In this chapter after a first reminder of the key aspects of Monticello we will show how we can script package using Gofer. Gofer is a simple API for Monticello. It is used by Metacello, the language to manage package maps that we present in Chapter Metacello. 
 
 
 
 \section{Preamble: Package management system}
 
 \paragraph{Packages}
-A package is a list of class and method definition. In Pharo a package is not associated with a namespace. 
+A package is a list of class and method definition. In Pharo a package is not associated with a namespace. A package can extend class defined in other package: it measn that a package, for example \ct{Network} can add methods to the class \ct{String}, eventhough \ct{String} is not defined in the package \ct{Network}. Class extensions support the definition of layers and allows for the natural definition of packages. 
 
-En Pharo, un package contient une liste de définition de classes et de définition de méthodes. Un package n'est pas associé à un espace de nom, par contre, un package peut étendre des classes définies dans d'autres packages (c'est-à-dire qu'un package, par exemple Network, peut ajouter des méthodes dans la classe String bien que String ne soit pas définie dans le package Network, mais dans le package Collection-Strings). Cette notion d'extension de classe se retrouve en Objective-C, Ruby et elle permet de structurer des applications de manière naturelle. 
-
-\sd{here}
 
 \begin{figure}
 \begin{center}\includegraphics[width=6cm]{classExtension}\end{center}
 \end{figure}
 
-En Pharo, le système de package Monticello permet de définir, stocker, fusionner, ... des packages. Pour définir un package il suffit d'ajouter un package avec le navigateur de packages et de définir une classe dont la catégorie est le nom du package. 
-"on définit la classe ButtonsBar sous-classe de Object dans le package Zork"
+To define a package, you simply need to declare one using the Monticello browswer and to define a class extensions, it is enough to define a method with a category starting with '*' followed by the package name (here \ct{'*-network'}). 
 
 \begin{code}{}
 Object subclass: #ButtonsBar
@@ -65,26 +61,28 @@ Object subclass: #ButtonsBar
     category: 'Zork'
 \end{code}    
 
-Pour les extensions de classes, il suffit de préfixer le nom de la catégorie de la méthode avec '*' et le nom du package. 
 
 \begin{figure}
 \begin{center}
 \includegraphics[width=8cm]{browserExtension}
+\caption{The browser O2 shows that the class \ct{String} gets the methods \ct{asUrl} and \ct{asUrlRelativeTo:} from the package \ct{network-url}}
 \end{center}
 \end{figure}
 
-On peut vérifier le contenu d'un package avant de le publier en cliquant sur le bouton « Changes » du Browser Monticello. 
+We can get the list of changes of package before publication by simply selecting the package and clicking on the \button{Changes} of the Monticello Browser. 
+
+
 \begin{figure}
 \begin{center}
 \includegraphics[width=8cm]{changeBrowser}
 \end{center}
 \end{figure}
 
+\paragraph{Distributed architecture of Monticello.} Monticello is a distributed version control management system like git but dedicated to Smalltalk. Monticello manipulates source code entities such as classes, methods,... It is then possible to manage local and distributed code servers. Gofer allows one to script such servers to publish, download and synchronize servers. 
 
 
-\paragraph{Distributed architecture of Monticello.}
+\sd{here}
 
-Monticello offre un système de gestion de versions distribué tout comme Git. Cependant Monticello est dédié à Smalltalk: le système sait qu'il contient des classes et des méthodes Smalltalk. Il est donc possible de  gérer son code à la fois sur des serveurs distants et locaux. Gofer comme nous allons le voir permet de scripter les accès aux serveurs afin de publier, synchroniser... les versions des packages. 
 Monticello utilise un cache (un répertoire local), ainsi à chaque fois qu'un package est requis, il est recherché en premier lieu dans le répertoire local. De manière similaire, lors de la sauvegarde d'un package il est systématiquement sauvegardé dans le cache. Nous faisons aussi la distinction entre un package chargé dans l'image Pharo (image = bytecode et objets = mémoire de la machine virtuelle) et un package sauvegardé dans le cache mais non chargé. D'un point de vue physique, un package Monticello est un fichier au format zip contenant des méta-données et le code complet du package. 
 Pour aider à la compréhension de la suite nous définissons les termes suivants : 
 image : ensemble d'objets et bytecode exécuté par la machine virtuelle.
