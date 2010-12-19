@@ -50,11 +50,10 @@ En Pharo, un package contient une liste de définition de classes et de définitio
 \begin{center}\includegraphics[width=6cm]{classExtension}\end{center}
 \end{figure}
 
-/// Image : classExtension.png ///	
 En Pharo, le système de package Monticello permet de définir, stocker, fusionner, ... des packages. Pour définir un package il suffit d'ajouter un package avec le navigateur de packages et de définir une classe dont la catégorie est le nom du package. 
 "on définit la classe ButtonsBar sous-classe de Object dans le package Zork"
 
-\begin{code}
+\begin{code}{}
 Object subclass: #ButtonsBar
     instanceVariableNames: ''
     classVariableNames: ''
@@ -119,7 +118,7 @@ Contrairement aux outils existants, Gofer s'assure que les opérations sont exécu
 Il permet de charger des packages se situant dans des répertoires différents en une simple opération. En utilisant un certain préfixe, Gofer peut charger la dernière version stable ou la dernière version en cours de développement. Gofer est utilisé par Metacello le gestionnaire de configurations que nous présenterons ultérieurement. 
 Gofer fait parti de la distribution de base depuis la version 1.0 de Pharo. Il est possible de mettre à jour l'outil en évaluant la ligne suivante dans un Workspace, dans l'environnement de Pharo:
 
-\begin{code}
+\begin{code}{}
 Gofer gofer update
 \end{code}
 
@@ -131,7 +130,7 @@ Gofer est simple par son utilisation. Le scénario de chargement de package dans 
 
 Gofer permet de spécifier une URL d'un répertoire Monticello. Cette dernière a généralement la forme suivante:
 
-\begin{code}
+\begin{code}{}
 MCHttpRepository 
     location: 'http://www.squeaksource.com/MonPackage'
     user: 'pharoUser' 
@@ -139,44 +138,63 @@ MCHttpRepository
 \end{code}
 
 Pour ceci, les méthodes \ct{url:}, \ct{url:username:password:} or \ct{directory:} sont disponibles. Les deux premières permettent de spécifier des accès HTTP ou FTP, la troisième permet de spécifier tout type d'URL. Cette dernière sera utilisée dans des cas particuliers comme charger des packages depuis un dossier local.
-%Il existe dans l'API des méthodes de raccourci, par exemple « squeaksource: », « wiresong: » ou « gemsource: » permettent respectivement de se connecter aux serveurs de squeaksource (http://www.squeaksource.com/), de wiresong (http://source.wiresong.ca/) et de gemsource (http://seaside.gemstone.com/ss/). Ces méthodes sont souvent utilisées car elle pointent vers les serveurs le plus populaires de la communauté.
-%En supplément, Gofer déclare par défaut le répertoire local de cache comme une URL. Dans le cas où Gofer n'arriverait pas à charger un package dans l'URL spécifié, il va donc chercher dans le répertoire « cache » à la racine de Pharo. Il est possible de désactiver cette option en utilisant la méthode « disablePackageCache » ou de la réactiver en utilisant la méthode « enablePackageCache ».
-%De la même manière, Gofer retourne une erreur si l'un des répertoires n'est pas joignable. Pour ignorer ces erreurs, il suffit d'utiliser la méthode « disableRepositoryErrors ». Pour réactiver cette fonctionnalité, il suffit d'utiliser la méthode « enableRepositoryErrors ».
-%Gofer new
-%    "on travaille sur le projet GoferLinuxMag"
-%    url: 'http://www.squeaksource.com/GoferLinuxMag'	
-%    "on spécifie un nom d'utilisateur"
-%    username: 'pharoUser'
-%    "on spécifie un mot de passe" 
-%    password: 'pharoPwd'; 
-%    "on ajoute le package souhaité"
-%    package:'GoferLinuxMag'; 
-%    "on désactive la recherche dans la cache local"
-%    disablePackageCache; 
-%    "on désactive les erreurs de répertoire"
-%    disableRepositoryErrors; 
-%    "on charge les packages spécifiés"
-%    load.
-%"on exécute la commande open"
-%(Smalltalk at: #ButtonsBar) open.
-%Ce code charge un ensemble de boutons permettant chacun de charger des projets différents. Vous pouvez regarder le code, le modifier ou en ajouter. Le résultat du message « open » donne la figure suivante:
+
+Il existe dans l'API des méthodes de raccourci, par exemple « squeaksource: », « wiresong: » ou « gemsource: » permettent respectivement de se connecter aux serveurs de squeaksource (http://www.squeaksource.com/), de wiresong (http://source.wiresong.ca/) et de gemsource (http://seaside.gemstone.com/ss/). Ces méthodes sont souvent utilisées car elle pointent vers les serveurs le plus populaires de la communauté.
+
+En supplément, Gofer déclare par défaut le répertoire local de cache comme une URL. Dans le cas où Gofer n'arriverait pas à charger un package dans l'URL spécifié, il va donc chercher dans le répertoire « cache » à la racine de Pharo. Il est possible de désactiver cette option en utilisant la méthode « disablePackageCache » ou de la réactiver en utilisant la méthode « enablePackageCache ».
+
+De la même manière, Gofer retourne une erreur si l'un des répertoires n'est pas joignable. Pour ignorer ces erreurs, il suffit d'utiliser la méthode « disableRepositoryErrors ». Pour réactiver cette fonctionnalité, il suffit d'utiliser la méthode « enableRepositoryErrors ».
+
+\begin{code}{}
+Gofer new
+    "on travaille sur le projet GoferLinuxMag"
+    url: 'http://www.squeaksource.com/GoferLinuxMag'	
+    "on spécifie un nom d'utilisateur"
+    username: 'pharoUser'
+    "on spécifie un mot de passe" 
+    password: 'pharoPwd'; 
+    "on ajoute le package souhaité"
+    package:'GoferLinuxMag'; 
+    "on désactive la recherche dans la cache local"
+    disablePackageCache; 
+    "on désactive les erreurs de répertoire"
+    disableRepositoryErrors; 
+    "on charge les packages spécifiés"
+    load.
+"on exécute la commande open"
+(Smalltalk at: #ButtonsBar) open.
+\end{code}
+
+Ce code charge un ensemble de boutons permettant chacun de charger des projets différents. Vous pouvez regarder le code, le modifier ou en ajouter. Le résultat du message « open » donne la figure suivante:
+
+
+
+
 %/// Image : resultButtonsBar.png ///
-%Nous vous encourageons à modifier ce projet avec des scripts différents, et à profiter de l'API de Gofer pour gérer vos sources délocalisée.
+
+Nous vous encourageons à modifier ce projet avec des scripts différents, et à profiter de l'API de Gofer pour gérer vos sources délocalisée.
 
 \subsection{Specify package}
 
-%Une fois l'URL spécifiée et les options définies, on spécifie le ou les packages sur lesquels on souhaite travailler. Pour cela on utilise la méthode « version: » pour travailler sur une version particulière du package, ou la méthode « package: » pour travailler sur la dernière version du package dans l'ensemble des répertoires donnés. 
-%Il est également possible de spécifier des contraintes de chargement de packages. La méthode « package:constraint: » permet de passer un block en paramètre pour définir certaines conditions.
-%Par exemple, le code suivant permet de récupérer la dernière version du package «GoferLinuxMag» sauvegardée par le développeur nommé « jannik_laval ».
-%Gofer new
-%    squeaksource: 'GoferLinuxMag';
-%    package: 'GoferLinuxMag' constraint: [ :version | version author = 'jannik_laval' ];
-%    load
-%Un deuxième exemple qui récupère la version 2 du package «GoferLinuxMag»:
-%Gofer new
-%    squeaksource: 'GoferLinuxMag';
-%    version: 'GoferLinuxMag-jannik_laval.2';
-%    load
+Une fois l'URL spécifiée et les options définies, on spécifie le ou les packages sur lesquels on souhaite travailler. Pour cela on utilise la méthode « version: » pour travailler sur une version particulière du package, ou la méthode « package: » pour travailler sur la dernière version du package dans l'ensemble des répertoires donnés. 
+
+Il est également possible de spécifier des contraintes de chargement de packages. La méthode « package:constraint: » permet de passer un block en paramètre pour définir certaines conditions.
+
+Par exemple, le code suivant permet de récupérer la dernière version du package «GoferLinuxMag» sauvegardée par le développeur nommé « jannik.laval ».
+
+\begin{code}{}
+Gofer new
+    squeaksource: 'GoferLinuxMag';
+    package: 'GoferLinuxMag' constraint: [ :version | version author = 'jannik.laval' ];
+    load
+\end{code}
+Un deuxième exemple qui récupère la version 2 du package «GoferLinuxMag»:
+\begin{code}{}
+Gofer new
+    squeaksource: 'GoferLinuxMag';
+    version: 'GoferLinuxMag-jannik_laval.2';
+    load
+\end{code}
 
 \subsection{Do actions}
 %Une fois l'instance de Gofer paramétré, nous pouvons faire de multiple manipulations. Dans ce paragraphe, nous listons les actions possibles suivies d'une courte description. Certaines seront détaillées plus loin dans l'article.
