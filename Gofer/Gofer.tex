@@ -37,14 +37,18 @@
 
 \chapter{Gofer: how to script package loading}
 
-Pharo offre des outils puissants pour la gestion du code au travers de son infrastructure de package nommée Monticello. Nous allons montrer les rudiments du système de package Monticello ainsi que la gestion de version distribuée. Nous montrons en particulier comment l'on peut scripter la manipulation de packages à l'aide de Gofer. Dans un prochain article nous montrerons comment gérer des configurations entières de packages à l'aide de Metacello.
+Pharo proposes powerful tools to manage source code. In particular as presented in the Monticello Chapter, Pharo uses a package system named Monticello. In this chapter after a first reminder of the key aspects of Monticello we will show how we can script package using Gofer. Gofer is a simple API for Monticello. It is used by Metacello, the language to manage package maps that we present in Chapter Metacello. 
+
 
 
 \section{Preamble: Package management system}
 
 \paragraph{Packages}
+A package is a list of class and method definition. In Pharo a package is not associated with a namespace. 
 
 En Pharo, un package contient une liste de définition de classes et de définition de méthodes. Un package n'est pas associé à un espace de nom, par contre, un package peut étendre des classes définies dans d'autres packages (c'est-à-dire qu'un package, par exemple Network, peut ajouter des méthodes dans la classe String bien que String ne soit pas définie dans le package Network, mais dans le package Collection-Strings). Cette notion d'extension de classe se retrouve en Objective-C, Ruby et elle permet de structurer des applications de manière naturelle. 
+
+\sd{here}
 
 \begin{figure}
 \begin{center}\includegraphics[width=6cm]{classExtension}\end{center}
