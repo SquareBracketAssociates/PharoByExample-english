@@ -35,7 +35,7 @@
 %=================================================================
 
 
-\chapter{Gofer: how to script package loading}
+\chapter{Gofer: Scripting package loading}
 
 Pharo proposes powerful tools to manage source code such as semantics-based merging, three diff-merge, and a git-like distributed versioning system. In particular as presented in the Monticello Chapter, Pharo uses a package system named Monticello. In this chapter after a first reminder of the key aspects of Monticello we will show how we can script package using Gofer. Gofer is a simple API for Monticello. It is used by Metacello, the language to manage package maps that we present in Chapter Metacello. 
 
@@ -43,7 +43,7 @@ Pharo proposes powerful tools to manage source code such as semantics-based merg
 
 \section{Preamble: Package management system}
 
-\paragraph{Packages}
+\paragraph{Packages.}
 A package is a list of class and method definition. In Pharo a package is not associated with a namespace. A package can extend class defined in other package: it measn that a package, for example \ct{Network} can add methods to the class \ct{String}, eventhough \ct{String} is not defined in the package \ct{Network}. Class extensions support the definition of layers and allows for the natural definition of packages. 
 
 
@@ -78,44 +78,46 @@ We can get the list of changes of package before publication by simply selecting
 \end{center}
 \end{figure}
 
-\paragraph{Distributed architecture of Monticello.} Monticello is a distributed version control management system like git but dedicated to Smalltalk. Monticello manipulates source code entities such as classes, methods,... It is then possible to manage local and distributed code servers. Gofer allows one to script such servers to publish, download and synchronize servers. 
-
-
-\sd{here}
-
-Monticello utilise un cache (un répertoire local), ainsi à chaque fois qu'un package est requis, il est recherché en premier lieu dans le répertoire local. De manière similaire, lors de la sauvegarde d'un package il est systématiquement sauvegardé dans le cache. Nous faisons aussi la distinction entre un package chargé dans l'image Pharo (image = bytecode et objets = mémoire de la machine virtuelle) et un package sauvegardé dans le cache mais non chargé. D'un point de vue physique, un package Monticello est un fichier au format zip contenant des méta-données et le code complet du package. 
-Pour aider à la compréhension de la suite nous définissons les termes suivants : 
-image : ensemble d'objets et bytecode exécuté par la machine virtuelle.
-package chargé : il s'agit d'un package qui a été téléchargé d'un serveur distant ou d'un serveur local. Par défaut il se trouve dans le répertoire de cache. Par exemple le package a1 a été chargé depuis le serveur Squeaksource. Il n'a pas été modifié.
-package sale : un package chargé en mémoire et contenant des modifications non sauvegardées même localement. Le package b1 est chargé depuis le serveur YourSource.com mais il a été modifié localement dans l'image. Un package ne peut être sale que s'il a été chargé en mémoire (dans une image). 
-
-\begin{figure}
-\begin{center}
-\includegraphics[width=7cm]{Architecture}
-\end{center}
-\end{figure}
-
-Lorsque le package b.1 qui est sale est sauvegardé sur le serveur YourSource.com, il est muté en b.2 qui est alors sauvegardé dans le cache et sur le serveur distant.
-\begin{figure}
-\begin{center}
-\includegraphics[width=7cm]{Architecture2}
-\end{center}
-\end{figure}
-
-
 \paragraph{Package Versioning System.}
 A version management system helps for version storage and keeps an history of system evolution. Moreover, it provides the management of concurrent accesses to a source code repository. It keep traces of all saved changes and allows us to collaborate with other engineers. More a project grows, more it is important to use a version management system.
 
 Monticello defines the package system and version management of Pharo. In Pharo, classes (superclass change, instance variable changes \ldots) and methods (adding, changing, deleting) are elementary entities which are versioned by Monticello. A source is an HTTP server which allows us to save projects (particularly packages) managed by Monticello. This is the equivalent of a forge: It provides the management of contributors and their status, visibility information, a wiki with RSS feed. A source open to everybody est available at \url{http://www.squeaksource.com/}.
 
-Version management is done manually. In this chapter we introduce Gofer, a tool which allows us to script package management. It provides automatization of a part of versioning actions.
+
+\paragraph{Distributed architecture of Monticello.} Monticello is a distributed version control management system like git but dedicated to Smalltalk. Monticello manipulates source code entities such as classes, methods,... It is then possible to manage local and distributed code servers. Gofer allows one to script such servers to publish, download and synchronize servers. 
+
+
+Monticello uses a local cache for packages. Each time a package is required, it is first looked up in this local cache. In a similar way, when a package is saved, it is also saved in the local cache.  From a physical point of a view a Monticello package is a zipped file containing meta-data and the complete source code of package. 
+To be clear in the following we make the distinction between a package loaded in the pharo image and a package saved in the cache but not loaded. We also define the following terms: image (object and bytecode executed by the virtual machine), loaded package (downloaded package from a server that is loaded in memory), dirty package (a loaded package with unsaved modifications). A dirty package is a loaded package.
+
+For example, in Figure~\ref{fig:archi} the package \ct{a.1} is loaded from the server squeaksource. It is not modified. The package \ct{b.1} is loaded from the server yoursource.com but it is modified locally in the image.
+Once \ct{b.1} which was dirty is saved on the server yoursource.com, it is versioned into \ct{b.2} which is saved in the cache and the remote server. 
+
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=7cm]{Architecture3}
+\caption{(left)Typical setup with clean and dirty packages loaded and cached  --- (right) Package published. \label{fig:archi}}
+\end{center}
+\end{figure}
+
+
+%\begin{figure}
+%%\begin{center}
+%\includegraphics[width=7cm]{Architecture2}
+%\end{center}
+%\end{figure}
 
 
 
 
-\section{What is Gofer ?}
 
-Gofer est un petit outil au dessus de Monticello. Il permet de créer simplement des scripts pour charger, sauvegarder, fusionner, mettre à jour, revenir à une version précédente, recompiler, vérifier les différences, décharger des packages...
+
+\section{What is Gofer?}
+Gofer is a scripting tool for Monticello. It is developed by Lukas Renggli and it is used by Metacello (the map and project management system built on top of Monticello). Gofer supports the easy creation of scripts to load, save, merge, update, fetch ... packages. 
+
+\sd{here}
+
 Contrairement aux outils existants, Gofer s'assure que les opérations sont exécutées le plus proprement possible, et le plus clairement possible. Par exemple, après le chargement des packages, Gofer nettoie le code et ne laisse ni classe, ni catégorie vide (une catégorie est une sorte d'identifiant de package). 
 Il permet de charger des packages se situant dans des répertoires différents en une simple opération. En utilisant un certain préfixe, Gofer peut charger la dernière version stable ou la dernière version en cours de développement. Gofer est utilisé par Metacello le gestionnaire de configurations que nous présenterons ultérieurement. 
 Gofer fait parti de la distribution de base depuis la version 1.0 de Pharo. Il est possible de mettre à jour l'outil en évaluant la ligne suivante dans un Workspace, dans l'environnement de Pharo:
