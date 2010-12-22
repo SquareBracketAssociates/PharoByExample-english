@@ -34,6 +34,20 @@
 \chapter{Checking and Transforming Programs with Rewrite rules}\chalabel{rewrite}
 
 
+
+If you really just want the string 'tabs', the string 'tabs' with the
+quotes is the search expression.
+
+If you want to find it as part of a substring use something along:
+\begin{code}{}
+   `#string `{ :node | node value isString and: [ node value
+includesSubString: 'tabs' ] }
+
+The `#string is a literal pattern (booleans, characters, arrays,
+strings, numbers, ...) and `{ ... adds a constraint on the preceding
+match.
+\end{code}
+
 %=================================================================
 \ifx\wholebook\relax\else\end{document}\fi
 %=================================================================
