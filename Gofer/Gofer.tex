@@ -114,19 +114,17 @@ Once \ct{b.1} which was dirty is saved on the server yoursource.com, it is versi
 
 
 \section{What is Gofer?}
-Gofer is a scripting tool for Monticello. It is developed by Lukas Renggli and it is used by Metacello (the map and project management system built on top of Monticello). Gofer supports the easy creation of scripts to load, save, merge, update, fetch ... packages. 
+Gofer is a scripting tool for Monticello. It is developed by Lukas Renggli and it is used by Metacello (the map and project management system built on top of Monticello). Gofer supports the easy creation of scripts to load, save, merge, update, fetch ... packages. In addition, Gofer makes sure that operations let the system in a clean state. Gofer allows one to load packages located in different repositories in a single operation, to load the latest stable version or the currently developed version. Gofer is part of basis of Pharo since Pharo 1.0.
+Metacello uses Gofer as its underlying infrastructure to load complex projects. Gofer is more adapted to load simple package. 
 
-\sd{here}
-
-Contrairement aux outils existants, Gofer s'assure que les opérations sont exécutées le plus proprement possible, et le plus clairement possible. Par exemple, après le chargement des packages, Gofer nettoie le code et ne laisse ni classe, ni catégorie vide (une catégorie est une sorte d'identifiant de package). 
-Il permet de charger des packages se situant dans des répertoires différents en une simple opération. En utilisant un certain préfixe, Gofer peut charger la dernière version stable ou la dernière version en cours de développement. Gofer est utilisé par Metacello le gestionnaire de configurations que nous présenterons ultérieurement. 
-Gofer fait parti de la distribution de base depuis la version 1.0 de Pharo. Il est possible de mettre à jour l'outil en évaluant la ligne suivante dans un Workspace, dans l'environnement de Pharo:
+You can ask Gofer to update it itself by executing the following expression: 
 
 \begin{code}{}
 Gofer gofer update
 \end{code}
 
 \section{Using Gofer}
+Using Gofer is simple: you need to specify an URL , the package to be loaded and finally the operation to be performed. 
 
 Gofer est simple par son utilisation. Le scénario de chargement de package dans Pharo est toujours le même. Il consiste en trois étapes: d'abord, on spécifie une URL où se trouve le package, ensuite on spécifie le package à charger depuis cette adresse et finalement on invoque les opérations (souvent charger ou sauvegarder).
 
