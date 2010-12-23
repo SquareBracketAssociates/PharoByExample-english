@@ -124,28 +124,38 @@ Gofer gofer update
 \end{code}
 
 \section{Using Gofer}
-Using Gofer is simple: you need to specify an URL , the package to be loaded and finally the operation to be performed. 
+Using Gofer is simple: you need to specify a location, the package to be loaded and finally the operation to be performed. The location often represents a file system been it an HTTP, a FTP or simply an hard-disc.   The location is the same as the one used to access a Monticello repository.For example it is  \ct{'http://www.squeaksource.com/MyPackage'} as used in the following expression. 
 
-Gofer est simple par son utilisation. Le scŽnario de chargement de package dans Pharo est toujours le mme. Il consiste en trois Žtapes: d'abord, on spŽcifie une URL o se trouve le package, ensuite on spŽcifie le package ˆ charger depuis cette adresse et finalement on invoque les opŽrations (souvent charger ou sauvegarder).
-
-\subsection{Specifying an URL}
-
-Gofer permet de spŽcifier une URL d'un rŽpertoire Monticello. Cette dernire a gŽnŽralement la forme suivante:
-
-\begin{code}{}
+\begin{code}{A}
 MCHttpRepository 
-    location: 'http://www.squeaksource.com/MonPackage'
+    location: 'http://www.squeaksource.com/MyPackage'
     user: 'pharoUser' 
     password: 'pharoPwd'
 \end{code}
 
-Pour ceci, les mŽthodes \ct{url:}, \ct{url:username:password:} or \ct{directory:} sont disponibles. Les deux premires permettent de spŽcifier des accs HTTP ou FTP, la troisime permet de spŽcifier tout type d'URL. Cette dernire sera utilisŽe dans des cas particuliers comme charger des packages depuis un dossier local.
+Here is a typical Gofer script: it says that we want to load the package \ct{GoferLinuxMag} from the repository \ct{GoferLinuxMag} that is available on \ct{http://www.squeaksource.com}.
 
-Il existe dans l'API des mŽthodes de raccourci, par exemple ÇÊsqueaksource:ÊÈ, ÇÊwiresong:ÊÈ ou ÇÊgemsource:ÊÈ permettent respectivement de se connecter aux serveurs de squeaksource (http://www.squeaksource.com/), de wiresong (http://source.wiresong.ca/) et de gemsource (http://seaside.gemstone.com/ss/). Ces mŽthodes sont souvent utilisŽes car elle pointent vers les serveurs le plus populaires de la communautŽ.
 
-En supplŽment, Gofer dŽclare par dŽfaut le rŽpertoire local de cache comme une URL. Dans le cas o Gofer n'arriverait pas ˆ charger un package dans l'URL spŽcifiŽ, il va donc chercher dans le rŽpertoire ÇÊcacheÊÈ ˆ la racine de Pharo. Il est possible de dŽsactiver cette option en utilisant la mŽthode ÇÊdisablePackageCacheÊÈ ou de la rŽactiver en utilisant la mŽthode ÇÊenablePackageCacheÊÈ.
+\begin{code}{}
+Gofer new
+    url: 'http://www.squeaksource.com/GoferLinuxMag'	
+    package:'GoferLinuxMag';
+	load
+\end{code}
 
-De la mme manire, Gofer retourne une erreur si l'un des rŽpertoires n'est pas joignable. Pour ignorer ces erreurs, il suffit d'utiliser la mŽthode ÇÊdisableRepositoryErrorsÊÈ. Pour rŽactiver cette fonctionnalitŽ, il suffit d'utiliser la mŽthode ÇÊenableRepositoryErrorsÊÈ.
+When the repository (HTTP or FTP) requires an identification, the message \ct{url:username:password:} is available.  The message \ct{directory:} supports the access to local files. 
+Since we often use the same public servers, there are some shortcuts in the API to use them. For example, \ct{squeaksource:} is a shortcut for \ct{http://www.squeaksource.com}, \ct{wiresong:} for \ct{http://source.wiresong.ca/} and \ct{gemsource:} for \ct{http://seaside.gemstone.com/ss/}.
+In such a case you do not need to specify the full path as shown with the next snippet:
+
+\begin{code}{}
+Gofer new
+    squeaksource: 'GoferLinuxMag';
+    package: 'GoferLinuxMag'; 
+    load
+\end{code}
+
+
+
 
 \begin{code}{}
 Gofer new
@@ -166,6 +176,17 @@ Gofer new
 "on exŽcute la commande open"
 (Smalltalk at: #ButtonsBar) open.
 \end{code}
+
+
+
+
+
+
+
+En supplŽment, Gofer dŽclare par dŽfaut le rŽpertoire local de cache comme une URL. Dans le cas o Gofer n'arriverait pas ˆ charger un package dans l'URL spŽcifiŽ, il va donc chercher dans le rŽpertoire ÇÊcacheÊÈ ˆ la racine de Pharo. Il est possible de dŽsactiver cette option en utilisant la mŽthode ÇÊdisablePackageCacheÊÈ ou de la rŽactiver en utilisant la mŽthode ÇÊenablePackageCacheÊÈ.
+
+De la mme manire, Gofer retourne une erreur si l'un des rŽpertoires n'est pas joignable. Pour ignorer ces erreurs, il suffit d'utiliser la mŽthode ÇÊdisableRepositoryErrorsÊÈ. Pour rŽactiver cette fonctionnalitŽ, il suffit d'utiliser la mŽthode ÇÊenableRepositoryErrorsÊÈ.
+
 
 Ce code charge un ensemble de boutons permettant chacun de charger des projets diffŽrents. Vous pouvez regarder le code, le modifier ou en ajouter. Le rŽsultat du message ÇÊopenÊÈ donne la figure suivante:
 
@@ -378,7 +399,7 @@ Gofer new
 %     package: 'GoferLinuxMag';
 %     fetch
 
-\subsection{Automate responses}
+\subsection{Automate Answers}
 
 %Pharo dans son ensemble fournit des mŽthodes pratiques permettant d'avoir un systme compltement maitrisŽ. Bien que le sujet ici ne soit pas Pharo dans son ensemble, la mŽthode ÇÊvalueSupplyingAnswers:ÊÈ nous intŽresse particulirement. Elle Žvalue un bloc avec une liste de questions/rŽponses qui peuvent tre appelŽes durant l'exŽcution du script dans le bloc (entre crochets). Cela permet de gŽrer les valeurs ˆ spŽcifier manuellement et d'y rŽpondre automatiquement. L'exemple suivant montre 4 questions/rŽponses possibles dans un script.
 %[ Gofer new
@@ -405,14 +426,6 @@ Gofer new
 %(Smalltalk at: #ProfStef) go.
 %Amusez-vous bien !
 
-%\begin{code}
-%**Leaves**
-%52.7% {10502ms} SmallInteger(Integer)>>timesRepeat:
-%14.0% {2790ms} ByteString(SequenceableCollection)>>copyReplaceFrom:to:with:
-%8.8% {1754ms} UndefinedObject>>DoIt
-%7.7% {1534ms} ByteString(SequenceableCollection)>>,
-%5.9% {1176ms} ByteString class(String class)>>new:
-%\end{code}
 
 %=================================================================
 
