@@ -81,7 +81,7 @@ We can get the list of changes of package before publication by simply selecting
 \paragraph{Package Versioning System.}
 A version management system helps for version storage and keeps an history of system evolution. Moreover, it provides the management of concurrent accesses to a source code repository. It keep traces of all saved changes and allows us to collaborate with other engineers. More a project grows, more it is important to use a version management system.
 
-Monticello defines the package system and version management of Pharo. In Pharo, classes (superclass change, instance variable changes \ldots) and methods (adding, changing, deleting) are elementary entities which are versioned by Monticello. A source is an HTTP server which allows us to save projects (particularly packages) managed by Monticello. This is the equivalent of a forge: It provides the management of contributors and their status, visibility information, a wiki with RSS feed. A source open to everybody est available at \url{http://www.squeaksource.com/}.
+Monticello defines the package system and version management of Pharo. In Pharo, classes (superclass change, instance variable changes \ldots) and methods (adding, changing, deleting) are elementary entities which are versioned by Monticello. A source is an HTTP server which allows us to save projects (particularly packages) managed by Monticello. This is the equivalent of a forge: It provides the management of contributors and their status, visibility information, a wiki with RSS feed. A source open to everybody is available at \url{http://www.squeaksource.com/}.
 
 
 \paragraph{Distributed architecture of Monticello.} Monticello is a distributed version control management system like git but dedicated to Smalltalk. Monticello manipulates source code entities such as classes, methods,... It is then possible to manage local and distributed code servers. Gofer allows one to script such servers to publish, download and synchronize servers. 
@@ -134,7 +134,7 @@ MCHttpRepository
 \end{code}
 
 Here is a typical Gofer script: it says that we want to load the package \ct{GoferLinuxMag} from the repository \ct{GoferLinuxMag} that is available on \ct{http://www.squeaksource.com}.
-
+\sd{we should change the name GoferLinuxMag to something else}
 
 \begin{code}{}
 Gofer new
@@ -157,53 +157,46 @@ Gofer new
 
 
 
+
 \begin{code}{}
 Gofer new
-    "on travaille sur le projet GoferLinuxMag"
+    "we work on the project GoferLinuxMag"
     url: 'http://www.squeaksource.com/GoferLinuxMag'	
-    "on spécifie un nom d'utilisateur"
+    "we specify a user name"
     username: 'pharoUser'
-    "on spécifie un mot de passe" 
+    "we specify a password" 
     password: 'pharoPwd'; 
-    "on ajoute le package souhaité"
+    "we define the package to be loaded"
     package:'GoferLinuxMag'; 
-    "on désactive la recherche dans la cache local"
+    "we disable the lookup of package in the local cache"
     disablePackageCache; 
-    "on désactive les erreurs de répertoire"
+    "we stop the error raising"
     disableRepositoryErrors; 
-    "on charge les packages spécifiés"
+    "we load the specified package"
     load.
-"on exécute la commande open"
-(Smalltalk at: #ButtonsBar) open.
 \end{code}
 
+In addition, when gofer does not succeed to load a package in a specified URL, it looks in the local cache which is normally at the root of your image. It is possible to force Gofer not to use the cache using the message \ct{disablePackageCache} or to use it using the message \ct{enbalePackageCache}.
+
+In a similar manner, Gofer returns an error when one of the repositories is not reachable. We can instruct it to ignore such errors using the message \ct{disableRepositoryErrors}. To enable it the message we can use the message \ct{enableRepositoryErrors}.
 
 
 
 
+\subsection{Package Identification}
+Once an URL and the option are specified, we should define the packages we want to load. Using the message \ct{version:} defines the exact version to load, while the message \ct{package:} should be used to load the latest version available in all the repositories.
 
+The following example load the version 2 of the package. 
+\begin{code}{}
+Gofer new
+    squeaksource: 'GoferLinuxMag';
+    version: 'GoferLinuxMag-jannik.laval.2';
+    load
+\end{code}
 
-En supplément, Gofer déclare par défaut le répertoire local de cache comme une URL. Dans le cas où Gofer n'arriverait pas à charger un package dans l'URL spécifié, il va donc chercher dans le répertoire « cache » à la racine de Pharo. Il est possible de désactiver cette option en utilisant la méthode « disablePackageCache » ou de la réactiver en utilisant la méthode « enablePackageCache ».
+We can also specify some constraints to identify packages using the message \ct{package: aString constraint: aBlock} to pass a block. 
 
-De la même manière, Gofer retourne une erreur si l'un des répertoires n'est pas joignable. Pour ignorer ces erreurs, il suffit d'utiliser la méthode « disableRepositoryErrors ». Pour réactiver cette fonctionnalité, il suffit d'utiliser la méthode « enableRepositoryErrors ».
-
-
-Ce code charge un ensemble de boutons permettant chacun de charger des projets différents. Vous pouvez regarder le code, le modifier ou en ajouter. Le résultat du message « open » donne la figure suivante:
-
-
-
-
-%/// Image : resultButtonsBar.png ///
-
-Nous vous encourageons à modifier ce projet avec des scripts différents, et à profiter de l'API de Gofer pour gérer vos sources délocalisée.
-
-\subsection{Specify package}
-
-Une fois l'URL spécifiée et les options définies, on spécifie le ou les packages sur lesquels on souhaite travailler. Pour cela on utilise la méthode « version: » pour travailler sur une version particulière du package, ou la méthode « package: » pour travailler sur la dernière version du package dans l'ensemble des répertoires donnés. 
-
-Il est également possible de spécifier des contraintes de chargement de packages. La méthode « package:constraint: » permet de passer un block en paramètre pour définir certaines conditions.
-
-Par exemple, le code suivant permet de récupérer la dernière version du package «GoferLinuxMag» sauvegardée par le développeur nommé « jannik.laval ».
+For example the following code will load the latest version of the package saved by the developer named \ct{jannik.laval}.
 
 \begin{code}{}
 Gofer new
@@ -211,104 +204,135 @@ Gofer new
     package: 'GoferLinuxMag' constraint: [ :version | version author = 'jannik.laval' ];
     load
 \end{code}
-Un deuxième exemple qui récupère la version 2 du package «GoferLinuxMag»:
-\begin{code}{}
-Gofer new
-    squeaksource: 'GoferLinuxMag';
-    version: 'GoferLinuxMag-jannik_laval.2';
-    load
-\end{code}
 
-\subsection{Do actions}
-%Une fois l'instance de Gofer paramétré, nous pouvons faire de multiple manipulations. Dans ce paragraphe, nous listons les actions possibles suivies d'une courte description. Certaines seront détaillées plus loin dans l'article.
-%
-%load
-%charge les packages spécifiés dans Pharo
-%update
-%met à jour les versions locales des packages
-%merge
-%fusionne la version distante avec la version local des packages
-%localChanges
-%affiche la liste des changements entre la version de base et la version en cours de modification
-%remoteChanges
-%affiche les changements entre la version en cours et la version distante.
-%cleanup
-%nettoie les packages spécifiés: il efface les catégories inutiles du package.
-%commit / commit:
-%sauvegarde les packages sur le serveur distant spécifié. La deuxième méthode permet d'ajouter un message de log.
-%revert
-%réinitialise les packages dans leur dernières versions chargées
-%recompile
-%recompile les package
-%unload
-%supprime de Pharo les packages spécifiés
-%fetch
-%charge les packages depuis des répertoires distants dans le répertoire local
-%push
-%sauvegarde les versions de package locales dans le répertoire distant
 
-\subsection{Installing a package}
 
+\subsection{Gofer Actions}
+Once a gofer instance is parametrized, we can send it messages to perform differenct actions. 
+Here is a list of the possible actions. Some of them are described later. 
+
+\begin{tabular}{lp{8cm}}
+\hline
+\textsf{load}&Load the specified packages.\\
+\textsf{update}&Update the package loaded versions.\\
+\textsf{merge}&Merge the distant version with the one currently loaded.\\
+\textsf{localChanges}&Show the list of changes between  the bases version and the version currently modified.\\
+\textsf{remoteChanges} & Show the changes between the version currently modified and the version published on a server.\\
+\textsf{cleanup}&Cleanup packages: System obsolete information is cleaned.\\
+\textsf{commit / commit:}&Save the packages on a distant server -- with a message log.\\
+\textsf{revert}&Reload previously loaded packages.\\
+\textsf{recompile}&recompile packages\\
+\textsf{unload}&Unload from the image the packages\\
+\textsf{fetch}&Download the remote package versions from a remote server to the local cache.\\
+\textsf{push}&Upload the versions from the local cache to the remote server.\\
+\end{tabular}
+
+%\subsection{Installing a package}
 %Comme nous l'avons évoqué dans les paragraphes précédents, on peut utiliser Gofer pour charger une version spécifique d'un package, charger la dernière version sauvegardée sur le serveur distant, ou encore  charger la dernière version sauvegardé par un programmeur particulier:
+%
+%\begin{code}{}
 %Gofer new
-%    "on travaille sur le projet Seaside sauvegardé sur le serveur Squeaksource "
+%    "we will load the latest version of the configuration of Seaside "
 %    squeaksource: 'MetacelloRepository';
-%    "on traite la dernière version du package sauvegardé" 
 %    package: 'ConfigurationOfSeaside30'; 
 %    load	
-%"Cette dernière ligne permet de charger le code source de Seaside30"
+%
+%"Now to load seaside you need to ask its configuration.
 %(Smalltalk at: #ConfigurationOfSeaside30) load.
-%Attention cette action va charger tout Seaside (quelques 70 packages dans votre système), cela prend un certain temps, nous vous suggérons de ne pas le faire immédiatement.
+%\end{code}
+%
+%Pay attention that the last expression will load the complete seaside application, \ie around 70 packages. 
 
-\subsection{\ldots or several}
-%Nous pouvons spécifier le chargement de plusieurs packages provenant de plusieurs serveurs différents grâce à Gofer. Le code ci-dessous est à exécuter après celui chargeant Seaside (code précédent). Il charge différents packages provenant de deux serveurs différents. La séquence de chargement est respectée: le script charge dans l'ordre Pier-All, Picasa-Model et Picasa-Seaside.
-%Gofer new 		
-%    renggli: 'pier';
-%    package: 'Pier-All';
-%    squeaksource: 'PicasaClient';
-%    package: 'Picasa-Model';
-%    package: 'Picasa-Seaside';
-%    load.
-%Cet exemple semble montrer que Pier-All est cherché dans le répertoire Pier de du serveur « renggli », et que Picasa-Model et Picasa-Seaside sont cherchés dans le répertoire PicasaClient de SqueakSource. Or, en réalité, Gofer ne prend pas en compte cet ordre. L'ensemble des packages sont cherchés dans les deux répertoires. En l'absence de numéro de version, le script chargera le package le plus récent sur l'ensemble des deux serveurs.
-%On peut donc écrire le script de cette façon:
-%Gofer new 
-%    squeaksource: 'PicasaClient';		
-%    renggli: 'pier';
-%    package: 'Pier-All';
-%    package: 'Picasa-Model';
-%    package: 'Picasa-Seaside';
-%    load.
-%Dans certains cas, nous souhaitons spécifier une source particulière pour un package. Dans ce cas, nous créons plusieurs script, comme ceci:
-%Gofer new
-%    squeaksource: 'PicasaClient';
-%    package: 'Picasa-Model';
-%    package: 'Picasa-Seaside';
-%    load.
-%Gofer new
-%    squeaksource: 'PicasaClientLightbox';
-%    package: 'Picasa-Model';
-%    package: 'Picasa-Seaside';
-%    load.
-%Notez que ces scripts chargent les dernières versions des packages, donc ils sont fragiles car si une personne publie un nouveau package avec un bug vous allez le charger. Spécifier la version est une façon de se protéger des changements que l'on ne contrôle pas. 
+\subsection{Loading several packages}
+We can load several packages from different servers. To show you a concrete example, you have to load first the configuration of Seaside using its configuration.
+
+\begin{code}{}
+Gofer new
+    "we will load the latest version of the configuration of Seaside "
+    squeaksource: 'MetacelloRepository';
+    package: 'ConfigurationOfSeaside30'; 
+    load	
+
+"Now to load seaside you need to ask its configuration.
+(Smalltalk at: #ConfigurationOfSeaside30) load.
+\end{code}
+
+Pay attention that the last expression will load the complete seaside application, \ie around 70 packages, so it can take a moment.
+
+The following code snippet loads multiple packages from different servers.  The loading order is respected: the script loads first \ct{Pier-All} then \ct{Picasa-Model} and finally  \ct{Picasa-Seaside}.
+
+\begin{code}{}
+Gofer new 		
+    renggli: 'pier';
+    package: 'Pier-All';
+    squeaksource: 'PicasaClient';
+    package: 'Picasa-Model';
+    package: 'Picasa-Seaside';
+    load.
+\end{code}
+
+This example may give the impression that \ct{Pier-All} is looked up in the Pier repository of the server \ct{renggli} and that \ct{Picasa-Model} and \ct{Picasa-Seaside} are looked up in the project \ct{PicasaClient} of the squeaksource server. However this is not the case, Gofer does not take into account this order. In absence of version number, Gofer loads the most recent package versions found looking in the two servers.
+
+We can then rewrite the script in the following way:
+
+\begin{code}{}
+Gofer new 
+    squeaksource: 'PicasaClient';		
+    renggli: 'pier';
+    package: 'Pier-All';
+    package: 'Picasa-Model';
+    package: 'Picasa-Seaside';
+    load.
+\end{code}
+
+When we want to specify that package should be loaded from a specific server, we should write multiple scripts. 
+
+\begin{code}{}
+Gofer new
+    squeaksource: 'PicasaClient';
+    package: 'Picasa-Model';
+    package: 'Picasa-Seaside';
+    load.
+Gofer new
+    squeaksource: 'PicasaClientLightbox';
+    package: 'Picasa-Model';
+    package: 'Picasa-Seaside';
+    load.
+\end{code}    
+
+Note that such scripts load the latest versions of the packages, therefore they are fragile since if a new package version is published, you will load it even if this is inappropriate. 
+In general it is a good practice to control the version of the external components we rely on and use the latest version for our own current development. Now such problem can be solved with Metacello which is the tool to express configurations and load them. 
 
 \subsection{Other protocols}
 
-%Gofer offre également le protocole FTP et la recherche dans le répertoire local. Pour cela nous utilisons les mêmes commandes que les scripts précédents à quelques différences près.
-%Pour FTP, nous spécifions l'url précédée de l'entête ftp://
-%Gofer new
-%    url: 'ftp://wtf-is-ftp.com/code';
-%    ...
-%Pour un répertoire local, nous utilisons la commande « directory: » suivi du chemin absolu du répertoire contenant les fichiers à charger.
-%Gofer new
-%    directory: '/home/jlaval/repository';
-%    ...
-%Pour finir, il est possible de chercher les fichiers dans le répertoire et tous ces sous-répertoires en utilisant « * »
-%Gofer new
-%    directory: '/home/jlaval/repository/*';
-%    ...
+Gofer supports also FTP as well as loading from a local directory. We basically use the same messages than before with some changes. 
+
+For FTP, we should specify the URL using \ct{'ftp'} as heading 
+
+\begin{code}{}
+Gofer new
+    url: 'ftp://wtf-is-ftp.com/code';
+    ...
+\end{code}
+
+To work on a local directority, the message \ct{directory:} followed by the absolute path of the directory should be used. Here we specify that the directory to use is reachable at \ct{/home/pharoer/hacking/MCPackages}
+
+\begin{code}{}
+Gofer new
+    directory: '/home/pharoer/hacking/MCPackages';
+\end{code}
+
+Finally it is possible to look for packages in a repository and all its subfolders using the keen star. 
+
+\begin{code}{}
+Gofer new
+    directory: '/home/pharoer/hacking/MCPackages/*';
+    ...
+    \end{code}
 
 \subsection{Synchronizing with a remote server}
-
+Since Monticello is a distributed versioning control system, it is often useful to synchronize 
+versions published on a remote server with the ones locally published in the MC local cache.
 %Lorsque l'on travaille avec un package chargé depuis un serveur distant, il est important de synchroniser les versions. La synchronisation fonctionne dans les deux sens: « serveur vers client » pour mettre à jour la version locale, « client vers serveur » pour sauvegarder le travail effectué.
 %Dans une partie précédente, nous avons utilisé particulièrement la commande « load » correspondant au sens « serveur vers client ». L'utilisation des autres commandes est similaire: définition d'une URL, définition d'un projet, opération à exécuter.
 
@@ -399,7 +423,7 @@ Gofer new
 %     package: 'GoferLinuxMag';
 %     fetch
 
-\subsection{Automate Answers}
+\subsection{Automating Answers}
 
 %Pharo dans son ensemble fournit des méthodes pratiques permettant d'avoir un système complètement maitrisé. Bien que le sujet ici ne soit pas Pharo dans son ensemble, la méthode « valueSupplyingAnswers: » nous intéresse particulièrement. Elle évalue un bloc avec une liste de questions/réponses qui peuvent être appelées durant l'exécution du script dans le bloc (entre crochets). Cela permet de gérer les valeurs à spécifier manuellement et d'y répondre automatiquement. L'exemple suivant montre 4 questions/réponses possibles dans un script.
 %[ Gofer new
