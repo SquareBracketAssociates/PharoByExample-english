@@ -208,25 +208,7 @@ Gofer new
 
 
 
-\subsection{Gofer Actions}
-Once a gofer instance is parametrized, we can send it messages to perform differenct actions. 
-Here is a list of the possible actions. Some of them are described later. 
-
-\begin{tabular}{lp{8cm}}
-\hline
-\textsf{load}&Load the specified packages.\\
-\textsf{update}&Update the package loaded versions.\\
-\textsf{merge}&Merge the distant version with the one currently loaded.\\
-\textsf{localChanges}&Show the list of changes between  the bases version and the version currently modified.\\
-\textsf{remoteChanges} & Show the changes between the version currently modified and the version published on a server.\\
-\textsf{cleanup}&Cleanup packages: System obsolete information is cleaned.\\
-\textsf{commit / commit:}&Save the packages on a distant server -- with a message log.\\
-\textsf{revert}&Reload previously loaded packages.\\
-\textsf{recompile}&recompile packages\\
-\textsf{unload}&Unload from the image the packages\\
-\textsf{fetch}&Download the remote package versions from a remote server to the local cache.\\
-\textsf{push}&Upload the versions from the local cache to the remote server.\\
-\end{tabular}
+\section{Gofer Actions}
 
 %\subsection{Installing a package}
 %Comme nous l'avons évoqué dans les paragraphes précédents, on peut utiliser Gofer pour charger une version spécifique d'un package, charger la dernière version sauvegardée sur le serveur distant, ou encore  charger la dernière version sauvegardé par un programmeur particulier:
@@ -331,10 +313,30 @@ Gofer new
     ...
     \end{code}
 
-\subsection{Synchronizing with a remote server}
-Since Monticello is a distributed versioning control system, it is often useful to synchronize  versions published on a remote server with the ones locally published in the MC local cache.
+Once a gofer instance is parametrized, we can send it messages to perform differenct actions. 
+Here is a list of the possible actions. Some of them are described later. 
 
-\paragraph{\ct{merge}, \ct{update} and \ct{revert} operations.}
+\begin{tabular}{lp{8cm}}
+\hline
+\textsf{load}&Load the specified packages.\\
+\textsf{update}&Update the package loaded versions.\\
+\textsf{merge}&Merge the distant version with the one currently loaded.\\
+\textsf{localChanges}&Show the list of changes between  the bases version and the version currently modified.\\
+\textsf{remoteChanges} & Show the changes between the version currently modified and the version published on a server.\\
+\textsf{cleanup}&Cleanup packages: System obsolete information is cleaned.\\
+\textsf{commit / commit:}&Save the packages on a distant server -- with a message log.\\
+\textsf{revert}&Reload previously loaded packages.\\
+\textsf{recompile}&recompile packages\\
+\textsf{unload}&Unload from the image the packages\\
+\textsf{fetch}&Download the remote package versions from a remote server to the local cache.\\
+\textsf{push}&Upload the versions from the local cache to the remote server.\\
+\end{tabular}
+
+
+\subsection{Working with remote servers}
+Since Monticello is a distributed versioning control system, it is often useful to synchronize  versions published on a remote server with the ones locally published in the MC local cache. Here we show the main operations to support such tasks.
+
+\paragraph{The \ct{merge}, \ct{update} and \ct{revert} operations.}
 The message \ct{merge} performs a merge between a remote version and the working copy (the one currently loaded). 
 Changes present in the working copy are merged with the code of the remote one.
 It is often the case that after a merge, the working copy gets dirty and should be republished. The new version will contain the current changes and the changes of the remote version. In case of conflicts the user will be warned, else the operation will happen silently. 
@@ -351,7 +353,7 @@ of the working copy are lost.
 
 The message \ct{revert} resets the local version, \ie it loads again the current version. The changes of the working copy are then lost. 
  
-\paragraph{\ct{commit} and \ct{commit:} operations.}
+\paragraph{The \ct{commit} and \ct{commit:} operations.}
 Once we have merged or changed a package we want to save it. For this we can use
 the messages \ct{commit} and \ct{commit:}. The second one is expecting a comment - this is in general a good practice. 
 
@@ -365,7 +367,7 @@ Gofer new
 \end{code}    
 
 
-\paragraph{\ct{localChanges} and \ct{remoteChanges} operations.}
+\paragraph{The \ct{localChanges} and \ct{remoteChanges} operations.}
 
 Before loading or saving a verion, it is often useful to verify the changes 
 made locally or on the server. The message \ct{localChanges}  shows the changes between the last loaded version and the working copy. 
@@ -392,7 +394,7 @@ Gofer new
 \end{code}    
 %/// Image : screenshot.png ///
 
-\paragraph{\ct{unload} operation.}
+\paragraph{The \ct{unload} operation.}
 The message \ct{unload} unloads from the image the packages. Note that using the Monticello browser you can delete a package but such operation does not remove the code of the classes associated with the package, it just destroys the package. Unloading a package destroys the packages and the classes it contains. 
 
 The following code unloads the packages and its classes from the current image.
@@ -406,11 +408,10 @@ Gofer new
 Note that you cannot unload Gofer itself that way. \ct{Gofer gofer unload} does not work. 
 
 
-\paragraph{\ct{fetch} and \ct{push} operations.} Since Monticello is a distributed versioning system, it is good to save locally all the versions you want, without being forced to published on a remote server - this is especially true when working off-line. Now this is tedious to synchronize all the local and remote published packages. The messages \ct{fetch} and \ct{push} are there to support you in this task.
+\paragraph{The \ct{fetch} and \ct{push} operations.} Since Monticello is a distributed versioning system, it is good to save locally all the versions you want, without being forced to published on a remote server - this is especially true when working off-line. Now this is tedious to synchronize all the local and remote published packages. The messages \ct{fetch} and \ct{push} are there to support you in this task.
 
 The message \ct{fetch} copies from the remote server the packages that are missing in your local server. The packages are not loaded in Pharo. After a fetch you can load the packages even if the remote server breaks down. 
 
-%- « fetch » récupère les packages du serveur distant et remplit le répertoire d'installation local. Il ne les charge  pas dans l'image Pharo mais récupère uniquement les sources d'installations. Cela permet ensuite, hors ligne, d'installer les packages dans Pharo sans connexion internet.
 
 \begin{code}{}
 Gofer new
@@ -419,52 +420,56 @@ Gofer new
     fetch
 \end{code}    
 
-%Après avoir utilisé cette méthode, il est important lors du chargement du package de ne pas désactiver la recherche dans le répertoire local (méthodes disablePackageCache et enablePackageCache).
-%- « push » effectue l'opération inverse: cette méthode prend les packages du répertoire local et les sauvegarde sur le répertoire distant. Après avoir sauvegardé les modifications dans le répertoire local via Monticello, il est possible à la prochaine connexion à Internet de sauvegarder les scripts d'installations sur le serveur distant en toute transparence.
-%Gofer new
-%    squeaksource: 'GoferLinuxMag';
-%    package: 'GoferLinuxMag';
-%    push
-%Cela permet de constituer une base de données locale et de charger les packages hors connexion: le dossier local est toujours analysé avant le répertoire distant.
-%Ainsi avec ces deux fonctions, il est facile de réaliser un script de synchronisation des répertoires local et distant:
-%sync
-% "synchroniser les répertoires local et distant"
-% Gofer new
-%     squeaksource: 'GoferLinuxMag';
-%     package: 'GoferLinuxMag';
-%     push
-% Gofer new
-%     squeaksource: 'GoferLinuxMag';
-%     package: 'GoferLinuxMag';
-%     fetch
+Now if you want load your packages locally remember to set up that the lookup should consider local cache and disable errors as presented in the beginning of this chapter  (messages  \ct{disableRepositoryErrors} and \ct{enablePackageCache}).
+
+The message \ct{push} performs the inverse operation. It published to the remote server the packages locally available. All the packages that you published locally are then pushed to the server. 
+
+\begin{code}{}
+Gofer new
+    squeaksource: 'GoferLinuxMag';
+    package: 'GoferLinuxMag';
+    push
+\end{code}    
+
+As a pattern, we always keep in our local cache the copies of all the versions of our projects or the projects we used. This way we are autonomous from any network failure and the packages are backed up in our regular backup.
+
+With these two messages, it is easy to write a script \ct{sync} that synchronize local and remote repositories. 
+\begin{code}{}
+sync
+ Gofer new
+     squeaksource: 'GoferLinuxMag';
+     package: 'GoferLinuxMag';
+     push
+ Gofer new
+     squeaksource: 'GoferLinuxMag';
+     package: 'GoferLinuxMag';
+     fetch
+\end{code}
+
 
 \subsection{Automating Answers}
+Sometimes package installation asks for information such as passwords. With the systematic use of a build server, packages will probably stop to do that, but this is important to know how to supply answers from within a script to these questions.
+The message \ct{valueSupplyingAnswers:} supports such a task. 
 
-%Pharo dans son ensemble fournit des méthodes pratiques permettant d'avoir un système complètement maitrisé. Bien que le sujet ici ne soit pas Pharo dans son ensemble, la méthode « valueSupplyingAnswers: » nous intéresse particulièrement. Elle évalue un bloc avec une liste de questions/réponses qui peuvent être appelées durant l'exécution du script dans le bloc (entre crochets). Cela permet de gérer les valeurs à spécifier manuellement et d'y répondre automatiquement. L'exemple suivant montre 4 questions/réponses possibles dans un script.
-%[ Gofer new
-%	squeaksource: 'Seaside30';
-%	package: 'LoadOrderTests';
-%	load ]
-%	valueSupplyingAnswers: {
-%		{'Load Seaside'. True}.
-%		{'SqueakSource User Name'. 'pharoUser'}.
-%		{'SqueakSource Password'. 'pharoPwd'}.
-%		{'Run tests'. false}.
-%	}
-%Ainsi, il est possible de complètement automatiser les scripts de chargement de vos applications.
+
+\begin{code}{}
+[ Gofer new
+	squeaksource: 'Seaside30';
+	package: 'LoadOrderTests';
+	load ]
+	valueSupplyingAnswers: {
+		{'Load Seaside'. True}.
+		{'SqueakSource User Name'. 'pharoUser'}.
+		{'SqueakSource Password'. 'pharoPwd'}.
+		{'Run tests'. false}.
+	}
+\end{code}
+
+This message should be sent to a block giving a list of questions and their answers as shown by the previous examples
+
 
 \section{Conclusion}
-
-%Nous vous avons présenté Gofer, un outil pour scripter la gestion des packages dans Pharo. Cet outil fonctionne avec l'ensemble des packages sur Pharo, il est donc très facile de créer un script permettant d'installer tous vos packages préférés. 
-%Un package indispensable au bon apprentissage de l'environnement Pharo est le programme « ProfStef ». Vous pouvez le charger avec Gofer en exécutant le code suivant:
-%Gofer it
-%    squeaksource: 'MetacelloRepository';
-%    package: 'ConfigurationOfProfStef';
-%    load.
-%((Smalltalk at: #ConfigurationOfProfStef) project version:'1.0')load.
-%(Smalltalk at: #ProfStef) go.
-%Amusez-vous bien !
-
+Gofer provides a robust and stable implementation to script the management of your packages. Now when you project grows you should really consider to use Metacello (see Chapter~\ref{}).
 
 %=================================================================
 
