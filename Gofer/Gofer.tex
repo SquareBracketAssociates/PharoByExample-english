@@ -88,7 +88,8 @@ Monticello defines the package system and version management of Pharo. In Pharo,
 
 
 Monticello uses a local cache for packages. Each time a package is required, it is first looked up in this local cache. In a similar way, when a package is saved, it is also saved in the local cache.  From a physical point of a view a Monticello package is a zipped file containing meta-data and the complete source code of package. 
-To be clear in the following we make the distinction between a package loaded in the pharo image and a package saved in the cache but not loaded. We also define the following terms: image (object and bytecode executed by the virtual machine), loaded package (downloaded package from a server that is loaded in memory), dirty package (a loaded package with unsaved modifications). A dirty package is a loaded package.
+To be clear in the following we make the distinction between a package loaded in the pharo image and a package saved in the cache but not loaded. A package currently loaded is called a working copy of the package. We also define the following terms: image (object and bytecode executed by the virtual machine), loaded package (downloaded package from a server that is loaded in memory), dirty package (a loaded package with unsaved modifications). A dirty package is a loaded package.
+
 
 For example, in Figure~\ref{fig:archi} the package \ct{a.1} is loaded from the server squeaksource. It is not modified. The package \ct{b.1} is loaded from the server yoursource.com but it is modified locally in the image.
 Once \ct{b.1} which was dirty is saved on the server yoursource.com, it is versioned into \ct{b.2} which is saved in the cache and the remote server. 
@@ -331,31 +332,40 @@ Gofer new
     \end{code}
 
 \subsection{Synchronizing with a remote server}
-Since Monticello is a distributed versioning control system, it is often useful to synchronize 
-versions published on a remote server with the ones locally published in the MC local cache.
-%Lorsque l'on travaille avec un package chargé depuis un serveur distant, il est important de synchroniser les versions. La synchronisation fonctionne dans les deux sens: « serveur vers client » pour mettre à jour la version locale, « client vers serveur » pour sauvegarder le travail effectué.
-%Dans une partie précédente, nous avons utilisé particulièrement la commande « load » correspondant au sens « serveur vers client ». L'utilisation des autres commandes est similaire: définition d'une URL, définition d'un projet, opération à exécuter.
+Since Monticello is a distributed versioning control system, it is often useful to synchronize  versions published on a remote server with the ones locally published in the MC local cache.
 
-\paragraph{Merge, update and revert}
+\paragraph{\ct{merge}, \ct{update} and \ct{revert} operations.}
+The message \ct{merge} performs a merge between a remote version and the working copy (the one currently loaded). 
+Changes present in the working copy are merged with the code of the remote one.
+It is often the case that after a merge, the working copy gets dirty and should be republished. The new version will contain the current changes and the changes of the remote version. In case of conflicts the user will be warned, else the operation will happen silently. 
 
-%La commande « merge » permet de fusionner la version distance avec la version en cours de travail, en modifiant la version locale. Si il y a des conflits entre les deux versions, une fenêtre s'affiche pour laisser le choix à l'utilisateur. Dans le cas contraire, la fusion se fait en silence.
-%Gofer new
-%    squeaksource: 'GoferLinuxMag';
-%    package: 'GoferLinuxMag';
-%    merge
-%La commande « update », quant à elle, met à jour le ou les packages spécifiés de la machine locale avec la version du serveur distant. Cette commande efface les modifications effectuées en locale et non-sauvegardée.
-%La commande « revert » met à l'état initial la version locale. En quelques mots, elle charge une nouvelle fois la version précédemment chargée. Elle efface dons les modifications effectuées par l'utilisateur.
+\begin{code}{}
+Gofer new
+    squeaksource: 'GoferLinuxMag';
+    package: 'GoferLinuxMag';
+    merge
+\end{code}
+    
+The message \ct{update} loads the remote version in the image. The modifications 
+of the working copy are lost. 
 
-\paragraph{commit and commit:}
+The message \ct{revert} resets the local version, \ie it loads again the current version. The changes of the working copy are then lost. 
+ 
+\paragraph{\ct{commit} and \ct{commit:} operations.}
+Once we have merged or changed a package we want to save it. For this we can use
+the messages \ct{commit} and \ct{commit:}. The second one is expecting a comment - this is in general a good practice. 
 
-%Maintenant qu'on a appris à créer un script pour installer un package et manipuler le code en local, on peut sauvegarder les informations sur le serveur. Cette fonctionnalité est assurée par deux méthodes: « commit » et « commit: ». La première sauvegarde sans laisser de commentaires, la seconde prend une chaine de caractère en paramètre pour commenter la version sauvegardée.
-%Gofer new
-%    " on sauvegarde le packages dans le répertoire GoferLinuxMag "
-%    squeaksource: 'GoferLinuxMag';
-%    package: 'GoferLinuxMag';
-%
-%    " on commente les changements effectué, et on sauvegarde "
-%    commit: 'changed a lot of things'
+\begin{code}{}
+Gofer new
+    " on sauvegarde le packages dans le répertoire GoferLinuxMag "
+    squeaksource: 'GoferLinuxMag';
+    package: 'GoferLinuxMag';
+
+    " on commente les changements effectué, et on sauvegarde "
+    commit: 'changed a lot of things'
+\end{code}    
+
+Since it is a good pattern to make sure that we are working on the latest version of a package 
 %Dans le cas d'une sauvegarde, il est important de travailler sur la dernière version du projet. Souvent lorsque plusieurs développeurs travaillent sur le même projet, les versions locales ne sont pas à jour. Une solution pour palier ce problème au moment de la sauvegarde est de fusionner les dernières versions avant de sauvegarder. Voici un exemple:
 %Gofer new
 %    " on sauvegarde le packages dans le répertoire GoferLinuxMag "
@@ -368,25 +378,35 @@ versions published on a remote server with the ones locally published in the MC 
 %    "on commente les changements effectué, et on sauvegarde "
 %    commit: 'changed a lot of things'
 
-\paragraph{localChanges and remoteChanges}
+\paragraph{\ct{localChanges} and \ct{remoteChanges} operations.}
 
-%Parfois avant de charger une nouvelle version du package ou de sauvegarder, il peut être utile de regarder les changements effectués en local ou sur le serveur. Pour cela les méthodes « localChanges » et « remoteChanges » permettent pour la première d'afficher les changements entre la dernière version téléchargée et la version en cours de modification ; pour la seconde d'afficher les changements entre la version en cours et la dernière version sauvegardée sur le serveur distant. Ces deux méthodes retournent une liste de changements.
-%Gofer new
-%    squeaksource: 'GoferLinuxMag';
-%    "on ajoute la dernière version de GoferLinuxMag"
-%    package: 'GoferLinuxMag'; 
-%    "on obtient une liste des changements locaux par rapport aux packages spécifiés au dessus"
-%    localChanges
-%Il est possible d'afficher et de naviguer dans ces changements en utilisant le visualiseur standard de changement de Monticello en utilisant les méthodes « browseLocalChanges » et « browseRemoteChanges »
-%Gofer new
-%    squeaksource: 'GoferLinuxMag';
-%    "on ajoute la dernière version de GoferLinuxMag"
-%    package: 'GoferLinuxMag';
-%    "on navigue dans les changements effectués sur le serveur"
-%    browseRemoteChanges		
+Before loading or saving a verion, it is often useful to verify the changes 
+made locally or on the server. The message \ct{localChanges}  shows the changes between the last loaded version and the working copy. 
+The \ct{remoteChanges} shows the differences between the working copy and the last published version on the server. 
+Both return a list of changes. 
+
+\begin{code}{}
+Gofer new
+    squeaksource: 'GoferLinuxMag';
+    "on ajoute la dernière version de GoferLinuxMag"
+   package: 'GoferLinuxMag'; 
+    "on obtient une liste des changements locaux par rapport aux packages spécifiés au dessus"
+    localChanges
+\end{code}
+
+Using the messages \ct{browseLocalChanges} and \ct{browseRemoteChanges}, it is possible to browse the change using a normal code browser.
+
+\begin{code}{}
+Gofer new
+    squeaksource: 'GoferLinuxMag';
+    "on ajoute la dernière version de GoferLinuxMag"
+    package: 'GoferLinuxMag';
+    "on navigue dans les changements effectués sur le serveur"
+    browseRemoteChanges		
+\end{code}    
 %/// Image : screenshot.png ///
 
-\paragraph{Unload}
+\paragraph{\ct{unload} operation.}
 
 %Gofer permet de supprimer grâce à des scripts des packages de Pharo. La méthode « unload » permet de supprimer proprement les packages spécifiés et l'ensemble de leurs classes et méthodes contenus.
 %Le script suivant permet de supprimer le package « GoferLinuxMag » de l'image Pharo:

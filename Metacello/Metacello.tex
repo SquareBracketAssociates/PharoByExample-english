@@ -172,7 +172,7 @@ The  method \ct{version01:} should be read as: Create version '0.1'. The common 
 Sometimes, a Monticello repository can be restricted and requires username and password. In such case the following message can be used:
 
 \begin{code}{}
-       sepc repository: 'http://www.example.com/private' username: 'foo' password: 'bar' 
+       spec repository: 'http://www.example.com/private' username: 'foo' password: 'bar' 
 \end{code}
 
 We can access the specification created for version 0.1 by executing the following expression: \ct{(ConfigurationOfCoolBrowser project version: '0.1') spec}. 
@@ -412,7 +412,6 @@ ConfigurationOfCoolBrowser>>version06: spec
 
 \paragraph{Examples.} Once you have defined group, the idea is that you can use the name of a group anywhere that you would use the name of project or package. The \ct{load:}  method takes as parameter the name of a package, a project, a group or even an collection of those items.  Any of the following statements are then possible:
 
-can receive 
  
 \begin{code}{}
 (ConfigurationOfCoolBrowser project version: '1.0') load: 'CoolBrowser-Core'. 
@@ -704,13 +703,13 @@ In this example, for Pharo we use a different repository than for Gemstone. Howe
 In addition, the addons and tests are not available for Gemstone, and thus, those packages and groups are not included. So, as you can see, all what we have been doing inside the \ct{for: #common: do:} can be done inside another \ct{for:do:} for a specific dialect. 
 
 
-\section{Project configurations references}
+\section{Project Configurations Dependencies}
 
 In the same way a package can depend on other packages, a project can depend on other projects. 
 For example, Pier which is a CMS using meta-description depends on Magritte and Seaside. 
 A project can depend completely on one or more other projects, on a group of packages of a project, or even just on one or more packages of a project. Here we have basically two scenarios depending whether the other projects is described or not using a metacello configurations. 
 
-\paragraph{Without configuration reference.} A package A from a Project X depends on a package B from project Y and project Y does not have any Metacello configuration (typically when there is only one package in the project). In this case do the following:
+\paragraph{Depending on project without configuration.} A package A from a Project X depends on a package B from project Y and project Y does not have any Metacello configuration (typically when there is only one package in the project). In this case do the following:
 \begin{code}{}
 		``In the baseline''
 		spec 
@@ -729,7 +728,7 @@ A project can depend completely on one or more other projects, on a group of pac
 
 The problem here is that as the project B does not have a Metacello configurations, the dependencies of B are not managed. Thus, package B can have dependencies, but they will not be loaded. So, our recommendation is that in this case, you take the time to create a configuration for the project B.
 
-\paragraph{With configuration references.} Package A depends on a package or project B, but project B has also a configuration. This is the common case that we want to present now. 
+\paragraph{Depending on project with configuration.} Package A depends on a package or project B, but project B has also a configuration. This is the common case that we want to present now. 
 
 \sd{stopped there - we need a figure }
 To continue with our example, we introduce a new project called CoolToolSet which uses the packages from the CoolBrowser project. The configuration class is called ConfigurationOfCoolToolSet. We define two packages in CoolToolSet called CoolToolSet-Core and CoolToolSet-Tests. Of course, those packages depend on packages from CoolBrowser. Let's assume for a moment that the package that contains ConfigurationOfCoolBrowser class is called CoolBrowser-Metacello instead of also ConfigurationOfCoolBrowser (as we recommended). This will be better to understand each parameter. 
@@ -1023,6 +1022,350 @@ ConfigurationOfCoolToolSet >>project
 
 
 \section{Symbolic Versions}
+In any large evolving application relying on other applications and libraries, it is difficult to know which version of a configuration to use with a specific versions. This is especially true for pharo applications where some people should maintained applications developed for a given version, while others are working on the latest build.
+\ct{ConfigurationOfOmniBrowser} provides a good example of the problem: version 1.1.3 is used in the Pharo1.0 one-click image, version '1.1.3' cannot be loaded into Pharo1.2, version 1.2.3 is currently the latest \ct{development} version aimed at Pharo1.2, and version 1.2.3 cannot be loaded into Pharo1.0. Obviously version 1.1.3 should be used in Pharo1.0 and version 1.2.3 should be used in Pharo1.2, up until recently there is no way for a developer to communicate this information to his users using Metacello.
+
+%Finally at ESUG I got a chance to meet face to face with a whole group of Pharo folks to talk over different ideas andå Mariano summarized the results of the discussion. I finally settled on the idea of a 'conditional named version' where one defines a new kind of version in terms of the existing literal versions (like '1.1.3', .1.1.5', and '1.2.3') and newå project attributes (like #'pharo1.0.x',å #'pharo1.1.x', andå #'pharo1.2.x' that correspond to platform versions). 
+
+The latest version of Metacello introduces symbolic versions whose purpose is to provide a way to describe versions in terms of existing literal versions (like 1.1.3, 1.1.5 and 1.2.3). Symbolic versions are specified using theå symbolic version pragma:
+
+\begin{code}{}
+OmniBrowser>>stable: spec
+    <symbolicVersion: #'stable'>
+    spec for: #'pharo1.0.x' version: '1.1.3'.
+    spec for: #'pharo1.1.x' version: '1.1.5'.
+    spec for: #'pharo1.2.x' version: '1.2.3'.
+\end{code}
+
+Symbolic versions can be used anywhere that a literal version can be used. From a load statement:
+\ct{(ConfigurationOfOmniBrowser project version: #'stable') load.}
+to a project reference in a baseline version:
+
+\begin{code}{}
+baseline10: spec
+  <version: '1.0-baseline'>
+  spec for: #squeakCommon do: [
+    spec blessing: #baseline.
+    spec repository: 'http://seaside.gemstone.com/ss/GLASSClient'.
+    spec
+      project: 'OmniBrowser' with: [
+        spec
+          className: 'OmniBrowser';
+          versionString: #'stable';
+          repository: 'http://www.squeaksource.com/MetacelloRepository' ].
+    spec
+       package: 'OB-SUnitGUI' with: [
+         spec requires: #( 'OmniBrowser') ];
+       package: 'GemTools-Client' with: [
+         spec requires: #( 'OB-SUnitGUI'. ) ];
+       package: 'GemTools-Platform' with: [
+         spec requires: #( 'GemTools-Client'. ) ]].
+\end{code}
+
+New Platform Version Attributes
+
+%New attributes have been added to Metacello for Pharo and Squeak to correspond to platform version numbers:
+%#'pharo1.x',å #'pharo1.0.x',å #'pharo1.1.x', andå #'pharo1.2.x'
+%#'squeak3.10.x', #'squeak4.x',å #'squeak4.1.x', and #'squeak4.2.x'
+%These new attributes are calculated by default in Metacello based on `SystemVersion current version`. If you need a finer grain distinction for versions (say an attribute named #'pharo1.1.1') then you can change the #project method in your configuration to something like the following:
+
+\begin{code}{}
+project
+  | versionString projectAttributes |
+  ^ project
+    ifNil: [
+      "Bootstrap Metacello if it is not already loaded"
+      self class ensureMetacello.
+      "Construct Metacello project"
+      project := (Smalltalk at: #MetacelloMCProject) new.
+      projectAttributes := #().
+      Smalltalk
+        at: #SystemVersion
+        ifPresent: [ :cl |
+          versionString := cl current version.
+          ((versionString beginsWith: 'Pharo-1.1.1') or: [ versionString beginsWith: 'Pharo1.1.1' ])
+            ifTrue: [ projectAttributes add: #'pharo1.1.x' ] ].
+      project projectAttributes: projectAttributes.
+      (Smalltalk at: #MetacelloVersionConstructor) on: self project: project.
+      project loadType: #linear ]
+\end{code}      
+      
+      
+\begin{code}{}      
+Standard Symbolic Versions
+
+A couple of standard symbolic versions have already been defined:
+bleedingEdge - A symbolic version that specifies the latest mcz files and project versions. By default the #bleedingEdge symbolic version is defined as the latest baseline version available. The default specification for #bleedingEdge is defined for all projects. The #bleedingEdge version is primarily for developers who know what they are doing. There are no guarantees that the #bleedingEdge version will even load, let alone function correctly.
+development - A symbolic version that specifies the literal version that us under development (i.e., whose blessing is #development). Typically a #development version is used by developers for managing pre-release activities as the project transitions from #bleedingEdge to #stable. There are a number of MetacelloToolBox methods that take advantage of the #development symbolic version.
+stable - A symbolic version specifies the stable literal version for a particular platform. The #stable version is the version that should be used for loading.
+With the exception of the #bleedingEdge version (which has a pre-defined default defined), you will need to edit your configuration to add the #stable or #development version information.
+Script and Tool Support
+
+With this release, I've added two new classes:å MetacelloBaseConfiguration andå MetacelloToolBox, which should make developing with Metacello and writing tools for Metacello a whole lot easier.
+Development Support
+
+Theå MetacelloBaseConfiguration class is aimed at eventually becoming the common superclass for all Metacello configurations, but I'm not quite ready to go there, yet. For now, though, the class serves as the location for defining the common default symbolic versions (#bleedingEdge at the present time) and as the place to find development support methods:
+compareVersions -å Compare theå #stable version to #development version.
+createNewBaselineVersion -å Create a new baseline version based upon the #stable version as a model.
+createNewDevelopmentVersion -å Create a new #development versionå using the #stable version as model.
+releaseDevelopmentVersion: -å Release #development version: set version blessing to #release, update the #development and #stable symbolic version methods and save the configuration.
+saveConfiguration: -å Save the mcz file that contains the configuration to it's repository.
+saveModifiedPackagesAndConfiguration: -å Save modified mcz files, update the #development version and then save the configuration.
+updateToLatestPackageVersions: -å Update the #development version to match currently loaded mcz files.
+validate -å Check the configuration for Errors, Critical Warnings, and Warnings.
+I suggest that you take a look at these methods and copy the methods that you find useful to the class-side of your own configuration, so that you can simplify the management of your own configuration.
+Metacello Toolbox API
+
+Theå MetacelloToolBox class is aimed at providing a common API for development scripts and Metacello tools. The development support methods were implemented using the Metacello Toolbox API and the OB-Metacello tools have been reimplemented to use the Metacello Toolbox API.å For an overview of the Metacello Toolbox API, you can look in theå HelpBrowser at the 'Metacello>>API Documentation' section. The instance-side methods forå MetacelloToolBox support the å programmatic editing of Metacello configurations from the creation of a new configuration classes to the creation and changing of literal and symbolic version methods. The instance-side methods are intended for the use of Tools developers and are covered in the ProfStef tutorial: 'Inside Metacello Toolbox API'. The class-side methods for MetacelloToolBox support a number of configuration management tasks. The target the initial release of the Metacello Toolbox API is to support the basic Metacello development cycle. In addition to the following section the Metacello development cycle is covered in the ProfStef tutorial: 'Metacello Development Cycle'.
+Development Cycle Walk Through
+
+In this section we'll take a walk through a typical development cycle and provide examples of how the Metacello Toolbox API can be used to support your development process:
+Example Setup
+Project Startup
+Create Configuration and Initial Baseline
+Create Initial Literal Version
+Validation
+Save Initial Configuration
+Development Cycle
+Platform Testing
+Release
+Open New Version for Development
+Configuration Checkpoints
+Update Project Structure
+and Repeat...
+1.0 Example Setup
+
+When you are developing your project and are building your configuration for the first time, you already have the packages that make up your project loaded and correctly running on your image. In this example,it is necessary to load a set of packages to simulate a image that will be used to build the first configuration of the project. We'll cheat here an use an existing configuration (ConfigurationOfGemTools) to download and install in our image all the packages and dependencies needed (just as we would have to do by hand if we were the maintainers of the project). So, don't pay much attention to this step and only focus on the fact that after evaluating it, you'll have loaded in your image all the packages needed to build the example configuration:
+Gofer new
+  squeaksource: 'MetacelloRepository';
+  package: 'ConfigurationOfGemTools';
+  load.
+((Smalltalk at: #ConfigurationOfGemTools) project version: '1.0-beta.8.3')
+  load: 'ALL'.
+GemTools is expected to work in Squeak (Squeak3.10 and Squeak4.1) and Pharo (Pharo1.0 and Pharo1.1) and depends upon 4 other projects:
+FFI
+OmniBrowser
+Shout
+HelpSystem
+GemTools itself is made up of 5 mcz files from the http://seaside.gemstone.com/ss/GLASSClient repository (note that I've made some minor structural changes to simplify the example):
+OB-SUnitGUI - requires 'OmniBrowser'. in 'default' group.
+GemTools-Client - requires 'OmniBrowser', 'FFI', 'Shout', and 'OB-SUnitGUI'. in 'default' group.
+GemTools-Platform - requires 'GemTools-Client'. in 'default' group.
+GemTools-Help - requires 'HelpSystem' and 'GemTools-Client'. in 'default' group.
+2.0 Project Startup
+
+Create Configuration and Initial Baseline
+Create Initial Literal Version
+Validation
+Save Initial Configuration
+2.1 Create Configuration and Initial Baseline
+
+Use the toolbox API to create the initial baseline version by specifying the name, repository, projects, packages, dependencyMap and group composition:
+  MetacelloToolBox
+    createBaseline: '1.0-baseline'
+    for: 'GemToolsExample'
+    repository: 'http://seaside.gemstone.com/ss/GLASSClient'
+    requiredProjects: #('FFI' 'OmniBrowser' 'Shout' 'HelpSystem')
+    packages: #('OB-SUnitGUI' 'GemTools-Client' 'GemTools-Platform'å 
+            'GemTools-Help' )
+    dependencies:
+      {('OB-SUnitGUI' -> #( 'OmniBrowser' )).
+      ('GemTools-Client' -> #( 'OmniBrowser' 'FFI' 'Shout' 'OB-SUnitGUI' )).
+      ('GemTools-Platform' -> #( 'GemTools-Client' )).
+      ('GemTools-Help' -> #( 'HelpSystem' 'GemTools-Client' )). }
+    groups:
+      {('default' -> #( 'OB-SUnitGUI' 'GemTools-Client' 'GemTools-Platform'
+            'GemTools-Help' ))}.
+The #createBaseline:... method copies the class MetacelloConfigTemplate toå ConfigurationOfGemToolsExample and creates a #baseline10: method that looks like the following:
+baseline10: spec
+  <version: '1.0-baseline'>
+  spec for: #'common' do: [
+    spec blessing: #'baseline'.
+    spec repository: 'http://seaside.gemstone.com/ss/GLASSClient'.
+    spec
+      project: 'FFI' with: [
+        spec
+          className: 'ConfigurationOfFFI';
+          versionString: #'bleedingEdge';
+          repository: 'http://www.squeaksource.com/MetacelloRepository' ];
+      project: 'OmniBrowser' with: [
+        spec
+          className: 'ConfigurationOfOmniBrowser';
+          versionString: #'stable';
+          repository: 'http://www.squeaksource.com/MetacelloRepository' ];
+      project: 'Shout' with: [
+        spec
+          className: 'ConfigurationOfShout';
+          versionString: #'stable';
+          repository: 'http://www.squeaksource.com/MetacelloRepository' ];
+      project: 'HelpSystem' with: [
+        spec
+          className: 'ConfigurationOfHelpSystem';
+          versionString: #'stable';
+          repository: 'http://www.squeaksource.com/MetacelloRepository' ].
+    spec
+      package: 'OB-SUnitGUI' with: [
+        spec requires: #('OmniBrowser' ). ];
+      package: 'GemTools-Client' with: [
+        spec requires: #('OmniBrowser' 'FFI' 'Shout' 'OB-SUnitGUI' ). ];
+      package: 'GemTools-Platform' with: [
+        spec requires: #('GemTools-Client' ). ];
+      package: 'GemTools-Help' with: [
+        spec requires: #('HelpSystem' 'GemTools-Client' ). ].
+    spec group: 'default' with: #('OB-SUnitGUI' 'GemTools-Client'
+          'GemTools-Platform' 'GemTools-Help' ). ].
+Note that for the 'FFI' project the versionString is #bleedingEdge, while the versionString for the other projects is #'stable'. At the time of this writing the FFI project did not have a #stable symbolic version defined, so the default versionString is set toå #bleedingEdge. If a #stable symbolic version is defined for the project, the the default versionString is #stable. There are no special version dependencies for the GemTools project so the defaults will work just fine.
+2.2 Create Initial Literal Version
+
+Now we use the toolbox API to create the å initial literal version of the project. This toolbox method bases the definition of the literal version on the baseline version that we created above and uses the currently loaded state of the image to define the project versions and mcz file versions:
+  MetacelloToolBox
+    createDevelopment: '1.0'
+    for: 'GemToolsExample'
+    importFromBaseline: '1.0-baseline'
+    description: 'initial development version'.
+The #createDevelopment:... method creates a #version10: method in your configuration that looks like this:
+version10: spec
+  <version: '1.0' imports: #('1.0-baseline' )>
+  spec for: #'common' do: [
+    spec blessing: #'development'.
+    spec description: 'initial development version'.
+    spec author: 'dkh'.
+    spec timestamp: '1/12/2011 12:29'.
+    spec 
+      project: 'FFI' with: '1.2';
+      project: 'OmniBrowser' with: #'stable';
+      project: 'Shout' with: #'stable';
+      project: 'HelpSystem' with: #'stable'.
+    spec
+      package: 'OB-SUnitGUI' with: 'OB-SUnitGUI-dkh.52';
+      package: 'GemTools-Client' with: 'GemTools-Client-NorbertHartl.544';
+      package: 'GemTools-Platform' with: 'GemTools-Platform.pharo10beta-dkh.5';
+      package: 'GemTools-Help' with: 'GemTools-Help-DaleHenrichs.24'. ].
+Note that when the #stable symbolic version specifications were carried through into the literal version. If the version isn't #stable, then the currentVersion of the project is filled in, just as the current version of each mcz file is set for the packages. Note also that the blessing of the version '1.0' is set to #development. By setting the blessing of a newly created version to #development, you indicate that the version is under development and is subject to change without notice. The #createDevelopment:... method also creates a #development: method and specifies that version '1.0' is a #development symbolic version:
+development: spec
+  <symbolicVersion: #'development'>
+  spec for: #'common' version: '1.0'.
+2.3 Validation
+
+Whenever you finish editing a configuration you should validate it to check for mistakes that may cause problems later on:
+(MetacelloToolBox validateConfiguration: ConfigurationOfGemToolsExample) explore.
+If the list comes back empty then you are clean. Otherwise you should address the validation issues that show up. Validation issues are divided into three categories:
+Warning - issues that point out oddities in the definition of a version that do not affect behavior.
+Critical Warning - issues that identify inconsistencies in the definition of a version that may result in unexpected behavior.
+Error - issues that identify explicit problems in the definition of a version that will result in errors if an attempt is made to resolve the version.
+Here's an example of a Critical Warning validation issue:
+Critical Warning: No version specified for the project reference 'OCompletion'
+            in version '1.1'
+    { noVersionSpecified }
+    [ ConfigurationOfOmniBrowser #validateVersionSpec: ]
+The first and second line is the explanation, a human readable error message. The third line is the reasonCode, a symbol that represents the category of the issue. You can check out the meanings of the various reasonCodes online or through the following toolbox call:
+(MetacelloToolBoxå descriptionForValidationReasonCode: #noVersionSpecified)
+    inspect.
+The fourth line lists the configurationClass, the configuration that spawned the issue (there is a different toobox method for running a recursive configuraiont validation) and the callSite, which is the name of the validation method that generated the error (this is used mainly for debugging).
+2.4 Save Initial Configuration
+
+The first time you save your configuration, you have to decide where to keep your configuration. It makes sense to keep the configuration in your development repository. The first time that you save your configuration you need to use the MonticelloBrowser or an expression like the following:
+  Gofer new
+    url: 'http://www.example.com/GemToolsRepository';
+    package: 'ConfigurationOfGemToolsExample';
+    commit: 'Initial version of configuration'.
+3.0 Development Cycle
+
+Platform Testing
+Release
+Open New Version for Development
+Configuration Checkpoints
+Update Project Structure
+and Repeat...
+3.1 Platform Testing
+
+To finish the validation of your configuration, you need to do some test loads on your intended platforms. For GemTools I generally do a test load into a fresh image (each of the supported PharoCore and Squeak4.1) with the following load expression:
+Gofer new
+  url: 'http://www.example.com/GemToolsRepository';
+  package: 'ConfigurationOfGemToolsExample';
+  load.
+((Smalltalk at: #ConfigurationOfGemToolsExample)
+    project version: #development) load.
+and then run the unit tests. Note that for the GemTools unit tests you need to have GemStone installed.
+3.2 Release
+
+Once you are satisfied that the configuration loads correctly on your target platforms, you can release the #development into production using the following expression:
+  MetacelloToolBox
+    releaseDevelopmentVersionIn: ConfigurationOfGemToolsExample
+    description: '- release version 1.0'.
+The toolbox method #releaseDevelopmentVersionIn:description: does the following:
+set the blessing of the #development å version to #release
+sets the #development å version to #notDefined
+sets the #stable å version to the literal version of the #development version (in this case '1.0')
+saves the configuration mcz file to the correct repository
+The #development: method ends up looking like this:
+development: spec
+  <symbolicVersion: #'development'>
+  spec for: #'common' version: #'notDefined'.
+The #stable: method ends up looking like this:
+stable: spec
+  <symbolicVersion: #'stable'>
+  spec for: #'common' version: '1.0'.
+Finally you can copy the configuration to the MetacelloRepository using the following expression:
+  MetacelloToolBox
+    copyConfiguration: ConfigurationOfGemToolsExample
+    to: 'http://www.squeaksource.com/MetacelloRepository'.
+3.3 Open New Version for Development
+
+MetacelloToolBox
+  createNewDevelopmentVersionIn: ConfigurationOfGemToolsExample
+  description: '- open 1.1 for development'.
+3.4 Configuration Checkpoints
+
+During the course of development it makes sense to save checkpoints of your development to your repository. To setup this example you should load a newer version of GemTools and get some new mcz files loaded to simulate development:
+(ConfigurationOfGemTools project version: '1.0-beta.8.4')
+  load: 'ALL'.
+Now that you've simulated some development you can update the #development version of your project so that it references the new mcz files you've loaded
+MetacelloToolBox
+  updateToLatestPackageVersionsIn: ConfigurationOfGemToolsExample
+  description: '- fixed Issue 1090'.
+Then save the configuration to your repository:
+MetacelloToolBox
+  saveConfigurationPackageFor: 'GemToolsExample'
+  description: '- fixed Issue 1090'.
+Or do both steps with one toolbox method:
+MetacelloToolBox
+  saveModifiedPackagesAndConfigurationIn: ConfigurationOfGemToolsExample
+  description: '- fixed Issue 1090'.
+3.5 Update Project Structure
+
+In the course of development it is sometimes necessary to add a new package or reference and addition project. In this case let's add a package to the project called 'GemTools-Overrides' ('GemTools-Overrides' is actually part of the GemTools project already and I just left it out of the previous example). To add a new package a project you need to:
+create a new baseline version to reflect the new package and dependencies
+update existing #development version to reference the new baseline version and include the explicit version for the new package
+You can do that manually by using a class browser to manually:
+copy and edit the old baseline version to reflect the new structure
+edit the existing #development version method
+Or you can use the Metacello Toolbox API (not finished/tested yet:):
+| toolbox |
+toolbox := MetacelloToolBox configurationNamed: 'GemToolsExample'.
+toolbox
+  createVersionMethod: 'baseline11:' inCategory: 'baselines' forVersion: '1.1-baseline';
+  addSectionsFrom: '1.0-baseline'
+    forBaseline: true
+    updateProjects: false
+    updatePackages: false
+    versionSpecsDo: [ :attribute :versionSpec |
+      attribute == #common
+        ifTrue: [ versionSpec packages add: (toolbox createPackageSpec: 'GemTools-Overrides') ].
+      true ];
+  commitMethod;
+  modifyVersionMethodForVersion: '1.1'
+    versionSpecsDo: [ :attribute :versionSpec |
+      attribute == #common
+        ifTrue: [ versionSpec packages add: (toolbox createPackageSpec: 'GemTools-Overrides') ].
+      false ];
+  commitMethod.
+\end{code}
+
+
+\end{document}
+
+\section{Symbolic Versions}
 From the beginning Metacello has had the notion of loading the latest version. The expectation was that loading the latest release would
 always be the best thing to do.
 
@@ -1110,9 +1453,6 @@ development: spec
 
 Here this indicates that there are no version for the \ct{common} tag. 
 Using a symbolic version that resolves to \ct{notDefined} will result in a \ct{MetacelloSymbolicVersionNotDefinedError} being signaled.
-
-
-\end{document}
 
 
 %%% Local Variables: 
