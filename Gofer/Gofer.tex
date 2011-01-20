@@ -357,26 +357,13 @@ the messages \ct{commit} and \ct{commit:}. The second one is expecting a comment
 
 \begin{code}{}
 Gofer new
-    " on sauvegarde le packages dans le répertoire GoferLinuxMag "
+    "We save the package in the repository"
     squeaksource: 'GoferLinuxMag';
     package: 'GoferLinuxMag';
-
-    " on commente les changements effectué, et on sauvegarde "
+    "We comments the changes and save"
     commit: 'changed a lot of things'
 \end{code}    
 
-Since it is a good pattern to make sure that we are working on the latest version of a package 
-%Dans le cas d'une sauvegarde, il est important de travailler sur la dernière version du projet. Souvent lorsque plusieurs développeurs travaillent sur le même projet, les versions locales ne sont pas à jour. Une solution pour palier ce problème au moment de la sauvegarde est de fusionner les dernières versions avant de sauvegarder. Voici un exemple:
-%Gofer new
-%    " on sauvegarde le packages dans le répertoire GoferLinuxMag "
-%    squeaksource: 'GoferLinuxMag';
-%    package: 'GoferLinuxMag';
-%
-%    "on s'assure de travailler avec la dernière version du package "
-%    merge;
-%
-%    "on commente les changements effectué, et on sauvegarde "
-%    commit: 'changed a lot of things'
 
 \paragraph{\ct{localChanges} and \ct{remoteChanges} operations.}
 
@@ -388,13 +375,12 @@ Both return a list of changes.
 \begin{code}{}
 Gofer new
     squeaksource: 'GoferLinuxMag';
-    "on ajoute la dernière version de GoferLinuxMag"
-   package: 'GoferLinuxMag'; 
-    "on obtient une liste des changements locaux par rapport aux packages spécifiés au dessus"
+    package: 'GoferLinuxMag'; 
+    "We check that we will publish only our changes by comparing local changes versus the packages published on the server"
     localChanges
 \end{code}
 
-Using the messages \ct{browseLocalChanges} and \ct{browseRemoteChanges}, it is possible to browse the change using a normal code browser.
+Using the messages \ct{browseLocalChanges} and \ct{browseRemoteChanges}, it is possible to browse the changes using a normal code browser.
 
 \begin{code}{}
 Gofer new
@@ -407,23 +393,32 @@ Gofer new
 %/// Image : screenshot.png ///
 
 \paragraph{\ct{unload} operation.}
+The message \ct{unload} unloads from the image the packages. Note that using the Monticello browser you can delete a package but such operation does not remove the code of the classes associated with the package, it just destroys the package. Unloading a package destroys the packages and the classes it contains. 
 
-%Gofer permet de supprimer grâce à des scripts des packages de Pharo. La méthode « unload » permet de supprimer proprement les packages spécifiés et l'ensemble de leurs classes et méthodes contenus.
-%Le script suivant permet de supprimer le package « GoferLinuxMag » de l'image Pharo:
-%Gofer new
-%    squeaksource: 'GoferLinuxMag';
-%    package: 'GoferLinuxMag';
-%    unload
-%A noté qu'il n'est pas possible de supprimer Gofer par ce biais. La commande « Gofer gofer unload » ne fonctionne pas.
+The following code unloads the packages and its classes from the current image.
+\begin{code}{}
+Gofer new
+    squeaksource: 'GoferLinuxMag';
+    package: 'GoferLinuxMag';
+    unload
+\end{code}    
 
-\paragraph{Fetch, push: two functions for offline synchronizing}
+Note that you cannot unload Gofer itself that way. \ct{Gofer gofer unload} does not work. 
 
-%Les deux méthodes « fetch » et « push » permettent à Gofer d'avoir le comportement d'un Git. Ce paragraphe montre l'une des fonctionnalités les plus importante de Gofer lorsque l'on travaille hors ligne.
+
+\paragraph{\ct{fetch} and \ct{push} operations.} Since Monticello is a distributed versioning system, it is good to save locally all the versions you want, without being forced to published on a remote server - this is especially true when working off-line. Now this is tedious to synchronize all the local and remote published packages. The messages \ct{fetch} and \ct{push} are there to support you in this task.
+
+The message \ct{fetch} copies from the remote server the packages that are missing in your local server. The packages are not loaded in Pharo. After a fetch you can load the packages even if the remote server breaks down. 
+
 %- « fetch » récupère les packages du serveur distant et remplit le répertoire d'installation local. Il ne les charge  pas dans l'image Pharo mais récupère uniquement les sources d'installations. Cela permet ensuite, hors ligne, d'installer les packages dans Pharo sans connexion internet.
-%Gofer new
-%    squeaksource: 'GoferLinuxMag';
-%    package: 'GoferLinuxMag';
-%    fetch
+
+\begin{code}{}
+Gofer new
+    squeaksource: 'GoferLinuxMag';
+    package: 'GoferLinuxMag';
+    fetch
+\end{code}    
+
 %Après avoir utilisé cette méthode, il est important lors du chargement du package de ne pas désactiver la recherche dans le répertoire local (méthodes disablePackageCache et enablePackageCache).
 %- « push » effectue l'opération inverse: cette méthode prend les packages du répertoire local et les sauvegarde sur le répertoire distant. Après avoir sauvegardé les modifications dans le répertoire local via Monticello, il est possible à la prochaine connexion à Internet de sauvegarder les scripts d'installations sur le serveur distant en toute transparence.
 %Gofer new
