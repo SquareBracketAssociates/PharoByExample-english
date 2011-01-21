@@ -1010,11 +1010,16 @@ With the exception of the \ct{bleedingEdge} version (which has a pre-defined def
 
 \section{Script and Tool Support}
 
-\begin{code}{}   
-With this release, I've added two new classes:å MetacelloBaseConfiguration andå MetacelloToolBox, which should make developing with Metacello and writing tools for Metacello a whole lot easier.
-Development Support
+ 
+With this release, I've added two new classes: MetacelloBaseConfiguration andå MetacelloToolBox, which should make developing with Metacello and writing tools for Metacello a whole lot easier.
 
-The MetacelloBaseConfiguration class is aimed at eventually becoming the common superclass for all Metacello configurations, but I'm not quite ready to go there, yet. For now, though, the class serves as the location for defining the common default symbolic versions (#bleedingEdge at the present time) and as the place to find development support methods:
+
+\subsection{Development Support}
+
+The MetacelloBaseConfiguration class is aimed at eventually becoming the common superclass for all Metacello configurations, but I'm not quite ready to go there, yet. For now, though, the class serves as the location for defining the common default symbolic versions (\ct{bleedingEdge} at the present time) and as the place to find development support methods:
+
+
+\begin{code}{}  
 compareVersions -å Compare theå #stable version to #development version.
 createNewBaselineVersion -å Create a new baseline version based upon the #stable version as a model.
 createNewDevelopmentVersion -å Create a new #development versionå using the #stable version as model.
