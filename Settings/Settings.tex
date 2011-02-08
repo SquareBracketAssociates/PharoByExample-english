@@ -28,11 +28,11 @@
 	\begin{document}
 \fi
 %=================================================================
-%\renewmessage{\nnbb}[2]{} % Disable editorial comments
+\renewcommand{\nnbb}[2]{} % Disable editorial comments
 \sloppy
 %=================================================================
 \newcommand{\apl}[1]{\nnbb{Alain}{#1}} % Plantec
-\chapter{The Settings Framework}
+\chapter{The Settings Framework (DRAFT)}
 
 When an application gets mature it often needs to provide variations such as the default selection color, the default font and the default font size... Often such variations represent user preferences of possible software customizations. 
 Since the 1.1 release, Pharo contains and uses the Settings framework to manage its preferences. With Setting, an application can expose its configuration. Settings is not limited to manage Pharo preferences but we suggest to use for any application. The nice thing about Settings is that it is not intrusive, it supports a modular decomposition of software and can be added to an application after its inception. This is what we will see now.
@@ -608,23 +608,23 @@ In this example, \ct{#domainValues:} takes an array of associations which is com
 %
 
 
-\section{Setting styles management}
-\label{sec:SettingStylesManagement}
+%\section{Setting styles management}
+%\label{sec:SettingStylesManagement}
+%
+%\section{Extending the setting browser}
+%\label{sec:ExtendingTheSettingsBrowser}
 
-\section{Extending the setting browser}
-\label{sec:ExtendingTheSettingsBrowser}
-
-\section{How to access or set programmatically a setting}
-\sd{do you think that it make sense?}
-the idea is how people can customize their image?
-They could save he setting browser?
-
-
-\section{Programming a preference}
-\label{sec:ProgrammingAPreference}
-
-
-\sd{Not sure I would do that}
+%\section{How to access or set programmatically a setting}
+%\sd{do you think that it make sense?}
+%the idea is how people can customize their image?
+%They could save he setting browser?
+%
+%
+%\section{Programming a preference}
+%\label{sec:ProgrammingAPreference}
+%
+%
+%\sd{Not sure I would do that}
 
 \section{Design of the Settings Framework}
 \sd{may be we can throw away all that....}
