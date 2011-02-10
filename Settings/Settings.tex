@@ -650,6 +650,24 @@ Finally when declaring a setting, the code does not refer explicitly to any Sett
 that we get a modular system. In case the settings framework is not loaded, the method containing the setting declaration is just not used by the system.
 
 
+\section{Principal API}
+
+\sd{would be nice to know the API}
+
+\section{Collecting Pragmas}
+
+Now if you would like to gather all the methods that contain a specific pragmas, this is easy. You should use
+\ct{PragmaCollector}. For example, the following code returns a collector which contains all the methods
+defining the pragma named \ct{'systemsettings'}.
+
+
+\begin{code}{}
+(PragmaCollector filter: [:prg | prg keyword = 'systemsettings']) reset
+\end{code}
+
+
+
+
 
 %=========================================================
 \ifx\wholebook\relax\else
