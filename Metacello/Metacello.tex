@@ -48,7 +48,7 @@
 \chapter{Managing projects with Metacello}
 
 
-Have you ever had a problem when trying to load a nice project where you got an error because a package that you were not even aware of  is missing or not correct? You've probably seen such a problem. The problem probably occurred because the project loaded fine for the  developer but only because he has a different context than yours. The project developer did not use a \emph{package management system} to explicitly manage the dependencies between his packages. In this chapter we will show you how to use Metacello, a package management system and the power that you can get using it. 
+Have you ever had a problem when trying to load a nice project where you got an error because a package that you were not even aware of  is missing or not correct? You've probably seen such a problem. The problem probably occurred because the project loaded fine for the  developer but only because he has a different context than yours. The project developer did not use a \emph{package configuration} to explicitly manage the dependencies between his packages. In this chapter we will show you how to use Metacello, a package management system and the power that you can get using it. 
 
 \section{Introduction}
 
@@ -75,7 +75,7 @@ To manage software, Pharo proposes several tools that are very closely related. 
 \begin{description}
 
 \item{\textbf{Monticello: Source code versioning.}}
-Source code versioning is the process of assigning either unique version names or unique version numbers to unique software states. At a fine-grained level, revision control incrementally keeps track of different versions of ``pieces of software''. In object-oriented programming, these ``pieces of software'' are methods, classes or packages. A versioning system tool lets you commit a new version, update to a new one, merge, diff, revert, etc. Monticello is the source code versioning system used in Pharo and it manages Monticello packages. With Monticello we can do most of the above operations on packages but there is no way to easily specify dependencies, identify stable versions, or group packages into meaningful units.  Monticello just manages package versions. Metacello manages package dependencies and the notion of projects.
+Source code versioning is the process of assigning either unique version names or unique version numbers to unique software states. At a fine-grained level, revision control incrementally keeps track of different versions of ``pieces of software". In object-oriented programming, these ``pieces of software" are methods, classes or packages. A versioning system tool lets you commit a new version, update to a new one, merge, diff, revert, etc. Monticello is the source code versioning system used in Pharo and it manages Monticello packages. With Monticello we can do most of the above operations on packages but there is no way to easily specify dependencies, identify stable versions, or group packages into meaningful units.  Monticello just manages package versions. Metacello manages package dependencies and the notion of projects.
 
 \item {\textbf{Gofer: Monticello's Scripting API.}}
 Gofer is a small tool on top of Monticello that loads, updates, merges, diffs, reverts, commits, recompiles and unloads groups of Monticello packages. Contrary to existing tools Gofer makes sure that these operations are performed as cleanly as possible. Gofer is a scripting API to Monticello (See Chapter~\ref{}).
@@ -109,25 +109,25 @@ Additionally, the following points are important considerations for Metacello:
 
 \section{A Simple Case}
 
-Let's start using Metacello for managing a software project called CoolBrowser. The first step is to create a configuration for the project by simply copying the class MetacelloConfigTemplate and naming it ConfigurationOfCoolBrowser (by convention the class name for a Metacello configuration is composed by prefixing the name of the project with \ct{'ConfigurationOf'}). To do this, right click in the class MetacelloConfigTemplate and select the option ``copy''. 
+Let's start using Metacello for managing a software project called CoolBrowser. The first step is to create a configuration for the project by simply copying the class MetacelloConfigTemplate and naming it ConfigurationOfCoolBrowser (by convention the class name for a Metacello configuration is composed by prefixing the name of the project with \ct{'ConfigurationOf'}). To do this, right click in the class MetacelloConfigTemplate and select the option ``copy". 
 
 This is the class definition:
 \begin{code}{}
 Object subclass: #ConfigurationOfCoolBrowser
 	instanceVariableNames: 'project'
 	classVariableNames: 'LastVersionLoad'
-	poolDictionaries: ''
+	poolDictionaries: "
 	category: 'Metacello-MC-Model'
 \end{code}
 
 You will notice that the \ct{ConfigurationOfCoolBrowser} has some instance and class side methods. We will explain later how they are used. Notice that this class inherits from \ct{Object}.  Metacello configurations should be written such that they can be loaded without any prerequisites, including Metacello itself. So (at least for the time being) Metacello configurations cannot rely on a common superclass.
 
-Now, imagine that the project ``Cool Browser'' has different versions, for example, 1.0, 1.0.1, 1.4, 1.67, etc. 
+Now, imagine that the project ``Cool Browser" has different versions, for example, 1.0, 1.0.1, 1.4, 1.67, etc. 
 With Metacello you create an instance side method for each version of the project. Method names for version methods are unimportant as long as the method is annotated with the <version:> pragma as shown below.
 
 By convention the version method is named 'versionXXX:', where XXX is the version number with illegal characters (like '.') removed.
 
-Suppose for the moment that our project ``Cool Browser'' has two packages: \ct{CoolBrowser-Core} and \ct{CoolBrowser-Tests} we name the method \ct{ConfigurationOfCoolBrowser>>version01: spec} as shown below:
+Suppose for the moment that our project ``Cool Browser" has two packages: \ct{CoolBrowser-Core} and \ct{CoolBrowser-Tests} we name the method \ct{ConfigurationOfCoolBrowser>>version01: spec} as shown below:
 
 \begin{code}{}
 ConfigurationOfCoolBrowser>>version01: spec 
@@ -203,16 +203,15 @@ There is a convention also to create a particular package with the same name as 
 
 The package name and the class name match and by starting with ConfigurationOfXXX it is easier to scan through a repository listing the available projects. It is also very convenient to have the configurations grouped together rather than jumping around in the browser. That is why the repository \ct{http://www.squeaksource.com/Pharo10MetacelloRepository}, \ct{http://www.squeaksource.com/Pharo11MetacelloRepository} were created. They contain the configurations of several tools and applications and serve as a central repository. 
 
-Having all configurations in the same place has several advantages:
-\begin{itemize}
-\item Finding the configuration package is easier in the Monticello browser package list.
-\item Do not have any conflict with Monticello package naming (for example, you can have the CoolBrowser package and this might conflict with the CoolBrowserConfiguration).
-\item When you have to manage multiple Configurations in the PackageBrowser.
-\item Given that the name is slightly counter intuitive, it also has very few chances to collide with other names.
-\end{itemize}
+%Having all configurations in the same place has several advantages:
+%\begin{itemize}
+%\item Finding the configuration package is easier in the Monticello browser package list.
+%\item Do not have any conflict with Monticello package naming (for example, you can have the %CoolBrowser package and this might conflict with the CoolBrowserConfiguration).
+%\item When you have to manage multiple Configurations in the PackageBrowser.
+%\item Given that the name is slightly counter intuitive, it also has very few chances to %collide with other names.
+%\end{itemize}
 
-As a general practice, we suggest that you save the Configuration package in your working project and when you decide 
-it is ready you can copy it into the MetacelloRepository. 
+As a general practice, we suggest that you save the Configuration package in your working project and when you decide it is ready you can copy it into the MetacelloRepository. A process for publishing configurations in specific distribution repositories is under definition at the time of writing.
 
 
 
@@ -235,9 +234,9 @@ the packages that you are interested in as an argument to the \ct{load:} method 
 \end{code}
 
 
-\section{Managing packages internal dependencies}
+\section{Managing package internal dependencies}
 
-A project is generally composed of several packages which often have dependencies on other packages.  It is probable that a certain package depends on a specific version to behave correctly. Handling dependencies correctlyis really important and this is what Metacello does for us. 
+A project is generally composed of several packages which often have dependencies on other packages.  It is probable that a certain package depends on a specific version to behave correctly. Handling dependencies correctly is really important and this is what Metacello does for us. 
 
 There are two types of dependencies:
 \begin{itemize}
@@ -258,11 +257,11 @@ ConfigurationOfCoolBrowser>>version03: spec
 			package: 'CoolBrowser-Tests' with: [
 				spec 
 					file: 'CoolBrowser-Tests-JohnLewis.8';
-					requires: 'CoolBrowser-Core' ];
+					!\textbf{requires:}! 'CoolBrowser-Core' ];
 			package: 'CoolBrowser-Addons' with: [
 				spec 
 					file: 'CoolBrowser-Addons-JohnLewis.3';
-					requires: 'CoolBrowser-Core' ]].
+					!\textbf{requires:}! 'CoolBrowser-Core' ]].
 \end{code}
 
 In \ct{version03:} we've added dependency information using the \ct{requires:} directive.
@@ -302,7 +301,7 @@ ConfigurationOfCoolBrowser>>baseline04: spec
 
 \end{code}
 
-Baseline \ct{baseline04:} will be used across several versions as for example the version \ct{'0.4'} defined below (see Figure~\ref{}). In method \ct{baseline04:} the structure of version \ct{'0.4-baseline'} is specified. The baseline specifies a repository, the packages, but without version information, and the required packages (dependencies). We'll cover the \ct{blessing:} method  later.
+Baseline \ct{baseline04:} will be used across several versions as for example the version \ct{'0.4'} defined below (see Figure~\ref{fig:version04}). In method \ct{baseline04:} the structure of version \ct{'0.4-baseline'} is specified. The baseline specifies a repository, the packages, but without version information, and the required packages (dependencies). We'll cover the \ct{blessing:} method  later.
 
 \begin{figure}
 \begin{center}
@@ -340,7 +339,7 @@ Even though version \ct{'0.4-baseline'} does not have explicit package versions,
 (ConfigurationOfCoolBrowser project version: '0.4-baseline') load.
 \end{code}
 
-Sometimes when a number of developers are working on a project it may be useful to load a \\ct{baseline} version so that you get the latest work from all of the project members.
+Sometimes when a number of developers are working on a project it may be useful to load a \ct{baseline} version so that you get the latest work from all of the project members.
 
 
 \paragraph{New version.}
@@ -348,7 +347,7 @@ Now for example, we can have a new version \ct{'0.5'} that has the same baseline
 
 \begin{code}{} 
 ConfigurationOfCoolBrowser>>version05: spec 
-	<version: '0.5' imports: #('0.4-baseline')>
+	<!\textbf{version: '0.5' imports: \#('0.4-baseline')}>!
 	
 	spec for: #common do: [
 		spec 
@@ -362,14 +361,14 @@ Note that version \ct{'0.5'} uses the same baseline as version \ct{'0.4'}: \ct{'
 \begin{figure}
 \begin{center}
 \includegraphics[width=0.6\linewidth]{version05}
-\caption{A second version imports again the baseline.\label{fig:version05}}
+\caption{A second version imports again the baseline.}\label{fig:version05}
 \end{center}
 \end{figure} 
 
 After all these explanations you may have noticed that creating a baseline for a big project may require time. This is because you must know all the dependencies of all the packages and other things we will see later (this was a simple baseline). Once the baseline is defined, creating new versions of the project is very easy and takes very little time. 
 
 \section{Groups}
-Suppose that now the CoolBrowser project is getting better and someone wrote tests for the addons. We have a new package \ct{'CoolBrowser-AddonsTests'}. This package depends on \ct{'CoolBrowser-Addons'} and \ct{'CoolBrowser-Tests'}. \sd{add a figure}
+Suppose that now the CoolBrowser project is getting better and someone wrote tests for the addons. We have a new package named \ct{'CoolBrowser-AddonsTests'}. It depends on \ct{'CoolBrowser-Addons'} and \ct{'CoolBrowser-Tests'} as shown by Figure~\ref{fig:version06}.
 
 Now we may want to load projects with or without tests. In addition, it would be convenient to be able to load all of the tests with a simple expression like the following:
 
@@ -384,11 +383,19 @@ instead of having to explicitly list all of the test projects like this:
 	load: #('CoolBrowser-Tests' 'CoolBrowser-AddonsTests').
 \end{code}
  
-To solve this problem, Metacello offers the notion of group. A group is a list of items: packages, projects (as we will see in Section~\ref{}) or even other groups. 
+To solve this problem, Metacello offers the notion of group. A group is a list of items: packages, projects, or even other groups. 
  
-Groups are very useful because they let you customize different groups of items of different interests. Maybe you want to offer the  user te possibility to install just the core, or with add-ons and development features. Let's go back to our example. Here we defined a new baseline \ct{'0.6-baseline'} which defines 6 groups (see Figure~\ref{fig:version06}). 
+Groups are very useful because they let you customize different groups of items of different interests. Maybe you want to offer the  user the possibility to install just the core, or with add-ons and development features. Let's go back to our example. Here we defined a new baseline \ct{'0.6-baseline'} which defines 6 groups (see Figure~\ref{fig:version06}). 
 
-To define a group we use the method \ct{group: groupName with: group elements.} The parameter of \ct{with:} can be a package name, a project, another group, or even an collection of those items. This way you can compose groups by using other groups. 
+\begin{figure}
+\begin{center}
+\includegraphics[width=0.6\linewidth]{version06}
+\caption{A baseline with groups: default, Core, Extras, Tests, CompleteWithoutTests and CompleteWithTests.\label{fig:version06}}
+\end{center}
+\end{figure} 
+
+
+To define a group we use the method \ct{group: groupName with: group elements}. The {with:} argument can be a package name, a project, another group, or even an collection of those items. This way you can compose groups by using other groups. 
  
 \begin{code}{}
 ConfigurationOfCoolBrowser>>baseline06: spec 
@@ -405,7 +412,7 @@ ConfigurationOfCoolBrowser>>baseline06: spec
 			package: 'CoolBrowser-AddonsTests' with: [ 
 				spec requires: #('CoolBrowser-Addons' 'CoolBrowser-Tests' ) ].
 		spec 
-			group: 'default' with: #('CoolBrowser-Core' 'CoolBrowser-Addons' );
+			!\textbf{group: 'default' with: \#('CoolBrowser-Core' 'CoolBrowser-Addons' )}!;
 			group: 'Core' with: #('CoolBrowser-Core');
 			group: 'Extras' with: #('CoolBrowser-Addon');
 			group: 'Tests' with: #('CoolBrowser-Tests' 'CoolBrowser-AddonsTests' );
@@ -415,22 +422,16 @@ ConfigurationOfCoolBrowser>>baseline06: spec
 \end{code}
 
 
-\begin{figure}
-\begin{center}
-\includegraphics[width=0.6\linewidth]{version06}
-\caption{A baseline with groups: default, Core, Extras, Tests, CompleteWithoutTests and CompleteWithTests.\label{fig:version06}}
-\end{center}
-\end{figure} 
 
 
 
 
  
-Note that we are defining the groups in the baseline version, since groups are a structural component. The package version is the same as version 0.5 in the previous example but with the new package \ct{CoolBrowser-AddonsTests}.
+Note that we are defining the groups in the baseline version, since a group is a structural component. The version \ct{0.6} is the same as version\ct{0.5} in the previous example but with the new package \ct{CoolBrowser-AddonsTests}.
  
 \begin{code}{}
 ConfigurationOfCoolBrowser>>version06: spec 
-	<version: '0.6' imports: #('0.6-baseline')>
+	<!\textbf{version: '0.6' imports: \#('0.6-baseline')}!>
 	
 	spec for: #common do: [
 		spec blessing: #development.
@@ -447,25 +448,26 @@ ConfigurationOfCoolBrowser>>version06: spec
  
 \begin{code}{}
 (ConfigurationOfCoolBrowser project version: '1.0') load: 'CoolBrowser-Core'. 
-	''Load a single package''
+	"Load a single package"
 
 (ConfigurationOfCoolBrowser project version: '1.0') load: 'Core'. 
-	''Load a single group''
+	"Load a single group"
 
 (ConfigurationOfCoolBrowser project version: '1.0') load: 'CompleteWithTests'.  
-	''Load a single group''
+	"Load a single group"
  
-(ConfigurationOfCoolBrowser project version: '1.0') load: #('CoolBrowser-Core' 'Tests').   
-	''Loads a package and a group''
+(ConfigurationOfCoolBrowser project version: '1.0') 
+	load: #('CoolBrowser-Core' 'Tests').   
+	"Loads a package and a group"
 
 (ConfigurationOfCoolBrowser project version: '1.0') load: #('CoolBrowser-Core' 'CoolBrowser-Addons' 'Tests'). 
-	''Loads two packages and a group'' 
+	"Loads two packages and a group" 
 
  (ConfigurationOfCoolBrowser project version: '1.0') load: #('CoolBrowser-Core' 'CoolBrowser-Tests').
-	''Loads two packages''
+	"Loads two packages"
   
 (ConfigurationOfCoolBrowser project version: '1.0') load: #('Core' 'Tests'). 
-	''Loads two groups''
+	"Loads two groups"
 \end{code}
 
 
@@ -475,87 +477,186 @@ ConfigurationOfCoolBrowser>>version06: spec
 (ConfigurationOfCoolBrowser project version: '1.0') load.
 \end{code}
 
-In such a case, if you want to load all the packages of a project, you should use the predefined group named \ct{'ALL'} as shown below: 
+Finally if you want to load all the packages of a project, you should use the predefined group named \ct{'ALL'} as shown below: 
 
 \begin{code}{}
 (ConfigurationOfCoolBrowser project version: '1.0') load: 'ALL'.
 \end{code}
  
 
- 
-\section{Project version attributes}
- 
-% First, let us tell you something. Metacello not only includes all what we have been learning and what we will be still learning along this chapter, but also a complete set of tools with UI (user interface). These tools are based on OmniBrowser (OB), and thus, they are called OB-Metacello. This tool lets you save packages, spawn new versions, update package methods, load latest packages, save projects, update projects, among others. Unfortunately, this topic is not covered in this chapter. That's all you need to know for the moment.  
- 
-A configuration can have several optional attributes such as   
-an author, a description, a blessing and a timestamp.  Let's see an example with a new version 0.7 of our project.
- 
+\section{Project Configuration Dependencies}
+
+In the same way a package can depend on other packages, a project can depend on other projects.  For example, Pier which is a CMS using meta-description depends on Magritte and Seaside.  A project can depend completely on one or more other projects, on a group of packages of a project, or even just on one or more packages of a project. Here we have basically two scenarios depending whether the other projects is described or not using a Metacello configurations. 
+
+\subsection{Depending on project without configuration}
+
+A package A from a Project X depends on a package B from project Y and project Y does not have any Metacello configuration (typically when there is only one package in the project). In this case do the following:
+\sd{we should use the same example A and B sucks}
 \begin{code}{}
-ConfigurationOfCoolBrowser>>version07: spec 
-	<version: '0.7' imports: #('0.7-baseline')>
-	
-	spec for: #common do: [
-		
-		spec blessing: #release.
-		spec description: 'In this release .....'.
-		spec author: 'JohnLewis'.
-		spec timestamp: '10/12/2009 09:26'.
-	
+		``In the baseline method"
 		spec 
-			package: 'CoolBrowser-Core' with: 'CoolBrowser-Core-MichaelJones.20';
-			package: 'CoolBrowser-Tests' with: 'CoolBrowser-Tests-JohnLewis.8';
-			package: 'CoolBrowser-Addons' with: 'CoolBrowser-Addons-JohnLewis.6' ;
-			package: 'CoolBrowser-AddonsTests' with: 'CoolBrowser-AddonsTests-JohnLewis.1' ].
+			package: 'PackageA' with: [  spec requires: #('PackageB')];
+			package: 'PackageB' with: [  spec repository: 'http://www.squeaksource.com/ProjectB' ].	
 \end{code}
+
+\begin{code}{}
+		``In the version method"
+		package: 'PackageB' with: 'PackageB-JuanCarlos.80'.
+\end{code}
+
+The problem here is that as the project B does not have a Metacello configuration, the dependencies of B are not managed. Thus, package B can have dependencies, but they will not be loaded. So, our recommendation is that in this case, you take the time to create a configuration for the project B.
+
+\subsection{Depending on project with configuration}
+Now let us focus on the case where projects are described using Metacello configuration.
+Let us introduce a new project called \ct{CoolToolSet} which uses the packages from the \ct{CoolBrowser} project. The configuration class is called \ct{ConfigurationOfCoolToolSet}. We define two packages in \ct{CoolToolSet} called \ct{CoolToolSet-Core} and \ct{CoolToolSet-Tests}. Of course, these packages depend on packages from \ct{CoolBrowser}. Let's assume for a moment that the package that contains \ct{ConfigurationOfCoolBrowser} class is called \ct{CoolBrowser-Metacello} instead of the recommended \ct{ConfigurationOfCoolBrowser}. This will be better to understand each parameter. 
+
+
+The version is just a normal version. It imports a baseline. 
+\begin{code}{}
+ConfigurationOfCoolToolSet>>version01: spec 
+	<version: '0.1' imports: #('0.1-baseline')>
+	spec for: #common do: [
+		spec 
+			package: 'CoolToolSet-Core' with: 'CoolToolSet-Core-anon.1';
+			package: 'CoolToolSet-Tests' with: 'CoolToolSet-Tests-anon.1'.].	
+\end{code}	
+
+
+
+\begin{code}{}
+ConfigurationOfCoolToolSet >>baseline01: spec 
+	<version: '0.1-baseline'>
+	spec for: #common do: [
+		spec repository: 'http://www.example.com/CoolToolSet'.
+		spec project: 'CoolBrowser ALL' with: [
+				spec 
+				    !\textbf{className:}! 'ConfigurationOfCoolBrowser';
+					versionString: '1.0';
+					loads: #('ALL' );
+					!\textbf{file:}! 'CoolBrowser-Metacello';
+					!\textbf{repository:}! 'http://www.example.com/CoolBrowser' ].
+		spec 
+			package: 'CoolToolSet-Core' with: [ spec requires: 'CoolBrowser ALL' ];
+			package: 'CoolToolSet-Tests' with: [ spec requires: 'CoolToolSet-Core' ]].
+\end{code}	
+
+
+
+
+
+
+
+What we did here in \ct{baseline0.1} was to create a project reference for the CoolBrowser project (see Figure~\ref{fig:version07}). 
+
+\begin{itemize}
+\item The message \ct{className:} specifies the name of the class that contains the project metadata. If the class is not present in the image, then we need to supply all the necessary information so that Metacello can search and load the configuration for the project.
+
+
+\item The message \ct{file:} and \ct{repository:} specifications give us the information needed to load the project metadata from a repository in case the configuration class is not already present in the image. If the Monticello repository is protected, then you have to use the message: \ct{repository:username:password:}.
+
+\end{itemize}
+Note that the values for the \ct{className:} and \ct{file:} attributes could be the same and be for example \ct{'ConfigurationOfCoolBrowser'}. Here since we mentioned that the project does not followed the convention we have to specify all the information. 
+
+Finally, the \ct{versionString:} and \ct{loads:} message specify which version of the project to load and which packages or groups (the parameter of \ct{load:} can be the name of a package, or the name of a group or those predefined groups like 'ALL') to load from the project. \sd{should I get a version 1.0 of the version/baseline of CoolBrowser. This is not clear and I need to know that.}
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=0.6\linewidth]{version07}
+\caption{Dependencies between configurations.\label{fig:version07}}
+\end{center}
+\end{figure} 
+
+
+We've named the project reference 'CoolBrowser ALL' and in the specification for the 'CoolToolSet-Core' package, we've specified that 'CoolBrowser ALL' is required. The name of the project reference is arbitrary, you can select the name you want, although is recommended to put a name that make sense to that project reference. 
+\sd{How can I say that I should load a specific version of another configurations?}
+
+Now we can now download \ct{CoolToolSet} like this:
+
+\begin{code}{}
+(ConfigurationOfCoolToolSet project version: '0.1') load.
+\end{code}
+
+Note that the entire \ct{CoolBrowser} project is loaded before \ct{'CoolToolSet-Core'}. To separate the test package from the core packages, we can write for example the following baseline:
+
+\begin{code}{}
+ConfigurationOfCoolToolSet >>baseline02: spec 
+	<version: '0.2-baseline'>
+	spec for: #common do: [
+		spec blessing: #baseline.
+		spec repository: 'http://www.example.com/CoolToolSet'.
+		spec
+			project: 'CoolBrowser default' with: [
+				spec
+					className: 'ConfigurationOfCoolBrowser';
+					versionString: '1.0';
+					loads: #('default' );
+					file: 'CoolBrowser-Metacello';
+					repository: 'http://www.example.com/CoolBrowser' ];
+			project: 'CoolBrowser Tests' with: [
+				spec
+					className: 'ConfigurationOfCoolBrowser';
+					versionString: '1.0';
+					loads: #('Tests' );
+					file: 'CoolBrowser-Metacello';
+					repository: 'http://www.example.com/CoolBrowser' ].
+		spec 
+			package: 'CoolToolSet-Core' with: [ spec requires: 'CoolBrowser default' ];
+			package: 'CoolToolSet-Tests' with: [ 
+				spec requires: #('CoolToolSet-Core'  'CoolBrowser Tests'  ) ].].			
+\end{code}
+
+Here we created two project references. The reference named \ct{'CoolBrowser default'} loads the 'default' group and the reference named 'CoolBrowser Tests'  loads the 'Tests' group of the configuration of Cool Browser. We then made \ct{'CoolToolSet-Core'} require \ct{'CoolBrowser default'} and \ct{'CoolToolSet-Tests'} requires \ct{'CoolToolSet-Core'} and \ct{'CoolBrowser Tests'}.
+
+Now it is possible to load just the core packages:
+
+\begin{code}{}
+(ConfigurationOfCoolToolSet project version: '1.1') load: 'CoolToolSet-Core'.
+\end{code} 
+or the core including tests:
  
-We will describe each attribute in detail:
- 
-\begin{description}
-\item[ Blessing:] in software development it is very common that packages or projects pass through several stages or steps during the software development process or life cycle such as for example, development, alpha, beta,  release, release candidate, etc. Sometimes we want to refer also to the state of a project.
- %or sometimes we just want to use any other tag that may be useful. The blessing attribute can be used for all of these cases. --- would be better tohave separated tag: attributes.
-
-
-Blessings are taken into account by the load logic. The result of the following expression:
 \begin{code}{}
-ConfigurationOfCoolBrowser project latestVersion.
+  (ConfigurationOfCoolToolSet project version: '1.1') load: 'CoolToolSet-Tests'.
 \end{code}
-is not always the last version.  This is because \ct{latestVersion} answers the latest version whose blessing is {\em not} \ct{#development}, \ct{#broken}, or \ct{#blessing}. To find the latest \ct{#development} version for example, you should execute this expression:
+
+As you can see, in \ct{baseline02:} there is redundant information for each of the project references. To solve that situation, we can use the \ct{project:copyFrom:with:} method to eliminate the need to specify the bulk of the project information twice. Example:
 
 \begin{code}{}
-ConfigurationOfCoolBrowser project latestVersion: #development.
+ConfigurationOfCoolToolSet >>baseline02: spec 
+	<version: '0.2-baseline'>
+	spec for: #common do: [
+		spec blessing: #baseline.
+		spec repository: 'http://www.example.com/CoolToolSet'.
+		spec project: 'CoolBrowser default' with: [
+				spec
+					className: 'ConfigurationOfCoolBrowser';
+					versionString: '1.0';
+					loads: #('default');
+					file: 'CoolBrowser-Metacello';
+					repository: 'http://www.example.com/CoolBrowser' ];
+			project: 'CoolBrowser Tests' 
+				!\textbf{copyFrom:}! 'CoolBrowser default' 
+				!\textbf{with:}! [ spec loads: #('Tests').].
+		spec 
+			package: 'CoolToolSet-Core' with: [ spec requires: 'CoolBrowser default' ];
+			package: 'CoolToolSet-Tests' with: [ 
+				spec requires: #('CoolToolSet-Core' 'CoolBrowser Tests') ].].					
 \end{code}
 
-Nevertheless, you can get the very last version independently of blessing using the \ct{lastVersion} method as illustrated below
+Not only in this baseline but also in \ct{baseline01} we did something that is not always useful: we put the version of the referenced projects in the baseline instead of in the version method. If you look at \ct{baseline01} you can see that we used \ct{versionString: '1.0'}. if the project changes often and you want to follow the changes, you may be forced to update often your baseline and this is not really adequate. Depending of your context you can specify the \ct{#versionString:} in the version method instead of in the baseline method as follows: 
 
 \begin{code}{}
-ConfigurationOfCoolBrowser project lastVersion.
+ConfigurationOfCoolToolSet>>version02: spec 
+	<version: '0.2' imports: #('0.2-baseline' )>
+	spec for: #common do: [
+		spec blessing: #beta.
+		spec 
+			package: 'CoolToolSet-Core' with: 'CoolToolSet-Core-anon.1';
+			package: 'CoolToolSet-Tests' with: 'CoolToolSet-Tests-anon.1';
+			!\textbf{project:}! 'CoolBrowser default' !\textbf{with:}! '1.3';
+			!\textbf{project:}! 'CoolBrowser Tests' !\textbf{with:}! '1.3'].
 \end{code}
 
-In general, the \ct{\#development} blessing should be used for any version that is unstable. Once a version has stabilized, a different blessing should be applied.
-
-The following expression will load the latest version of all of the packages for the latest \ct{#baseline} version:
- \begin{code}{}
-(ConfigurationOfCoolBrowser project latestVersion: #baseline) load.
-\end{code}
-
-Since the latest \ct{#baseline} version should reflect the most up-to-date project structure, executing the previous expression loads the absolute bleeding edge version of the project. 
-
-
-\item[ Description:] a textual description of the version. This may include a list of bug fixes or new features, changelog, etc.
-\item[  Author:] the name of the author who created the version. When using the OB-Metacello tools the author field is automatically updated to reflect the current author as defined in the image.
-\item[  Timestamp:] the date and time when the version was completed. When using the OB-Metacello tools the timestamp field is automatically updated to reflect the current date and time. Note that the timestamp must be a String.
-
-\end{description}
-
-To end this section, we show you can query this information. This illustrates that most of the information that you define in a Metacello version can then be queried. For example, you can evaluate the following expressions:
-
-\begin{code}{}
-(ConfigurationOfCoolBrowser project version: '0.7') blessing.
-(ConfigurationOfCoolBrowser project version: '0.7') description.
-(ConfigurationOfCoolBrowser project version: '0.7') author.
-(ConfigurationOfCoolBrowser project version: '0.7') timestamp.
-\end{code}
-
+If we don't define a version at all for the references \ct{'CoolBrowser default'}  and \ct{'CoolBrowser Tests'} in the version method, then the version specified in the baseline is used. If there is no version specified in the baseline method, then Metacello loads the latest version of the project.
 
 \section{Pre and post code execution}
 
@@ -566,24 +667,18 @@ Metacello offers such feature by means of the two methods \ct{preLoadDoIt:} and 
 
 Continuing with our example:
 
-
 \begin{code}{}
 ConfigurationOfCoolBrowser>>version08: spec 
 	<version: '0.8' imports: #('0.7-baseline')>
 	
 	spec for: #common do: [
-		spec blessing: #release.
-		spec description: 'In this release .....'.
-		spec author: 'JohnLewis'.
-		spec timestamp: '10/12/2009 09:26'.
 		spec 
 			package: 'CoolBrowser-Core' with: [
 				spec 
 					file: 'CoolBrowser-Core-MichaelJones.20';
-					preLoadDoIt: #preloadForCore;
-					postLoadDoIt: #postloadForCore:package: ];
-			package: 'CoolBrowser-Tests' with: 'CoolBrowser-Tests-JohnLewis.8';
-			package: 'CoolBrowser-Addons' with: 'CoolBrowser-Addons-JohnLewis.6' ;
+					!\textbf{preLoadDoIt:}! #preloadForCore;
+					!\textbf{postLoadDoIt:}! #postloadForCore:package: ];
+			....
 			package: 'CoolBrowser-AddonsTests' with: 'CoolBrowser-AddonsTests-JohnLewis.1' ].
 \end{code}
 
@@ -613,11 +708,9 @@ ConfigurationOfCoolBrowser>>version08: spec
 	
 	spec for: #common do: [
 		spec blessing: #release.
-		spec description: 'In this release .....'.
-		spec author: 'JohnLewis'.
-		spec timestamp: '10/12/2009 09:26'.
-		spec preLoadDoIt: #preLoadForCoolBrowser.
-		spec postLoadDoIt: #postLoadForCoolBrowser.
+		
+		spec !\textbf{preLoadDoIt:}! #preLoadForCoolBrowser.
+		spec !\textbf{postLoadDoIt:}! #postLoadForCoolBrowser.
 	
 		spec 
 			package: 'CoolBrowser-Core' with: [
@@ -638,25 +731,23 @@ In this example, we added pre and post load scripts at project level. Again, the
 
 Suppose that we want to have different packages loaded depending on the platform the configuration is loaded in. In the context of our example our Cool Browser we can have a package called \ct{CoolBrowser-Platform}. There we can define abstract classes, APIs, etc. And then, we can have the following packages: \ct{CoolBrowser-PlatformPharo}, \ct{CoolBrowser-PlatformGemstone}, etc.
 
-Metacello automatically loads the package of the platform where we are loading the code. But in order to do that, we need to give Metacello some information using the method \ct{for:do:} as shown in the following example.
+Metacello automatically loads the package of the platform where we are loading the code. But to do that, we need to give Metacello  platform specific information using the method \ct{for:do:} as shown in the following example.
 
 \begin{code}{} 
 ConfigurationOfCoolBrowser>>version09: spec 
 	<version: '0.9' imports: #('0.9-baseline')>
 	
-	spec for: #common do: [
+	!\textbf{spec for: \#common do: [}!
 		...
 		spec 
-			package: 'CoolBrowser-Core' with: 'CoolBrowser-Core-MichaelJones.20';
-			package: 'CoolBrowser-Tests' with: 'CoolBrowser-Tests-JohnLewis.8';
-			package: 'CoolBrowser-Addons' with: 'CoolBrowser-Addons-JohnLewis.6' ;
+	        ...
 			package: 'CoolBrowser-AddonsTests' with: 'CoolBrowser-AddonsTests-JohnLewis.1' ].
 	
-	spec for: #gemstone do: [
+	!\textbf{spec for: \#gemstone do: [}!
 		spec package: 'CoolBrowser-Platform' with: 'CoolBrowser-PlatformGemstone-MichaelJones.4'.].
-	spec for: #pharo do: [
+	!\textbf{spec for: \#pharo do: [}!
 		spec package: 'CoolBrowser-Platform' with: 'CoolBrowser-PlatformPharo-JohnLewis.7'.].
-	spec for: #squeak do: [
+	!\textbf{spec for: \#squeak do: [}!
 		spec package: 'CoolBrowser-Platform' with: 'CoolBrowser-JohnLewis-dkh.3'.].
 \end{code}
 
@@ -685,15 +776,15 @@ ConfigurationOfCoolBrowser>>baseline09: spec
 			group: 'CompleteWithoutTests' with: #('Core', 'Extras' );
 			group: 'CompleteWithTests' with: #('CompleteWithoutTests', 'Tests' )].
 			
-	spec for: #gemstone do: [
+	!\textbf{spec for: \#gemstone do: [}!
 		spec package: 'CoolBrowser-Platform' with: 'CoolBrowser-PlatformGemstone'.].
-	spec for: #pharo do: [
+	!\textbf{spec for: \#pharo do: [}!
 		spec package: 'CoolBrowser-Platform' with: 'CoolBrowser-PlatformPharo'.].
-	spec for: #squeak do: [
+	!\textbf{spec for: \#squeak do: [}!
 		spec package: 'CoolBrowser-Platform' with: 'CoolBrowser-PlatformSqueak'.].
 \end{code}
 
-Notice that we add the package \ct{CoolBrowser-Platform} in the \ct{Core} group. As you can see, we can manage this package as any other and in a unified way. Thus, we have a lot of flexibility. At runtime, when you load CoolBrowser, Metacello automatically detects in which dialect the load is happening and loads the specific package for that dialect.  	
+Notice that we add the package \ct{CoolBrowser-Platform} in the \ct{Core} group. As you can see, we can manage this package as any other and in a uniform way. Thus, we have a lot of flexibility. At runtime, when you load CoolBrowser, Metacello automatically detects in which dialect the load is happening and loads the specific package for that dialect.  	
 
 Finally, note that the method \ct{for:do:} is not only used to specify a platform specific package, but also for anything that has to do with different dialects. You can put whatever you want from the configuration inside that block. So, for example, you can define groups, packages, repositories, etc, that are dependent on a dialect. For example, you can do this:
 
@@ -735,179 +826,6 @@ In this example, for Pharo we use a different repository than for Gemstone. Howe
 In addition, the addons and tests are not available for Gemstone, and thus, those packages and groups are not included. So, as you can see, all what we have been doing inside the \ct{for: #common: do:} can be done inside another \ct{for:do:} for a specific dialect. 
 
 
-\section{Project Configuration Dependencies}
-\sd{I would move that section before the property ones}
-
-In the same way a package can depend on other packages, a project can depend on other projects. 
-For example, Pier which is a CMS using meta-description depends on Magritte and Seaside. 
-A project can depend completely on one or more other projects, on a group of packages of a project, or even just on one or more packages of a project. Here we have basically two scenarios depending whether the other projects is described or not using a Metacello configurations. 
-
-\subsection{Depending on project without configuration}
-
-A package A from a Project X depends on a package B from project Y and project Y does not have any Metacello configuration (typically when there is only one package in the project). In this case do the following:
-\sd{we should use the same example A and B sucks}
-\begin{code}{}
-		``In the baseline method''
-		spec 
-			package: 'PackageA' with: [  spec requires: #('PackageB')];
-			package: 'PackageB' with: [  spec repository: 'http://www.squeaksource.com/ProjectB' ].	
-\end{code}
-
-\begin{code}{}
-		``In the version method''
-		package: 'PackageB' with: 'PackageB-JuanCarlos.80'.
-\end{code}
-
-The problem here is that as the project B does not have a Metacello configuration, the dependencies of B are not managed. Thus, package B can have dependencies, but they will not be loaded. So, our recommendation is that in this case, you take the time to create a configuration for the project B.
-
-\subsection{Depending on project with configuration}
-Package A depends on a package or project B, but project B has also a configuration. This is the common case that we want to present now. 
-
-
-To continue with our example, we introduce a new project called \ct{CoolToolSet} which uses the packages from the \ct{CoolBrowser} project. The configuration class is called \ct{ConfigurationOfCoolToolSet}. We define two packages in \ct{CoolToolSet} called \ct{CoolToolSet-Core} and \ct{CoolToolSet-Tests}. Of course, these packages depend on packages from \ct{CoolBrowser}. Let's assume for a moment that the package that contains \ct{ConfigurationOfCoolBrowser} class is called \ct{CoolBrowser-Metacello} instead of also \ct{ConfigurationOfCoolBrowser} (as we recommended). This will be better to understand each parameter. 
-
-
-Let's see the first version then:
-
-\begin{code}{}
-ConfigurationOfCoolToolSet>>version01: spec 
-	<version: '1.0' imports: #('1.0-baseline')>
-	spec for: #common do: [
-		spec 
-			package: 'CoolToolSet-Core' with: 'CoolToolSet-Core-anon.1';
-			package: 'CoolToolSet-Tests' with: 'CoolToolSet-Tests-anon.1'.].	
-\end{code}	
-
-\begin{code}{}
-ConfigurationOfCoolToolSet >>baseline01: spec 
-	<version: '0.1-baseline'>
-	spec for: #common do: [
-		spec repository: 'http://www.example.com/CoolToolSet'.
-		spec project: 'CoolBrowser ALL' with: [
-				spec 
-				    className: 'ConfigurationOfCoolBrowser';
-					versionString: '1.0';
-					loads: #('ALL' );
-					file: 'CoolBrowser-Metacello';
-					repository: 'http://www.example.com/CoolBrowser' ].
-		spec 
-			package: 'CoolToolSet-Core' with: [ spec requires: 'CoolBrowser ALL' ];
-			package: 'CoolToolSet-Tests' with: [ spec requires: 'CoolToolSet-Core' ]].
-\end{code}	
-
-\begin{figure}
-\begin{center}
-\includegraphics[width=0.6\linewidth]{version07}
-\caption{Dependencies between configurations.\label{fig:version07}}
-\end{center}
-\end{figure} 
-
-What we did here in baseline0.1 was to create a project reference for the CoolBrowser project (see Figure~\ref{fig:version07}). The \ct{className:} specifies the name of the class that contains the project metadata. If the class is not present in the image, then we need to supply all the necessary information so that Metacello can search and load the configuration for the project.
-
-The \ct{file:} and \ct{repository:} specifications give us the information needed to load the project metadata from a repository in case the configuration class is not already present in the image. If the Monticello repository is protected, then you have to use the message: \ct{repository:username:password:}.
-
-Note that the values for the \ct{className:} and \ct{file:} attributes are the same: \ct{'ConfigurationOfCoolBrowser'}. As we've mentioned before, by convention the name of the configuration class and the configuration package should be the same, however, with Metacello it is not required that the two be the same.
-
-Finally, the \ct{versionString:} and \ct{loads:} tell us which version of the project to load and which packages or groups (the parameter of \ct{load:} can be the name of a package, or the name of a group or those predefined groups like 'ALL') to load from the project. \sd{should I get a version 1.0 of the version/baseline of CoolBrowser. This is not clear and I need to know that.}
-
-We've named the project reference 'CoolBrowser ALL' and in the specification for the 'CoolToolSet-Core' package, we've specified that 'CoolBrowser ALL' is required. The name of the project reference is arbitrary, you can select the name you want, although is recommended to put a name that make sense to that project reference. \sd{why all how can I say default}
-\sd{How can I say that I should load a specific version of another configurations?}
-
-Now can now download CoolToolSet like this:
-
-\begin{code}{}
-(ConfigurationOfCoolToolSet project version: '0.1') load.
-\end{code}
-
-Note that the entire CoolBrowser project is loaded before 'CoolToolSet-Core'.
-
-Now as is often the case, it is useful to separate the test package from the core packages for a project. So, we can write for example, the following baseline:
-
-\begin{code}{}
-ConfigurationOfCoolToolSet >>baseline02: spec 
-	<version: '0.2-baseline'>
-	spec for: #common do: [
-		spec blessing: #baseline.
-		spec repository: 'http://www.example.com/CoolToolSet'.
-		spec
-			project: 'CoolBrowser default' with: [
-				spec
-					className: 'ConfigurationOfCoolBrowser';
-					versionString: '1.0';
-					loads: #('default' );
-					file: 'CoolBrowser-Metacello';
-					repository: 'http://www.example.com/CoolBrowser' ];
-			project: 'CoolBrowser Tests' with: [
-				spec
-					className: 'ConfigurationOfCoolBrowser';
-					versionString: '1.0';
-					loads: #('Tests' );
-					file: 'CoolBrowser-Metacello';
-					repository: 'http://www.example.com/CoolBrowser' ].
-		spec 
-			package: 'CoolToolSet-Core' with: [ spec requires: 'CoolBrowser default' ];
-			package: 'CoolToolSet-Tests' with: [ 
-				spec requires: #('CoolToolSet-Core'  'CoolBrowser Tests'  ) ].].			
-\end{code}
-
-Here we created two project references. The reference named \ct{'CoolBrowser default'} loads the 'default' group and the reference named 'CoolBrowser Tests'  loads the 'Tests' group of the configuration of Cool Browser. We then made \ct{'CoolToolSet-Core'} require \ct{'CoolBrowser default'} and \ct{'CoolToolSet-Tests'} requires \ct{'CoolToolSet-Core'} and \ct{'CoolBrowser Tests'}.
-
-Now it is possible to load just the core packages:
-
-\begin{code}{}
-(ConfigurationOfCoolToolSet project version: '1.1') load: 'CoolToolSet-Core'.
-\end{code} 
- 
-or the core including tests:
- 
-\begin{code}{}
-  (ConfigurationOfCoolToolSet project version: '1.1') load: 'CoolToolSet-Tests'.
-\end{code}
-
-As you can see, in \ct{baseline02:} there is redundant information for each of the project references. To solve that situation, we can use the \ct{project:copyFrom:with:} method to eliminate the need to specify the bulk of the project information twice. Example:
-
-\begin{code}{}
-ConfigurationOfCoolToolSet >>baseline02: spec 
-	<version: '0.2-baseline'>
-	spec for: #common do: [
-		spec blessing: #baseline.
-		spec repository: 'http://www.example.com/CoolToolSet'.
-		spec project: 'CoolBrowser default' with: [
-				spec
-					className: 'ConfigurationOfCoolBrowser';
-					versionString: '1.0';
-					loads: #('default' );
-					file: 'CoolBrowser-Metacello';
-					repository: 'http://www.example.com/CoolBrowser' ];
-			project: 'CoolBrowser Tests' 
-				copyFrom: 'CoolBrowser default' 
-				with: [ spec loads: #('Tests').].
-		spec 
-			package: 'CoolToolSet-Core' with: [ spec requires: 'CoolBrowser default' ];
-			package: 'CoolToolSet-Tests' with: [ 
-				spec requires: #('CoolToolSet-Core' 'CoolBrowser Tests') ].].					
-\end{code}
-
-Not only in this baseline but also in baseline01 we did something that is not always useful: we put the version of the referenced projects in the baseline instead of in the version method. If you look at baseline01 or baseline02 you can see that we put \ct{versionString: '1.0'}. But sometimes, this information (the version of the referenced project) remains the same among different versions of the dependent project. 
-If the referenced project is very stable this technique works very well.
-
-On the other hand, if the referenced project will be changing over time, then  we recommend that you not specify the \ct{#versionString:} in the baseline method, but specify in the version method as follows:
-
-\begin{code}{}
-ConfigurationOfCoolToolSet >>version02: spec 
-	<version: '0.2' imports: #('0.2-baseline' )>
-	spec for: #common do: [
-		spec blessing: #beta.
-		spec 
-			package: 'CoolToolSet-Core' with: 'CoolToolSet-Core-anon.1';
-			package: 'CoolToolSet-Tests' with: 'CoolToolSet-Tests-anon.1';
-			project: 'CoolBrowser default' with: '1.3';
-			project: 'CoolBrowser Tests' with: '1.3'].
-\end{code}
-
-If we don't define a version String at all for 'CoolBrowser default'  and 'CoolBrowser Tests'  in the version method, then the version specified in the baseline will be used. If there is no version specified in the baseline method, then Metacello loads the latest version of the project.
-
-
 %\section{Grouping projects} 
 %
 %Usually, a project has more than one package and/or the package has dependencies upon other configurations. If such is the case it is common to create a separate configuration for all those packages or projects. With this, I can reuse dependency and version information among other projects. 
@@ -929,7 +847,7 @@ version 1.1.3 is used in the Pharo1.0 one-click image,  version 1.1.3 cannot be 
 
 Obviously version 1.1.3 should be used in Pharo1.0 and version 1.2.3 should be used in Pharo1.2. Now up until recently there is no way for a developer to communicate this information to his users using Metacello.
 
-The latest version of Metacello introduces symbolic versions whose purpose is to provide a way to describe versions in terms of existing literal versions (like 1.1.3, 1.1.5 and 1.2.3). Symbolic versions are specified using the symbolic version pragma:
+The latest version of Metacello introduces \emph{symbolic versions} whose purpose is to provide a way to describe versions in terms of existing literal versions (like 1.1.3, 1.1.5 and 1.2.3). Symbolic versions are specified using the \ct{symbolicVersion:} pragma:
 
 \begin{code}{}
 OmniBrowser>>stable: spec
@@ -939,8 +857,7 @@ OmniBrowser>>stable: spec
     spec for: #'pharo1.2.x' version: '1.2.3'.
 \end{code}
 
-Symbolic versions can be used anywhere that a literal version can be used. From a load statement:
-\ct{(ConfigurationOfOmniBrowser project version: #'stable') load.}
+Symbolic versions can be used anywhere that a literal version can be used. From a load expressions such as \ct{(ConfigurationOfOmniBrowser project version: #'stable') load}
 to a project reference in a baseline version:
 
 \begin{code}{}
@@ -953,7 +870,7 @@ baseline10: spec
       project: 'OmniBrowser' with: [
         spec
           className: 'OmniBrowser';
-          versionString: #'stable';
+          !\textbf{versionString: \#'stable';}!
           repository: 'http://www.squeaksource.com/MetacelloRepository' ].
     spec
        package: 'OB-SUnitGUI' with: [
@@ -963,136 +880,185 @@ baseline10: spec
        package: 'GemTools-Platform' with: [
          spec requires: #( 'GemTools-Client'. ) ]].
 \end{code}
-
-New Platform Version Attributes
-
-%New attributes have been added to Metacello for Pharo and Squeak to correspond to platform version numbers:
-%#'pharo1.x',å #'pharo1.0.x',å #'pharo1.1.x', andå #'pharo1.2.x'
-%#'squeak3.10.x', #'squeak4.x',å #'squeak4.1.x', and #'squeak4.2.x'
-%These new attributes are calculated by default in Metacello based on `SystemVersion current version`. If you need a finer grain distinction for versions (say an attribute named #'pharo1.1.1') then you can change the #project method in your configuration to something like the following:
-
-\begin{code}{}
-project
-  | versionString projectAttributes |
-  ^ project
-    ifNil: [
-      "Bootstrap Metacello if it is not already loaded"
-      self class ensureMetacello.
-      "Construct Metacello project"
-      project := (Smalltalk at: #MetacelloMCProject) new.
-      projectAttributes := #().
-      Smalltalk
-        at: #SystemVersion
-        ifPresent: [ :cl |
-          versionString := cl current version.
-          ((versionString beginsWith: 'Pharo-1.1.1') or: [ versionString beginsWith: 'Pharo1.1.1' ])
-            ifTrue: [ projectAttributes add: #'pharo1.1.x' ] ].
-      project projectAttributes: projectAttributes.
-      (Smalltalk at: #MetacelloVersionConstructor) on: self project: project.
-      project loadType: #linear ]
-\end{code}      
-      
       
    
-Standard Symbolic Versions
+\subsection{Standard Symbolic Versions}
+
+In software development it is very common that packages or projects pass through several stages or steps during the software development process or life cycle such as for example, development, alpha, beta,  release, release candidate, etc. Sometimes we want to refer also to the state of a project.
+ %or sometimes we just want to use any other tag that may be useful. The blessing attribute can be used for all of these cases. --- would be better tohave separated tag: attributes.
+
+\sd{Not sure if the following is up to date}
+Blessings are taken into account by the load logic. The result of the following expression:
+\begin{code}{}
+ConfigurationOfCoolBrowser project latestVersion.
+\end{code}
+is not always the last version.  This is because \ct{latestVersion} answers the latest version whose blessing is {\em not} \ct{#development}, \ct{#broken}, or \ct{#blessing}. To find the latest \ct{#development} version for example, you should execute this expression:
+
+\begin{code}{}
+ConfigurationOfCoolBrowser project latestVersion: #development.
+\end{code}
+
+Nevertheless, you can get the very last version independently of blessing using the \ct{lastVersion} method as illustrated below
+
+\begin{code}{}
+ConfigurationOfCoolBrowser project lastVersion.
+\end{code}
+
+In general, the \ct{#development} blessing should be used for any version that is unstable. Once a version has stabilized, a different blessing should be applied.
+
+The following expression will load the latest version of all of the packages for the latest \ct{#baseline} version:
+ \begin{code}{}
+(ConfigurationOfCoolBrowser project latestVersion: #baseline) load.
+\end{code}
+
+Since the latest \ct{#baseline} version should reflect the most up-to-date project structure, executing the previous expression loads the absolute bleeding edge version of the project. 
+
+
+
 
 A couple of standard symbolic versions have already been defined:
 
 \begin{description}
 \item [bleedingEdge.]  A symbolic version that specifies the latest mcz files and project versions. By default the \ct{bleedingEdge} symbolic version is defined as the latest baseline version available. The default specification for \ct{bleedingEdge} is defined for all projects. The \ct{bleedingEdge} version is primarily for developers who know what they are doing. There are no guarantees that the \ct{bleedingEdge} version will even load, let alone function correctly.
 
-\item [development.] A symbolic version that specifies the literal version that us under development (i.e., whose blessing is \ct{development}). Typically a \ct{development} version is used by developers for managing pre-release activities as the project transitions from \ct{bleedingEdge} to \ct{stable}. There are a number of \ct{MetacelloToolBox} methods that take advantage of the \ct{development} symbolic version.
+\item [development.] A symbolic version that specifies the literal version to use under development (i.e., whose blessing is \ct{development}). Typically a \ct{development} version is used by developers for managing pre-release activities as the project transitions from \ct{bleedingEdge} to \ct{stable}. There are a number of \ct{MetacelloToolBox} methods that take advantage of the \ct{development} symbolic version.
 
 \item [stable.] A symbolic version specifies the stable literal version for a particular platform. The stable version is the version that should be used for loading.
 With the exception of the \ct{bleedingEdge} version (which has a pre-defined default defined), you will need to edit your configuration to add the \ct{stable} or \ct{development} version information.
 \end{description}
 
+\sd{I have the impression that this is not clear. it would be good to have an example from something stable and may from moose?}
+\sd{How do I say that default is load stable? should I say it? same question for the other ones like bleedingEdge}
+
+
+When specifying a symbolic version with a \ct{symbolicVersion:} pragma it is legal to use another symbolic version like the following definition for the symbolic version \ct{stable}:
+
+\begin{code}{}
+stable: spec
+	<symbolicVersion: #'stable'>
+
+	spec for: #'gemstone' version: '1.5'.
+	spec for: #'squeak' version: '1.4'.
+	spec for: #'pharo1.0.x' version: '1.5'.
+	spec for: #'pharo1.1.x' version: '1.5'.
+	spec for: #'pharo1.2.x' version: #development.
+\end{code}
+
+Or to use the special symbolic version \ct{notDefined}: as in the following definition of the symbolic version \ct{development}:
+
+\begin{code}{}
+development: spec
+	<symbolicVersion: #'development'>
+
+	spec for: #'common' version: #notDefined.
+	spec for: #'pharo1.1.x' version: '1.6'.
+	spec for: #'pharo1.2.x' version: '1.6'.
+\end{code}
+
+Here this indicates that there are no version for the \ct{common} tag. 
+Using a symbolic version that resolves to \ct{notDefined} will result in a \ct{MetacelloSymbolicVersionNotDefinedError} being signaled.
+
+The following is the definition for the \ct{bleedingEdge} symbolic version: \sd{not sure that it is ok to show here}
+
+\begin{code}{}
+bleedingEdge
+	<defaultSymbolicVersion: #bleedingEdge>
+
+	| bleedingEdgeVersion |
+	bleedingEdgeVersion := (self project map values select: [ :version |
+version blessing == #baseline ])
+		detectMax: [ :version | version ].
+	bleedingEdgeVersion ifNil: [ bleedingEdgeVersion := self project
+latestVersion ].
+	bleedingEdgeVersion
+		ifNil: [ self versionDoesNotExistError: #bleedingEdge ].
+	^ bleedingEdgeVersion versionString
+\end{code}
+
+
 
 \section{Script and Tool Support}
-
- 
-With this release, I've added two new classes: MetacelloBaseConfiguration andå MetacelloToolBox, which should make developing with Metacello and writing tools for Metacello a whole lot easier.
-
+Metacello comes with an API to make the writing of tools for Metacello easier. Two classes exist: \ct{MetacelloBaseConfiguration} and \ct{MetacelloToolBox}. 
 
 \subsection{Development Support}
 
-The MetacelloBaseConfiguration class is aimed at eventually becoming the common superclass for all Metacello configurations, but I'm not quite ready to go there, yet. For now, though, the class serves as the location for defining the common default symbolic versions (\ct{bleedingEdge} at the present time) and as the place to find development support methods:
+The \ct{MetacelloBaseConfiguration} class is aimed at eventually becoming the common superclass for all Metacello configurations. For now, though, the class serves as the location for defining the common default symbolic versions (\ct{bleedingEdge} at the present time) and as the place to find development support methods such as the following ones:
+
+\begin{description}
+\item \ct{compareVersions}: Compare the \ct{#stable} version to \ct{#development} version.
+\item \ct{createNewBaselineVersion}: Create a new baseline version based upon the \ct{#stable} version as a model.
+\item \ct{createNewDevelopmentVersion}: Create a new \ct{#development} version using the \ct{#stable} version as model.
+\item \ct{releaseDevelopmentVersion}: Release \ct{#development} version: set version blessing to \ct{#release}, update the \ct{#development} and \ct{#stable} symbolic version methods and save the configuration.
+
+\item \ct{saveConfiguration}: Save the mcz file that contains the configuration to it's repository.
+
+\item \ct{saveModifiedPackagesAndConfiguration}: Save modified mcz files, update the \ct{#development} version and then save the configuration.
+
+\item \ct{updateToLatestPackageVersions}: Update the \ct{#development} version to match currently loaded mcz files.
+
+\item \ct{validate} Check the configuration for Errors, Critical Warnings, and Warnings.
+\end{description}
+
+\subsection{Metacello Toolbox API}
+
+The \ct{MetacelloToolBox} class is aimed at providing a common API for development scripts and Metacello tools. The development support methods were implemented using the Metacello Toolbox API and the OB-Metacello tools have been reimplemented to use the Metacello Toolbox API.
+
+For an overview of the Metacello Toolbox API, you can look in the HelpBrowser at the 'Metacello>>API Documentation' section. The instance-side methods for MetacelloToolBox support the  programmatic editing of Metacello configurations from the creation of a new configuration classes to the creation and changing of literal and symbolic version methods.
+
+The instance-side methods are intended for the use of Tools developers and are covered in the ProfStef tutorial: 'Inside Metacello Toolbox API'. The class-side methods for MetacelloToolBox support a number of configuration management tasks. The target the initial release of the Metacello Toolbox API is to support the basic Metacello development cycle. In addition to the following section the Metacello development cycle is covered in the ProfStef tutorial: 'Metacello Development Cycle'.
 
 
-\begin{code}{}  
-compareVersions -å Compare theå #stable version to #development version.
-createNewBaselineVersion -å Create a new baseline version based upon the #stable version as a model.
-createNewDevelopmentVersion -å Create a new #development versionå using the #stable version as model.
-releaseDevelopmentVersion: -å Release #development version: set version blessing to #release, update the #development and #stable symbolic version methods and save the configuration.
-saveConfiguration: -å Save the mcz file that contains the configuration to it's repository.
-saveModifiedPackagesAndConfiguration: -å Save modified mcz files, update the #development version and then save the configuration.
-updateToLatestPackageVersions: -å Update the #development version to match currently loaded mcz files.
-validate -å Check the configuration for Errors, Critical Warnings, and Warnings.
-I suggest that you take a look at these methods and copy the methods that you find useful to the class-side of your own configuration, so that you can simplify the management of your own configuration.
-Metacello Toolbox API
-
-Theå MetacelloToolBox class is aimed at providing a common API for development scripts and Metacello tools. The development support methods were implemented using the Metacello Toolbox API and the OB-Metacello tools have been reimplemented to use the Metacello Toolbox API.å For an overview of the Metacello Toolbox API, you can look in theå HelpBrowser at the 'Metacello>>API Documentation' section. The instance-side methods forå MetacelloToolBox support the å programmatic editing of Metacello configurations from the creation of a new configuration classes to the creation and changing of literal and symbolic version methods. The instance-side methods are intended for the use of Tools developers and are covered in the ProfStef tutorial: 'Inside Metacello Toolbox API'. The class-side methods for MetacelloToolBox support a number of configuration management tasks. The target the initial release of the Metacello Toolbox API is to support the basic Metacello development cycle. In addition to the following section the Metacello development cycle is covered in the ProfStef tutorial: 'Metacello Development Cycle'.
-Development Cycle Walk Through
+\section{Development Cycle Walk Through}
 
 In this section we'll take a walk through a typical development cycle and provide examples of how the Metacello Toolbox API can be used to support your development process:
-Example Setup
-Project Startup
-Create Configuration and Initial Baseline
-Create Initial Literal Version
-Validation
-Save Initial Configuration
-Development Cycle
-Platform Testing
-Release
-Open New Version for Development
-Configuration Checkpoints
-Update Project Structure
-and Repeat...
-1.0 Example Setup
 
-When you are developing your project and are building your configuration for the first time, you already have the packages that make up your project loaded and correctly running on your image. In this example,it is necessary to load a set of packages to simulate a image that will be used to build the first configuration of the project. We'll cheat here an use an existing configuration (ConfigurationOfGemTools) to download and install in our image all the packages and dependencies needed (just as we would have to do by hand if we were the maintainers of the project). So, don't pay much attention to this step and only focus on the fact that after evaluating it, you'll have loaded in your image all the packages needed to build the example configuration:
+\subsection{Example Setup}
+
+When you are developing your project and are building your configuration for the first time, you already have the packages that make up your project loaded and correctly running on your image. In this example, it is necessary to load a set of packages to simulate a image that will be used to build the first configuration of the project. We'll cheat here an use an existing configuration (ConfigurationOfGemTools) to download and install in our image all the packages and dependencies needed (just as we would have to do by hand if we were the maintainers of the project). So, don't pay much attention to this step and only focus on the fact that after evaluating it, you'll have loaded in your image all the packages needed to build the example configuration:
+
+\begin{code}{}
 Gofer new
   squeaksource: 'MetacelloRepository';
   package: 'ConfigurationOfGemTools';
   load.
 ((Smalltalk at: #ConfigurationOfGemTools) project version: '1.0-beta.8.3')
   load: 'ALL'.
-GemTools is expected to work in Squeak (Squeak3.10 and Squeak4.1) and Pharo (Pharo1.0 and Pharo1.1) and depends upon 4 other projects:
-FFI
-OmniBrowser
-Shout
-HelpSystem
-GemTools itself is made up of 5 mcz files from the http://seaside.gemstone.com/ss/GLASSClient repository (note that I've made some minor structural changes to simplify the example):
-OB-SUnitGUI - requires 'OmniBrowser'. in 'default' group.
-GemTools-Client - requires 'OmniBrowser', 'FFI', 'Shout', and 'OB-SUnitGUI'. in 'default' group.
-GemTools-Platform - requires 'GemTools-Client'. in 'default' group.
-GemTools-Help - requires 'HelpSystem' and 'GemTools-Client'. in 'default' group.
-2.0 Project Startup
+\end{code}
 
-Create Configuration and Initial Baseline
-Create Initial Literal Version
-Validation
-Save Initial Configuration
-2.1 Create Configuration and Initial Baseline
+GemTools is expected to work in Squeak (Squeak3.10 and Squeak4.1) and Pharo (Pharo1.0 and Pharo1.1). GemTools itself is made up of 5 mcz files from the \url{http://seaside.gemstone.com/ss/GLASSClient} repository and  depends upon 4 other projects: FFI, OmniBrowser, Shout and HelpSystem. 
+\begin{itemize}
+\item OB-SUnitGUI: requires 'OmniBrowser'. 
+\item GemTools-Client: requires 'OmniBrowser', 'FFI', 'Shout', and 'OB-SUnitGUI'. 
+\item GemTools-Platform: requires 'GemTools-Client'. 
+\item GemTools-Help: requires 'HelpSystem' and 'GemTools-Client'. 
+\end{itemize}
 
-Use the toolbox API to create the initial baseline version by specifying the name, repository, projects, packages, dependencyMap and group composition:
+
+\subsection{Project Startup}
+
+\subsubsection{Create Configuration and Initial Baseline}
+Here we use the toolbox API to create the initial baseline version by specifying the name, repository, projects, packages, dependencyMap and group composition:
+
+\begin{code}{}
   MetacelloToolBox
     createBaseline: '1.0-baseline'
     for: 'GemToolsExample'
     repository: 'http://seaside.gemstone.com/ss/GLASSClient'
     requiredProjects: #('FFI' 'OmniBrowser' 'Shout' 'HelpSystem')
-    packages: #('OB-SUnitGUI' 'GemTools-Client' 'GemTools-Platform'å 
-            'GemTools-Help' )
+    packages: #('OB-SUnitGUI' 'GemTools-Client' 'GemTools-Platform' 'GemTools-Help' )
     dependencies:
-      {('OB-SUnitGUI' -> #( 'OmniBrowser' )).
-      ('GemTools-Client' -> #( 'OmniBrowser' 'FFI' 'Shout' 'OB-SUnitGUI' )).
-      ('GemTools-Platform' -> #( 'GemTools-Client' )).
-      ('GemTools-Help' -> #( 'HelpSystem' 'GemTools-Client' )). }
+      {('OB-SUnitGUI' -> #('OmniBrowser')).
+      ('GemTools-Client' -> #('OmniBrowser' 'FFI' 'Shout' 'OB-SUnitGUI')).
+      ('GemTools-Platform' -> #('GemTools-Client')).
+      ('GemTools-Help' -> #( 'HelpSystem' 'GemTools-Client'))}
     groups:
-      {('default' -> #( 'OB-SUnitGUI' 'GemTools-Client' 'GemTools-Platform'
-            'GemTools-Help' ))}.
-The #createBaseline:... method copies the class MetacelloConfigTemplate toå ConfigurationOfGemToolsExample and creates a #baseline10: method that looks like the following:
-baseline10: spec
+      {('default' -> #('OB-SUnitGUI' 'GemTools-Client' 'GemTools-Platform' 'GemTools-Help'))}.
+\end{code}            
+            
+The \ct{createBaseline:...} message copies the class \ct{MetacelloConfigTemplate} to \ct{ConfigurationOfGemToolsExample} and creates a \ct{#baseline10:} method that looks like the following:
+
+\begin{code}{}
+ConfigurationOfGemToolsExample>>baseline10: spec
   <version: '1.0-baseline'>
   spec for: #'common' do: [
     spec blessing: #'baseline'.
@@ -1129,17 +1095,30 @@ baseline10: spec
         spec requires: #('HelpSystem' 'GemTools-Client' ). ].
     spec group: 'default' with: #('OB-SUnitGUI' 'GemTools-Client'
           'GemTools-Platform' 'GemTools-Help' ). ].
-Note that for the 'FFI' project the versionString is #bleedingEdge, while the versionString for the other projects is #'stable'. At the time of this writing the FFI project did not have a #stable symbolic version defined, so the default versionString is set toå #bleedingEdge. If a #stable symbolic version is defined for the project, the the default versionString is #stable. There are no special version dependencies for the GemTools project so the defaults will work just fine.
-2.2 Create Initial Literal Version
+\end{code}          
 
-Now we use the toolbox API to create the å initial literal version of the project. This toolbox method bases the definition of the literal version on the baseline version that we created above and uses the currently loaded state of the image to define the project versions and mcz file versions:
+
+
+Note that for the 'FFI' project the versionString is \ct{#bleedingEdge}, while the versionString for the other projects is \ct{#'stable'}. At the time of this writing the FFI project did not have a \ct{#stable} symbolic version defined, so the default versionString is set to \ct{#bleedingEdge}. If a \ct{#stable} symbolic version is defined for the project, the the default versionString is \ct{#stable}. There are no special version dependencies for the GemTools project so the defaults will work just fine.
+
+
+
+\subsection{Create Initial Literal Version}
+
+Now we use the toolbox API to create the initial literal version of the project (by literal we mean with numbers identifying the package versions). The toolbox method \ct{createDevelopment:...} bases the definition of the literal version on the baseline version that we created above and uses the currently loaded state of the image to define the project versions and mcz file versions:
+
+\begin{code}{}
   MetacelloToolBox
     createDevelopment: '1.0'
     for: 'GemToolsExample'
     importFromBaseline: '1.0-baseline'
     description: 'initial development version'.
-The #createDevelopment:... method creates a #version10: method in your configuration that looks like this:
-version10: spec
+\end{code}
+
+The \ct{createDevelopment:...} method creates a \ct{#version10:} method in your configuration that looks like this:
+
+\begin{code}{}
+ConfigurationOfGemToolsExample>>version10: spec
   <version: '1.0' imports: #('1.0-baseline' )>
   spec for: #'common' do: [
     spec blessing: #'development'.
@@ -1156,106 +1135,177 @@ version10: spec
       package: 'GemTools-Client' with: 'GemTools-Client-NorbertHartl.544';
       package: 'GemTools-Platform' with: 'GemTools-Platform.pharo10beta-dkh.5';
       package: 'GemTools-Help' with: 'GemTools-Help-DaleHenrichs.24'. ].
-Note that when the #stable symbolic version specifications were carried through into the literal version. If the version isn't #stable, then the currentVersion of the project is filled in, just as the current version of each mcz file is set for the packages. Note also that the blessing of the version '1.0' is set to #development. By setting the blessing of a newly created version to #development, you indicate that the version is under development and is subject to change without notice. The #createDevelopment:... method also creates a #development: method and specifies that version '1.0' is a #development symbolic version:
-development: spec
+\end{code}
+
+Note how the \ct{#stable} symbolic version specifications were carried through into the literal version. If the version isn't \ct{#stable}, then the currentVersion of the project is filled in, just as the current version of each mcz file is set for the packages. Note also that the blessing of the version '1.0' is set to \ct{#development}. By setting the blessing of a newly created version to \ct{#development}, you indicate that the version is under development and is subject to change without notice. The \ct{createDevelopment:...} method also creates a \ct{#development:} method and specifies that version '1.0' is a \ct{#development symbolic version}:
+
+\begin{code}{}
+ConfigurationOfGemToolsExample>>development: spec
   <symbolicVersion: #'development'>
   spec for: #'common' version: '1.0'.
-2.3 Validation
+\end{code}
 
-Whenever you finish editing a configuration you should validate it to check for mistakes that may cause problems later on:
-(MetacelloToolBox validateConfiguration: ConfigurationOfGemToolsExample) explore.
+
+\subsection{Validation}
+
+Whenever you finish editing a configuration you should validate it to check for mistakes that may cause problems later on. The Metacello ToolBox provides the validation via the message \ct{validateConfiguration:}. The following expression show you possible errors: \ct{(MetacelloToolBox validateConfiguration: ConfigurationOfGemToolsExample) explore}
+
 If the list comes back empty then you are clean. Otherwise you should address the validation issues that show up. Validation issues are divided into three categories:
-Warning - issues that point out oddities in the definition of a version that do not affect behavior.
-Critical Warning - issues that identify inconsistencies in the definition of a version that may result in unexpected behavior.
-Error - issues that identify explicit problems in the definition of a version that will result in errors if an attempt is made to resolve the version.
+
+\begin{description}
+\item[Warning -] issues that point out oddities in the definition of a version that do not affect behavior.
+\item[Critical Warning -] issues that identify inconsistencies in the definition of a version that may result in unexpected behavior.
+\item[ Error -] issues that identify explicit problems in the definition of a version that will result in errors if an attempt is made to resolve the version.
+\end{description}
+
 Here's an example of a Critical Warning validation issue:
+\begin{code}{}
 Critical Warning: No version specified for the project reference 'OCompletion'
             in version '1.1'
     { noVersionSpecified }
     [ ConfigurationOfOmniBrowser #validateVersionSpec: ]
-The first and second line is the explanation, a human readable error message. The third line is the reasonCode, a symbol that represents the category of the issue. You can check out the meanings of the various reasonCodes online or through the following toolbox call:
-(MetacelloToolBoxå descriptionForValidationReasonCode: #noVersionSpecified)
-    inspect.
-The fourth line lists the configurationClass, the configuration that spawned the issue (there is a different toobox method for running a recursive configuraiont validation) and the callSite, which is the name of the validation method that generated the error (this is used mainly for debugging).
-2.4 Save Initial Configuration
+\end{code}    
+
+The first and second line is the explanation, a human readable error message. The third line is the reasonCode, a symbol that represents the category of the issue. You can check out the meanings of the various reasonCodes online or through the following toolbox message:
+\ct{(MetacelloToolBox descriptionForValidationReasonCode: #noVersionSpecified)  inspect.}
+
+The fourth line lists the \ct{configurationClass}, \ie the configuration that spawned the issue (there is a different toolbox method for running a recursive configuration validation) and the \ct{callSite}, which is the name of the validation method that generated the error (this is used mainly for debugging).
+
+
+
+\subsection{Save Initial Configuration}
 
 The first time you save your configuration, you have to decide where to keep your configuration. It makes sense to keep the configuration in your development repository. The first time that you save your configuration you need to use the MonticelloBrowser or an expression like the following:
+
+\begin{code}{}
   Gofer new
     url: 'http://www.example.com/GemToolsRepository';
     package: 'ConfigurationOfGemToolsExample';
     commit: 'Initial version of configuration'.
-3.0 Development Cycle
+\end{code}    
 
-Platform Testing
-Release
-Open New Version for Development
-Configuration Checkpoints
-Update Project Structure
-and Repeat...
-3.1 Platform Testing
 
-To finish the validation of your configuration, you need to do some test loads on your intended platforms. For GemTools I generally do a test load into a fresh image (each of the supported PharoCore and Squeak4.1) with the following load expression:
+\subsection{Development Cycle}
+Now let us look at a typical iteration: testing, releasing, and saving the configuration.
+ 
+\subsubsection{Platform Testing}
+To finish the validation of your configuration, you need to do some test loads on your intended platforms. For GemTools we can do a test load into a fresh image (each of the supported PharoCore and Squeak4.1) with the following load expression:
+
+\begin{code}{}
 Gofer new
   url: 'http://www.example.com/GemToolsRepository';
   package: 'ConfigurationOfGemToolsExample';
   load.
 ((Smalltalk at: #ConfigurationOfGemToolsExample)
     project version: #development) load.
-and then run the unit tests. Note that for the GemTools unit tests you need to have GemStone installed.
-3.2 Release
+\end{code}    
+    
+Now this is the moment to run the unit tests. Note that for the GemTools unit tests you need to have GemStone installed.
 
-Once you are satisfied that the configuration loads correctly on your target platforms, you can release the #development into production using the following expression:
+\subsubsection{Release}
+Once you are satisfied that the configuration loads correctly on your target platforms, you can release the \ct{#development} into production using the following expression:
+
+\begin{code}{}
   MetacelloToolBox
     releaseDevelopmentVersionIn: ConfigurationOfGemToolsExample
     description: '- release version 1.0'.
-The toolbox method #releaseDevelopmentVersionIn:description: does the following:
-set the blessing of the #development å version to #release
-sets the #development å version to #notDefined
-sets the #stable å version to the literal version of the #development version (in this case '1.0')
-saves the configuration mcz file to the correct repository
-The #development: method ends up looking like this:
-development: spec
+\end{code}    
+
+The toolbox method \ct{releaseDevelopmentVersionIn:description:} does the following:
+\begin{itemize}
+\item set the blessing of the \ct{#development} version to \ct{#release}.
+\item sets the \ct{#development} version to \ct{#notDefined}.
+\item sets the \ct{#stable} version to the literal version of the \ct{#development} version (in this case '1.0')
+\item saves the configuration mcz file to the correct repository.
+\end{itemize}
+
+
+The \ct{development:} method ends up looking like this:
+
+\begin{code}{}
+ConfigurationOfGemToolsExample>>development: spec
   <symbolicVersion: #'development'>
   spec for: #'common' version: #'notDefined'.
-The #stable: method ends up looking like this:
-stable: spec
+\end{code}  
+  
+The \ct{stable:} method ends up looking like this:
+
+\begin{code}{}
+ConfigurationOfGemToolsExample>>stable: spec
   <symbolicVersion: #'stable'>
   spec for: #'common' version: '1.0'.
+\end{code}  
+  
 Finally you can copy the configuration to the MetacelloRepository using the following expression:
+
+\begin{code}{}
   MetacelloToolBox
     copyConfiguration: ConfigurationOfGemToolsExample
     to: 'http://www.squeaksource.com/MetacelloRepository'.
-3.3 Open New Version for Development
+\end{code}
 
+
+\subsection{Open New Version for Development}
+
+Now we are ready to start new development. The method \ct{createNewDevelopmentVersionIn:...}
+performs the necessary modification to be in a state that reflects it. 
+
+
+\begin{code}{}
 MetacelloToolBox
   createNewDevelopmentVersionIn: ConfigurationOfGemToolsExample
   description: '- open 1.1 for development'.
-3.4 Configuration Checkpoints
+\end{code}
+
+\subsubsection{Configuration Checkpoints}
 
 During the course of development it makes sense to save checkpoints of your development to your repository. To setup this example you should load a newer version of GemTools and get some new mcz files loaded to simulate development:
+
+\begin{code}{}
 (ConfigurationOfGemTools project version: '1.0-beta.8.4')
   load: 'ALL'.
-Now that you've simulated some development you can update the #development version of your project so that it references the new mcz files you've loaded
+\end{code}  
+
+Now that you've simulated some development you can update the \ct{#development} version of your project so that it references the new mcz files you've loaded.
+
+\begin{code}{}
 MetacelloToolBox
   updateToLatestPackageVersionsIn: ConfigurationOfGemToolsExample
   description: '- fixed Issue 1090'.
+ \end{code} 
+ 
 Then save the configuration to your repository:
+
+\begin{code}{}
 MetacelloToolBox
   saveConfigurationPackageFor: 'GemToolsExample'
   description: '- fixed Issue 1090'.
+ \end{code}
+   
 Or do both steps with one toolbox method:
+
+\begin{code}{}
 MetacelloToolBox
   saveModifiedPackagesAndConfigurationIn: ConfigurationOfGemToolsExample
   description: '- fixed Issue 1090'.
-3.5 Update Project Structure
+\end{code}
+  
+\subsection{Update Project Structure}
 
-In the course of development it is sometimes necessary to add a new package or reference and addition project. In this case let's add a package to the project called 'GemTools-Overrides' ('GemTools-Overrides' is actually part of the GemTools project already and I just left it out of the previous example). To add a new package a project you need to:
-create a new baseline version to reflect the new package and dependencies
-update existing #development version to reference the new baseline version and include the explicit version for the new package
+In the course of development it is sometimes necessary to add a new package or reference and addition project. In this case let's add a package to the project called 'GemTools-Overrides' ('GemTools-Overrides' is actually part of the GemTools project already and we just left it out of the previous example). To add a new package a project you need to:
+
+\begin{itemize}
+\item (1) create a new baseline version to reflect the new package and dependencies, 
+\item (2) update existing \ct{#development} version to reference the new baseline version, and 
+\item (3) include the explicit version for the new package.
+\end{itemize}
+
 You can do that manually by using a class browser to manually:
 copy and edit the old baseline version to reflect the new structure
-edit the existing #development version method
-Or you can use the Metacello Toolbox API (not finished/tested yet:):
+edit the existing \ct{#development} version method
+Or you can use the Metacello Toolbox API (not finished/tested yet):
+
+\begin{code}{}
 | toolbox |
 toolbox := MetacelloToolBox configurationNamed: 'GemToolsExample'.
 toolbox
@@ -1278,98 +1328,8 @@ toolbox
 \end{code}
 
 
-\end{document}
-
-\section{Symbolic Versions}
-From the beginning Metacello has had the notion of loading the latest version. The expectation was that loading the latest release would
-always be the best thing to do.
-
-As Pharo has moved forward, aggressively cleaning up the base image, it has turned out that loading the latest version isn't always the
-best solution: code that runs in Pharo1.0 won't work in Pharo1.2 and vice versa.
-
-To solve this problem we need to be able to describe the 'latest version' on a platform by platform basis. 'latest version' is only one of the dimensions that we're interested in. At this point in time, there are really three version dimensions that are interesting:
-
-\begin{description}
-\item \ct{bleedingEdge} -- the latest mcz file defined in the latest baseline
-for a
-                       project.
-\item  \ct{development} -- the currently active development version
-\item  \ct{stable}      -- what we really want when we say 'latest version'
-
-\end{description}
-
-
-It may happen that over time there will be additional dimensions over time.
-For Metacello for example we could imagine \ct{earlyAccess} versions which are \ct{'stable'} development versions.
-
-The requirement is to be able to declare a \ct{stable} or \ct{development} version on a platform by platform basis. 
-To do so there are two additional pragmas that can be included in Configuration class methods:
-
-\begin{code}{}
- <symbolicVersion: SYMBOLIC_VERSION_SYMBOL>
- <defaultSymbolicVersion: SYMBOLIC_VERSION_SYMBOL>
-\end{code}
-
-The \ct{symbolicVersion:} pragma is similar to the version pragma (\ct{<version: VERSION_STRING>}). 
-A symbolic version may be used anywhere that a literal version may be used.
-The following is an example where a set
-of \ct{stable symbolic} versions are declared:
-
-\begin{code}{}
- stable: spec
-	<symbolicVersion: #'stable'>
-
-	spec for: #'common' version: '1.0.2.1'.
-	spec for: #'pharo1.0.x' version: '1.0.2.1'.
-	spec for: #'pharo1.1.x' version: '1.0.3'.
-	spec for: #'pharo1.2.x' version: '1.0.4'.
-\end{code}
-
-The \ct{defaultSymbolicVersion:} is used in a method that is expected to be regular smalltalk code that returns a version string. The following is the definition for the \ct{bleedingEdge} symbolic version: \sd{not sure that it is ok to show here}
-
-\begin{code}{}
-bleedingEdge
-	<defaultSymbolicVersion: #bleedingEdge>
-
-	| bleedingEdgeVersion |
-	bleedingEdgeVersion := (self project map values select: [ :version |
-version blessing == #baseline ])
-		detectMax: [ :version | version ].
-	bleedingEdgeVersion ifNil: [ bleedingEdgeVersion := self project
-latestVersion ].
-	bleedingEdgeVersion
-		ifNil: [ self versionDoesNotExistError: #bleedingEdge ].
-	^ bleedingEdgeVersion versionString
-\end{code}
-
-When specifying a symbolic version with a \ct{symbolicVersion:} pragma it is legal to use another symbolic version like the following definition for the symbolic version \ct{stable}:
-
-\begin{code}{}
-stable: spec
-	<symbolicVersion: #'stable'>
-
-	spec for: #'gemstone' version: '1.5'.
-	spec for: #'squeak' version: '1.4'.
-	spec for: #'pharo1.0.x' version: '1.5'.
-	spec for: #'pharo1.1.x' version: '1.5'.
-	spec for: #'pharo1.2.x' version: #development.
-\end{code}
-
-Or to use the special symbolic version \ct{notDefined}: as in the following definition of the symbolic version \ct{development}:
-
-\begin{code}{}
-development: spec
-	<symbolicVersion: #'development'>
-
-	spec for: #'common' version: #notDefined.
-	spec for: #'pharo1.1.x' version: '1.6'.
-	spec for: #'pharo1.2.x' version: '1.6'.
-\end{code}
-
-Here this indicates that there are no version for the \ct{common} tag. 
-Using a symbolic version that resolves to \ct{notDefined} will result in a \ct{MetacelloSymbolicVersionNotDefinedError} being signaled.
 \section{Load types}
-Metacello lets you specify the way packages are loaded through its ``load types''. For the time of this writing, there are only two possible load types: \emph{atomic} and \emph{linear}. 
+Metacello lets you specify the way packages are loaded through its ``load types". For the time of this writing, there are only two possible load types: \emph{atomic} and \emph{linear}. 
 
 Atomic loading is used where packages have been partitioned in such a way that they can't be loaded individually. The definitions from each package are munged together into one giant load by the Monticello package loader. Class side \ct{initialize} methods and pre/post code execution are performed for the whole set of packages, not individually. 
 
@@ -1399,30 +1359,6 @@ ConfigurationOfCoolToolSet >>project
 		constructor := (Smalltalk at: #MetacelloVersionConstructor) on: self.
 		project := constructor project.
 		project loadType: #linear. '"or #atomic'"
-		project ]
-
-\end{code}
-
-\section{Project definition}
-
-We have already explained that the easiest way to create a configuration class is to copy the existing MetacelloConfigTemplate class. If we now take a deeper understanding of such class, we can see that it implements the method \ct{project}. In case you did not notice, we have used this method everywhere along this chapter. For example, we have used it to load a version:
-
-\begin{code}{}
-  (ConfigurationOfCoolToolSet project version: '1.1') load: 'CoolToolSet-Tests'.
-\end{code}
-
-In this method \ct{project} you can specify and customize your project definitions. For example, you can specify the Metacello constructor, the load type, project attributes, etc. Later in this chapter we will go a little deeper with some of these topics. This is a typical implementation of \ct{project} method: 
-\sd{check the latest code}
-\begin{code}{}
-ConfigurationOfCoolToolSet >>project
-
-	^ project ifNil: [ | constructor |
-		"Bootstrap Metacello if it is not already loaded"
-		self class ensureMetacello.
-		"Construct Metacello project"
-		constructor := (Smalltalk at: #MetacelloVersionConstructor) on: self.
-		project := constructor project.
-		project loadType: #linear.
 		project ]
 
 \end{code}
@@ -1498,6 +1434,53 @@ You can notice that the way to use project attributes is through the existing me
 
 Again, notice that inside the \ct{for:do:} you are free to do whatever you want.
 
+\section{Project version attributes}
+ 
+% First, let us tell you something. Metacello not only includes all what we have been learning and what we will be still learning along this chapter, but also a complete set of tools with UI (user interface). These tools are based on OmniBrowser (OB), and thus, they are called OB-Metacello. This tool lets you save packages, spawn new versions, update package methods, load latest packages, save projects, update projects, among others. Unfortunately, this topic is not covered in this chapter. That's all you need to know for the moment.  
+ 
+A configuration can have several optional attributes such as   
+an author, a description, a blessing and a timestamp.  Let's see an example with a new version 0.7 of our project.
+ 
+\begin{code}{}
+ConfigurationOfCoolBrowser>>version07: spec 
+	<version: '0.7' imports: #('0.7-baseline')>
+	
+	spec for: #common do: [
+		spec blessing: #release.
+		!\textbf{spec description: 'In this release .....'.}!
+		!\textbf{spec author: 'JohnLewis'.}!
+		!\textbf{spec timestamp: '10/12/2009 09:26'.}!
+		spec 
+			package: 'CoolBrowser-Core' with: 'CoolBrowser-Core-MichaelJones.20';
+			package: 'CoolBrowser-Tests' with: 'CoolBrowser-Tests-JohnLewis.8';
+			package: 'CoolBrowser-Addons' with: 'CoolBrowser-Addons-JohnLewis.6' ;
+			package: 'CoolBrowser-AddonsTests' with: 'CoolBrowser-AddonsTests-JohnLewis.1' ].
+\end{code}
+ 
+We will describe each attribute in detail:
+ 
+\begin{description}
+
+\item[ Description:] a textual description of the version. This may include a list of bug fixes or new features, changelog, etc.
+\item[  Author:] the name of the author who created the version. When using the OB-Metacello tools the author field is automatically updated to reflect the current author as defined in the image.
+\item[  Timestamp:] the date and time when the version was completed. When using the OB-Metacello tools the timestamp field is automatically updated to reflect the current date and time. Note that the timestamp must be a String.
+
+\end{description}
+
+To end this section, we show you can query this information. This illustrates that most of the information that you define in a Metacello version can then be queried. For example, you can evaluate the following expressions:
+
+\begin{code}{}
+(ConfigurationOfCoolBrowser project version: '0.7') blessing.
+(ConfigurationOfCoolBrowser project version: '0.7') description.
+(ConfigurationOfCoolBrowser project version: '0.7') author.
+(ConfigurationOfCoolBrowser project version: '0.7') timestamp.
+\end{code}
+
+
+\section{Conclusion}
+Metacello is an important part of Pharo. It will allow your project to scale. It allow you to control when you want to migrate to new version and for which packages. It is an important architectural backbone.
+
+\end{document}
 
 
 
