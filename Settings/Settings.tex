@@ -32,25 +32,46 @@
 \sloppy
 %=================================================================
 \newcommand{\apl}[1]{\nnbb{Alain}{#1}} % Plantec
-\chapter{The Settings Framework (DRAFT)}
+\chapter{The Settings Framework}
 
 When an application gets mature it often needs to provide variations such as the default selection color, the default font and the default font size... Often such variations represent user preferences of possible software customizations. 
 Since the 1.1 release, Pharo contains and uses the Settings framework to manage its preferences. With Setting, an application can expose its configuration. Settings is not limited to manage Pharo preferences but we suggest to use for any application. The nice thing about Settings is that it is not intrusive, it supports a modular decomposition of software and can be added to an application after its inception. This is what we will see now.
 
 \section{Settings in a Nutshell}
 
-Setting supports an object-oriented approach to preferences definition and manipulation. What we want to express by this sentence is that each package or subsystem should define its own customization points (often represented as a variable). The code of a subsystem then freely accesses such customization value and use it to change it behavior to reflect the preference. Then using Setting, a subsystem describe its preferences so that the end user can manipulate them. However, at not point in time, the code of a subsystem will explicit refer to setting objects to adapt its behavior. The control flow of a subsystem does not involve Setting. This is the major point of difference between Setting and the preference system available in Pharo1.0.
+Setting supports an object-oriented approach to preferences definition and manipulation. What we want to express by this sentence is that each package or subsystem should define its own customization points (often represented as a variable or a class variable). The code of a subsystem then freely accesses such customization value and use it to change it behavior to reflect the preference. Then using Setting, a subsystem describe its preferences so that the end user can manipulate them. However, at not point in time, the code of a subsystem will explicit refer to setting objects to adapt its behavior. The control flow of a subsystem does not involve Setting. This is the major point of difference between Settings and the preference system available in Pharo1.0.
 
 A preference is a particular \emph{value} which is usually accessible. Basically such a preference value is stored in a class variable or in an instance variable of a singleton and is directly managed through the use of simple accessors. Pharo contains numerous preferences such as the user interface theme, the desktop background color or a boolean flag to allow or prohibit the use of sound are currently declared as preferences. We will show how we can define a preference in Section~\ref{sec:ProgrammingAPreference}. 
 
-Pharo users need to browse existing preferences and eventually change their value, this is the major role of the settings browser presented in section~\ref{sec:TheSettingsBrowser}.
+Pharo users need to browse existing preferences and eventually change their value, this is the major role of the settings browser presented in Section~\ref{sec:TheSettingsBrowser}.
 
-A setting is a \emph{declaration} (description) of a preference value. To be viewed and updated through the setting browser, a preference value must be described by a setting. Such a setting is built by a particular method tagged with a pragma. The section~\ref{sec:DeclaringASetting} explains how to declare a setting.
+A setting is a \emph{declaration} (description) of a preference value. To be viewed and updated through the setting browser, a preference value must be described by a setting. Such a setting is built by a particular method tagged with a pragma (see Figure~\ref{fig:modularflow}). Section~\ref{sec:DeclaringASetting} explains how to declare a setting.
+
+
+\begin{figure}[tbh]
+\begin{center}
+\includegraphics[scale=0.5]{modularflow}
+\caption{A package defines customization points. Such customization points are described with Settings instances. The Setting browser collects the description and presents them to the user.}
+\figlabel{modularflow}
+\end{center}
+\end{figure}
+
+Figure~\ref{fig:modularflow} shows important points of the architecture put in place by Settings: The \emph{Settings} package can be unloaded and a package defining preferences does not depend
+on the \emph{Settings} package.
+
+\begin{description}
+\item[Customization points.] Each application should defined its customization points. For example, the class \ct{RealStateAgent} of the package \emph{UI-Basic} defines the class variable \ct{UsedStrategy} which defines how the windows. The flow of the package \emph{UI-Basic} is modular and self-contained: the class \ct{RealStateAgent} does not depend on the settings framework.  The class  \ct{RealStateAgent} has been designed to be parametrized.
+
+\item[Description of customization point.] The Setting framework supports the description of the setting \ct{UsedStrategy}. In Figure~\ref{fig:modularflow}, the package \emph{UI-Basic Setting} defines a method (it could be an extension to the class \ct{RealStateAgent} or another class. The important point is that the method declaring the setting does not refer directly to Setting class but describes the setting using a builder. This way this description could even be present in the \emph{UI-Basic} package without introducing a references
+
+\item[Collecting setting for user presentation.] The Setting package defines tools to manage setting such as a setting browser that the user uses to changes his preference. The Setting Browser collects settings and uses their description to change the values of preferences.
+The control flow of the program and the dependencies are always from Setting to the package that have preferences and not the inverse. 
+\end{description}
 
 \section{The Setting Browser}
 \label{sec:TheSettingsBrowser}
 
-The setting browser, shown in figure~\figref{fig:TheSettingsBrowser}, mainly allows the browsing of all currently declared settings and to change related preference values. To open it, just use the World menu (\menu{World \go System \go Settings}) or evaluate the following expression:
+The setting browser, shown in \figref{fig:TheSettingsBrowser}, mainly allows the browsing of all currently declared settings and to change related preference values. To open it, just use the World menu (\menu{World \go System \go Settings}) or evaluate the following expression:
 \begin{code}{}
 SettingBrowser open
 \end{code}
@@ -222,7 +243,7 @@ Then, it means that the \ct{#codeEditing} node is also declared somewhere in the
 \begin{code}{}
 CodeHolderSystemSettings class>>codeEditingSettingsOn: aBuilder
 	<systemsettings>
-	(aBuilder group: #codeEditing) 
+	(aBuilder !\textbf{group:}! #codeEditing) 
 		label: 'Editing' translated;
 		parent: #codeBrowsing.
 \end{code}
@@ -240,7 +261,7 @@ Thus, directly declaring a sub-tree of settings in one method is also possible. 
 \figlabel{fig:configurableFormatter}
 \end{center}
 \end{figure}
-As an example, take a look at figure \figref{fig:configurableFormatter}, it shows the settings for the refactoring browser configurable formatter. This sub-tree of settings is fully declared in the method \ct{RBConfigurableFormatter class>>settingsOn:} given below. You can see that it declares the new root group \ct{#configurableFormatter} with two children, \ct{#formatCommentWithStatements} and \ct{#indentString}:
+As an example, take a look at \figref{fig:configurableFormatter}, it shows the settings for the refactoring browser configurable formatter. This sub-tree of settings is fully declared in the method \ct{RBConfigurableFormatter class>>settingsOn:} given below. You can see that it declares the new root group \ct{#configurableFormatter} with two children, \ct{#formatCommentWithStatements} and \ct{#indentString}:
 \begin{code}{}
 RBConfigurableFormatter class>>settingsOn: aBuilder
 	<systemsettings>	
@@ -249,7 +270,7 @@ RBConfigurableFormatter class>>settingsOn: aBuilder
 		parent: #refactoring;
 		label: 'Configurable Formatter' translated;
 		description: 'Settings related to the formatter' translated;
-		with: [
+		!\textbf{with:}! [
 			(aBuilder setting: #formatCommentWithStatements)
 				label: 'Format comment with statements' translated.
 			(aBuilder setting: #indentString)
@@ -322,16 +343,17 @@ Instead, a minimum of -5 and a maximum of 100 constitute a good range of values.
 \begin{code}{}
 screenMarginSettingOn: aBuilder
 	<systemsettings>
-	(aBuilder range: #fullScreenMargin)
+	(aBuilder !\textbf{range:}! #fullScreenMargin)
 		target: SystemWindow;
 		parent: #windows;
 		label: 'Full screen margin' translated;
 		description: 'Specify the amount of space that is let around a windows when it''s opened fullscreen' translated;
-		range: (-5 to: 100).
+		!\textbf{range:}! (-5 to: 100).
 \end{code}
 
 \subsubsection{Selecting among a list}
 When a preference value is constrained to be one of a particular list of values, it is possible to declare it so that a drop list is used by the settings browser. This drop list is initialized with the predefined valid values. As an example, consider the \textit{window position strategy} example. The corresponding widget is shown in action within the settings browser by \figref{fig:window-position-strategy-list-setting}. The allowed values are \ct{'Reverse Stragger'}, \ct{'Cascade'} and \ct{'Standard'}.
+
 \begin{figure}[tbh]
 \begin{center}
 \includegraphics[scale=0.38]{window-position-strategy}
@@ -339,14 +361,15 @@ When a preference value is constrained to be one of a particular list of values,
 \figlabel{fig:window-position-strategy-list-setting}
 \end{center}
 \end{figure}
+
 The example below shows a simplified declaration for the \textit{window position strategy} setting. 
 \begin{code}{}
 windowPositionStrategySettingsOn: aBuilder
 	<systemsettings>
-	(aBuilder pickOne: #usedStrategy) 
+	(aBuilder !\textbf{pickOne:}! #usedStrategy) 
 		label: 'Window position strategy' translated;
 		target: RealEstateAgent;
-		domainValues: #(#'Reverse Stragger' #Cascade #Standard)
+		!\textbf{domainValues:}! #(#'Reverse Stragger' #Cascade #Standard)
 \end{code}
 comparing to a simple setting, the only two differences are that:
 \begin{itemize}
@@ -360,6 +383,7 @@ Concerning this window strategy example, the value set to the preference would b
 
 Unfortunately, these values are not very handy. A programmer may wish another value as, for example, some kind of \textit{strategy object} or a \ct{Symbol} which could directly serve as a selector. In fact, this second solution has been chosen by the \ct{RealEstateAgent} class maintainers.
 If you inspect the value returned by \ct{RealEstateAgent usedStrategy} you will realise that the result is not a \ct{Symbol} among \ct{#(#'Reverse Stragger' #Cascade #Standard)} but another symbol. Then, if you look at the way the window position strategy setting is really implemented you will see that the declaration differs from the basic solution given previously: the \textit{domainValues:} argument is not a simple array of {Symbol}s but an array of \ct{Associations} a you can see in the declaration below:
+
 \begin{code}{}
 windowPositionStrategySettingsOn: aBuilder
 	<systemsettings> 
@@ -367,6 +391,7 @@ windowPositionStrategySettingsOn: aBuilder
 	...
 	domainValues: {'Reverse Stragger' translated -> #straggerFor:initialExtent:world:. 'Cascade' translated -> #cascadeFor:initialExtent:world:. 'Standard' translated -> #standardFor:initialExtent:world:};
 \end{code}
+
 From the Settings Browser point of view, the content of the list is exactly the same and the user can't notice any difference because, if an array of Associations is given as argument to \ct{domainValues:}, then the keys of the Associations are used for the user interface. 
 
 Concerning the value of the preference itself, if you inspect \ct{RealEstateAgent usedStrategy}, you should notice that the result is a value among \ct{#(#straggerFor:initialExtent:world: #cascadeFor:initialExtent:world: #standardFor:initialExtent:world:)}. In fact, the values of the Associations are used to compute all possible real values for the setting.
