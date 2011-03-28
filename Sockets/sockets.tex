@@ -44,7 +44,9 @@ The concept of socket was first introduced by researchers from Berkeley Universi
 Its API was ported to most existing programming languages including Smalltalk.
 
 In this chapter, we present the socket's API in the context of Pharo Smalltalk.
-We show through some examples how to to use sockets for building both clients and servers.
+We first show through some examples how to to use sockets for building both clients and servers.
+Then, we'll introduce \ct!SocketStream! and how to use it.
+In practice, one is likely to use \ct!SocketStream! instead of plain sockets.
 
 \section{Basic Concepts}
 \subsection{Socket}
@@ -317,10 +319,10 @@ Otherwise, the client will fail.
 %Here, we use \ct{nc} as client that sends the text we provided to a server on the local host, listening on port 9999.
 
 \subsection{Echo Server Class}
-We define here the  \ct!EchoServer! class that deals with concurrency issues.
-It allows dealing concurrently with multiple client queries and it does not freeze the UI.
+We define here the \ct!EchoServer! class that deals with concurrency issues.
+It handles concurrent client queries and it does not freeze the UI.
 As we can see in the definition labelled as \clsref{echoServerClassDef}, the \ct!EchoServer! declares three instance variables.
-The first one (\ct! connectionSocket!) refers to the socket used for listening to client connections.
+The first one (\ct!connectionSocket!) refers to the socket used for listening to client connections.
 The two last instance variables (\ct!isRunning! and \ct!isRunningLock!) are used to manage the server process life-cycle while dealing with synchronization issues.
  
 \begin{classdef}[echoServerClassDef]{\ct!EchoServer! Class Definition}
@@ -368,12 +370,39 @@ start
 \end{method}
 
 In order to manage the life-cycle of our server, we introduced two methods \ct!EchoServer>>>start! and \ct!EchoServer>>>stop!.
-Let's start with the simplest one \ct!EchoServer>>>stop! which definition is provided as \mthref{meth:stop}.
-It simply sets the \ct!isRunning! flag  to false.
+Let's begin with the simplest one \ct!EchoServer>>>stop! which definition is provided as \mthref{meth:stop}.
+It simply sets the \ct!isRunning! flag to \ct!false!.
 This will have the consequence of stopping the serving process created by the \ct!EchoServer>>>start! (see the last line of \mthref{meth:start}).
 
+The activity of the serving process is implemented in the \ct!serve! method (see \mthref{meth:serve}).
+It interacts on connections while the \ct!isRunning! flag is \ct!true!.
+After a \ct!stop!, the connection is destroyed and the serving process is terminated. 
+	
 %%%%%%CONTINUE FROM HERE
+Now, let's go back to the \ct!start! method.
 In order to avoid duplicating servers...
+
+\begin{method}[meth:serve]{The \ct!EchoServer>>>serve! Method}
+serve
+	| interactionSocket |
+	[self isRunning] whileTrue: [self interactOnConnection].
+	connectionSocket closeAndDestroy
+\end{method}
+
+\begin{method}[meth:interactOnConnection]{The \ct!EchoServer>>>interactOnConnection! Method}
+interactOnConnection
+	| interactionSocket |
+	interactionSocket := connectionSocket waitForAcceptFor: 1 ifTimedOut: [^self].
+	[self interactUsing: interactionSocket] fork
+\end{method}
+
+\begin{method}[meth:interactUsing]{The \ct!EchoServer>>>interactUsing:! Method}
+interactUsing: interactionSocket
+		| receivedData |
+		[receivedData := interactionSocket receiveDataTimeout: 5.
+		Transcript cr; show: receivedData.
+		interactionSocket sendData: 'ECHO: ', receivedData] ensure: [interactionSocket closeAndDestroy]
+\end{method}
 
 \section{SocketStream}
 \section{Network Interface Initialization?}
