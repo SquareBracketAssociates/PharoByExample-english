@@ -352,12 +352,31 @@ EchoServer>>>isRunning: aBoolean
 
 The \ct! isRunning! instance variable is a flag that is set to \ct!true! while the serving is running.
 As we'll see below, it can be accessed by different processes.
-Therefore, we use the mutex (see \mthref{meth:serverInitialize}) stored in the \ct!isRunningLock! instance variable in order to ensure that only one process can read or write the value of \ct!isRunning! (use of the \ct!critical:! message in \mthref{meth:isRunningRead} and \mthref{meth:isRunningWrite}).
+Therefore, we use the mutex (see \mthref{meth:serverInitialize}) referenced using the \ct!isRunningLock! instance variable.;
+This mutex ensures that only one process can read or write the value of \ct!isRunning! (use of the \ct!critical:! message in \mthref{meth:isRunningRead} and \mthref{meth:isRunningWrite}).
 
 \begin{method}[meth:stop]{The \ct!EchoServer>>>stop! Method}
 EchoServer>>>stop
 	self isRunning: false
 \end{method}
+
+
+In order to manage the life-cycle of our server, we introduced two methods \ct!EchoServer>>>start! and \ct!EchoServer>>>stop!.
+Let's begin with the simplest one \ct!EchoServer>>>stop! which definition is provided as \mthref{meth:stop}.
+It simply sets the \ct!isRunning! flag to \ct!false!.
+This will have the consequence of stopping the serving loop in method \ct!EchoServer>>>serve! (see \mthref{meth:serve}). 
+
+\begin{method}[meth:serve]{The \ct!EchoServer>>>serve! Method}
+serve
+	| interactionSocket |
+	[self isRunning] whileTrue: [self interactOnConnection].
+	connectionSocket closeAndDestroy
+\end{method}
+
+The activity of the serving process is implemented in the \ct!serve! method (see \mthref{meth:serve}).
+It interacts with clients on connections while the \ct!isRunning! flag is \ct!true!.
+After a \ct!stop!, the connection socket is destroyed and the serving process is terminated. 
+The creation of this serving process is the responsibility of method \ct!EchoServer>>>start! (see the last line of \mthref{meth:start}).
 
 \begin{method}[meth:start]{The \ct!EchoServer>>>start! Method}
 start
@@ -368,26 +387,16 @@ start
 	connectionSocket listenOn: 9999 backlogSize: 10.
 	[self serve] fork
 \end{method}
-
-In order to manage the life-cycle of our server, we introduced two methods \ct!EchoServer>>>start! and \ct!EchoServer>>>stop!.
-Let's begin with the simplest one \ct!EchoServer>>>stop! which definition is provided as \mthref{meth:stop}.
-It simply sets the \ct!isRunning! flag to \ct!false!.
-This will have the consequence of stopping the serving process created by the \ct!EchoServer>>>start! (see the last line of \mthref{meth:start}).
-
-The activity of the serving process is implemented in the \ct!serve! method (see \mthref{meth:serve}).
-It interacts on connections while the \ct!isRunning! flag is \ct!true!.
-After a \ct!stop!, the connection is destroyed and the serving process is terminated. 
 	
-%%%%%%CONTINUE FROM HERE
-Now, let's go back to the \ct!start! method.
-In order to avoid duplicating servers...
 
-\begin{method}[meth:serve]{The \ct!EchoServer>>>serve! Method}
-serve
-	| interactionSocket |
-	[self isRunning] whileTrue: [self interactOnConnection].
-	connectionSocket closeAndDestroy
-\end{method}
+The \ct!EchoServer>>>start! method first checks if the server is already running.
+It returns if this is case.
+Otherwise, the a TCP socket dedicated to connection handling is created and made to listen on port 9999.
+The backlog size refers to the size of the system buffer for storing pending client connection requests.
+This value is a compromize the depends on how fast is the server (varies according to the VM and the hardward) and the maximum rate of client connections requests.
+Thus, the backlog size should be big enough to avoid loosing any connection request, but not too big to avoid wasting memory.
+Finally \ct!EchoServer>>>start! method creates a process by sending the \ct!fork! message to the \ct![self serve]! block.
+The created process has the same priority as the creator process (i.e. the one that performs the \ct!EchoServer>>>start! method).
 
 \begin{method}[meth:interactOnConnection]{The \ct!EchoServer>>>interactOnConnection! Method}
 interactOnConnection
@@ -395,6 +404,13 @@ interactOnConnection
 	interactionSocket := connectionSocket waitForAcceptFor: 1 ifTimedOut: [^self].
 	[self interactUsing: interactionSocket] fork
 \end{method}
+
+Method \ct!EchoServer>>>serve! (see \mthref{meth:serve}) loop interacts with clients on connections.
+This interaction is handled in the \ct!EchoServer>>>interactOnConnection! method (see \mthref{meth:interactOnConnection}) .
+First, the connection socket waits for client connections for one second.
+If no client attempts to connect during this period we simply return.
+Otherwise, we get as result another socket dedicated to interaction.
+To process other client connection requests, the interaction is performed in another process, hence the \ct!fork! in the last line.
 
 \begin{method}[meth:interactUsing]{The \ct!EchoServer>>>interactUsing:! Method}
 interactUsing: interactionSocket
@@ -404,7 +420,13 @@ interactUsing: interactionSocket
 		interactionSocket sendData: 'ECHO: ', receivedData] ensure: [interactionSocket closeAndDestroy]
 \end{method}
 
+The interaction as implemented in method \ct!EchoServer>>>interactUsing:! (see \mthref{meth:interactUsing}) with a client is the only application specific part\footnote{In an actual application we should have an abstract server superclass which subclasses implement the \ct!interactUsing:! method.}.
+The interaction boils down to reading data provided by the client and sending it back prefixed with the \ct!'ECHO: '! string.
+It worth noting that we ensure that the interaction socket is destroyed, whether we have exchanged data or not (timeout).
+
 \section{SocketStream}
+%%%%%%CONTINUE FROM HERE
+
 \section{Network Interface Initialization?}
 NetNameResolver class>>initializeNetwork
 \section{A Basic Chat Application}
