@@ -33,20 +33,33 @@
 
 \chapter{Fun with Floats}
 
-Hope it helps to consider Float for what they are, inexact but fast.
-Don't put too much expectations on them.
-
+Floats are inexact by nature and this can confuse programmers. In this chapter we present 
+an introduction to this problem. The basic message is that Floats are what they are inexact 
+but fast numbers.
 
 
 \section{Never test equality on floats}
+The first basic principle is to never compare float equality. 
+Let's take a simple case: the addition of two floats may not be equal to the float representing their
+sum. For example \ct{0.1 + 0.2} is not equal to \ct{0.3}.
 
 \begin{code}{}
-(0.1+0.2)=0.3
+(0.1 + 0.2) = 0.3
 	returns false
 \end{code}
 
-This behavior is normal since floats are inexact numbers.
-We can see that we are in presence of two different numbers
+This behavior is normal since floats are inexact numbers. What is important to understand is that the way floats are printed is also impacting our understanding. Some approaches prints a simpler representation of reality than others. In early versions of Pharo printing \ct{0.1 + 0.2} was printing \ct{0.3}, now  printing it returns \ct{0.30000000000000004}.
+This change was guided by the idea that it is better not to lie to the user. Showing the inexactness of float is better than hiding because one day or another we can be deeply bitten by them. 
+
+\begin{code}{}
+(0.2 + 0.1 ) printString
+	returns '0.30000000000000004' 
+
+0.3 printString
+	returns	'0.3'
+\end{code}	
+
+We can see that we are in presence of two different numbers by looking at the hexadecimal values. 
 
 \begin{code}{}
 (0.1+0.2) hex 
@@ -56,7 +69,7 @@ We can see that we are in presence of two different numbers
 \end{code}
 
 	
-The method \ct{storeString} conveys that 
+The method \ct{storeString} also conveys that we are in presence of two different numbers.
 		
 \begin{code}{}
 (0.1+0.2) storeString 
@@ -66,6 +79,7 @@ The method \ct{storeString} conveys that
 \end{code}	
 		
 		
+\paragraph{About Scaled Decimals.}
 Scaled Decimals are exact numbers so they exhibit the behavior you expected.
 
 \begin{code}{}
@@ -74,7 +88,7 @@ Scaled Decimals are exact numbers so they exhibit the behavior you expected.
 \end{code}		
 		
 
-\paragraph{Analysing \ct{13/10}}
+\subsection{Analyzing \ct{13/10}}
 \ct{1.3} is represented in machine as
 
 \begin{code}{}
@@ -88,18 +102,27 @@ Or if you prefer:
 \begin{code}{}
 (1.3 asTrueFraction numerator printStringBase: 2) , '/' , (1.3
 asTrueFraction denominator printStringBase: 2).
--> '10100110011001100110011001100110011001100110011001101/10000000000000000000000000000000000000000000000000000'
+-> '10100110011001100110011001100110011001100110011001101/
+10000000000000000000000000000000000000000000000000000'
 \end{code}
 
-As you can see, this is quite different from 13/10. However, you can test (13/10) asFloat = 1.3 and that happens to be
-true, but that won't always be true.
+As you can see, this is quite different from 13/10. However, you can test (13/10) asFloat = 1.3 and that happens to be true, but that won't always be true. In particular the inverse it not. So we are sure that if you compare floats using simple equality there is a high chance that you will get burned back. Again scaled decimal return correct and consistent behavior.
 
 \begin{code}{}
-1.3= (13/10).
+(13/10) asFloat = 1.3
+	returns true
+
+1.3 = (13/10).
 	returns false
 	
-1.3s1 = (13/10).	returns true1.3s2*1.3s2 = 1.69s2.	returns true
-1.3 * 1.3 = 1.69.	returns false
+1.3s1 = (13/10).
+	returns true
+
+1.3s2*1.3s2 = 1.69s2.
+	returns true
+
+1.3 * 1.3 = 1.69.
+	returns false
 \end{code}
 
 
@@ -109,6 +132,8 @@ true, but that won't always be true.
 
 
 \section{Study of a simple example}
+While float equality is known to evil, you have to pay attention to other aspects of floats. Let us illustrate that point with the following example.
+
 
 \begin{code}{}
 2.8011416510246336 roundTo: 0.01
@@ -219,7 +244,7 @@ asTrueFraction) asFloat
 
 
 \section{Conclusion}
-
+Floats are inexact numbers. 
 
 
 %=========================================================
