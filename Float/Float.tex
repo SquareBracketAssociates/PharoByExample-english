@@ -1,0 +1,174 @@
+% $Author: ducasse $
+% $Date: 2009-08-24 10:17:33 +0200 (Mon, 24 Aug 2009) $
+% $Revision: 28563 $
+
+
+
+%=================================================================
+\ifx\wholebook\relax\else
+% --------------------------------------------
+% Lulu:
+	\documentclass[a4paper,10pt,twoside]{book}
+	\usepackage[
+		papersize={6.13in,9.21in},
+		hmargin={.75in,.75in},
+		vmargin={.75in,1in},
+		ignoreheadfoot
+	]{geometry}
+	\input{../common.tex}
+	\setboolean{lulu}{true}
+% --------------------------------------------
+% A4:
+%	\documentclass[a4paper,11pt,twoside]{book}
+%	\input{../common.tex}
+%	\usepackage{a4wide}
+% --------------------------------------------
+    \graphicspath{{figures/} {../figures/}}
+	\begin{document}
+\fi
+%=================================================================
+%\renewmessage{\nnbb}[2]{} % Disable editorial comments
+\sloppy
+%=================================================================
+
+\chapter{Fun with Floats}
+
+Hope it helps to consider Float for what they are, inexact but fast.
+Don't put too much expectations on them.
+
+
+
+\section{Study of a simple example}
+
+\begin{code}{}
+2.8011416510246336 roundTo: 0.01
+-> 2.8000000000000003
+
+2.8 truncateTo: 0.01
+-> 2.8000000000000003
+\end{code}
+
+
+
+
+
+
+Yes nice example to exhibit in school
+
+This again happens even if performed exactly (then rounded to nearest Float)
+(2.8 asTrueFraction roundTo: 0.01 asTrueFraction) asFloat
+
+As soon as you write 0.01 instead of (1/100) or (0.01s2), the worm is
+in the fruit.
+
+
+
+\subsection{Once more, Floats are inexact}
+
+\begin{code}{Floats are the same as Scaled Decimal}
+   0.01 ~= 0.01s2
+\end{code}
+   
+   
+   
+   
+The name \ct{absPrintExactlyOn:base:} is lying, it does not print exactly,
+but it prints the shortest decimal representation than will be rounded
+to the same Float when read back.
+
+To print it exactly, you need to use \ct{printShowingDecimalPlaces:} indeed.
+As every finite Float is a represented internally as a Fraction with a
+denominator being a power of 2, every finite Float has a decimal
+representation with a finite number of decimals digits (just multiply
+numerator and denominator with adequate power of 5, and you'll get the
+digits).
+
+So try:
+
+\begin{code}{}
+0.01 printShowingDecimalPlaces: 59
+-> 0.01000000000000000020816681711721685132943093776702880859375
+\end{code}
+
+You see that even if you try to execute the operation without rounding
+error, then convert it back to Float, you get the error:
+
+\begin{code}{}
+(2.8011416510246336 asTrueFraction roundTo: 0.01 asTrueFraction) asFloat
+->  2.8000000000000003
+\end{code}
+
+When you perform the \ct{roundTo:} operations in Float inexact arithmetic,
+you may accumulate more rounding errors, so the result may vary.
+
+If you want to round to an exact hundredth, then use exact arithmetic and try:
+
+\begin{code}{}
+  2.8011416510246336 roundTo: 0.01s2
+\end{code}
+
+
+
+
+
+\section{Fun with Inexact representations}
+Pour enfoncer le clou, let's play a bit more with inexact representations:
+
+\begin{code}{}
+{
+((2.8 asTrueFraction roundTo: 0.01 asTrueFraction) - (2.8
+predecessor)) abs -> -1.
+((2.8 asTrueFraction roundTo: 0.01 asTrueFraction) - (2.8)) abs -> 0.
+((2.8 asTrueFraction roundTo: 0.01 asTrueFraction) - (2.8 successor)) abs -> 1.
+} detectMin: [:e | e key ]
+
+returns
+	0.0->1
+\end{code}
+
+you get \ct{0.0->1}, which mean that:
+ \ct{(2.8 asTrueFraction roundTo: 0.01 asTrueFraction) asFloat = (2.8 successor)}
+
+But remember that 
+
+\begin{code}{}
+(2.8 asTrueFraction roundTo: 0.01 asTrueFraction) ~= (2.8 successor)
+\end{code}
+
+It must be interpreted as the nearest Float to (2.8 asTrueFraction
+roundTo: 0.01 asTrueFraction) is (2.8 successor).
+
+If you want to know how far it is, then get an idea with:
+
+\begin{code}{}
+((2.8 asTrueFraction roundTo: 0.01 asTrueFraction) - (2.8 successor)
+asTrueFraction) asFloat
+-2.0816681711721685e-16
+\end{code}
+
+
+
+\section{Conclusion}
+
+
+
+%=========================================================
+\ifx\wholebook\relax\else
+   \bibliographystyle{jurabib}
+   \nobibliography{scg}
+   \end{document}
+\fi
+
+%=================================================================
+\ifx\wholebook\relax\else\end{document}\fi
+%=================================================================
+
+%-----------------------------------------------------------------
+
+%%% Local Variables:
+%%% coding: utf-8
+%%% mode: latex
+%%% TeX-master: t
+%%% TeX-PDF-mode: t
+%%% ispell-local-dictionary: "english"
+%%% End:
