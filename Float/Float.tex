@@ -78,6 +78,14 @@ The method \ct{storeString} also conveys that we are in presence of two differen
 	returns	'0.3'
 \end{code}	
 		
+\paragraph{About \ct{closeTo:}.} One way to know if two floats are probably close enough to look like the same number is to use the message \ct{closeTo:}
+
+\begin{code}{}
+(0.1 + 0.2) closeTo: 0.3	returns true
+0.3 closeTo: (0.1 + 0.2)
+	returns true
+\end{code}		
+		
 		
 \paragraph{About Scaled Decimals.}
 Scaled Decimals are exact numbers so they exhibit the behavior you expected.
@@ -123,56 +131,55 @@ As you can see, this is quite different from 13/10. However, you can test (13/10
 
 1.3 * 1.3 = 1.69.
 	returns false
+
+1.3 * 1.3 closeTo: 1.69
+	returns true
 \end{code}
-
-
-
-
-\sd{add a word on closeTo:}
 
 
 \section{Study of a simple example}
 While float equality is known to evil, you have to pay attention to other aspects of floats. Let us illustrate that point with the following example.
 
+\begin{code}{Float truncation can be surprizing}
+2.8 truncateTo: 0.01
+	returns 2.8000000000000003
 
+2.8 roundTo: 0.01
+	returns 2.8000000000000003
+\end{code}
+
+It is surprising but not false that \ct{2.8 truncateTo: 0.01} does not return \ct{2.8} but \ct{2.8000000000000003}. Why because 2.8 is an inexact number and \ct{truncateTo:} and \ct{roundTo:} perform several operations on floats.
+
+
+As soon as you write \ct{0.01} instead of \ct{1/100} or \ct{0.01s2}, the worm is
+in the fruit. Note that the same behavior can arrive with more elaborated numbers as \ct{2.8011416510246336}.
 \begin{code}{}
 2.8011416510246336 roundTo: 0.01
--> 2.8000000000000003
-
-2.8 truncateTo: 0.01
--> 2.8000000000000003
+	returns 2.8000000000000003
 \end{code}
 
 
 
-
-
-
-Yes nice example to exhibit in school
-
 This again happens even if performed exactly (then rounded to nearest Float)
-(2.8 asTrueFraction roundTo: 0.01 asTrueFraction) asFloat
+\ct{(2.8 asTrueFraction roundTo: 0.01 asTrueFraction) asFloat}
 
-As soon as you write 0.01 instead of (1/100) or (0.01s2), the worm is
-in the fruit.
+
 
 
 
 \subsection{Once more, Floats are inexact}
+\sd{should continue from here}
 
-\begin{code}{Floats are the same as Scaled Decimal}
+\begin{code}{Floats are not the same as Scaled Decimal}
    0.01 ~= 0.01s2
 \end{code}
-   
-   
-   
-   
-The name \ct{absPrintExactlyOn:base:} is lying, it does not print exactly,
+      
+The name \ct{absPrintExactlyOn:base:} is a bit confusing, it does not print exactly,
 but it prints the shortest decimal representation than will be rounded
 to the same Float when read back.
 
-To print it exactly, you need to use \ct{printShowingDecimalPlaces:} indeed.
-As every finite Float is a represented internally as a Fraction with a
+To print it exactly, you need to use \ct{printShowingDecimalPlaces:} instead.
+As every finite Float is  represented internally as a Fraction with a
 denominator being a power of 2, every finite Float has a decimal
 representation with a finite number of decimals digits (just multiply
 numerator and denominator with adequate power of 5, and you'll get the
@@ -182,7 +189,7 @@ So try:
 
 \begin{code}{}
 0.01 printShowingDecimalPlaces: 59
--> 0.01000000000000000020816681711721685132943093776702880859375
+	returns 0.01000000000000000020816681711721685132943093776702880859375
 \end{code}
 
 You see that even if you try to execute the operation without rounding
@@ -190,7 +197,7 @@ error, then convert it back to Float, you get the error:
 
 \begin{code}{}
 (2.8011416510246336 asTrueFraction roundTo: 0.01 asTrueFraction) asFloat
-->  2.8000000000000003
+	returns 2.8000000000000003
 \end{code}
 
 When you perform the \ct{roundTo:} operations in Float inexact arithmetic,
@@ -199,7 +206,8 @@ you may accumulate more rounding errors, so the result may vary.
 If you want to round to an exact hundredth, then use exact arithmetic and try:
 
 \begin{code}{}
-  2.8011416510246336 roundTo: 0.01s2
+2.8011416510246336 roundTo: 0.01s2
+	returns 2.80s2
 \end{code}
 
 
@@ -207,21 +215,20 @@ If you want to round to an exact hundredth, then use exact arithmetic and try:
 
 
 \section{Fun with Inexact representations}
-Pour enfoncer le clou, let's play a bit more with inexact representations:
+To add a nail to the coffin, let's play a bit more with inexact representations. Let us try to see the difference between different numbers: 
 
 \begin{code}{}
 {
-((2.8 asTrueFraction roundTo: 0.01 asTrueFraction) - (2.8
-predecessor)) abs -> -1.
+((2.8 asTrueFraction roundTo: 0.01 asTrueFraction) - (2.8 predecessor)) abs -> -1.
 ((2.8 asTrueFraction roundTo: 0.01 asTrueFraction) - (2.8)) abs -> 0.
 ((2.8 asTrueFraction roundTo: 0.01 asTrueFraction) - (2.8 successor)) abs -> 1.
 } detectMin: [:e | e key ]
 
-returns
+returns the pair
 	0.0->1
 \end{code}
 
-you get \ct{0.0->1}, which mean that:
+you get \ct{0.0->1}, which means that:
  \ct{(2.8 asTrueFraction roundTo: 0.01 asTrueFraction) asFloat = (2.8 successor)}
 
 But remember that 
@@ -230,21 +237,19 @@ But remember that
 (2.8 asTrueFraction roundTo: 0.01 asTrueFraction) ~= (2.8 successor)
 \end{code}
 
-It must be interpreted as the nearest Float to (2.8 asTrueFraction
-roundTo: 0.01 asTrueFraction) is (2.8 successor).
+It must be interpreted as the nearest Float to \ct{(2.8 asTrueFraction roundTo: 0.01 asTrueFraction)} is \ct{(2.8 successor)}.
 
 If you want to know how far it is, then get an idea with:
 
 \begin{code}{}
-((2.8 asTrueFraction roundTo: 0.01 asTrueFraction) - (2.8 successor)
-asTrueFraction) asFloat
--2.0816681711721685e-16
+((2.8 asTrueFraction roundTo: 0.01 asTrueFraction) - (2.8 successor asTrueFraction)) asFloat
+	returns -2.0816681711721685e-16
 \end{code}
 
 
 
 \section{Conclusion}
-Floats are inexact numbers. 
+Floats are inexact numbers. Pay attention when you manipulate them.
 
 
 %=========================================================
