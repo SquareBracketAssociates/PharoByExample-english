@@ -38,6 +38,76 @@ Don't put too much expectations on them.
 
 
 
+\section{Never test equality on floats}
+
+\begin{code}{}
+(0.1+0.2)=0.3
+	returns false
+\end{code}
+
+This behavior is normal since floats are inexact numbers.
+We can see that we are in presence of two different numbers
+
+\begin{code}{}
+(0.1+0.2) hex 
+	returns '3FD3333333333334'
+0.3 hex 
+	returns '3FD3333333333333' 
+\end{code}
+
+	
+The method \ct{storeString} conveys that 
+		
+\begin{code}{}
+(0.1+0.2) storeString 
+	returns 	'0.30000000000000004' 
+0.3 storeString 
+	returns	'0.3'
+\end{code}	
+		
+		
+Scaled Decimals are exact numbers so they exhibit the behavior you expected.
+
+\begin{code}{}
+0.1s2 + 0.2s2 = 0.3s2
+	returns true
+\end{code}		
+		
+
+\paragraph{Analysing \ct{13/10}}
+\ct{1.3} is represented in machine as
+
+\begin{code}{}
+(1.3 significandAsInteger printStringRadix: 2) , '.0e' , (1.3 exponent
+- Float precision + 1) printString.
+-> '2r10100110011001100110011001100110011001100110011001101.0e-52'
+\end{code}
+
+Or if you prefer:
+
+\begin{code}{}
+(1.3 asTrueFraction numerator printStringBase: 2) , '/' , (1.3
+asTrueFraction denominator printStringBase: 2).
+-> '10100110011001100110011001100110011001100110011001101/10000000000000000000000000000000000000000000000000000'
+\end{code}
+
+As you can see, this is quite different from 13/10. However, you can test (13/10) asFloat = 1.3 and that happens to be
+true, but that won't always be true.
+
+\begin{code}{}
+1.3= (13/10).
+	returns false
+	
+1.3s1 = (13/10).	returns true1.3s2*1.3s2 = 1.69s2.	returns true
+1.3 * 1.3 = 1.69.	returns false
+\end{code}
+
+
+
+
+\sd{add a word on closeTo:}
+
+
 \section{Study of a simple example}
 
 \begin{code}{}
