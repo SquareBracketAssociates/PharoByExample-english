@@ -33,6 +33,7 @@
 \sloppy
 %=================================================================
 \chapter{Files with FileSystem }\chalabel{installer}
+\chapterauthor{\authorsteph{}}
 
 A while ago Colin Putney announced the Filesystem framework, a nice and extensible replacement for the ugly FileDirectory classes in Pharo. While all core classes are well commented, there is a quick start missing that explains how end users are supposed to adopt the framework. 
 
@@ -164,7 +165,7 @@ To delete a complete directory tree use the following expression. Be careful wit
 
  backup deleteAll.
  
-That’s the basic API of the Filesystem library. If there is interest we can have a look at other features and other filesystem types in a next iteration.
+That's the basic API of the Filesystem library. If there is interest we can have a look at other features and other filesystem types in a next iteration.
 
 
 
@@ -213,7 +214,7 @@ Paths are the most fundamental element of the Filesystem API. They represent fil
 
 \subsection{Filesystem}
 
-A filesystem is an interface to some hierarchy of directories and files. "The filesystem," provided by the host operating system, is embodied by FSDiskFilesystem and it's platform-specific subclasses. But other kinds of Filesystems are also possible. FSMemoryFilesystem provides a RAM disk–a filesystem where all files are stored as ByteArrays in the image. FSZipFilesystem represents the contents of a zip file.
+A filesystem is an interface to some hierarchy of directories and files. "The filesystem," provided by the host operating system, is embodied by FSDiskFilesystem and it's platform-specific subclasses. But other kinds of Filesystems are also possible. FSMemoryFilesystem provides a RAM disk'a filesystem where all files are stored as ByteArrays in the image. FSZipFilesystem represents the contents of a zip file.
 
 Each filesystem has its own working directory, which it uses to resolve any relative paths that are passed to it. Some examples:
 
