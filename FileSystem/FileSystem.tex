@@ -289,18 +289,18 @@ Applications my also define their own origins, but the system will not be able t
 References and Locators also provide simple methods for dealing with whole directory trees:
 
 \begin{description}
-\item[allChildren]
+\item[allChildren.]
 
 This will answer an array of references to all the files and directories in the directory tree rooted at the receiver. If the receiver is a file, the array will contain a single reference, equal to the receiver.
 
-\item[allEntries]
+\item[allEntries.]
 This method is similar to \ct{allChildren}, but it answers an array of \ct{FSDirectoryEntries}, rather than references.
 
-\item[copyAllTo: aReference]
+\item[copyAllTo: aReference.]
 
 This will perform a deep copy of the receiver, to a location specified by the argument. If the receiver is a file, the file will be copied; if a directory, the directory and its contents will be copied recursively. The argument must be a reference that doesn't exist; it will be created by the copy.
 
-\item[deleteAll]
+\item[deleteAll.]
 
 This will perform a recursive delete of the receiver. If the receiver is a file, this has the same effect as \ct{delete}.
 \end{description}
@@ -315,7 +315,7 @@ The visitor protocol is very simple. A visitor needs to implement \ct{visitFile:
     FSBreadthFirstGuide show: aReference to: aVisitor
 \end{code}	
 
-The enumeration methods described above are implemented with visitors; see \ct{FSCopyVisitor}, \ct{FSDeleteVisitor} and \ct{FSCollectVisitor} for examples.
+The enumeration methods described above are implemented with visitors; see \ct{FSCopyVisitor}, \ct{FSDeleteVisitor}, and \ct{FSCollectVisitor} for examples.
 
 
 

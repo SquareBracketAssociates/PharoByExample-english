@@ -85,10 +85,29 @@
 \part{Frameworks}
 
 \input{Regex/Regex.tex}
+% 99
+% read edited by oscar
+% redo screenshots
+
 \input{Omnibrowser/Omnibrowser.tex}
+% 90
+% redo screenshots
+% use pdf for graffle
+
 \input{Glamour/Glamour.tex}
+% Gofer
+
 \input{LDAP/LDAP.tex}
+% 60
+% Gofer
+% manque description 
+% fr -> english
+
+
 \input{Mondrian/Mondrian.tex}
+% 80
+% redo screenshots
+% other examples (edges scoped)
 
 %% PetitParser Damien
 %% Alien FFI
@@ -97,26 +116,55 @@
 
 \part{Language}
 \input{Exceptions/Exceptions.tex} %% stef
-\input{Block/Block.tex} %stef 
-\input{Float/Float.tex} %% stef
-\input{Compiler/Compiler.tex} %% marcus
-%\input{Traits/Traits.tex} %%% stef alex
+%% 100
 
+\input{Block/Block.tex} %stef 
+%% 50 
+
+\input{Float/Float.tex} %% stef
+% 60 
+
+%\input{Compiler/Compiler.tex} %% marcus
+%0
+
+%\input{Traits/Traits.tex} %%% stef alex
+% stef and alexandre
+% 20 (first add picture of the esug presentations)
 
 \part{Libraries}
-\input{FileSystem/FileSystem.tex} %% stef...
+\input{FileSystem/FileSystem.tex} 
+%% stef...
+% not wiresong
+% 60 
+% adapting
+% adding some graffle 
+
 \input{Announcements/Announcements.tex} %%
+%30
+
 \input{Sockets/Sockets.tex} %% noury
-\input{Settings/Settings.tex} %% stef done:
-\input{Regex/Regex.tex}
+%60
+%
+
+\input{Settings/Settings.tex} %% stef
+% redo screenshots
 
 \part{Source Management}
 \input{Monticello/Monticello.tex}
+%
+%100
+%% smalltalkHub
+
 \input{Gofer/Gofer.tex}
+% redo screenshots
+
 \input{Metacello/Metacello.tex}
+% 85 
 
 \part{Tools}
 \input{Profiling/Profiling.tex}
+% 80
+
 %Network
 %Rewriting Rules
 
@@ -131,46 +179,6 @@
 
 \end{document}
 
-%=================================================================
-
-% The following chapters are planned for later releases.
-
-\input{Compiler/Compiler.tex}
-
-%=================================================================
-
-\chapter{Inheritance}
-
-\on{or: The darker side of inheritance ?}
-
-Include use and misuse of Inheritance.
-
-\on{should be about idioms, not design!}
-
-Prefer abstract superclasses.
-
-Include the stuff that never gets talked about, like weak subclasses and variable subclasses.
-
-Why it's impossible to subclass SmallInteger.
-
-\ab{programming idioms involving inheritance.  singleton, initialization, set... methods for instance initialization, self class and self species rather than using explicit class names.  More as they appear.  }
-
-\chapter{Exceptions}
-
-%	Stef
-\chapter{Concurrency}
-Processes and friends.
-
-\chapter{Dependency Mechanisms}
-Stef sez: we need on overview on publish/subscribe and the dependency mechanisms in pharo.
-
-\chapter{Common Errors}
-The last chapter of Smalltalk with Style is a good source.
-
-\chapter{Leftover stuff}
-Time.
-
-\section{XML processing :)}
 
 \section{How make an image self executable with Pharo}
 We save an image with our main application window already opened, and unwanted things disabled (halos, alt-., menus, etc). Additionally, we have a class-side \#startUp: method to initialize what's necessary on startup, like re-reading config files etc.
