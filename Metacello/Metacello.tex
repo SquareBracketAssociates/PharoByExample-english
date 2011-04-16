@@ -1,49 +1,36 @@
-\documentclass[a4paper,10pt,twoside]{book}
-\usepackage[
-	papersize={6in,9in},
-	hmargin={.75in,.75in},
-	vmargin={.75in,1in},
-	ignoreheadfoot
-]{geometry}
-
-\usepackage{allsf}
-\input
-{common.tex}
+% $Author: ducasse $
+% $Date: 2009-08-24 10:17:33 +0200 (Mon, 24 Aug 2009) $
+% $Revision: 28563 $
 
 %=================================================================
-% A4
-%\documentclass[a4paper,11pt,twoside]{book}
-%\input{common.tex}
-%\usepackage{a4wide}
+\ifx\wholebook\relax\else
+% --------------------------------------------
+% Lulu:
+	\documentclass[a4paper,10pt,twoside]{book}
+	\usepackage[
+		papersize={6.13in,9.21in},
+		hmargin={.75in,.75in},
+		vmargin={.75in,1in},
+		ignoreheadfoot
+	]{geometry}
+	\input{../common.tex}
+	\setboolean{lulu}{true}
+% --------------------------------------------
+% A4:
+%	\documentclass[a4paper,11pt,twoside]{book}
+%	\input{../common.tex}
+%	\usepackage{a4wide}
+% --------------------------------------------
+    \graphicspath{{figures/} {../figures/}}
+	\begin{document}
+\fi
 %=================================================================
-% Add the path for the figures of each chapter here:
-\graphicspath{
-	{figures/}
-	{BasicClasses/figures/}
-	{Collections/figures/}
-	{Environment/figures/}
-	{FirstApp/figures/}
-	{Messages/figures/}
-	{Metaclasses/figures/}
-	{Model/figures/}
-	{Morphic/figures/}
-	{Preface/figures/}
-	{Profiling/figures/}
-	{QuickTour/figures/}
-	{SUnit/figures/}
-	{Streams/figures/} 
-	{Syntax/figures/}
-}
-%=================================================================
-\let\wholebook=\relax
-\makeindex
-\makeglossary
+%\renewmessage{\nnbb}[2]{} % Disable editorial comments
+\sloppy
+
 %=================================================================
 %\renewcommand{\nnbb}[2]{#2} % Disable editorial comments
 
-
-\begin{document}
-%\synctex=1
 
 \chapter{Managing projects with Metacello}
 
