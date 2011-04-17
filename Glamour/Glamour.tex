@@ -33,12 +33,11 @@
 %=================================================================
 \chapter{Glamour}
 \label{glamour}
-\chapterauthor{\authordamienc{}}
 
 Browsers are a crucial instrument to understand complex systems or
 models. Each problem domain is accompanied by an abundance of browsers
 that are created to help analyze and interpret the underlying
-elements. Thee issue with these browsers is that they are frequently
+elements. The issue with these browsers is that they are frequently
 rewritten from scratch, making them expensive to create and burdensome
 to maintain. While many frameworks exist to ease the development of
 user interfaces in general, they provide only limited support to
@@ -57,10 +56,12 @@ part, we will describe Glamour in more details.
 To install Glamour on your \pharo{} image execute the following code:
 
 \begin{code}{}
-ScriptLoader
-  loadLatestPackage: 'GlamourLoader'
-  from: 'http://www.squeaksource.com/Glamour'.
-(Smalltalk classNamed: #GlamourLoader) load
+Gofer new
+  squeaksource: 'Glamour'; 
+  package: 'ConfigurationOfGlamour';
+  load.
+(Smalltalk at: #ConfigurationOfGlamour)
+  perform: #loadDefault.
 \end{code}
 
 Now that Glamour is installed, we are going to build a first browser
@@ -71,13 +72,10 @@ elements in a series of columns. The principle of such a browser is
 that a column always reflects the content of the element selected in
 the previous column, the first column-content being chosen on opening.
 
-\damien{insert screenshot of a finder-like browser (maybe not Apple's
-  finder due to license restrictions).}
-
 In our case of implementing a file browser, we want to display a list
 of a particular directory's entries (each files and directories) in
 the first column and then, depending on the user selection, appending
-an other column:
+another column (see \figref{casestudies/file_finder}):
 
 \begin{itemize}
 \item if the user selects a directory, the next column will display
@@ -86,21 +84,12 @@ an other column:
   content of the file.
 \end{itemize}
 
-
- Another well known example is the \emph{Miller Columns} style navigation used by the \emph{Finder} on Apple's \emph{OS X} platform. Here, each column represents a folder or a file and shows the contents of that item. Folders display a list of their content and create a new column to the right if an item is selected. In Glamour, such left-to-right navigation is provided by the \emph{Finder} browser implementation which---unlike its namesake---can be used to navigate over other types of objects as well in the same manner. The original finder and its Glamour correspondent are shown in figure \ref{fig:casestudies/file_finder}, of which the latter is implemented in less than ten lines of code.
-
-\begin{figure}[tbp]
-\begin{center}
-\subfigure[Original]{
-	\includegraphics[scale=0.48]{cs_file_finder_native.png}
-	\label{fig:casestudies/file_finder-osx}
-}
-\subfigure[Glamour]{
-	\includegraphics[scale=0.48]{cs_file_finder_glamour.png}
-}
-\caption{File finder in the original and as a Glamour implementation.}
-\label{fig:casestudies/file_finder}
-\end{center}
+\begin{figure}
+  \begin{center}
+    \includegraphics[scale=0.48]{cs_file_finder_final}
+    \caption{File finder as a Glamour
+      implementation. \label{fig:casestudies/file_finder}}
+  \end{center}
 \end{figure}
 
 This may look complex at first. However, Glamour provides a very
@@ -110,22 +99,20 @@ on Mac OS X. To create such a browser, we are going to use the
 \clsind{GLMFinder} class and then tell Glamour that we want elements
 to be in a list:
 
-\damien{SFile class and its test can be found in SLICE10146 on task forces}
-
 \begin{code}{}
+|browser|
 browser := GLMFinder new.
 browser list
-	display: #files.
-browser openOn: SFile anyRoot.
+	display: #children.
+browser openOn: FSFilesystem onDisk root.
 \end{code}
 
 From this small piece of code you get a list of all entries (either
-file or directory) found at the root of your file system, each line
+files or directories) found at the root of your file system, each line
 representing either a file or a directory. If you click on a
 directory, you can see the entries of this directory in the next
-column.
-
-\damien{insert a screenshot}
+column. The filesystem navigation facilities are provided by the
+Filesystem framework, thoroughly discussed in \charef{filesystem}.
 
 This code has some problems however. Each line displays the full print
 string of the entry and this is probably not what you want. A typical
@@ -134,25 +121,23 @@ customizing the list:
 
 \begin{code}{}
 browser list
-  display: #files;
-  format: #name.
+  display: #children;
+  format: #basename.
 \end{code}
 
-This way, the message \ct{name} will be sent to each entry to get its
+This way, the message \ct{basename} will be sent to each entry to get its
 name. This makes the files and directory much easier to read.
-
-\damien{insert a screenshot}
 
 Another problem is that the code does not distinguish between files
 and directories. If you click on a file, you will get an error because
-the browser will send it the message \ct{files} that it does not
+the browser will send it the message \ct{children} that it does not
 understand. To fix that, we just have to avoid displaying a list of
 contained entries if the selected element is a file:
 
 \begin{code}{}
 browser list
-  display: #files;
-  format: #tail;
+  display: #children;
+  format: #basename;
   when: #isDirectory.
 \end{code}
 
@@ -161,43 +146,53 @@ representing a file or a directory. This can be fixed by, for example,
 adding a slash at the end of the file name if it is a directory:
 
 \begin{code}{}
-browser := GLMFinder new.
 browser list
-  display: #files;
-  format: #tail;
+  display: #children;
+  format: #basenameWithIndicator;
   when: #isDirectory.
 \end{code}
 
 The last thing we might want to do is to display the contents of the
-entry if it is a file. This gives the following final code:
+entry if it is a file. The following gives the final version of the
+file browser:
 
 \begin{code}{}
-browser := GLMFinder new.
+|browser|
+browser := GLMFinder new
+  variableSizePanes;
+  title: 'Find your file';
+  yourself.
+
 browser list
-  display: #files;
-  format: #tail;
+  display: [:each | [each children sorted]
+                       on: Exception
+                       do: [Array new]];
+  format: #basenameWithIndicator;
   when: #isDirectory.
+
 browser text
-	display: [:entry | [entry contents]
-                                   on: Exception
-                                   do: ['Can''t display the content of this file']];
-	when: #isFile.
-browser openOn: SFile anyRoot
+  display: [:entry | [entry readStream contents]
+                        on: Exception
+                        do: ['Can''t display the content of this file']];
+  when: #isFile.
+browser openOn: FSFilesystem onDisk root.
 \end{code}
 
-\damien{insert a screenshot}
+This code extends the previous one with a title as well as directory
+entry sorting, access permission handling and file content reading.
+The resulting browser is presented in
+\figref{casestudies/file_finder}.
 
-This short introduction has just presented how to install Glamour and
-how to use to create a simple file browser.
+This short
+introduction has just presented how to install Glamour and how to use
+it to create a simple file browser. The following will present a more
+complete example as well as detailed information about the framework.
 
 \section{Tutorial: Implementing a code browser}
 
-This chapter serves as a motivation for specifying custom browsers and
-as a hands-on introduction to our reference implementation. The screen
-images in this tutorial represent the appearance of the Morphic
-graphical user interface for which a Glamour renderer is available.
+This chapter serves as a hands-on introduction to our reference
+implementation.
 
-% -----------------------------------------------------------------------------
 \subsection{Running example}
 \label{sec:tutorial/getting_started}
 
@@ -222,13 +217,17 @@ methods of the class are shown on pane~4. When a protocol is
 selected in pane~3, only the subset of methods that belong to that
 protocol are displayed on pane~4.
 
-
-% -----------------------------------------------------------------------------
 \subsection{Starting the Browser}
 
 We build the browser iteratively and gradually introduce new
 constructs of Glamour. To start with, we simply want to open a new
-browser on this list of packages. The listing below shows how to
+browser on the list of packages. Because the example is going to
+involve more code than the previous file browser, we are going to
+implement the code browser in a dedicated class.
+
+
+
+The listing below shows how to
 create a new, simple browser and to open it on a given object. Since
 this object is a collection, Glamour uses a list for the presentation
 if nothing else is specified. Figure~\ref{fig:helloworld} shows the
@@ -276,7 +275,7 @@ browser openOn: Smalltalk organization categories
 
 \begin{figure}[htbp]
 \centerline{\includegraphics[width=\linewidth]{showclasses.pdf}}
-\caption{Two pane browser. When a package is selected in the left
+\caption{Two-pane browser. When a package is selected in the left
   pane, the contained classes are shown on the right pane.}
 \label{fig:showclasses}
 \end{figure}
@@ -308,14 +307,15 @@ presentation should be displayed on-screen. If no explicit display
 block is specified, Glamour will attempt to display the object in some
 generic way. In the case of list presentations, this means that the
 \ct{displayString} message will be sent to the object to retrieve a
-standard string representation.
+standard string representation. \ct{format:} can be used to change
+this default behavior.
 
 Along with \ct{display:}, it is possible to specify a \ct{when:}
 condition to limit the applicability of the connection. By default,
 the only condition is that an item is in fact selected, \ie{} that the
 display variable argument is not \ct{nil}.
 
-%-------------------------------------------------------------------------------
+
 \subsection{Another Presentation}
 
 Up to now, we have been displaying the packages as a list. The
