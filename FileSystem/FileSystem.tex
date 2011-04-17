@@ -32,7 +32,7 @@
 %\renewmessage{\nnbb}[2]{} % Disable editorial comments
 \sloppy
 %=================================================================
-\chapter{Files with FileSystem }\chalabel{installer}
+\chapter{Files with FileSystem }\chalabel{filesystem}
 \chapterauthor{\authorsteph{}}
 
 A while ago Colin Putney announced the Filesystem framework, a nice and extensible replacement for the ugly FileDirectory classes in Pharo. While all core classes are well commented, there is a quick start missing that explains how end users are supposed to adopt the framework. 
@@ -42,22 +42,23 @@ A while ago Colin Putney announced the Filesystem framework, a nice and extensib
 First we need to load the package:
 
 \begin{code}{}
- Gofer new
-     wiresong: 'mc';
-     package: 'Filesystem';
-     load.
+Gofer new
+  squeaksource: 'fs'; 
+  package: 'ConfigurationOfFilesystem';
+  load.
+(Smalltalk at: #ConfigurationOfFilesystem) perform: #loadBleedingEdge
 \end{code}     
 
 The framework supports different kinds of filesystems that can be used interchangeably and that can transparently work with each other. The most obvious one is the filesystem on your hard disk. We are going to work with that one for now:
 
 \begin{code}{}
 | working |
-working := FSDiskFilesystem current working.
+working := FSFilesystem onDisk working.
 \end{code} 
 
 Type  the above code into a workspace and evaluate it. It assigns a reference of the current working directory to the variable \ct{working}. References are the central object of the framework and provide the primary mechanism of working with files and directories. They are instances of the class \ct{FSReference}.
 
-Note that you not use platform specific classes such as \ct{FSUnixFilesystem} or \ct{FSWindowsFilesystem}. All code below works on \ct{FSReference} instances.
+Note that you do not use platform specific classes such as \ct{FSUnixStore} or \ct{FSWindowsStore}. All code below works on \ct{FSReference} instances.
 
 
 \section{Navigating the Filesystem}
@@ -65,11 +66,11 @@ Note that you not use platform specific classes such as \ct{FSUnixFilesystem} or
 Now let's do some more interesting things. To list children of your working directory evaluate the following expression:
 
 \begin{code}{}
-working := FSDiskFilesystem current working.
+working := FSFilesystem onDisk working.
 working children.
 \end{code} 
 
-To access all the children of the current directory you can use \ct{allChildren}
+To recursively access all the children of the current directory you can use \ct{allChildren}
 
 \begin{code}{}
 working allChildren.
@@ -84,13 +85,17 @@ working allChildren select: [ :each | each basename endsWith: 'jpeg' ]
 To get a reference to a specific file or directory within your working directory use the slash operator:
 
 \begin{code}{}
- cache := working / 'package-cache'.
+cache := working / 'package-cache'.
 \end{code} 
 
 Navigating back to the parent is easy:
 
- cache parent.
+\begin{code}{}
+cache parent.
+\end{code}
+
 You can check for various properties of the cache directory by evaluating the following expressions:
+
 \begin{code}{}
  cache exists.             "--> true"
  cache isFile.             "--> false"
@@ -105,6 +110,7 @@ To get additional information about the filesystem entry evaluate:
  cache entry modification. "--> 2010-02-14T10:34:31+00:00"
  cache entry size.         "--> 0 (directories have size 0)"
 \end{code} 
+
 The framework also supports locations, late-bound references that point to a file or directory. When asking to perform a concrete operation, a location behaves the same way as a reference. Currently the following locations are supported:
 
 \begin{code}{}
