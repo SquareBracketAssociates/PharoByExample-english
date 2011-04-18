@@ -32,7 +32,8 @@
 %\renewmessage{\nnbb}[2]{} % Disable editorial comments
 \sloppy
 %=================================================================
-\chapter{Files with FileSystem }\chalabel{installer}
+\chapter{Files with FileSystem }\chalabel{filesystem}
+\chapterauthor{\authorsteph{}}
 
 A while ago Colin Putney announced the Filesystem framework, a nice and extensible replacement for the ugly FileDirectory classes in Pharo. While all core classes are well commented, there is a quick start missing that explains how end users are supposed to adopt the framework. 
 
@@ -41,22 +42,23 @@ A while ago Colin Putney announced the Filesystem framework, a nice and extensib
 First we need to load the package:
 
 \begin{code}{}
- Gofer new
-     wiresong: 'mc';
-     package: 'Filesystem';
-     load.
+Gofer new
+  squeaksource: 'fs'; 
+  package: 'ConfigurationOfFilesystem';
+  load.
+(Smalltalk at: #ConfigurationOfFilesystem) perform: #loadBleedingEdge
 \end{code}     
 
 The framework supports different kinds of filesystems that can be used interchangeably and that can transparently work with each other. The most obvious one is the filesystem on your hard disk. We are going to work with that one for now:
 
 \begin{code}{}
 | working |
-working := FSDiskFilesystem current working.
+working := FSFilesystem onDisk working.
 \end{code} 
 
 Type  the above code into a workspace and evaluate it. It assigns a reference of the current working directory to the variable \ct{working}. References are the central object of the framework and provide the primary mechanism of working with files and directories. They are instances of the class \ct{FSReference}.
 
-Note that you not use platform specific classes such as \ct{FSUnixFilesystem} or \ct{FSWindowsFilesystem}. All code below works on \ct{FSReference} instances.
+Note that you do not use platform specific classes such as \ct{FSUnixStore} or \ct{FSWindowsStore}. All code below works on \ct{FSReference} instances.
 
 
 \section{Navigating the Filesystem}
@@ -64,11 +66,11 @@ Note that you not use platform specific classes such as \ct{FSUnixFilesystem} or
 Now let's do some more interesting things. To list children of your working directory evaluate the following expression:
 
 \begin{code}{}
-working := FSDiskFilesystem current working.
+working := FSFilesystem onDisk working.
 working children.
 \end{code} 
 
-To access all the children of the current directory you can use \ct{allChildren}
+To recursively access all the children of the current directory you can use \ct{allChildren}
 
 \begin{code}{}
 working allChildren.
@@ -83,13 +85,17 @@ working allChildren select: [ :each | each basename endsWith: 'jpeg' ]
 To get a reference to a specific file or directory within your working directory use the slash operator:
 
 \begin{code}{}
- cache := working / 'package-cache'.
+cache := working / 'package-cache'.
 \end{code} 
 
 Navigating back to the parent is easy:
 
- cache parent.
+\begin{code}{}
+cache parent.
+\end{code}
+
 You can check for various properties of the cache directory by evaluating the following expressions:
+
 \begin{code}{}
  cache exists.             "--> true"
  cache isFile.             "--> false"
@@ -104,6 +110,7 @@ To get additional information about the filesystem entry evaluate:
  cache entry modification. "--> 2010-02-14T10:34:31+00:00"
  cache entry size.         "--> 0 (directories have size 0)"
 \end{code} 
+
 The framework also supports locations, late-bound references that point to a file or directory. When asking to perform a concrete operation, a location behaves the same way as a reference. Currently the following locations are supported:
 
 \begin{code}{}
@@ -164,7 +171,7 @@ To delete a complete directory tree use the following expression. Be careful wit
 
  backup deleteAll.
  
-That’s the basic API of the Filesystem library. If there is interest we can have a look at other features and other filesystem types in a next iteration.
+That's the basic API of the Filesystem library. If there is interest we can have a look at other features and other filesystem types in a next iteration.
 
 
 
@@ -213,7 +220,7 @@ Paths are the most fundamental element of the Filesystem API. They represent fil
 
 \subsection{Filesystem}
 
-A filesystem is an interface to some hierarchy of directories and files. "The filesystem," provided by the host operating system, is embodied by FSDiskFilesystem and it's platform-specific subclasses. But other kinds of Filesystems are also possible. FSMemoryFilesystem provides a RAM disk–a filesystem where all files are stored as ByteArrays in the image. FSZipFilesystem represents the contents of a zip file.
+A filesystem is an interface to some hierarchy of directories and files. "The filesystem," provided by the host operating system, is embodied by FSDiskFilesystem and it's platform-specific subclasses. But other kinds of Filesystems are also possible. FSMemoryFilesystem provides a RAM disk'a filesystem where all files are stored as ByteArrays in the image. FSZipFilesystem represents the contents of a zip file.
 
 Each filesystem has its own working directory, which it uses to resolve any relative paths that are passed to it. Some examples:
 
@@ -289,18 +296,18 @@ Applications my also define their own origins, but the system will not be able t
 References and Locators also provide simple methods for dealing with whole directory trees:
 
 \begin{description}
-\item[allChildren]
+\item[allChildren.]
 
 This will answer an array of references to all the files and directories in the directory tree rooted at the receiver. If the receiver is a file, the array will contain a single reference, equal to the receiver.
 
-\item[allEntries]
+\item[allEntries.]
 This method is similar to \ct{allChildren}, but it answers an array of \ct{FSDirectoryEntries}, rather than references.
 
-\item[copyAllTo: aReference]
+\item[copyAllTo: aReference.]
 
 This will perform a deep copy of the receiver, to a location specified by the argument. If the receiver is a file, the file will be copied; if a directory, the directory and its contents will be copied recursively. The argument must be a reference that doesn't exist; it will be created by the copy.
 
-\item[deleteAll]
+\item[deleteAll.]
 
 This will perform a recursive delete of the receiver. If the receiver is a file, this has the same effect as \ct{delete}.
 \end{description}
@@ -315,7 +322,7 @@ The visitor protocol is very simple. A visitor needs to implement \ct{visitFile:
     FSBreadthFirstGuide show: aReference to: aVisitor
 \end{code}	
 
-The enumeration methods described above are implemented with visitors; see \ct{FSCopyVisitor}, \ct{FSDeleteVisitor} and \ct{FSCollectVisitor} for examples.
+The enumeration methods described above are implemented with visitors; see \ct{FSCopyVisitor}, \ct{FSDeleteVisitor}, and \ct{FSCollectVisitor} for examples.
 
 
 

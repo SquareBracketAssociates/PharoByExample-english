@@ -1,0 +1,275 @@
+% $Author: ducasse $
+% $Date: 2009-08-24 10:17:33 +0200 (Mon, 24 Aug 2009) $
+% $Revision: 28563 $
+
+
+
+%=================================================================
+\ifx\wholebook\relax\else
+% --------------------------------------------
+% Lulu:
+	\documentclass[a4paper,10pt,twoside]{book}
+	\usepackage[
+		papersize={6.13in,9.21in},
+		hmargin={.75in,.75in},
+		vmargin={.75in,1in},
+		ignoreheadfoot
+	]{geometry}
+	\input{../common.tex}
+	\setboolean{lulu}{true}
+% --------------------------------------------
+% A4:
+%	\documentclass[a4paper,11pt,twoside]{book}
+%	\input{../common.tex}
+%	\usepackage{a4wide}
+% --------------------------------------------
+    \graphicspath{{figures/} {../figures/}}
+	\begin{document}
+\fi
+%=================================================================
+%\renewmessage{\nnbb}[2]{} % Disable editorial comments
+\sloppy
+%=================================================================
+
+\chapter{Fun with Floats}
+\chapterauthor{\authorsteph{}\\ \authornicolas{}}
+
+Floats are inexact by nature and this can confuse programmers. In this chapter we present 
+an introduction to this problem. The basic message is that Floats are what they are inexact 
+but fast numbers.
+
+
+\section{Never test equality on floats}
+The first basic principle is to never compare float equality. 
+Let's take a simple case: the addition of two floats may not be equal to the float representing their
+sum. For example \ct{0.1 + 0.2} is not equal to \ct{0.3}.
+
+\begin{code}{}
+(0.1 + 0.2) = 0.3
+	returns false
+\end{code}
+
+This behavior is normal since floats are inexact numbers. What is important to understand is that the way floats are printed is also impacting our understanding. Some approaches prints a simpler representation of reality than others. In early versions of Pharo printing \ct{0.1 + 0.2} was printing \ct{0.3}, now  printing it returns \ct{0.30000000000000004}.
+This change was guided by the idea that it is better not to lie to the user. Showing the inexactness of float is better than hiding because one day or another we can be deeply bitten by them. 
+
+\begin{code}{}
+(0.2 + 0.1 ) printString
+	returns '0.30000000000000004' 
+
+0.3 printString
+	returns	'0.3'
+\end{code}	
+
+We can see that we are in presence of two different numbers by looking at the hexadecimal values. 
+
+\begin{code}{}
+(0.1+0.2) hex 
+	returns '3FD3333333333334'
+0.3 hex 
+	returns '3FD3333333333333' 
+\end{code}
+
+	
+The method \ct{storeString} also conveys that we are in presence of two different numbers.
+		
+\begin{code}{}
+(0.1+0.2) storeString 
+	returns 	'0.30000000000000004' 
+0.3 storeString 
+	returns	'0.3'
+\end{code}	
+		
+\paragraph{About \ct{closeTo:}.} One way to know if two floats are probably close enough to look like the same number is to use the message \ct{closeTo:}
+
+\begin{code}{}
+(0.1 + 0.2) closeTo: 0.3	returns true
+0.3 closeTo: (0.1 + 0.2)
+	returns true
+\end{code}		
+		
+		
+\paragraph{About Scaled Decimals.}
+Scaled Decimals are exact numbers so they exhibit the behavior you expected.
+
+\begin{code}{}
+0.1s2 + 0.2s2 = 0.3s2
+	returns true
+\end{code}		
+		
+
+\subsection{Analyzing \ct{13/10}}
+\ct{1.3} is represented in machine as
+
+\begin{code}{}
+(1.3 significandAsInteger printStringRadix: 2) , '.0e' , (1.3 exponent
+- Float precision + 1) printString.
+-> '2r10100110011001100110011001100110011001100110011001101.0e-52'
+\end{code}
+
+Or if you prefer:
+
+\begin{code}{}
+(1.3 asTrueFraction numerator printStringBase: 2) , '/' , (1.3
+asTrueFraction denominator printStringBase: 2).
+-> '10100110011001100110011001100110011001100110011001101/
+10000000000000000000000000000000000000000000000000000'
+\end{code}
+
+As you can see, this is quite different from 13/10. However, you can test (13/10) asFloat = 1.3 and that happens to be true, but that won't always be true. In particular the inverse it not. So we are sure that if you compare floats using simple equality there is a high chance that you will get burned back. Again scaled decimal return correct and consistent behavior.
+
+\begin{code}{}
+(13/10) asFloat = 1.3
+	returns true
+
+1.3 = (13/10).
+	returns false
+	
+1.3s1 = (13/10).
+	returns true
+
+1.3s2*1.3s2 = 1.69s2.
+	returns true
+
+1.3 * 1.3 = 1.69.
+	returns false
+
+1.3 * 1.3 closeTo: 1.69
+	returns true
+\end{code}
+
+
+\section{Study of a simple example}
+While float equality is known to evil, you have to pay attention to other aspects of floats. Let us illustrate that point with the following example.
+
+\begin{code}{Float truncation can be surprizing}
+2.8 truncateTo: 0.01
+	returns 2.8000000000000003
+
+2.8 roundTo: 0.01
+	returns 2.8000000000000003
+\end{code}
+
+It is surprising but not false that \ct{2.8 truncateTo: 0.01} does not return \ct{2.8} but \ct{2.8000000000000003}. Why because 2.8 is an inexact number and \ct{truncateTo:} and \ct{roundTo:} perform several operations on floats.
+
+
+As soon as you write \ct{0.01} instead of \ct{1/100} or \ct{0.01s2}, the worm is
+in the fruit. Note that the same behavior can arrive with more elaborated numbers as \ct{2.8011416510246336}.
+\begin{code}{}
+2.8011416510246336 roundTo: 0.01
+	returns 2.8000000000000003
+\end{code}
+
+
+
+This again happens even if performed exactly (then rounded to nearest Float)
+\ct{(2.8 asTrueFraction roundTo: 0.01 asTrueFraction) asFloat}
+
+
+
+
+
+\subsection{Once more, Floats are inexact}
+\sd{should continue from here}
+
+\begin{code}{Floats are not the same as Scaled Decimal}
+   0.01 ~= 0.01s2
+\end{code}
+      
+The name \ct{absPrintExactlyOn:base:} is a bit confusing, it does not print exactly,
+but it prints the shortest decimal representation than will be rounded
+to the same Float when read back.
+
+To print it exactly, you need to use \ct{printShowingDecimalPlaces:} instead.
+As every finite Float is  represented internally as a Fraction with a
+denominator being a power of 2, every finite Float has a decimal
+representation with a finite number of decimals digits (just multiply
+numerator and denominator with adequate power of 5, and you'll get the
+digits).
+
+So try:
+
+\begin{code}{}
+0.01 printShowingDecimalPlaces: 59
+	returns 0.01000000000000000020816681711721685132943093776702880859375
+\end{code}
+
+You see that even if you try to execute the operation without rounding
+error, then convert it back to Float, you get the error:
+
+\begin{code}{}
+(2.8011416510246336 asTrueFraction roundTo: 0.01 asTrueFraction) asFloat
+	returns 2.8000000000000003
+\end{code}
+
+When you perform the \ct{roundTo:} operations in Float inexact arithmetic,
+you may accumulate more rounding errors, so the result may vary.
+
+If you want to round to an exact hundredth, then use exact arithmetic and try:
+
+\begin{code}{}
+2.8011416510246336 roundTo: 0.01s2
+	returns 2.80s2
+\end{code}
+
+
+
+
+
+\section{Fun with Inexact representations}
+To add a nail to the coffin, let's play a bit more with inexact representations. Let us try to see the difference between different numbers: 
+
+\begin{code}{}
+{
+((2.8 asTrueFraction roundTo: 0.01 asTrueFraction) - (2.8 predecessor)) abs -> -1.
+((2.8 asTrueFraction roundTo: 0.01 asTrueFraction) - (2.8)) abs -> 0.
+((2.8 asTrueFraction roundTo: 0.01 asTrueFraction) - (2.8 successor)) abs -> 1.
+} detectMin: [:e | e key ]
+
+returns the pair
+	0.0->1
+\end{code}
+
+you get \ct{0.0->1}, which means that:
+ \ct{(2.8 asTrueFraction roundTo: 0.01 asTrueFraction) asFloat = (2.8 successor)}
+
+But remember that 
+
+\begin{code}{}
+(2.8 asTrueFraction roundTo: 0.01 asTrueFraction) ~= (2.8 successor)
+\end{code}
+
+It must be interpreted as the nearest Float to \ct{(2.8 asTrueFraction roundTo: 0.01 asTrueFraction)} is \ct{(2.8 successor)}.
+
+If you want to know how far it is, then get an idea with:
+
+\begin{code}{}
+((2.8 asTrueFraction roundTo: 0.01 asTrueFraction) - (2.8 successor asTrueFraction)) asFloat
+	returns -2.0816681711721685e-16
+\end{code}
+
+
+
+\section{Conclusion}
+Floats are inexact numbers. Pay attention when you manipulate them.
+
+
+%=========================================================
+\ifx\wholebook\relax\else
+   \bibliographystyle{jurabib}
+   \nobibliography{scg}
+   \end{document}
+\fi
+
+%=================================================================
+\ifx\wholebook\relax\else\end{document}\fi
+%=================================================================
+
+%-----------------------------------------------------------------
+
+%%% Local Variables:
+%%% coding: utf-8
+%%% mode: latex
+%%% TeX-master: t
+%%% TeX-PDF-mode: t
+%%% ispell-local-dictionary: "english"
+%%% End:

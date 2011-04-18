@@ -1,1 +1,572 @@
-%=================================================================\ifx\wholebook\relax\else% --------------------------------------------% Lulu:	\documentclass[a4paper,10pt,twoside]{book}	\usepackage[		papersize={6.13in,9.21in},		hmargin={.75in,.75in},		vmargin={.75in,1in},		ignoreheadfoot	]{geometry}	\input{../common.tex}	\setboolean{lulu}{true}% --------------------------------------------% A4:%	\documentclass[a4paper,11pt,twoside]{book}%	\input{../common.tex}%	\usepackage{a4wide}% --------------------------------------------    \graphicspath{{figures/} {../figures/}}	\begin{document}\fi%=================================================================%\renewcommand{\nnbb}[2]{} % Disable editorial comments\sloppy%=================================================================\chapter{Mondrian}\chalabel{mondrian}\section{Introduction}Mondrian is made to visualize data, and is commonly employed to operate on software source code. This chapter will keep this original intent by using small and concrete examples of software and numerical.There are essentially two ways to work with Mondrian. By either using the easel which provides an interactive scripting engine or by directly interacting with a view renderer. We will first use Mondrian in its easiest way, by using the easel. Note that this chapter assume you have basic Smalltalk knowledge.To open an easel, you can either use the World menu or execute the expression\begin{code}{}MOEasel open.\end{code}%=====================\section{First visualization}In the easel you have just opened, enter the following and press the \emph{generate} button\begin{code}{}view nodes: (1 to: 20).\end{code}\begin{center}\includegraphics[scale=0.4]{figures/picture1.png}\end{center}You should see a new window with about 20 small boxes lined up in the top left corner. You have just rendered the numerical set between 1 and 20.Edges may be easily added. Add a second line:\begin{code}{}view nodes: (1 to: 20).view edgesFrom: [ :v | v * 2 ].\end{code}\begin{center}\includegraphics[scale=0.4]{figures/picture2.png}\end{center}Each value is connected to its next value. Nodes may be dragged by double clicking on it.Nodes may be ordered in circule using the circle layout.\begin{code}{}view nodes: (1 to: 20).view edgesFrom: [ :v | v * 2 ].view circleLayout.\end{code}\begin{center}\includegraphics[scale=0.4]{figures/picture3.png}\end{center}%=====================\section{Visualizing the collection framework}We will now visualize Smalltalk classes. In the remaining of this section, we will intensively use Smalltalk reflection to make compelling examples. Let's visualize the hierarchy of classes contained in the Collection framework:\begin{code}{}view nodes: Collection withAllSubclasses.view edgesFrom: #superclass.view treeLayout.\end{code}\begin{center}\includegraphics[scale=0.4]{figures/picture4.png}\end{center}We have used a tree layout to visualize Smalltalk class hierarchies. This fits well since Smalltalk is single-inheritance oriented.Collection is the root class of the Smalltalk collection framework library. The message \ct{withAllSubclasses} returns the list of its subclasses.Classes are ordered vertically along their inheritance link. A superclass is above its subclasses. %=====================\section{Reshaping nodes}Mondrian visualizes graph of objects. Each graph element (i.e., node and edge) has a shape that represents the visual aspect of the element. As you have seen the default shape of a node is a five pixels wide square and the default shape of an edge is a thin straight gray line.A number of dimensions defines the apparance of a shape: the width and the height of a rectangle; the size of a line dash, for example. We will reshape the node of our visualization to convey more information about the classes we are visualizing.\begin{code}{}view shape rectangle  width: [ :each | each instVarNames size * 3];  height: [ :each | each methods size ].view nodes: Collection withAllSubclasses.view edgesFrom: #superclass.view treeLayout.\end{code}\begin{center}\includegraphics[scale=0.4]{figures/picture5.png}\end{center}Note that the expression \begin{code}{}view edgesFrom: #superclass\end{code}is equivalent to\begin{code}{}view edges: Collection withAllSubclasses from: #yourself to: #superclass.\end{code}itself equivalent to\begin{code}{}view   edges: Collection withAllSubclasses   from: [ :each | each superclass ]   to: [ :each | each  ].\end{code}Edges are created by computing the source and target node for each node provided as first argument. In Mondrian, the expression\begin{code}{}[ :aClass | aClass superclass ].\end{code}is equivalent to\begin{code}{}#superclass\end{code}%=====================\section{Multiple edges}Multiple edges may be defined. In the previous section, edges where departed from the superclass to the running node. Alternatively, edges may depart from the running nodes to all subclasses. For that very purpose, we will use \ct{edges:from:toAll:}, a variant of \ct{edges:from:to:}.\begin{code}{}view shape rectangle  width: [ :each | each instVarNames size * 3];  height: [ :each | each methods size ].view nodes: Collection withAllSubclasses.view edges: Collection withAllSubclasses from: #yourself toAll: #subclasses.view treeLayout.\end{code}\begin{center}\includegraphics[scale=0.4]{figures/picture6.png}\end{center}With \ct{edges:from:toAll:} and \ct{edgesFrom:}, two edges cannot start from a unique node.Time to time, you may need a finer grain for edge declaration. The following is commonly employed as in:\begin{code}{}view nodes: (1 to: 5). view shape arrowedLine. view edges: { 1 -> 2 . 1 -> 5 . 4 -> 3 } from: #key to: #value. view circleLayout\end{code}%=====================\section{Adding colors}Node color is an important information support, as the width and the height of a node. Color should be easy to pick to represent particular conditionThe keyword if:fillColor: enables one to assign a color for a particular condition. Consider we want to extend the previous example by coloring abstract classes in red.\begin{code}{}view shape rectangle  width: [ :each | each instVarNames size * 3];  height: [ :each | each methods size ];  if: #isAbstractClass fillColor: Color red.view nodes: Collection withAllSubclasses.view edges: Collection withAllSubclasses from: #yourself toAll: #subclasses.view treeLayout.\end{code}The method \ct{isAbstractClass} is defined on Behavior and Metaclass. By sending the \ct{isAbstractClass} to a class return a boolean value telling us whether the class is abstract or not. We recall that an abstract class in Smalltalk is a class that defines or inherits at least one  abstract method (i.e., which contain 'self subclassResponsibility').The message \ct{if:fillColor:} may be sent to a shape to conditionally set a color\begin{code}{}view shape rectangle  width: [ :each | each instVarNames size * 3];  height: [ :each | each methods size ];  if: #isAbstractClass fillColor: Color red.view nodes: Collection withAllSubclasses.view edgesFrom: #superclass.view treeLayout.\end{code}All red nodes represent abstract class. Waving the moose above a node make a text tooltip appear revealing its name. Extended possibilities exist to define interaction. We will review them in a future section. For now, if you are interested in opening a system browser directly from a node, you define this interaction:\begin{code}{}view interaction action: #browse.view shape rectangle  width: [ :each | each instVarNames size * 3];  height: [ :each | each methods size ];  if: #isAbstractClass fillColor: Color red.view nodes: Collection withAllSubclasses.view edgesFrom: #superclass.view treeLayout.\end{code}You can easily spot some red node that do not have subclasses. This indicates a design flow since an abstract must to have subclasses. It makes no sense for a class that is not supposed to be instantiated (since it is abstract) to not have a subclass.The very same analyzes can be realized on your own classes.\begin{code}{}view interaction action: #browse.view shape rectangle  width: [ :each | each instVarNames size * 3];  height: [ :each | each methods size ];  if: #isAbstractClass fillColor: Color red.view nodes: (PackageInfo named: 'Mondrian') classes.view edgesFrom: #superclass.view treeLayout.\end{code}A shape may contains more than one condition. Let's distinguish abstract classes from classes that define abstract methods.\begin{code}{}view shape rectangle  width: [ :each | each instVarNames size * 3];  height: [ :each | each methods size ];  if: #isAbstractClass fillColor: Color lightRed;  if: [:cls | cls methods anySatisfy: #isAbstract ] fillColor: Color red.view nodes: Collection withAllSubclasses.view edgesFrom: #superclass.view treeLayout.\end{code}All red nodes are still abstract classes. Light red indicates classes that do not define abstract methods; strong red indicates classes that define at least one abstract method.%=====================\section{More on colors}Color may be defined in many different ways. For example, you can directly send \ct{fillColor:} to a shape.\begin{code}{}view shape rectangle  fillColor: Color lightBlue.\end{code}The list of available colors may be found in the class side of the class Color. The intensity of a node color may also indicate a quantitative value. For example, the intensity of node color is linear to the number of lines of code defined in the class.\begin{code}{}view interaction action: #browse.view shape rectangle  width: [ :each | each instVarNames size * 3];  height: [ :each | each methods size ];  linearFillColor: #numberOfLinesOfCode within: Collection withAllSubclasses.view nodes: Collection withAllSubclasses.view edgesFrom: #superclass.view treeLayout.\end{code}The visualization you now obtain put in relation for each class the number of methods, the number of instance variable and the number of lines of code. You can easily spot differences between classes, which might suggest you some a refactoring activity. This visualization is named 'System complexity', if you wish to know more about this visualization, you can refer to 'Polymetric Views---A Lightweight Visual Approach to Reverse Engineering' (Transactions on Software Engineering, 2003). The message \ct{linearFillColor:within:} takes as first argument a block function that return a numerical value. The second argument is a group of elements that is used to scale the intensity of each node. The block function is applied to each element of the group. The greatest value is set to black. The fading scales from 0 to this maximum.%=====================\section{Popup view}Consider the example that indicate abstract classes. Assume now that we would like to know what are the abstract methods defined. An easy way to do, is to extend the popup text with the list of abstract methods. Putting the mouse above a class does not only give its name, but also the list of abstract methods defined in the class.\begin{code}{}view shape rectangle  width: [ :each | each instVarNames size * 3];  height: [ :each | each methods size ];  if: #isAbstractClass fillColor: Color lightRed;  if: [:cls | cls methods anySatisfy: #isAbstract ] fillColor: Color red.  view interaction popupText: [ :aClass |   | stream |  stream := WriteStream on: String new.  (aClass methods select: #isAbstract thenCollect: #selector)    do: [:sel | stream nextPutAll: sel; nextPut: $ ; cr].  aClass name printString, ' => ', stream contents ].view nodes: Collection withAllSubclasses.view edgesFrom: #superclass.view treeLayout.\end{code}Another view may be opened instead of a text. Consider the following view definition:\begin{code}{}view shape rectangle  width: [ :each | each instVarNames size * 3];  height: [ :each | each methods size ];  if: #isAbstractClass fillColor: Color lightRed;  if: [:cls | cls methods anySatisfy: #isAbstract ] fillColor: Color red.  view interaction popupView: [ :element :secondView |   secondView shape rectangle     if: #isAbstract fillColor: Color red;    size: 10.    secondView nodes: (element methods sortedAs: #isAbstract).  secondView gridLayout gapSize: 2  ].view nodes: Collection withAllSubclasses.view edgesFrom: #superclass.view treeLayout.\end{code}When the mouse enters a node, a new view is defined and displayed next to the node. The method \ct{popupView:} receives a two-arguments block as parameters. The first parameter of the block is the element represented by the node located below the mouse. The second argument is a new view that will be opened.In the example, we used \ct{sortedAs:} to order the nodes representing methods. This method is defined on Collection and belongs to Mondrian. To see example usages of \ct{sortedAs:}, browse its corresponding unit test:\begin{code}{}ToolSet browse: MOViewRendererTest selector: #testSortedAs \end{code}%=====================\section{Subviews}Each node may embed a view. This is achieved via the keywords \ct{nodes:forEach:} and \ct{node:forIt:}. Consider an alternative view for visualizing abstract methods:\begin{code}{}view shape rectangle  if: #isAbstractClass fillColor: Color lightRed.view nodes: Collection withAllSubclasses forEach: [ :aClass |   view shape rectangle     if: #isAbstract fillColor: Color red.  view nodes: (aClass methods sortedAs: #isAbstract).  view gridLayout gapSize: 2. ].view edgesFrom: #superclass.view treeLayout.\end{code}Abstract classes are painted in light red and abstract method in intense red. Each node may embed any arbitrary view. Consider this script to visualize class hierarchies for each package of the Collection framework.\begin{code}{}packages := PackageOrganizer default packageNames        select: [ :name | name beginsWith: 'Collections-' ]         thenCollect:  [ :name | PackageInfo named: name ].        view nodes: packages forEach: [ :aPackage |   view nodes: (aPackage classes reject: #isTrait).  view edgesFrom: #superclass.  view treeLayout].\end{code}We see an interesting issue here. A little more information is here shown. Not only we see the hierarchies defined in each packages, but we also see inter-package links. We can supress relations between packages and indicate in blue classes for which their superclasses lives in a different package.\begin{code}{}packages := PackageOrganizer default packageNames        select: [ :name | name beginsWith: 'Collections-' ]         thenCollect:  [ :name | PackageInfo named: name ].        view nodes: packages forEach: [ :aPackage |   | classes |  classes := aPackage classes reject: #isTrait.  view shape rectangle     if: [ :cls | (classes includes: cls superclass) not ] fillColor: Color blue.  view nodes: classes.  classes := classes copy select: [ :cls | classes includes: cls superclass ].  view edges: classes from: #superclass to: #yourself.  view treeLayout].\end{code}Package names can be included above each box.\begin{code}{}packages := PackageOrganizer default packageNames        select: [ :name | name beginsWith: 'Collections-' ]         thenCollect:  [ :name | PackageInfo named: name ].view shape rectangle withoutBorder.view nodes: packages forEach: [ :aPackage |   view shape label text: #packageName.  view node: aPackage.  view node: aPackage forIt: [    | classes |    classes := aPackage classes reject: #isTrait.    view shape rectangle       if: [ :cls | (classes includes: cls superclass) not ] fillColor: Color blue.    view nodes: classes.    classes := classes copy select: [ :cls | classes includes: cls superclass ].    view edges: classes from: #superclass to: #yourself.    view treeLayout  ].  view verticalLineLayout center].\end{code}%=====================\section{Forwarding events}Package of the visualization given in the previous section may be moved by a simple drag and drop. However, the invisible outter node must be grabbed. The name and the hierarchy box may be dragged on their own still. A better adjustement is to let the package name and the hierarchy box to forward the event to the outter invisible node (when executing the script below, declare packages as a temporary variable ).\begin{code}{}packages := PackageOrganizer default packageNames        select: [ :name | name beginsWith: 'Collections-' ]         thenCollect:  [ :name | PackageInfo named: name ].view shape rectangle withoutBorder.view nodes: packages forEach: [ :aPackage |   view shape label text: #packageName.  view interaction forward.  view node: aPackage.  view interaction forward.  view node: aPackage forIt: [    | classes |    classes := aPackage classes reject: #isTrait.    view shape rectangle       if: [ :cls | (classes includes: cls superclass) not ] fillColor: Color blue.    view nodes: classes.    classes := classes copy select: [ :cls | classes includes: cls superclass ].    view edges: classes from: #superclass to: #yourself.    view treeLayout  ].  view verticalLineLayout center].\end{code}A node may now be dragged from its name or the hierarchy box. It may be useful to selectively forward events: \ct{forward:} is a variant of \ct{forward}.\begin{code}{}packages := PackageOrganizer default packageNames        select: [ :name | name beginsWith: 'Collections-' ]         thenCollect:  [ :name | PackageInfo named: name ].view shape rectangle withoutBorder.view nodes: packages forEach: [ :aPackage |   view shape label text: #packageName.  view interaction forward: MOMouseDrag.  view node: aPackage.  view interaction forward: MOMouseDrag.  view node: aPackage forIt: [    | classes |    classes := aPackage classes reject: #isTrait.    view shape rectangle       if: [ :cls | (classes includes: cls superclass) not ] fillColor: Color blue.    view nodes: classes.    classes := classes copy select: [ :cls | classes includes: cls superclass ].    view edges: classes from: #superclass to: #yourself.    view treeLayout  ].  view verticalLineLayout center].\end{code}Note that several nodes may be selected by pressing the Ctrl or Cmd key.%=====================\section{Events}Each mouse movement, click and keyboard click correspond to a particular events in Mondrian. The root of the events is MOEvent. Event handler are defined directly on the interaction object.  \begin{code}{}view shape rectangle  width: [ :each | each instVarNames size * 3];  height: [ :each | each methods size ];  if: #isAbstractClass fillColor: Color lightRed;  if: [:cls | cls methods anySatisfy: #isAbstract ] fillColor: Color red.  view interaction on: MOMouseDouble do: [ :ann |   (OBSystemBrowser onClass: ann modelElement) open].view nodes: Collection withAllSubclasses.view edgesFrom: #superclass.view treeLayout.\end{code}The block handler accepts one argument, the event generated. The object that triggered the event is obtained by sending \ct{modelElement} to the event object. %=====================\section{Interaction}Mondrian offers a number of contextual interaction mechanisms. The interaction object contains a number of keywords for that purpose. Consider the example:\begin{code}{}view interaction   highlightWhenOver: [:v | {v - 1 . v + 1. v + 4 . v - 4}].view shape rectangle   width: 40;  height: 30;  withText.view nodes: (1 to: 16).view gridLayout gapSize: 2.\end{code}We will extend our running example with an indication about the test coverage. Consider the following script:\begin{code}{}view shape rectangle  width: [ :each | each instVarNames size * 3];  height: [ :each | each methods size ];  linearFillColor: #numberOfLinesOfCode within: Collection withAllSubclasses.view nodes: Collection withAllSubclasses.view edgesFrom: #superclass.view treeLayout.view shape rectangle withoutBorder.view node: 'compound' forIt: [  view shape label.  view node: 'Collection tests'.    view node: 'Collection tests' forIt: [    | testClasses |    testClasses := (PackageInfo named: 'CollectionsTests') classes reject: #isTrait.    view shape rectangle      width: [ :cls | (cls methods inject: 0 into: [ :sumLiterals :mtd | sumLiterals + mtd allLiterals size]) / 100 ];      height: [ :cls | cls numberOfLinesOfCode / 50 ].    view interaction         highlightWhenOver: [ :cls | ((cls methods inject: #()                         into: [:sum :el | sum , el allLiterals ]) select: [:v | v isKindOf: Association ] thenCollect: #value) asSet ].    view nodes: testClasses.    view edgesFrom: #superclass.    view treeLayout ].    view verticalLineLayout alignLeft].\end{code}The script contains two parts. The first part is the ubiquitous system complexity of the collection framework. We have seen it a number of times already. The second part renders the tests contained in the CollectionsTests. The width of a class is the number of literals contained in it. The height is the number of lines of code. Since the collection tests makes a great use of traits to reuse code, these metrics have to be scaled down. When the mouse is put over a test unit, then all the classes of the collection framework referenced in this class are highlighted.%=====================\section{Conclusion}Mondrian is a perpetual evolving application. This chapter intents to cover the features frequently used. If there is a topic you wish to see discussed here, send an email to alexandre@bergel.eu.We hope you haved enjoyed it!%=====================%=============================================================\ifx\wholebook\relax\else   \bibliographystyle{jurabib}   \nobibliography{scg}   \end{document}\fi%=============================================================%-----------------------------------------------------------------%%% Local Variables:%%% coding: utf-8%%% mode: latex%%% TeX-master: t%%% TeX-PDF-mode: t%%% ispell-local-dictionary: "english"%%% End:
+
+%=================================================================
+\ifx\wholebook\relax\else
+% --------------------------------------------
+% Lulu:
+	\documentclass[a4paper,10pt,twoside]{book}
+	\usepackage[
+		papersize={6.13in,9.21in},
+		hmargin={.75in,.75in},
+		vmargin={.75in,1in},
+		ignoreheadfoot
+	]{geometry}
+	\input{../common.tex}
+	\setboolean{lulu}{true}
+% --------------------------------------------
+% A4:
+%	\documentclass[a4paper,11pt,twoside]{book}
+%	\input{../common.tex}
+%	\usepackage{a4wide}
+% --------------------------------------------
+    \graphicspath{{figures/} {../figures/}}
+	\begin{document}
+\fi
+%=================================================================
+%\renewcommand{\nnbb}[2]{} % Disable editorial comments
+\sloppy
+%=================================================================
+\chapter{Mondrian}
+\chalabel{mondrian}
+\chapterauthor{\authoralex{}}
+
+@@What the reader will learn why this is worth reading this chapter@@
+
+
+\section{Introduction}
+Mondrian is made to visualize data, and is commonly employed to operate on software source code. This chapter will keep this original intent by using small and concrete examples of software and numerical.
+
+There are essentially two ways to work with Mondrian. By either using the easel which provides an interactive scripting engine or by directly interacting with a view renderer. 
+
+We will first use Mondrian in its easiest way, by using the easel. Note that this chapter assume you have basic Smalltalk knowledge.
+
+To open an easel, you can either use the World menu or execute the expression
+
+\begin{code}{}
+MOEasel open.
+\end{code}
+%=====================
+
+\section{First visualization}
+In the easel you have just opened, enter the following and press the \emph{generate} button
+
+\begin{code}{}
+view nodes: (1 to: 20).
+\end{code}
+\begin{center}\includegraphics[scale=0.4]{picture1}\end{center}
+
+
+You should see a new window with about 20 small boxes lined up in the top left corner. You have just rendered the numerical set between 1 and 20.
+
+Edges may be easily added. Add a second line:
+
+\begin{code}{}
+view nodes: (1 to: 20).
+view edgesFrom: [ :v | v * 2 ].
+\end{code}
+\begin{center}\includegraphics[scale=0.4]{picture2}\end{center}
+
+
+Each value is connected to its next value. Nodes may be dragged by double clicking on it.
+
+Nodes may be ordered in circule using the circle layout.
+
+\begin{code}{}
+view nodes: (1 to: 20).
+view edgesFrom: [ :v | v * 2 ].
+view circleLayout.
+\end{code}
+\begin{center}\includegraphics[scale=0.4]{picture3}\end{center}
+
+%=====================
+
+\section{Visualizing the collection framework}
+We will now visualize Smalltalk classes. In the remaining of this section, we will intensively use Smalltalk reflection to make compelling examples. Let's visualize the hierarchy of classes contained in the Collection framework:
+
+\begin{code}{}
+view nodes: Collection withAllSubclasses.
+view edgesFrom: #superclass.
+view treeLayout.
+\end{code}
+\begin{center}\includegraphics[scale=0.4]{picture4}\end{center}
+
+
+We have used a tree layout to visualize Smalltalk class hierarchies. This fits well since Smalltalk is single-inheritance oriented.
+
+Collection is the root class of the Smalltalk collection framework library. The message \ct{withAllSubclasses} returns the list of its subclasses.
+
+Classes are ordered vertically along their inheritance link. A superclass is above its subclasses. 
+%=====================
+
+\section{Reshaping nodes}
+
+Mondrian visualizes graph of objects. Each graph element (i.e., node and edge) has a shape that represents the visual aspect of the element. As you have seen the default shape of a node is a five pixels wide square and the default shape of an edge is a thin straight gray line.
+
+A number of dimensions defines the apparance of a shape: the width and the height of a rectangle; the size of a line dash, for example. We will reshape the node of our visualization to convey more information about the classes we are visualizing.
+
+\begin{code}{}
+view shape rectangle
+  width: [ :each | each instVarNames size * 3];
+  height: [ :each | each methods size ].
+view nodes: Collection withAllSubclasses.
+view edgesFrom: #superclass.
+view treeLayout.
+\end{code}
+\begin{center}\includegraphics[scale=0.4]{picture5}\end{center}
+
+
+Note that the expression 
+\begin{code}{}
+view edgesFrom: #superclass
+\end{code}
+
+is equivalent to
+
+\begin{code}{}
+view edges: Collection withAllSubclasses from: #yourself to: #superclass.
+\end{code}
+
+itself equivalent to
+\begin{code}{}
+view 
+  edges: Collection withAllSubclasses 
+  from: [ :each | each superclass ] 
+  to: [ :each | each  ].
+\end{code}
+
+Edges are created by computing the source and target node for each node provided as first argument. In Mondrian, the expression
+
+\begin{code}{}
+[ :aClass | aClass superclass ].
+\end{code}
+
+is equivalent to
+\begin{code}{}
+#superclass
+\end{code}
+%=====================
+
+\section{Multiple edges}
+Multiple edges may be defined. In the previous section, edges where departed from the superclass to the running node. Alternatively, edges may depart from the running nodes to all subclasses. For that very purpose, we will use \ct{edges:from:toAll:}, a variant of \ct{edges:from:to:}.
+
+\begin{code}{}
+view shape rectangle
+  width: [ :each | each instVarNames size * 3];
+  height: [ :each | each methods size ].
+view nodes: Collection withAllSubclasses.
+view edges: Collection withAllSubclasses from: #yourself toAll: #subclasses.
+view treeLayout.
+\end{code}
+\begin{center}\includegraphics[scale=0.4]{picture6}\end{center}
+
+
+With \ct{edges:from:toAll:} and \ct{edgesFrom:}, two edges cannot start from a unique node.
+
+Time to time, you may need a finer grain for edge declaration. The following is commonly employed as in:
+
+\begin{code}{}
+view nodes: (1 to: 5). 
+view shape arrowedLine. 
+view edges: { 1 -> 2 . 1 -> 5 . 4 -> 3 } from: #key to: #value. 
+view circleLayout
+\end{code}
+%=====================
+
+\section{Adding colors}
+Node color is an important information support, as the width and the height of a node. Color should be easy to pick to represent particular condition
+
+The keyword if:fillColor: enables one to assign a color for a particular condition. Consider we want to extend the previous example by coloring abstract classes in red.
+
+\begin{code}{}
+view shape rectangle
+  width: [ :each | each instVarNames size * 3];
+  height: [ :each | each methods size ];
+  if: #isAbstractClass fillColor: Color red.
+view nodes: Collection withAllSubclasses.
+
+view edges: Collection withAllSubclasses from: #yourself toAll: #subclasses.
+
+view treeLayout.
+\end{code}
+
+The method \ct{isAbstractClass} is defined on Behavior and Metaclass. By sending the \ct{isAbstractClass} to a class return a boolean value telling us whether the class is abstract or not. We recall that an abstract class in Smalltalk is a class that defines or inherits at least one  abstract method (i.e., which contain 'self subclassResponsibility').
+
+The message \ct{if:fillColor:} may be sent to a shape to conditionally set a color
+
+\begin{code}{}
+view shape rectangle
+  width: [ :each | each instVarNames size * 3];
+  height: [ :each | each methods size ];
+  if: #isAbstractClass fillColor: Color red.
+view nodes: Collection withAllSubclasses.
+
+view edgesFrom: #superclass.
+
+view treeLayout.
+\end{code}
+
+All red nodes represent abstract class. Waving the moose above a node make a text tooltip appear revealing its name. 
+
+Extended possibilities exist to define interaction. We will review them in a future section. For now, if you are interested in opening a system browser directly from a node, you define this interaction:
+
+\begin{code}{}
+view interaction action: #browse.
+view shape rectangle
+  width: [ :each | each instVarNames size * 3];
+  height: [ :each | each methods size ];
+  if: #isAbstractClass fillColor: Color red.
+view nodes: Collection withAllSubclasses.
+
+view edgesFrom: #superclass.
+
+view treeLayout.
+\end{code}
+
+You can easily spot some red node that do not have subclasses. This indicates a design flow since an abstract must to have subclasses. It makes no sense for a class that is not supposed to be instantiated (since it is abstract) to not have a subclass.
+
+The very same analyzes can be realized on your own classes.
+
+\begin{code}{}
+view interaction action: #browse.
+view shape rectangle
+  width: [ :each | each instVarNames size * 3];
+  height: [ :each | each methods size ];
+  if: #isAbstractClass fillColor: Color red.
+view nodes: (PackageInfo named: 'Mondrian') classes.
+
+view edgesFrom: #superclass.
+
+view treeLayout.
+\end{code}
+
+A shape may contains more than one condition. Let's distinguish abstract classes from classes that define abstract methods.
+
+\begin{code}{}
+view shape rectangle
+  width: [ :each | each instVarNames size * 3];
+  height: [ :each | each methods size ];
+  if: #isAbstractClass fillColor: Color lightRed;
+  if: [:cls | cls methods anySatisfy: #isAbstract ] fillColor: Color red.
+
+view nodes: Collection withAllSubclasses.
+
+view edgesFrom: #superclass.
+
+view treeLayout.
+\end{code}
+
+All red nodes are still abstract classes. Light red indicates classes that do not define abstract methods; strong red indicates classes that define at least one abstract method.
+%=====================
+
+\section{More on colors}
+Color may be defined in many different ways. For example, you can directly send \ct{fillColor:} to a shape.
+
+\begin{code}{}
+view shape rectangle
+  fillColor: Color lightBlue.
+\end{code}
+
+The list of available colors may be found in the class side of the class Color. The intensity of a node color may also indicate a quantitative value. For example, the intensity of node color is linear to the number of lines of code defined in the class.
+
+\begin{code}{}
+view interaction action: #browse.
+view shape rectangle
+  width: [ :each | each instVarNames size * 3];
+  height: [ :each | each methods size ];
+  linearFillColor: #numberOfLinesOfCode within: Collection withAllSubclasses.
+view nodes: Collection withAllSubclasses.
+
+view edgesFrom: #superclass.
+
+view treeLayout.
+\end{code}
+
+The visualization you now obtain put in relation for each class the number of methods, the number of instance variable and the number of lines of code. You can easily spot differences between classes, which might suggest you some a refactoring activity. This visualization is named 'System complexity', if you wish to know more about this visualization, you can refer to 'Polymetric Views---A Lightweight Visual Approach to Reverse Engineering' (Transactions on Software Engineering, 2003). 
+
+The message \ct{linearFillColor:within:} takes as first argument a block function that return a numerical value. The second argument is a group of elements that is used to scale the intensity of each node. The block function is applied to each element of the group. The greatest value is set to black. The fading scales from 0 to this maximum.
+%=====================
+
+\section{Popup view}
+Consider the example that indicate abstract classes. Assume now that we would like to know what are the abstract methods defined. An easy way to do, is to extend the popup text with the list of abstract methods. Putting the mouse above a class does not only give its name, but also the list of abstract methods defined in the class.
+
+\begin{code}{}
+view shape rectangle
+  width: [ :each | each instVarNames size * 3];
+  height: [ :each | each methods size ];
+  if: #isAbstractClass fillColor: Color lightRed;
+  if: [:cls | cls methods anySatisfy: #isAbstract ] fillColor: Color red.
+  
+view interaction popupText: [ :aClass | 
+  | stream |
+  stream := WriteStream on: String new.
+  (aClass methods select: #isAbstract thenCollect: #selector)
+    do: [:sel | stream nextPutAll: sel; nextPut: $ ; cr].
+  aClass name printString, ' => ', stream contents ].
+view nodes: Collection withAllSubclasses.
+view edgesFrom: #superclass.
+view treeLayout.
+\end{code}
+
+Another view may be opened instead of a text. Consider the following view definition:
+
+\begin{code}{}
+view shape rectangle
+  width: [ :each | each instVarNames size * 3];
+  height: [ :each | each methods size ];
+  if: #isAbstractClass fillColor: Color lightRed;
+  if: [:cls | cls methods anySatisfy: #isAbstract ] fillColor: Color red.
+  
+view interaction popupView: [ :element :secondView | 
+  secondView shape rectangle 
+    if: #isAbstract fillColor: Color red;
+    size: 10.  
+  secondView nodes: (element methods sortedAs: #isAbstract).
+  secondView gridLayout gapSize: 2
+  ].
+view nodes: Collection withAllSubclasses.
+view edgesFrom: #superclass.
+view treeLayout.
+\end{code}
+
+When the mouse enters a node, a new view is defined and displayed next to the node. The method \ct{popupView:} receives a two-arguments block as parameters. The first parameter of the block is the element represented by the node located below the mouse. The second argument is a new view that will be opened.
+
+In the example, we used \ct{sortedAs:} to order the nodes representing methods. This method is defined on Collection and belongs to Mondrian. To see example usages of \ct{sortedAs:}, browse its corresponding unit test:
+\begin{code}{}
+ToolSet browse: MOViewRendererTest selector: #testSortedAs 
+\end{code}
+%=====================
+
+\section{Subviews}
+Each node may embed a view. This is achieved via the keywords \ct{nodes:forEach:} and \ct{node:forIt:}. Consider an alternative view for visualizing abstract methods:
+
+\begin{code}{}
+view shape rectangle
+  if: #isAbstractClass fillColor: Color lightRed.
+view nodes: Collection withAllSubclasses forEach: [ :aClass | 
+  view shape rectangle 
+    if: #isAbstract fillColor: Color red.
+  view nodes: (aClass methods sortedAs: #isAbstract).
+  view gridLayout gapSize: 2. 
+].
+view edgesFrom: #superclass.
+view treeLayout.
+\end{code}
+
+Abstract classes are painted in light red and abstract method in intense red. 
+Each node may embed any arbitrary view. Consider this script to visualize class hierarchies for each package of the Collection framework.
+
+\begin{code}{}
+packages := PackageOrganizer default packageNames
+        select: [ :name | name beginsWith: 'Collections-' ] 
+        thenCollect:  [ :name | PackageInfo named: name ].
+        
+view nodes: packages forEach: [ :aPackage | 
+  view nodes: (aPackage classes reject: #isTrait).
+  view edgesFrom: #superclass.
+  view treeLayout
+].
+\end{code}
+
+We see an interesting issue here. A little more information is here shown. Not only we see the hierarchies defined in each packages, but we also see inter-package links. We can supress relations between packages and indicate in blue classes for which their superclasses lives in a different package.
+
+\begin{code}{}
+packages := PackageOrganizer default packageNames
+        select: [ :name | name beginsWith: 'Collections-' ] 
+        thenCollect:  [ :name | PackageInfo named: name ].
+        
+view nodes: packages forEach: [ :aPackage | 
+  | classes |
+  classes := aPackage classes reject: #isTrait.
+  view shape rectangle 
+    if: [ :cls | (classes includes: cls superclass) not ] fillColor: Color blue.
+  view nodes: classes.
+  classes := classes copy select: [ :cls | classes includes: cls superclass ].
+  view edges: classes from: #superclass to: #yourself.
+  view treeLayout
+].
+\end{code}
+
+Package names can be included above each box.
+
+\begin{code}{}
+packages := PackageOrganizer default packageNames
+        select: [ :name | name beginsWith: 'Collections-' ] 
+        thenCollect:  [ :name | PackageInfo named: name ].
+
+view shape rectangle withoutBorder.
+view nodes: packages forEach: [ :aPackage | 
+  view shape label text: #packageName.
+  view node: aPackage.
+  view node: aPackage forIt: [
+    | classes |
+    classes := aPackage classes reject: #isTrait.
+    view shape rectangle 
+      if: [ :cls | (classes includes: cls superclass) not ] fillColor: Color blue.
+    view nodes: classes.
+    classes := classes copy select: [ :cls | classes includes: cls superclass ].
+    view edges: classes from: #superclass to: #yourself.
+    view treeLayout
+  ].
+  view verticalLineLayout center
+].
+\end{code}
+%=====================
+
+\section{Forwarding events}
+Package of the visualization given in the previous section may be moved by a simple drag and drop. However, the invisible outter node must be grabbed. The name and the hierarchy box may be dragged on their own still. A better adjustement is to let the package name and the hierarchy box to forward the event to the outter invisible node (when executing the script below, declare packages as a temporary variable ).
+
+\begin{code}{}
+packages := PackageOrganizer default packageNames
+        select: [ :name | name beginsWith: 'Collections-' ] 
+        thenCollect:  [ :name | PackageInfo named: name ].
+
+view shape rectangle withoutBorder.
+view nodes: packages forEach: [ :aPackage | 
+  view shape label text: #packageName.
+  view interaction forward.
+  view node: aPackage.
+
+  view interaction forward.
+  view node: aPackage forIt: [
+    | classes |
+    classes := aPackage classes reject: #isTrait.
+    view shape rectangle 
+      if: [ :cls | (classes includes: cls superclass) not ] fillColor: Color blue.
+    view nodes: classes.
+    classes := classes copy select: [ :cls | classes includes: cls superclass ].
+    view edges: classes from: #superclass to: #yourself.
+    view treeLayout
+  ].
+  view verticalLineLayout center
+].
+\end{code}
+
+A node may now be dragged from its name or the hierarchy box. It may be useful to selectively forward events: \ct{forward:} is a variant of \ct{forward}.
+
+\begin{code}{}
+packages := PackageOrganizer default packageNames
+        select: [ :name | name beginsWith: 'Collections-' ] 
+        thenCollect:  [ :name | PackageInfo named: name ].
+
+view shape rectangle withoutBorder.
+view nodes: packages forEach: [ :aPackage | 
+  view shape label text: #packageName.
+  view interaction forward: MOMouseDrag.
+  view node: aPackage.
+
+  view interaction forward: MOMouseDrag.
+  view node: aPackage forIt: [
+    | classes |
+    classes := aPackage classes reject: #isTrait.
+    view shape rectangle 
+      if: [ :cls | (classes includes: cls superclass) not ] fillColor: Color blue.
+    view nodes: classes.
+    classes := classes copy select: [ :cls | classes includes: cls superclass ].
+    view edges: classes from: #superclass to: #yourself.
+    view treeLayout
+  ].
+  view verticalLineLayout center
+].
+\end{code}
+
+Note that several nodes may be selected by pressing the Ctrl or Cmd key.
+%=====================
+
+\section{Events}
+Each mouse movement, click and keyboard click correspond to a particular events in Mondrian. The root of the events is MOEvent. Event handler are defined directly on the interaction object.  
+
+\begin{code}{}
+view shape rectangle
+  width: [ :each | each instVarNames size * 3];
+  height: [ :each | each methods size ];
+  if: #isAbstractClass fillColor: Color lightRed;
+  if: [:cls | cls methods anySatisfy: #isAbstract ] fillColor: Color red.
+  
+view interaction on: MOMouseDouble do: [ :ann | 
+  (OBSystemBrowser onClass: ann modelElement) open
+].
+view nodes: Collection withAllSubclasses.
+view edgesFrom: #superclass.
+view treeLayout.
+\end{code}
+
+The block handler accepts one argument, the event generated. The object that triggered the event is obtained by sending \ct{modelElement} to the event object. 
+%=====================
+
+\section{Interaction}
+Mondrian offers a number of contextual interaction mechanisms. The interaction object contains a number of keywords for that purpose. Consider the example:
+
+\begin{code}{}
+view interaction 
+  highlightWhenOver: [:v | {v - 1 . v + 1. v + 4 . v - 4}].
+view shape rectangle 
+  width: 40;
+  height: 30;
+  withText.
+view nodes: (1 to: 16).
+view gridLayout gapSize: 2.
+\end{code}
+
+We will extend our running example with an indication about the test coverage. Consider the following script:
+
+\begin{code}{}
+view shape rectangle
+  width: [ :each | each instVarNames size * 3];
+  height: [ :each | each methods size ];
+  linearFillColor: #numberOfLinesOfCode within: Collection withAllSubclasses.
+view nodes: Collection withAllSubclasses.
+view edgesFrom: #superclass.
+view treeLayout.
+
+view shape rectangle withoutBorder.
+view node: 'compound' forIt: [
+  view shape label.
+  view node: 'Collection tests'.
+  
+  view node: 'Collection tests' forIt: [
+    | testClasses |
+    testClasses := (PackageInfo named: 'CollectionsTests') classes reject: #isTrait.
+    view shape rectangle
+      width: [ :cls | (cls methods inject: 0 into: [ :sumLiterals :mtd | sumLiterals + mtd allLiterals size]) / 100 ];
+      height: [ :cls | cls numberOfLinesOfCode / 50 ].
+    view interaction 
+        highlightWhenOver: [ :cls | ((cls methods inject: #() 
+                        into: [:sum :el | sum , el allLiterals ]) select: [:v | v isKindOf: Association ] thenCollect: #value) asSet ].
+    view nodes: testClasses.
+    view edgesFrom: #superclass.
+    view treeLayout ].
+  
+  view verticalLineLayout alignLeft
+].
+\end{code}
+
+The script contains two parts. The first part is the ubiquitous system complexity of the collection framework. We have seen it a number of times already. The second part renders the tests contained in the CollectionsTests. The width of a class is the number of literals contained in it. The height is the number of lines of code. Since the collection tests makes a great use of traits to reuse code, these metrics have to be scaled down. When the mouse is put over a test unit, then all the classes of the collection framework referenced in this class are highlighted.
+%=====================
+
+\section{Conclusion}
+Mondrian is a perpetual evolving application. This chapter intents to cover the features frequently used. If there is a topic you wish to see discussed here, send an email to alexandre@bergel.eu.
+
+We hope you haved enjoyed it!
+
+%=====================
+
+
+%=============================================================
+\ifx\wholebook\relax\else
+   \bibliographystyle{jurabib}
+   \nobibliography{scg}
+   \end{document}
+\fi
+%=============================================================
+
+
+
+
+%-----------------------------------------------------------------
+
+%%% Local Variables:
+%%% coding: utf-8
+%%% mode: latex
+%%% TeX-master: t
+%%% TeX-PDF-mode: t
+%%% ispell-local-dictionary: "english"
+%%% End:

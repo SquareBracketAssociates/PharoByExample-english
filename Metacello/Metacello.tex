@@ -1,52 +1,39 @@
-\documentclass[a4paper,10pt,twoside]{book}
-\usepackage[
-	papersize={6in,9in},
-	hmargin={.75in,.75in},
-	vmargin={.75in,1in},
-	ignoreheadfoot
-]{geometry}
-
-\usepackage{allsf}
-\input
-{common.tex}
+% $Author: ducasse $
+% $Date: 2009-08-24 10:17:33 +0200 (Mon, 24 Aug 2009) $
+% $Revision: 28563 $
 
 %=================================================================
-% A4
-%\documentclass[a4paper,11pt,twoside]{book}
-%\input{common.tex}
-%\usepackage{a4wide}
+\ifx\wholebook\relax\else
+% --------------------------------------------
+% Lulu:
+	\documentclass[a4paper,10pt,twoside]{book}
+	\usepackage[
+		papersize={6.13in,9.21in},
+		hmargin={.75in,.75in},
+		vmargin={.75in,1in},
+		ignoreheadfoot
+	]{geometry}
+	\input{../common.tex}
+	\setboolean{lulu}{true}
+% --------------------------------------------
+% A4:
+%	\documentclass[a4paper,11pt,twoside]{book}
+%	\input{../common.tex}
+%	\usepackage{a4wide}
+% --------------------------------------------
+    \graphicspath{{figures/} {../figures/}}
+	\begin{document}
+\fi
 %=================================================================
-% Add the path for the figures of each chapter here:
-\graphicspath{
-	{figures/}
-	{BasicClasses/figures/}
-	{Collections/figures/}
-	{Environment/figures/}
-	{FirstApp/figures/}
-	{Messages/figures/}
-	{Metaclasses/figures/}
-	{Model/figures/}
-	{Morphic/figures/}
-	{Preface/figures/}
-	{Profiling/figures/}
-	{QuickTour/figures/}
-	{SUnit/figures/}
-	{Streams/figures/} 
-	{Syntax/figures/}
-}
-%=================================================================
-\let\wholebook=\relax
-\makeindex
-\makeglossary
+%\renewmessage{\nnbb}[2]{} % Disable editorial comments
+\sloppy
+
 %=================================================================
 %\renewcommand{\nnbb}[2]{#2} % Disable editorial comments
 
 
-\begin{document}
-%\synctex=1
-
 \chapter{Managing projects with Metacello}
-
+\chapterauthor{\authordale{} \\ \authormariano{}}
 
 Have you ever had a problem when trying to load a nice project where you got an error because a package that you were not even aware of  is missing or not correct? You've probably seen such a problem. The problem probably occurred because the project loaded fine for the  developer but only because he has a different context than yours. The project developer did not use a \emph{package configuration} to explicitly manage the dependencies between his packages. In this chapter we will show you how to use Metacello, a package management system and the power that you can get using it. 
 
@@ -1480,7 +1467,14 @@ To end this section, we show you can query this information. This illustrates th
 \section{Conclusion}
 Metacello is an important part of Pharo. It will allow your project to scale. It allow you to control when you want to migrate to new version and for which packages. It is an important architectural backbone.
 
-\end{document}
+
+%=========================================================
+\ifx\wholebook\relax\else
+   \bibliographystyle{jurabib}
+   \nobibliography{scg}
+   \end{document}
+\fi
+%=========================================================
 
 
 
