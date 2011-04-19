@@ -32,11 +32,10 @@
 %=================================================================
 
 \chapter{Fun with Floats}
-\chapterauthor{\authorsteph{}\\ \authornicolas{}}
+\chapterauthor{\authornicolas{}}
 
 Floats are inexact by nature and this can confuse programmers. In this chapter we present 
-an introduction to this problem. The basic message is that Floats are what they are inexact 
-but fast numbers.
+an introduction to this problem. The basic message is that Floats are what they are: inexact but fast numbers.
 
 
 \section{Never test equality on floats}
@@ -49,11 +48,11 @@ sum. For example \ct{0.1 + 0.2} is not equal to \ct{0.3}.
 	returns false
 \end{code}
 
-Hey, this is unexpected, you did not learn that in school, did you? This behavior is surprising indeed, but it's normal since floats are inexact numbers. What is important to understand is that the way floats are printed is also impacting our understanding. Some approaches prints a simpler representation of reality than others. In early versions of Pharo printing \ct{0.1 + 0.2} was printing \ct{0.3}, now  printing it returns \ct{0.30000000000000004}.
+Hey, this is unexpected, you did not learn that in school, did you? This behavior is surprising indeed, but it's normal since floats are inexact numbers. What is important to understand is that the way floats are printed is also impacting our understanding. Some approaches prints a simpler representation of reality than others. In early versions of Pharo printing \ct{0.1 + 0.2} were printing \ct{0.3}, now  printing it returns \ct{0.30000000000000004}.
 This change was guided by the idea that it is better not to lie to the user. Showing the inexactness of float is better than hiding because one day or another we can be deeply bitten by them. 
 
 \begin{code}{}
-(0.2 + 0.1 ) printString
+(0.2 + 0.1) printString
 	returns '0.30000000000000004' 
 
 0.3 printString
@@ -90,8 +89,7 @@ The method \ct{storeString} also conveys that we are in presence of two differen
 \end{code}		
 		
 		
-\paragraph{About Scaled Decimals.}
-Scaled Decimals are exact numbers so they exhibit the behavior you expected.
+\paragraph{About Scaled Decimals.} There is a solution if you absolutely need exact floating point numbers, use Scaled Decimals. Scaled Decimals are exact numbers so they exhibit the behavior you expected.
 
 \begin{code}{}
 0.1s2 + 0.2s2 = 0.3s2
@@ -99,25 +97,26 @@ Scaled Decimals are exact numbers so they exhibit the behavior you expected.
 \end{code}		
 		
 
-\subsection{Analyzing more deeply above example}
-To understand what operation is involved in above addition, we must know how Float are represented internally in the computer: Pharo's Float format is a wide spread standard found on most computers - IEEE 754-1985 double precision on 64 bits
+\section{Disecting a Float}
+To understand what operation is involved in above addition, we must know how Floats are represented internally in the computer: Pharo's Float format is a wide spread standard found on most computers - IEEE 754-1985 double precision on 64 bits
 (See \url{http://en.wikipedia.org/wiki/IEEE_754-1985} for more details).
 In this format, a Float is represented in base 2 by this formula: \[ sign \cdot mantissa \cdot 2^{exponent} \]
 \begin{itemize}
-\item
-The sign is represented on 1 bit.
-\item
-The exponent is represented on 11 bits.
-\item
-The mantissa is a fractional number in base two, with a leading 1 before decimal point, and with 52 binary digits after fraction point.\\
+\item The sign is represented on 1 bit.
+\item The exponent is represented on 11 bits.
+\item The mantissa is a fractional number in base two, with a leading 1 before decimal point, and with 52 binary digits after fraction point.
+\end{itemize}
+
 For example, a serie of 52 bits:\\
 \phantom{\ct{1.}}\ct{0110010000000000000000000000000000000000000000000000}\\
  means the mantissa is:\\
  \ct{1.0110010000000000000000000000000000000000000000000000}\\
- which also means  \[ 1 + \frac{0}{2} +  \frac{1}{2^2} +  \frac{1}{2^3} +  \frac{0}{2^4} +  \frac{0}{2^5} +  \frac{1}{2^6} + \cdots  +  \frac{0}{2^{52}} \]
-The mantissa is thus between 1 (included) and 2 (excluded) for normal numbers.
-\end{itemize}
+ which also represents the following fractions:  \[ 1 + \frac{0}{2} +  \frac{1}{2^2} +  \frac{1}{2^3} +  \frac{0}{2^4} +  \frac{0}{2^5} +  \frac{1}{2^6} + \cdots  +  \frac{0}{2^{52}} \]
+The mantissa value is thus between 1 (included) and 2 (excluded) for normal numbers.
 
+
+
+\paragraph{Building a Float.}
 Let us construct such a mantissa:
 \begin{code}{}
 (#(0 2 3 6) detectSum: [:i | (2 raisedTo: i) reciprocal]) asFloat.
@@ -142,7 +141,7 @@ In Pharo, you can retrieve these informations:
 	returns 3
 \end{code}
 
-Generally you won't handle the mantissa, but rather the mantissa shifted 52 bits to the left in order to operate on exact integers. The result includes the leading 1 and should thus be 53 bits long for a normal number (that's the float precision):
+Generally you won't handle the mantissa \sd{nicolas what do you want to say here }, but rather the mantissa shifted 52 bits to the left in order to operate on exact integers. The result includes the leading 1 and should thus be 53 bits long for a normal number (that's the float precision):
  \begin{code}{}
 11.125 significandAsInteger printStringBase: 2.
 	returns '10110010000000000000000000000000000000000000000000000'
@@ -196,7 +195,7 @@ Let us see in detail how we could get the fractional bits of 2r1 / 2r101: we mus
 \end{tabular} 
  \]
 
-What we see is that we get a cycle: every 4 Euclidean divisions, we get a quotient \ct{2r0011} and a remainder \ct{1}. That means that we need an infinite serie of this bit pattern \ct{0011} to represent 1/5 in base 2. Let us see how Pharo dealt to convert (1/5) to a Float:
+What we see is that we get a cycle: every 4 Euclidean divisions, we get a quotient \ct{2r0011} and a remainder \ct{1}. That means that we need an infinite series of this bit pattern \ct{0011} to represent 1/5 in base 2. Let us see how Pharo dealt to convert (1/5) to a Float:
 
  \begin{code}{}
 (1/5) asFloat significandAsInteger printStringBase: 2.
@@ -283,7 +282,8 @@ And you can retrieve the digits with:
 	returns  1000000000000000055511151231257827021181583404541015625
 \end{code}
 You can just check our result with:
-\begin{code}{}1000000000000000055511151231257827021181583404541015625/(10 raisedTo: 55) =  0.1 asTrueFraction
+\begin{code}{}
+1000000000000000055511151231257827021181583404541015625/(10 raisedTo: 55) =  0.1 asTrueFraction
 	returns true
 \end{code}
 You see that printing the exact representation of what is implemented in machine would be possible but would be cumbersome. Try printing \ct{1.0e-100} exactly if not convinced.
