@@ -171,7 +171,7 @@ Until there we retrieved the exact input we've injected into the Float. Are Floa
 	returns false
 \end{code}
 
-Let us see in detail how we could get the fractional bits of 2r1 / 2r101: we must pose the division:
+Let us see in detail how we could get the fractional bits of \ct{1/10} \ie \ct{2r1 / 2r101}. For that, we must pose the division:
 
 \[
 \begin{tabular}{r|l}
@@ -215,7 +215,7 @@ Instead of that we got:
 	returns  (10808639105689191/36028797018963968)
 \end{code}
 
-But that's not all the story... Let us inspect above fraction:
+But that's not all the story... Let us inspect the above fraction: \sd{explain what is the lowBit and highBit}
  \begin{code}{}
 10808639105689191 printStringBase: 2.
 	returns  '100110011001100110011001100110011001100110011001100111'
@@ -290,7 +290,7 @@ You see that printing the exact representation of what is implemented in machine
 
 
 
-\section{Another example: rounding is inexact}
+\section{Float rounding is also inexact}
 While float equality is known to be evil, you have to pay attention to other aspects of floats. Let us illustrate that point with the following example.
 
 \begin{code}{Float truncation can be surprising}
@@ -345,7 +345,7 @@ returns the pair
 	0.0->1
 \end{code}
 
-you get \ct{0.0->1}, which means that:
+The following expression returns \ct{0.0->1}, which means that:
  \ct{(2.8 asTrueFraction roundTo: 0.01 asTrueFraction) asFloat = (2.8 successor)}
 
 But remember that 
