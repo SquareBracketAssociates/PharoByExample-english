@@ -7,6 +7,7 @@
 % 2009-02-12 - Stef added examples
 % 2010-02-24 - Alexandre begins the translation 
 % 2010-05-10 - Alexandre finished the translation and asked for feedback
+% 2011-04-21 - Aleaxndre working on the chapter
 
 %John McIntosh slides: http://www.smalltalkconsulting.com/papers/GCPaper/GCTalk%202001.htm
 
@@ -302,9 +303,9 @@
 
 \chapter{Optimizing Application}
 
-Since the beginning of software engineering, programmers have faced issues related to application performance. Although there has been a great improvement on the programming environment to support better and faster development process, addressing performance issues when programming requires quite some dexterity.
+Since the beginning of software engineering, programmers have faced issues related to application performance. Although there has been a great improvement on the programming environment to support better and faster development process, addressing performance issues when programming still requires quite some dexterity.
 
-Optimizing an application is not particularly difficult. The general idea is to make slow and frequently called methods either faster or less frequently called. Note that optimizing an application usually complexity the application. It is therefore recommended to optimize an application only when the requirements for it are well understood and addressed. In other term, you should optimize your application only when you are sure of what it is supposed to do. As Kent Beck famously formulated: 1 - Make It Work, 2 - Make It Right, 3 - Make It Fast.
+In principle, optimizing an application is not particularly difficult. The general idea is to make slow and frequently called methods either faster or less frequently called. Note that optimizing an application usually complexifies the application. It is therefore recommended to optimize an application only when the requirements for it are well understood and addressed. In other term, you should optimize your application only when you are sure of what it is supposed to do. As Kent Beck famously formulated: 1 - Make It Work, 2 - Make It Right, 3 - Make It Fast.
 
 \section{What does profiling mean?} 
 Profiling an application is a term commonly employed that refers to obtaining dynamic information from a controlled program execution. The obtained information is intended to provide important hints on how to improve the program execution. These hints are usually numerical measurements, easily comparable from one program execution to another.
@@ -320,7 +321,7 @@ Experience shows that having unit tests is essential to ensure that we do not br
 
 \section{A simple example}
 
-Consider the method \ct{Collection>>select:thenCollect:}. For a given collection, this method selects some element according to a predicate. It then returns a collection of applying a block function on each selected element. At the first sight, this behavior implies two runs over the collections: the one provided by the user of \ct{select:thenCollect:} then an intermediate one that contains the selected elements. However, this intermediate collection is not indispensable, since the selection and the function application can be done with only one run.
+Consider the method \ct{Collection>>select:thenCollect:}. For a given collection, this method selects elements using a predicate. It then applies a block function on each selected element. At the first sight, this behavior implies two runs over the collections: the one provided by the user of \ct{select:thenCollect:} then an intermediate one that contains the selected elements. However, this intermediate collection is not indispensable, since the selection and the function application can be performed with only one run.
 
 \paragraph{\ct{timeToRun}.} Profiling one program execution is usually not enough to fully identify and understand what has to be optimized. Comparing at least two different profiled executions is definitely more fruitful. The message \ct{timeToRun} may be sent to a bloc to obtain the time in milliseconds that it took to evaluate the block. In order to have a significant measurement, we need to ``amplify'' the profiling with a loop.
 
@@ -363,7 +364,7 @@ OrderedCollection>>select: selectBlock thenCollect: collectBlock
     ^ newCollection
 \end{code}
 
-As you have probably guessed already, other collection such as set and dictionary do not benefit from an optimized version. We leave as an exercise the cost of not having this optimization. As part of the community effort, do not forget to submit your contribution to Pharo if you come up with an optimized and better version of \ct{select:thenCollect:}.
+As you have probably guessed already, other collection such as set and dictionary do not benefit from an optimized version. We leave as an exercise an efficient implementation for other abstract data types. As part of the community effort, do not forget to submit your contribution to Pharo if you come up with an optimized and better version of \ct{select:thenCollect:}.
 
 %%%%%%%%%%%%
 %%%%%%%%%%%%
@@ -385,12 +386,12 @@ The \ct{timeToRun} method is useful to tell how long an expression takes to be e
 
 
 \subsection{MessageTally}
-\ct{MessageTally} is a implemented as a unique class having the same name. Using it is quite simple. A message \ct{spyOn:} needs to be sent to \ct{MessageTally} with a block expression as argument to obtained a detailed execution analysis. Evaluating \ct{MessageTally spyOn: ["your expression here"]} open a window that contains the following information:
+\ct{MessageTally} is implemented as a unique class having the same name. Using it is quite simple. A message \ct{spyOn:} needs to be sent to \ct{MessageTally} with a block expression as argument to obtained a detailed execution analysis. Evaluating \ct{MessageTally spyOn: ["your expression here"]} opens a window that contains the following information:
 
 \begin{enumerate}
 \item a hierarchy list showing the methods executed with their associated execution time during the expression execution.
 
-\item the method leaves of the execution. A method leave is a method implemented as a primitive. It does not execute any other method therefore.
+\item leaf methods of the execution. A leaf method is a method that does not invoke other methods (\eg primitive, accessors). 
 
 \item statistic about the memory consumption and garbage collector involvement 
 
@@ -398,7 +399,7 @@ The \ct{timeToRun} method is useful to tell how long an expression takes to be e
 Each of these points will be described later on.
 
 \figref{MessageTallyOne} shows the result of the expression \ct{MessageTally spyOn: [20 timesRepeat: [Transcript show: 100 factorial printString]]}.
-The message \ct{spyOn:} execute the provided block in a new process. The analysis focus on the process. The message \ct{spyAllOn:} relates all active processes during the execution. 
+The message \ct{spyOn:} execute the provided block in a new process. The analysis focus on one process, only, the one that execute the block to profile. The message \ct{spyAllOn:} profiles all the processes that are active during the execution. This is useful to analyze the distribution of the computation over several processes.
 
 %Le message \ct{spyAt:on:} permet de s\'electionner le niveau de processus. Par exemple pour ne voir que le temps pris par l'expression utilisez \ct{MessageTally spyAt: 40 on: [20 timesRepeat: [Transcript show: 100 factorial printString]]}
 
@@ -409,7 +410,8 @@ A tool a bit less crude than \ct{MessageTally} is \ct{TimeProfileBrowser}. It sh
 	\begin{center}
 	\includegraphics[width=.8\linewidth]{TimeProfiler}
 	\caption{TimeProfiler uses MessageTally and navigates in executed methods.
-	\ct{TimeProfileBrowser spyOn:  [20 timesRepeat: [Transcript show: 100 factorial printString]]}}
+%	\ct{TimeProfileBrowser spyOn:  [20 timesRepeat: [Transcript show: 100 factorial printString]]}
+}
 	\figlabel{TimeProfiler}
 	\end{center}
 \end{figure}
@@ -432,7 +434,7 @@ The World menu (obtained by clicking outside any Pharo window) offers some profi
 
 
 \paragraph{Via the Test Runner.}
-As the size of an application grow, unit tests are usually becoming good candidate for code profiling. Running tests often is rather tedious when the time to run them is getting too long. The \ct{test runner} in \pharo offers a button \ct{Run Profiled} (\figref{testRunner}). 
+As the size of an application grow, unit tests are usually becoming a good candidate for code profiling. Running tests often is rather tedious when the time to run them is getting too long. The \ct{test runner} in \pharo offers a button \ct{Run Profiled} (\figref{testRunner}). 
 
 Pressing this button runs the selected unit tests and generates a message tally report. 
 
@@ -448,14 +450,12 @@ Pressing this button runs the selected unit tests and generates a message tally 
 \section{Read and interpret the results} 
 The message tally profiler essentially provides two kind of information:
 \begin{itemize}
-\item execution time is represented using a tree representing the profiled code execution (\ct{**Tree**}. Each node of this tree is annotated with the time spend in each leaf method (\ct{**Leaves**}). 
+\item execution time is represented using a tree representing the profiled code execution (\ct{**Tree**}. Each node of this tree is annotated with the time spent in each leaf method (\ct{**Leaves**}). 
 
 \item memory activity contains the memory consumption (\ct{**Memory**} and the garbage collector usage (**GC**).
 \end{itemize}
 
 For illustration purpose, consider the following scenario: the string character \ct{'A'} is cumulatively appended 9 000 times to an initial empty string.
-
-%Prenons le code suivant qui ajoute la chaine \ct{'A'} 9000 fois dans une chaine. Nous r\'ep\'etons ce code afin de prendre en compte la cr\'eation de la premi\`ere chaine. \alex{I do not get this, to take into account the creation of the first string?? The string '' is allocated at the compilation, not during the profiling. }
 
 \begin{code}{}
 MessageTally spyOn: 
@@ -503,7 +503,7 @@ The first line gives the overall execution time and the number of samplings (als
 
 \subsection{**Tree**: Cumulative information}
 
-The \ct{**Tree**} section represents the execution tree per processes. The tree tells the time the \pharo interpreter spent in each method. It also tells  the different invocation using a call graph. Different execution flows are kept separated according to the process in which they have been executed. The process priority is also displayed, this helps distinguishing between different processes. The example tells:
+The \ct{**Tree**} section represents the execution tree per processes. The tree tells the time the \pharo interpreter has spent in each method. It also tells  the different invocation using a call graph. Different execution flows are kept separated according to the process in which they have been executed. The process priority is also displayed, this helps distinguishing between different processes. The example tells:
 
 \begin{code}
 **Tree**
@@ -534,32 +534,46 @@ The \ct{** Leaves**} part lists \emph{leaf methods} for the code block that has 
 5.9% {1176ms} ByteString class(String class)>>new:
 \end{code}
 
-Some leaf methods may not appear in the information tree described above. Leaf methods are obtained by regularly introspecting the method call stack. The information tree is a method call arborescence. A method for which the callers cannot be identified are not part of the tree. This happens when the control flow is modified by other means than a simple method call: 
+%Some leaf methods may not appear in the information tree described above. Profiling is obtained by regularly introspecting the method call stack. The information tree is a method call arborescence. A method for which the callers cannot be identified are not part of the tree. This happens when the control flow is modified by other means than a simple method call: 
+%
+%\alex{HERE}
+%\begin{itemize}
+%\item \emph{when the virtual machine invokes a method}: this is the case for \ct{doesNotUnderstand:} for example. A message \ct{doesNotUnderstand:} is sent by the virtual machine when the method lookup fails. Consider the code:
+%
+%\begin{code}
+%| cls obj |%cls := Class new.%cls compile: 'doesNotUnderstand: msg%	^ 1000 factorial'.%obj := cls new.%MessageTally spyOn: [ 10 timesRepeat: [obj zork]  ]
+%\end{code}
+%
+%The methods \ct{zork} and \ct{doesNotUnderstand:} do not appear in the MessageTally report.
+%
+%\item when an exception is raised \ja{when an exception is raised, tally crashes}
+%
+%\item \emph{block evaluation:} evaluating a block is realized by primitives. Consider the following example:
+%
+%\begin{code}
+%| cls obj |%cls := Class new.%cls compile: 'zork  ^ 1000 factorial'.%cls compile: 'callZork  [self zork ] value'.%obj := cls new.%MessageTally spyOn: [ [10 timesRepeat: [obj callZork] ] value ]%\end{code}
+%
+%MessageTally does not report the call \ct{callZork}.
+%
+%
+%\item \emph{process creation}: in case of a being-profiled code creates a process, the process is not part of the analysis. Even if \ct{spyAllOn:} is employed.
+%\end{itemize}
 
-@@TODO
-\begin{itemize}
-\item when a primitive invokes a method. This is the case of \ct{doesNotUnderstand:} for example. \ja{I do not understand: a primitive should not invoke a method.} \ja{doesNotUnderstand: is not a primitive.}
-\item when an exception is raised \ja{when an exception is raised, tally crashes}
-\item block evaluation
-\item process creation
-\end{itemize}
-
-% The following is not quite exact
-%Toutes les m\'ethodes n'apparaissent pas dans la section
-%**Leaves**. Une m\'ethode apparaissant dans cette section signifie
-%soit que la m\'ethode r\'ealise beaucoup d'op\'erations, soit qu'elle
-%est appell\'ee de nombreuses fois par d'autres m\'ethodes.
-%Ici on voit que la m\'ethode \ct{copyReplaceFrom:to:with:} qui prenait
-%pr\`es de 20\% du temps total prend seulement 14\% pour son ex\'ecution
-%propre. Regardez la d\'efinition de la m\'ethode pour voir qu'elle
-%fait effectivement plus que quelques envois de messages. 
-
-
- \subsection{**Memory** and **GCs**}
+\subsection{**Memory**}
 
 The statistical part on memory consumption tells the observed changes on the quantity of memory allocated and the garbage collector usage. To fully understand this information, one needs to keep in mind that Pharo's garbage collector (GC) is a scavenging GC, relying on the principle that an old object has greater change to live even longer. It is designed following the fact that an old object will probably be kept referenced in the future. On the contrary, a young object has greater change to be quickly dereferenced. 
 
 Several memory zones are considered and the migration of a young object to the space dedicated for old object is qualified as tenured. (Following the metaphor of American academic scientists, when a permanent position is obtained.)
+
+An example of the memory analyze realized by MessageTally: 
+
+\begin{code}
+**Memory**
+	old			+0 bytes
+	young		+2,803,380 bytes
+	used		+2,803,380 bytes
+	free		-2,803,380 bytes
+\end{code}
 
 \ct{MessageTally} describes the memory usage using four values:
 
@@ -567,7 +581,7 @@ Several memory zones are considered and the migration of a young object to the s
 
 \item the \ct{old} value is about the grow of the memory space dedicated to old objects. An object is qualified as ``old'' when its physical memory location is in the ``old memory space''. This happens when a full garbage collector is triggered, or when there are too many object survivors (according to some threshold specified in the virtual machine). This memory space is cleaned by a full garbage collection only. (An incremental GC does not reduce its size therefore). 
 
-An increase of the old memory space clearly is likely to be due to a \emph{memory leak}: the virtual machine is unable to release memory, promoting young objects as old.
+An increase of the old memory space is likely to be due to a \emph{memory leak}: the virtual machine is unable to release memory, promoting young objects as old.
 
 \item the \ct{young} value tells about the increase of the memory space dedicated to young objects. When an object is created, it is physically located in this memory space. The size of this memory space changes frequently. 
 
@@ -580,7 +594,17 @@ In our example, none of the objects created during the execution have been promo
 
 \subsection{**GCs**}
 
-The \ct{**GCs**} provides statistics about the garbage collector. Four values are available.
+The \ct{**GCs**} provides statistics about the garbage collector. An example of a garbage collector report is:
+
+\begin{code}
+**GCs**
+	full			0 totalling 0ms (0.0% uptime)
+	incr		1140 totalling 198ms (11.0% uptime), avg 0.0ms
+	tenures		0
+	root table	0 overflows
+\end{code}
+
+Four values are available.
 
 \begin{enumerate}
 \item The \ct{full} value totals the amount of full garbage collections and the amount of time it took. Full garbage collection are not that frequent. They results from often allocating large memory chunks.
@@ -592,8 +616,7 @@ The \ct{**GCs**} provides statistics about the garbage collector. Four values ar
 
 \item The number of \ct{tenures} tells the amount of objects that migrated to the old memory space. This migration happens when the size of the young memory space is above a given threshold. This typically happens when lunching an application, when all the necessary objects haven't been created and referenced. 
 
-\item The \ct{root table overflows} is the amount of root objects used by the garbage collector to navigate the image. This navigation happens when the system is running short on memory and need to collect all the objects relevant for the future program execution. The overflow value identifies the rare situation when the number of roots used by the incremental GC is greater than the its internal table. This situation forces the GC to promote some objects as tenured. \alex{Does this force full garbage collection?}\ja{we should ask John because it depends on the vm}
-
+\item The \ct{root table overflows} is the amount of root objects used by the garbage collector to navigate the image. This navigation happens when the system is running short on memory and need to collect all the objects relevant for the future program execution. The overflow value identifies the rare situation when the number of roots used by the incremental GC is greater than the its internal table. This situation forces the GC to promote some objects as tenured.
 
 %: La table des racines repr\'esente un
 %  ensemble d'objets \`a partir duquel les GC sont lanc\'es. Ce chiffre
@@ -614,7 +637,7 @@ Understanding the result obtained when profiling is the very first step when one
 The method "\ct{,}" is known to be slow since it creates a new character string and copy both the receiver and the argument into it. Using a \ct{Stream} is a significant faster approach to concatenate character strings. However, \ct{nextPut:} and \ct{nextPutAll:} must be carefully employed!
 
 
-\paragraph{Using a \ct{Stream}.}
+\paragraph{Using a \ct{Stream} for string concatenation.}
 At the first glance, one could think that creating a stream is costly since it is frequently used with relatively slow inputs and outputs (\eg network socket, disk accesses, Transcript). But replacing the string concatenation employed in the previous example by a stream operation is almost 10 times faster! This is easily understandable since concatenating 9000 times a character strings creates 8999 intermediately objects, each being filled with the content of another. Using a stream, we simply have to append a character at each iteration.
 
 \begin{code}{}
@@ -664,7 +687,7 @@ MessageTally spyOn:
                     9000 timesRepeat: [ str nextPutAll: 'A' ]]].
 \end{code}
 
-The first intuition tells us that adding a single character is faster than adding a string composed of the character solely. However, a simple benchmark shows the opposite. It is faster to add a one character string than a single character: 1610 ms against 1790 ms while using the double of memory.
+The first intuition tells us that adding a single character is faster than adding a string composed of the character solely. However, a simple benchmark shows the opposite. It is faster to add an one-character long string than a single character: 1610 ms against 1790 ms while using the double of memory.
 
 \begin{code}{}
  - 1617 tallies, 1618 msec.
@@ -695,7 +718,7 @@ Process: (40s)  1175: nil
 
 
 
-\paragraph{String preallocation} In Smalltalk, using \ct{OrderedCollection} without a preallocation of the collection is well known for being costly. Each time the collection is full, its content has to be copied into a larger collection. Carefully choosing a preallocation has an impact of using ordered collections. The message \ct{new: aNumber} could be used instead of \ct{new}.
+\paragraph{String preallocation.} Using \ct{OrderedCollection} without a preallocation of the collection is well known for being costly. Each time the collection is full, its content has to be copied into a larger collection. Carefully choosing a preallocation has an impact of using ordered collections. The message \ct{new: aNumber} could be used instead of \ct{new}.
 
 \begin{code}{}
 MessageTally spyOn: 
@@ -708,7 +731,7 @@ MessageTally spyOn:
 \paragraph{An experiment.}
 Doing benchmarks shines when different executions are compared. In the previous piece of code, replacing the value 9000 by 500 is very valuable. The time taken with 9000 iterations is 2.7 times slower than with 500. Using the string concatenation (\ie using the \ct{,} method) instead of a stream widens the gap with a factor 10. This experiment clearly illustrates the importance of knowing the list of the string characters manipulated. 
 
-The time of the profiled execution is also an important quality factor for the result. MessageTally employs a sampling technique to profile code. Per default, MessageTally sample the current executing thread each millisecond. It is therefore necessary that all the methods involved in the computation are executed a ``fair'' amount of time to appear in the result report. If the application to profile is very short (few milliseconds only), then executing it a number of times help improving the accuracy of the report. 
+The time of the profiled execution is also an important quality factor for the result. MessageTally employs a sampling technique to profile code. Per default, MessageTally sample the current executing thread each millisecond per default. It is therefore necessary that all the methods involved in the computation are executed a ``fair'' amount of time to appear in the result report. If the application to profile is very short (few milliseconds only), then executing it a  number of times help improving the accuracy of the report. 
 
 
 
@@ -725,20 +748,17 @@ MessageTally allows for a profiling based on program interpretation. The idea is
 	\end{center}
 \end{figure}
 
-The downside of \ct{tallySend:} is the time taken to execute the provided block. The block to profile is executed by an interpreter written in Pharo, which is slower then the one of the virtual machine. The interpreter is available from the method \ct{ContextPart>>>runSimulated: aBlock contextAtEachStep: block2}.
+The downside of \ct{tallySend:} is the time taken to execute the provided block. The block to profile is executed by an interpreter written in Pharo, which is slower then the one of the virtual machine. A piece of code profiled by \ct{tallySends:} is about 200 times slower. The interpreter is available from the method \ct{ContextPart>>>runSimulated: aBlock contextAtEachStep: block2}.
 
 %%%%%%%%%%%%
 %%%%%%%%%%%%
-\section{Memoizing Fibonacci}
-As a small application of the techniques we have seen, consider the Fibonacci function ($fib (n) = fib (n-1) + fib(n-2)$ with $fib(1)=1, fib(2)=1$). We will study two versions of it: a highly recursive version and a memoizing version.
+\section{Memoized Fibonacci}
+
+As a small application of the techniques we have seen, consider the Fibonacci function ($fib (n) = fib (n-1) + fib(n-2)$ with $fib(0)=0, fib(1)=1$). We will study two versions of it: a recursive version and a memoized version. Memoizing consists in introducing a cache to avoid redundant computation.
 
 Consider the following definition, close to the mathematical definition:
 \begin{code}{}
-Integer>>>fibSlow
-	self assert: self >= 1.
-	(self == 1) ifTrue: [ ^ 1].
-	(self == 2) ifTrue: [ ^ 1].
-	^ (self - 1) fibSlow + (self - 2) fibSlow
+Integer>>>fibSlow	self assert: self >= 0.	(self <= 1) ifTrue: [ ^ self].	^ (self - 1) fibSlow + (self - 2) fibSlow
 \end{code}
 
 The method \ct{fibSlow} is relatively inefficient. Each recursion implies a duplication of the computation. The same result is computed twice, by each branch of the recursion.
@@ -746,63 +766,60 @@ The method \ct{fibSlow} is relatively inefficient. Each recursion implies a dupl
 A more efficient (but also slightly more complicated) version is obtained by using a cache that keeps intermediary computed values. The advantage is to not duplicate computations since each value is computed once. This classical way of optimizing program is called memoizing. 
       
 \begin{code}{}
-Integer>>>fib
-	self assert: self >= 1.
-	^ self fibWithCache: OrderedCollection new.
+Integer>>>fib	^ self fibWithCache: (Array new: self)
 
-Integer>>>fibLookup: cache
-	^ cache at: self ifAbsentPut: [ self fibWithCache: cache ] 
+Integer>>>fibLookup: cache	| res |	res := cache at: (self + 1).	^ res ifNil: [ cache at: (self + 1) put:  (self fibWithCache: cache  ) ]
 
-Integer>>>fibWithCache: cache
-	(self == 1) ifTrue: [ ^1].
-	(self == 2) ifTrue: [ ^1].
-	^ ((self - 1) fibLookup: cache) + ((self - 2) fibLookup: cache)
+Integer>>>fibWithCache:  cache	(self <= 1) ifTrue: [ ^ self].	^ ((self - 1) fibLookup: cache) + ((self - 2) fibLookup: cache)  
 \end{code}
 
-As an exercise, profile \ct{1200 fibSlow} and \ct{1200 fib} to be convinced of the gain of memoizing. Preallocating the ordered collection plays an important role again.
+As an exercise, profile \ct{1200 fibSlow} and \ct{1200 fib} to be convinced of the gain of memoizing. 
+%Preallocating the ordered collection plays an important role again.
 
-Profilez \ct{1200 fibSlow} et \ct{1200 fib} pour voir l'impact d'un tel
-cache. Vous pouvez aussi mesurer l'impact de la pr\'eallocation de la
-taille de la collection en utilisant \ct{OrderedCollection new: self}.
+%\ab{I do not understand. Without (OrderedCollection new: self) it does not work}
+%Profilez \ct{1200 fibSlow} et \ct{1200 fib} pour voir l'impact d'un tel
+%cache. Vous pouvez aussi mesurer l'impact de la pr\'eallocation de la
+%taille de la collection en utilisant \ct{OrderedCollection new: self}.
 
-\begin{code}{}
-29.8% {1843ms} OrderedCollection>>at:ifAbsentPut:
-11.4% {705ms} OrderedCollection>>size
-7.5% {464ms} SmallInteger(Integer)>>fibLookup:
-4.8% {297ms} OrderedCollection>>at:put:
-4.5% {278ms} SmallInteger(Integer)>>fibWithCache:
-4.2% {260ms} OrderedCollection>>at:
-2.2% {136ms} LargePositiveInteger>>+
-2.1% {130ms} OrderedCollection>>makeRoomAtLast
-2.0% {124ms} OrderedCollection>>addLast:
-1.9% {118ms} OrderedCollection>>add:
-1.9% {118ms} LargePositiveInteger(Integer)>>+
-\end{code}
+%\begin{code}{}
+%29.8% {1843ms} OrderedCollection>>at:ifAbsentPut:
+%11.4% {705ms} OrderedCollection>>size
+%7.5% {464ms} SmallInteger(Integer)>>fibLookup:
+%4.8% {297ms} OrderedCollection>>at:put:
+%4.5% {278ms} SmallInteger(Integer)>>fibWithCache:
+%4.2% {260ms} OrderedCollection>>at:
+%2.2% {136ms} LargePositiveInteger>>+
+%2.1% {130ms} OrderedCollection>>makeRoomAtLast
+%2.0% {124ms} OrderedCollection>>addLast:
+%1.9% {118ms} OrderedCollection>>add:
+%1.9% {118ms} LargePositiveInteger(Integer)>>+
+%\end{code}
 
-It is interesting that the preallocation for this example is not that significant. Replace \ct{OrderedCollection new} by {(OrderedCollection new: self)} in the definition of \ct{fib}. You should also take care of the garbage collector (it increases the overall time execution when triggered). The cost of  \ct{makeRoomAtLast} is not significative. However, the method \ct{at:ifAbsentPut:} is costly. Replacing an ordered collection by an array will improve the Fibonacci definition. Consider \ct{fib2}:
-
-\begin{code}{}
-Integer>>>fib2
-	self assert: self >= 1.
-	^ self fibWithCache2: (Array new: self).
-
-Integer>>>fibLookup2: cache
-	| res |
-	res := cache at: self.
-	^ res ifNil: [ cache at: self put: (self fibWithCache2: cache) ]
-		
-Integer>>>fibWithCache2: cache
- 	(self == 1) ifTrue: [ ^ 1 ].
- 	(self == 2) ifTrue: [ ^ 1 ].
- 	^ ((self - 1) fibLookup2: cache) + ((self - 2) fibLookup2: cache)
-\end{code}
-
-The two different versions can be easily compared:
-
-\begin{code}{}
-[1200 fib2] bench  '559.288142371526 per second.'
-[1200 fib] bench  '191.2470023980816 per second.'
-\end{code}
+%It is interesting that the preallocation for this example is not that significant. 
+%Replace \ct{OrderedCollection new} by {(OrderedCollection new: self)} in the definition of \ct{fib}. You should also take care of the garbage collector (it increases the overall time execution when triggered). The cost of  \ct{makeRoomAtLast} is not significative. However, the method \ct{at:ifAbsentPut:} is costly. Replacing an ordered collection by an array will improve the Fibonacci definition. Consider \ct{fib2}:
+%
+%\begin{code}{}
+%Integer>>>fib2
+%	self assert: self >= 1.
+%	^ self fibWithCache2: (Array new: self).
+%
+%Integer>>>fibLookup2: cache
+%	| res |
+%	res := cache at: self.
+%	^ res ifNil: [ cache at: self put: (self fibWithCache2: cache) ]
+%		
+%Integer>>>fibWithCache2: cache
+% 	(self == 1) ifTrue: [ ^ 1 ].
+% 	(self == 2) ifTrue: [ ^ 1 ].
+% 	^ ((self - 1) fibLookup2: cache) + ((self - 2) fibLookup2: cache)
+%\end{code}
+%
+%The two different versions can be easily compared:
+%
+%\begin{code}{}
+%[1200 fib2] bench  '559.288142371526 per second.'
+%[1200 fib] bench  '191.2470023980816 per second.'
+%\end{code}
 
 
 %:====================
@@ -815,12 +832,12 @@ The expression \ct{SpaceTally new printSpaceAnalysis} runs over all the classes 
 It is not surprising to see that strings, compiled methods and bitmaps represents the largest part of the Pharo memory.
 
 \begin{code}{}
-Class                           code space # instances  inst space percent
-ByteString                           2217       91946       6325763    26.0
-CompiledMethod               21186       60807       3704137    15.2
-Bitmap                                  3893         319       3685532    15.1
-Array                                     2478       96671       3015172    12.4
-ByteSymbol                        920       40109       1009703     4.1
+Class                          	 code space   # instances  inst space percent
+ByteString                        2217       	91946         6325763    26.0
+CompiledMethod            	21186      	 60807        3704137    15.2
+Bitmap                              3893          319            3685532    15.1
+Array                          	      2478      	96671        3015172    12.4
+ByteSymbol     					920       	   40109        1009703     4.1
 \end{code}
 
 \ct{SpaceTally} may also be executed on a reduced set of classes. Consider:
@@ -834,21 +851,49 @@ ByteSymbol                        920       40109       1009703     4.1
 
 \section{Few advices}
 
-We have seen a number of strategies to measure and optimize a program. The examples we use were relatively small. Optimizing a program is not always an easy task. Identifying method candidate for inserting a cache is simple and efficient once (i) you know when to invalidate the cache and (ii) when you're aware of the impact on the overall execution when inserting the code.
+We have seen a number of strategies to measure and optimize a program. The examples we have used are relatively small. Optimizing a program is not always an easy task. Identifying method candidate for inserting a cache is simple and efficient once (i) you know when to invalidate the cache and (ii) when you are aware of the impact on the overall execution when inserting the code.
 
-In general, it is more valuable to understand the overall algorithm than trying to optimize leaf methods. The way data are structured may also provide opportunities for optimization. For example, using an ordering collection or a linked list may not be appropriated to represent an acyclic graph. Using a set may offer better performance or a dictionary in the case that hash values are reasonably well distributed.
+In general, it is more valuable to understand the overall algorithm than trying to optimize leaf methods. The way data are structured may also provide opportunities for optimization. For example, using an ordering collection or a linked list may not be appropriated to represent acyclic graphs. Using a set may offer better performance or a dictionary in the case that hash values are reasonably well distributed.
 
 The memory consumption may plays an important role. The overall performance may significantly decreases if the garbage collector is often solicited. Recycling objects and avoiding unnecessary object creations helps reducing the solicitation of the garbage collector.
 
 \section {How MessageTally is implemented?}
-\ja{For stats: It takes VMparameters, launches the block, takes a new vmParameters and make the diffs}
-%\bibliographystyle{alpha}
-%{\small
-%\bibliography{scg,lse}
-%}
+
+MessageTally is a gorgeous example on how to use Pharo's reflecting capabilities. The method \ct{spyEvery: millisecs on: aBlock} contains the whole profiling logic. This method is indirectly called by \ct{spyOn:}. The \ct{millisecs} value is the amount of milliseconds between each sample. It is set at 1 per default. The block to be profiled is \ct{aBlock}.
+
+The essence of the profiling activity is given by the following code excerpt:
+
+\begin{code}
+myDelay := Delay forMilliseconds: millisecs.
+observedProcess := Processor activeProcess.
+Timer := [	[ true ] whileTrue: [		| startTime |		startTime := Time millisecondClockValue.		myDelay wait.		self			tally: Processor preemptedProcess suspendedContext			in: (observedProcess == Processor preemptedProcess 
+					ifTrue: [ observedProcess ] ifFalse: [ nil ])			by: (Time millisecondClockValue - startTime) // millisecs ].	nil] newProcess.
+Timer priority: Processor timingPriority-1.
+\end{code}
+
+\ct{Timer} is a new process, set at a high priority, that is in charge of monitoring \ct{aBlock}. The process scheduler will therefore favorably active it (\ct{timingPriority} is the process priority of system processes). It creates an infinite loop that waits for the amount of necessary milliseconds (\ct{myDelay}) before snapshooting the method call stack. The process to observe is \ct{observedProcess}. It is the process in which the message \ct{spyEvery: millisecs on: aBlock} has been sent. 
+
+The idea of profiling is to associate to each method context a counter. This association is realized with an instance of the class \ct{MessageTally} (the class defines the variables \ct{class}, \ct{method} and \ct{process}).
+
+At a regular interval (\ct{myDelay}), the counter of each stack frame is incremented with the amount of elapsed milliseconds. The stack frame is obtained by sending \ct{suspendedContext} to the process that has just been preempted.
+
+The method \ct{tally: context in: aProcess by: count} increments each stack frame by the amount of milliseconds given by \ct{count}.
+
+The memory statistic are given by differentiating the amount of consumed memory, before and after the profiling. \ct{Smalltalk}, an instance of the class \ct{SmalltalkImage}, contains many accessing methods to query the amount of available memory.
 
 %=================================================================
 \section{Chapter Summary}
+
+\begin{itemize}
+\item Simple benchmarking is realized by sending \ct{timeToRun} and \ct{bench} to a block.
+\item MessageTally is a sampling-based code profiler.
+\item Evaluating \ct{MessageTally spyOn: [ "an expression" ]} execute the provided block and display a report.
+\item Accuracy is gained by increasing the execution time of the profiled block.
+\item The \pharo programming environment gives several convenient ways to profile.
+\item Counting messages is slow but accurate profiling technique.
+\item Memoization is a common and efficient code pattern to speed up execution.
+\item SpaceTally reports about the memory consumption
+\end{itemize}
 
 This chapter has presented the functionalities of MessageTally and introduced a number of principles for resorbing performance bottleneck. 
 
