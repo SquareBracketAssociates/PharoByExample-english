@@ -178,20 +178,19 @@ browser text
 browser openOn: FSFilesystem onDisk root.
 \end{code}
 
-This code extends the previous one with a title as well as directory
-entry sorting, access permission handling and file content reading.
-The resulting browser is presented in
+This code extends the previous one with variable-sized panes, a title
+as well as directory entry sorting, access permission handling and
+file content reading. The resulting browser is presented in
 \figref{casestudies/file_finder}.
 
 This short
 introduction has just presented how to install Glamour and how to use
-it to create a simple file browser. The following will present a more
-complete example as well as detailed information about the framework.
+it to create a simple file browser. 
 
 \section{Tutorial: Implementing a code browser}
 
-This chapter serves as a hands-on introduction to our reference
-implementation.
+The following will present a more complete example as well as detailed
+information about the framework.
 
 \subsection{Running example}
 \label{sec:tutorial/getting_started}
@@ -225,59 +224,72 @@ browser on the list of packages. Because the example is going to
 involve more code than the previous file browser, we are going to
 implement the code browser in a dedicated class.
 
-
-
-The listing below shows how to
-create a new, simple browser and to open it on a given object. Since
-this object is a collection, Glamour uses a list for the presentation
-if nothing else is specified. Figure~\ref{fig:helloworld} shows the
-browser that is displayed by evaluating the script.
+The first step is then to create the class with some initial methods:
 
 \begin{code}{}
-browser := GLMTableLayoutBrowser new.
-browser openOn: Smalltalk organization  categories
+Object subclass: #PBE2CodeBrowser
+  instanceVariableNames: 'browser'
+  classVariableNames: ''
+  poolDictionaries: ''
+  category: 'PBE2-CodeBrowser'
+
+PBE2CodeBrowser class>>open
+  ^ self new open
+
+PBE2CodeBrowser>>open
+  self buildBrowser.
+  browser openOn: RPackageOrganizer default
+
+PBE2CodeBrowser>>buildBrowser
+  browser := GLMTabulator new.
 \end{code}
 
-\begin{figure}[htbp]
-\centerline{\includegraphics[width=6cm]{helloworld.pdf}}
-\caption{Basic browser construct, displaying a list of packages and bundles}
-\label{fig:helloworld}
-\end{figure}
+Executing \ct{PBE2CodeBrowser open} opens a new browser with the text
+``a RPackageOrganizer'' and nothing else. We now extend our browser by
+adding a pane to display a list of packages.
 
-%-------------------------------------------------------------------------------
-\subsection{Using Transmissions}
+\begin{code}{}
+PBE2CodeBrowser>>buildBrowser
+  browser := GLMTabulator new.
+  browser
+    column: #packages.
+
+  browser transmit to: #packages; andShow: [:a | self packagesIn: a].
+
+PBE2CodeBrowser>>packagesIn: constructor
+  constructor list
+    display: [:organizer | organizer packages sorted: [:x :y | x name < y name]];
+    format: #name
+\end{code}
 
 In Glamour browsers are composed in terms of \emph{panes} and the
-\emph{flow of data} between them. The flow is specified by means of
-\emph{transmissions}. These are triggered when certain changes occur,
-such as the change of the selection in a list.
-
-To exemplify this, we add the second pane to display a list of classes
-for the currently selected package.
-
-The browser created by the following listing is displayed in
-figure~\ref{fig:showclasses}. The lines marked in bold show the
-additions to the previous listing\damien{how to mark lines in bold in
-  the code environment?}.
+\emph{flow of data} between them. In our browser we currently have
+only one pane displaying packages. The flow of data is specified by
+means of \emph{transmissions}. These are triggered when certain
+changes occur, such as the change of the selection in a list. To
+exemplify this, we extend our browser with a list of classes for the
+currently selected package (see \figref{showclasses}).
 
 \begin{code}{}
-browser := GLMTableLayoutBrowser new.
-/+browser
-	column: #packages;
-	column: #classes.
+PBE2CodeBrowser>>buildBrowser
+  browser := GLMTabulator new.
+  browser
+    column: #packages;
+    column: #classes.
 
-browser showOn: #classes; from: #packages; using: [
-	browser list
-		display: [ :package | Smalltalk organization listAtCategoryNamed: package]
-].+/
-browser openOn: Smalltalk organization categories
+  browser transmit to: #packages; andShow: [:a | self packagesIn: a].
+  browser transmit from: #packages; to: #classes; andShow: [:a | self classesIn: a].
+
+PBE2CodeBrowser>>classesIn: constructor
+  constructor list
+    display: [:package | package definedClasses]
 \end{code}
 
 \begin{figure}[htbp]
-\centerline{\includegraphics[width=\linewidth]{showclasses.pdf}}
-\caption{Two-pane browser. When a package is selected in the left
-  pane, the contained classes are shown on the right pane.}
-\label{fig:showclasses}
+  \centerline{\includegraphics[width=\linewidth]{showclasses.pdf}}
+  \caption{Two-pane browser. When a package is selected in the left
+    pane, the contained classes are shown on the right pane.}
+  \label{fig:showclasses}
 \end{figure}
 
 The listing above shows almost all of the core language constructs of
@@ -286,20 +298,22 @@ give them the distinct names ``packages'' and ``classes'' and arrange them
 in columns using the \ct{column:} keyword. Similarly, a \ct{row:}
 keyword exists with which panes can be organized in rows.
 
-The \ct{showOn:} and \ct{from:} keywords create a
+The \ct{transmit:}, \ct{to:} and \ct{from:} keywords create a
 \emph{transmission}---a directed connection that defines the flow of
 information from one pane to another. In this case, we create a link
 from the \emph{packages} pane to the \emph{classes} pane. The
 \ct{from:} signifies the \emph{origin} of the transmission and
-\ct{showOn:} the \emph{destination}. If nothing more specific is
-stated, Glamour assumes that the origin refers to the \emph{selection}
-of the specified pane. We show how to specify other aspects of the
-origin pane and how to use multiple origins below.
+\ct{to:} the \emph{destination}. If nothing more specific is stated,
+Glamour assumes that the origin refers to the \emph{selection} of the
+specified pane. We show how to specify other aspects of the origin
+pane and how to use multiple origins below.
 
-Finally, the \ct{using:} specifies what to display on the destination
+Finally, the \ct{andShow:} specifies what to display on the destination
 pane when the connection is activated or \emph{transmitted}. In our
 example, we want to show a list of the classes that are contained in
 the selected package.
+
+\damien{HERE}
 
 \ct{display:} simply stores the supplied block within the
 presentation. The blocks will only be evaluated later, when the
@@ -314,7 +328,6 @@ Along with \ct{display:}, it is possible to specify a \ct{when:}
 condition to limit the applicability of the connection. By default,
 the only condition is that an item is in fact selected, \ie{} that the
 display variable argument is not \ct{nil}.
-
 
 \subsection{Another Presentation}
 
