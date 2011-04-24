@@ -238,7 +238,10 @@ PBE2CodeBrowser class>>open
 
 PBE2CodeBrowser>>open
   self buildBrowser.
-  browser openOn: RPackageOrganizer default
+  browser openOn: self organizer.
+
+PBE2CodeBrowser>>organizer
+  ^ RPackageOrganizer default
 
 PBE2CodeBrowser>>buildBrowser
   browser := GLMTabulator new.
@@ -258,8 +261,8 @@ PBE2CodeBrowser>>buildBrowser
 
 PBE2CodeBrowser>>packagesIn: constructor
   constructor list
-    display: [:organizer | organizer packages sorted: [:x :y | x name < y name]];
-    format: #name
+    display: [:organizer | organizer packageNames sorted];
+    format: #asString
 \end{code}
 
 In Glamour browsers are composed in terms of \emph{panes} and the
@@ -282,7 +285,7 @@ PBE2CodeBrowser>>buildBrowser
 
 PBE2CodeBrowser>>classesIn: constructor
   constructor list
-    display: [:package | package definedClasses]
+    display: [:packageName | (self organizer packageNamed: packageName) definedClasses]
 \end{code}
 
 \begin{figure}[htbp]
@@ -313,8 +316,6 @@ pane when the connection is activated or \emph{transmitted}. In our
 example, we want to show a list of the classes that are contained in
 the selected package.
 
-\damien{HERE}
-
 \ct{display:} simply stores the supplied block within the
 presentation. The blocks will only be evaluated later, when the
 presentation should be displayed on-screen. If no explicit display
@@ -334,32 +335,34 @@ display variable argument is not \ct{nil}.
 Up to now, we have been displaying the packages as a list. The
 packages in Smalltalk, howerver, are actually organized in a hierarchy
 and we have only been looking at the first level of this structure. To
-mend this, we specify that a tree presentation should be used instead:
+mend this, we add a tree presentation for packages:
 
 \begin{code}{}
-browser := TableLayoutBrowser new.
-browser
-	column: #packages;
-	column: #classes.	
+PBE2CodeBrowser>>packagesIn: constructor
+  constructor list
+    display: [ :organizer | organizer packageNames sorted ];
+    format: #asString.
+  constructor tree
+    display: [ :organizer | (self rootPackagesOn: organizer) asSet sorted ];
+    children: [ :rootPackage :organizer | (self childrenOf: rootPackage on: organizer) sorted ];
+    format: #asString
 
-/+browser showOn: #packages; using: [
-	browser tree
-		children: [:package | Smalltalk organization categories
-                                 select: [:subPackage | subPackage beginsWith: package, '-']]
-].+/
+PBE2CodeBrowser>>classesIn: constructor
+  constructor list
+    display: [:packageName | (self organizer packageNamed: packageName) definedClasses];
+    when: [:packageName | self organizer includesPackageNamed: packageName ]  
 
-browser showOn: #classes; from: #packages; using: [
-	browser list
-		display: [ :package | Smalltalk organization listAtCategoryNamed: package]
-].
+PBE2CodeBrowser>>childrenOf: rootPackage on: organizer
+  ^ organizer packageNames select: [ :name | name beginsWith: rootPackage , '-' ]
 
-browser openOn: /+(Smalltalk organization  categories
-                     collect: [:package | package readStream upTo: $-])
-                           asSet asSortedCollection+/
+PBE2CodeBrowser>>rootPackagesOn: organizer
+  ^ organizer packageNames collect: [ :string | string readStream upTo: $- ]
 \end{code}
 
 % counter balance the previous $ to avoid a syntax-highlighting bug
 % with Emacs
+
+\dc{HERE}
 
 Since the registry of packages is specified in \ct{openOn:} and not on
 a explicit pane, we use the keyword \ct{showOn:}---without any
