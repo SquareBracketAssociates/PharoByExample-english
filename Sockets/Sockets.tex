@@ -33,8 +33,7 @@
 %=================================================================
 
 \chapter{Sockets}\label{cha:sockets}
-
-\vspace*{-1.5cm}{\em Please send comments and feedback to:\\{\bf Noury Bouraqadi} {\sf (bouraqadi@gmail.com)}}\\[2cm]
+\chapterauthor{\authornoury{}}
 
 Modern application are often distributed on multiple devices and collaborate through a network to achieve some task.
 The basic approach to set up such a collaboration is to use \textit{sockets}.
@@ -52,7 +51,7 @@ A remote communication involves at least two applications exchanging some data b
 A socket can then be defined as a \textit{plug on a communication network}.
 
 \begin{figure}[ht]\centering
-	\includegraphics[width=.75\linewidth]{socketConcept.pdf}
+	\includegraphics[width=.75\linewidth]{socketConcept}
 	\caption{Applications Remote Communication Through Sockets.}
 	\label{fig:socketConcept}
 \end{figure}
@@ -184,7 +183,7 @@ If data is received during this period of time, it is processed silently.
 But if no data is received during the 5 seconds, a \ct!ConnectionTimedOut! is signaled.
 So, we log a description of what happened on the \ct!Transcript!.
 
-\subsection{Close the Socket}
+\subsection{Close a Socket}
 A socket remains alive while devices at both ends are connected.
 Once the interaction is over, either the server or the client can decide to close the socket.
 This can be done by sending the \ct!close! message to the socket.
@@ -381,7 +380,7 @@ NetNameResolver class>>initializeNetwork
 \section{A Basic Chat Application}
 \section{Distributed Object Applications}
 \section{Chapter summary}
-%Reference to chapter remoteSmalltalk (rST) ˆ faire!
+%Reference to chapter remoteSmalltalk (rST) a faire!
 
 
 %=================================================================

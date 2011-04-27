@@ -35,14 +35,16 @@
 	\begin{document}
 	\renewcommand{\nnbb}[2]{} % Disable editorial comments
 	\sloppy
+	
 \fi
 
-\newcommand{\MC}{Monticello\xspace}
-\newcommand{\MCB}{\MC browser\xspace}
-\newcommand{\RI}{repository inspector\xspace}
+	\newcommand{\Mont}{Monticello\xspace}
+	\newcommand{\MCB}{\Mont browser\xspace}
+	\newcommand{\RI}{repository inspector\xspace}
 
 %=================================================================
-\chapter{Versioning your code with \MC}
+\chapter{Versioning your code with \Mont}
+\chapterauthor{\authoroscar{}}
 
 \alex{Maybe a section on MC Configuration maps may be given}
 \on{what are they?}
@@ -106,13 +108,13 @@ they can do a better job of supporting the development process.
 
 %\indmain{Monticello}
 \index{SqueakSource}
-\emph{\indmain{\MC{}}} is  a versioning system for \pharo in which classes and methods, rather than lines of text,
-are the units of change. \emph{\sqsrc{}} is a central online repository in which you can store versions of your applications using \MC. \sqsrc is the equivalent of \ind{GForge}, and \MC the equivalent of CVS. 
+\emph{\indmain{\Mont{}}} is  a versioning system for \pharo in which classes and methods, rather than lines of text,
+are the units of change. \emph{\sqsrc{}} is a central online repository in which you can store versions of your applications using \Mont. \sqsrc is the equivalent of \ind{GForge}, and \Mont the equivalent of CVS. 
 
-In this chapter, you will learn how to use use \MC and \sqsrc to manage your software. We have already met \MC briefly in earlier chapters\footnote{``A first application'' and ``The Pharo programming environment''}.
+In this chapter, you will learn how to use use \Mont and \sqsrc to manage your software. We have already met \Mont briefly in earlier chapters\footnote{``A first application'' and ``The Pharo programming environment''}.
 % These chapters are in book1, so we can't cross-reference them!
 % (\charef{firstApp} and \charef{env}).
-This chapter delves into the details of \MC{} and describes some additional features that are useful for versioning large applications.
+This chapter delves into the details of \Mont{} and describes some additional features that are useful for versioning large applications.
 
 %=================================================================
 \section{Basic usage}
@@ -122,7 +124,7 @@ We will start by reviewing the basics of creating a package and committing chang
 %-----------------------------------------------------------------
 \subsection{Running example --- perfect numbers}
 
-We will use a small running example of perfect numbers\footnote{Perfect numbers were discovered by \ind{Euclid}. A perfect number is a positive integer that is the sum of its proper divisors. $6 = 1 + 2 + 3$ is the first perfect number.} in this chapter to illustrate the features of \MC. We will start our project by defining some simple tests.
+We will use a small running example of perfect numbers\footnote{Perfect numbers were discovered by \ind{Euclid}. A perfect number is a positive integer that is the sum of its proper divisors. $6 = 1 + 2 + 3$ is the first perfect number.} in this chapter to illustrate the features of \Mont. We will start our project by defining some simple tests.
 
 \dothis{Define a subclass of \clsind{TestCase} called \ct{PerfectTest} in the category \ct{Perfect}, and define the following test methods in the protocol \ct{running}:}
 \begin{code}{}
@@ -132,44 +134,44 @@ PerfectTest>>>testPerfect
 	self assert: 28 isPerfect.
 \end{code}
 
-Of course these tests will fail as we have not yet implemented the \ct{isPerfect} method for integers. We would like to put this code under the control of \MC as we revise and extend it.
+Of course these tests will fail as we have not yet implemented the \ct{isPerfect} method for integers. We would like to put this code under the control of \Mont as we revise and extend it.
 
 %-----------------------------------------------------------------
-\subsection{Launching \MC}
+\subsection{Launching \Mont}
 
-\MC is included in the standard \pharo distribution.
-We will assume that \MC is already installed in your image.
-\menu{\MC Browser} can be selected from the \emph{World} menu.
+\Mont is included in the standard \pharo distribution.
+We will assume that \Mont is already installed in your image.
+\menu{\Mont Browser} can be selected from the \emph{World} menu.
 \index{Monticello!browser}
 
 \begin{figure}[ht]\centering
 	\includegraphics[width=\textwidth]{monticelloBrowser}
-	\caption{The \MC Browser.\figlabel{monticelloMain}}
+	\caption{The \Mont Browser.\figlabel{monticelloMain}}
 \end{figure}
 
-In \figref{monticelloMain} we see that the \MC Browser consists of two list panes and one button pane. The left pane lists installed packages and the right panes shows known repositories.
+In \figref{monticelloMain} we see that the \Mont Browser consists of two list panes and one button pane. The left pane lists installed packages and the right panes shows known repositories.
 Various operations may be performed via the button pane and the menus of the two list panes.
 
 %-----------------------------------------------------------------
 \subsection{Creating a package}
 
 \index{Monticello!creating packages}
-\MC manages versions of \emph{packages}.  A \ind{package} is essentially a named set of classes and methods.
+\Mont manages versions of \emph{packages}.  A \ind{package} is essentially a named set of classes and methods.
 In fact, a package is an object\,---\,an instance of \clsind{PackageInfo}\,---\,that knows how to identify the classes and methods that belong to it.
 
 We would like to version our \ct{PerfectTest} class. The right way to do this is to define a package\,---\,called \ct{Perfect}\,---\,containing \ct{PerfectTest} and all the related classes and methods we will introduce later. For the moment, no such package exists. We only have a \emph{category} called (not coincidentally) \ct{Perfect}. This is perfect, % (ugh!), 
-since \MC will map categories to packages for us.
+since \Mont will map categories to packages for us.
 
 \dothis{Press the \button{+Package} in the \MCB and enter \scat{Perfect}.}
 
-\emph{Voil\`a!} You have just created the \pkg{Perfect} \MC package. 
+\emph{Voil\`a!} You have just created the \pkg{Perfect} \Mont package. 
 
 \begin{figure}[ht]\centering
 	\includegraphics[width=\textwidth]{perfectPackage}
 	\caption{Creating the Perfect package.\figlabel{perfect}}
 \end{figure}
 
-\MC packages follow a number of important naming conventions for class and method categories.
+\Mont packages follow a number of important naming conventions for class and method categories.
 Our new package named \pkg{Perfect} contains:
 
 \begin{itemize}
@@ -189,7 +191,7 @@ Our new package named \pkg{Perfect} contains:
 Note in \figref{perfect} that the \button{Save} button is disabled (greyed out).
 
 Before we save our \ct{Perfect} package, we need to specify \emph{where} we want to save it. A \emph{repository} is a package container, which may either be local to your machine or remote (accessed over the network). 
-Various protocols may be used to establish a connection between your \pharo image and a repository. As we will see later (\secref{monti:repositories}), \MC supports a large choice of repositories, though the most commonly used is HTTP, since this is the one used by \sqsrc.
+Various protocols may be used to establish a connection between your \pharo image and a repository. As we will see later (\secref{monti:repositories}), \Mont supports a large choice of repositories, though the most commonly used is HTTP, since this is the one used by \sqsrc.
 
 \index{package-cache}
 At least one repository, called \ct{package-cache}, is set up by default, and is shown as the first entry in the list of repositories on the right-hand side of your \MCB (see \figref{monticelloMain}).
@@ -197,7 +199,7 @@ The package-cache is created automatically in the local directory where your \ph
 By default, copies of your packages are also saved in the package-cache when you save them to a remote server.
 
 Each package knows which repositories it can be saved to.
-To add a new repository to the selected package, press the \button{+Repository} button. This will offer a number of choices of different kinds of repository, including HTTP. For the rest of the chapter we will work with the \ct{package-cache} repository, as this is all we need to explore the features of \MC.
+To add a new repository to the selected package, press the \button{+Repository} button. This will offer a number of choices of different kinds of repository, including HTTP. For the rest of the chapter we will work with the \ct{package-cache} repository, as this is all we need to explore the features of \Mont.
 
 \dothis{Select the directory repository named \lct{package cache}, press \button{Save}, enter an appropriate log message, and \button{Accept} to save the changes.}
 
@@ -211,7 +213,7 @@ The \ct{Perfect} package is now saved in \ct{package-cache}, which is nothing mo
 \dothis{Use your favorite file browser (\eg Windows Explorer, Finder or XTerm) to confirm that a file \ct{Perfect-XX.1.mcz} was created in your package cache. \ct{XX} corresponds to your name or initials.\footnote{In the past, the convention was for developers to log their changes using only their initials. Now, with many developers sharing identical initials, the convention is to use an identifier based on the full name, such as ``apblack'' or ``AndrewBlack''.}}
 
 %You may change the version name and add a comment.
-%\ab{Experience with my students is that changing the version name is a really bad idea, since it can easily break \MC.}
+%\ab{Experience with my students is that changing the version name is a really bad idea, since it can easily break \Mont.}
 %\alex{I was not able to find a satisfying explanation, So I prefer to leave this point out}
 
 A \emphind{version} is an immutable snapshot of a package that has been written to a repository. Each version has a unique version number to identify it in a repository.
@@ -255,7 +257,7 @@ This means that the version of the package in the image is different from the ve
 	\caption{Modifying our Perfect package will ``dirty'' it.\figlabel{dirty}}
 \end{figure}
 
-In the \MCB,  a dirty package can be recognized by an asterix (\ct{*}) preceding its name.  This indicates which packages have uncommitted changes, and therefore need to be saved into a repository if those changes are not to be lost. Saving a dirty package cleans it. \ab{Why is it that when I click \button{Changes} on a dirty package, I sometimes get a dialog back that says ``no changes''?  I found this very confusing.  How can I see \emph{why} \MC thinks a package is dirty?  How can I see \emph{which} repository it was originally loaded from or saved to?}
+In the \MCB,  a dirty package can be recognized by an asterix (\ct{*}) preceding its name.  This indicates which packages have uncommitted changes, and therefore need to be saved into a repository if those changes are not to be lost. Saving a dirty package cleans it. \ab{Why is it that when I click \button{Changes} on a dirty package, I sometimes get a dialog back that says ``no changes''?  I found this very confusing.  How can I see \emph{why} \Mont thinks a package is dirty?  How can I see \emph{which} repository it was originally loaded from or saved to?}
 
 \dothis{Try the \button{Browse}, \button{History} and \button{Changes} buttons to see what they do\footnote{At the time of this writing, the \button{Scripts} button does not work.}.
 \button{Save} the changes to the \ct{Perfect} package. Confirm that the package is now ``clean'' again.}
@@ -269,7 +271,7 @@ In the \MCB,  a dirty package can be recognized by an asterix (\ct{*}) preceding
 
 \index{Repository inspector|see{Monticello, repository inspector}}
 \index{Monticello!repository inspector}
-The contents of a repository can be explored using a \RI, which is launched using the \button{Open} button of \MC (cf \figref{repositoryinspector}).
+The contents of a repository can be explored using a \RI, which is launched using the \button{Open} button of \Mont (cf \figref{repositoryinspector}).
 
 \index{package-cache}
 \dothis{Select the \ct{package-cache} repository and open it. You should see something like \figref{repositoryinspector}.}
@@ -477,10 +479,10 @@ Note that the merge tool offers buttons to select all newer or all older changes
 If you now refresh the \RI, you will see that there are no more versions shown in bold, \ie all versions are ancestors of the currently loaded version 4 (\figref{merged}).
 
 %=================================================================
-\section{Exploring \MC repositories}
+\section{Exploring \Mont repositories}
 \seclabel{monti:exploring}
 
-\MC has many other useful features. As we can see in \figref{monticelloMain}, the \MCB window has nine buttons. We have already used four of them\,---\,\button{+Package}, \button{Save}, \button{+Repository} and \button{Open}.
+\Mont has many other useful features. As we can see in \figref{monticelloMain}, the \MCB window has nine buttons. We have already used four of them\,---\,\button{+Package}, \button{Save}, \button{+Repository} and \button{Open}.
 We will now look at \button{Browse}, \button{Changes} and \button{History}, which are used to explore the state and history of repositories
 
 %-----------------------------------------------------------------
@@ -605,7 +607,7 @@ You can now save this backported version, merge it into something else, or whate
 
 \index{Monticello!dependency}
 \index{package!required|see{Monticello, dependency}}
-Most applications cannot live on their own and typically require the presence of other packages in order to work properly. For example, let us have a look at Pier\footnote{\url{http://source.lukas-renggli.ch/pier}}, a meta-described content management system. Pier is a large piece of software with many facets (tools, documentations, blog, catch strategies, security, ...). Each facet is implemented by a separate package. Most Pier packages cannot be used in isolation since they refer to methods and classes defined in other packages. \MC provides a dependency mechanism for declaring the \emph{required packages} of a given package to ensure that it will be correctly loaded.
+Most applications cannot live on their own and typically require the presence of other packages in order to work properly. For example, let us have a look at Pier\footnote{\url{http://source.lukas-renggli.ch/pier}}, a meta-described content management system. Pier is a large piece of software with many facets (tools, documentations, blog, catch strategies, security, ...). Each facet is implemented by a separate package. Most Pier packages cannot be used in isolation since they refer to methods and classes defined in other packages. \Mont provides a dependency mechanism for declaring the \emph{required packages} of a given package to ensure that it will be correctly loaded.
 
 Essentially, the dependency mechanism ensures that all required packages of a package are loaded before the package is loaded itself. Since required packages may themselves require other packages, the process is applied recursively to a tree of dependencies, ensuring that the leaves of the tree are loaded before any branches that depend on them.
 Whenever new versions of required packages are checked in, then new versions of the packages that depend on them will automatically depend on the new versions.
@@ -635,9 +637,9 @@ Let us see how this works in practice.  Our \ct{Perfect} package currently bundl
 \item In the \MCB, add the packages \ct{NewPerfect-All} and \ct{NewPerfect-Extensions}.
 \item Add \ct{NewPerfect-Extensions} and \ct{NewPerfect-Tests} as required packages to \ct{NewPerfect-All} ({\actclick} on \ct{NewPerfect-All})
 \item Save package \ct{NewPerfect-All} in the package-cache repository.
-	Note that \MC prompts for comments to save the required packages too.
+	Note that \Mont prompts for comments to save the required packages too.
 \item Check that all three packages have been saved in the package cache.
-\item \MC thinks that \ct{Perfect} is still loaded. Unload it and then load \ct{NewPerfect-All} from the \RI. This will cause \ct{NewPerfect-Extensions} and \ct{NewPerfect-Tests} to be loaded as well as required packages.
+\item \Mont thinks that \ct{Perfect} is still loaded. Unload it and then load \ct{NewPerfect-All} from the \RI. This will cause \ct{NewPerfect-Extensions} and \ct{NewPerfect-Tests} to be loaded as well as required packages.
 \item Check that all tests run.
 \end{itemize}
 }
@@ -662,13 +664,13 @@ Here is the reason why:
 \item If instead you save \ct{NewPerfect-Tests}, this will \emph{not} cause \ct{NewPerfect-All} to be saved.  This is bad because you effectively break the dependency.  If you then load the latest version of \ct{NewPerfect-All} you will not get the latest versions of the required packages. Don't do it!
 \end{itemize}
 
-\important{Do not name your top level package with a suffix (\eg \ct{Perfect}) that could match your subpackages. Do not define \ct{Perfect} as a required package of \ct{Perfect-Extensions} or \ct{PerfectTest}. You would get in trouble since \MC would save all the classes for three packages while you only want two packages and an empty one at the top level.}
+\important{Do not name your top level package with a suffix (\eg \ct{Perfect}) that could match your subpackages. Do not define \ct{Perfect} as a required package of \ct{Perfect-Extensions} or \ct{PerfectTest}. You would get in trouble since \Mont would save all the classes for three packages while you only want two packages and an empty one at the top level.}
 %-----------------------------------------------------------------
 \subsection{Class initialization}
 
 \index{class!initialization}
 \index{Monticello!class initialization}
-When \MC loads a package into the image, any class that defines an \ct{initialize} method on the class side will be sent the \ct{initialize} message. The message is sent \emph{only} to classes that define this method on the class side. A class that does not define this method will not be initialized, even if \ct{initialize} is defined by one of its superclasses. NB: the initialize method is not invoked when you merely reload a package!
+When \Mont loads a package into the image, any class that defines an \ct{initialize} method on the class side will be sent the \ct{initialize} message. The message is sent \emph{only} to classes that define this method on the class side. A class that does not define this method will not be initialized, even if \ct{initialize} is defined by one of its superclasses. NB: the initialize method is not invoked when you merely reload a package!
 % martial: invoked method?? -> better with 'message \ct{initialize} is not sent??
 
 %\on{OK, I confirmed this with a simple test}
@@ -692,7 +694,7 @@ TestCaseExtension class>>initialize
 When our package is loaded, this code will be evaluated and the instance variable will be added, if it does not already exist.
 
 
-%As an illustration, let us suppose an extension of the Lights Out game to support unchangeable cells. Those cells are located randomly on the board. Generate numbers need to be generated. This can be done by adding a variable \ct{randomNumber} to the class \ct{LOGame}. This kind of extension is not well supported by \MC. A package cannot define the variable \ct{randomNumber} as an extension of \ct{LOGame}. \MC supports method extension only.
+%As an illustration, let us suppose an extension of the Lights Out game to support unchangeable cells. Those cells are located randomly on the board. Generate numbers need to be generated. This can be done by adding a variable \ct{randomNumber} to the class \ct{LOGame}. This kind of extension is not well supported by \Mont. A package cannot define the variable \ct{randomNumber} as an extension of \ct{LOGame}. \Mont supports method extension only.
 %\ab{Tell us what the problem is, before telling us the solution.  With an Example!}
 
 
@@ -707,7 +709,7 @@ When our package is loaded, this code will be evaluated and the instance variabl
 %In the case that \ct{randomNumber} is not defined in \ct{LOGame}, this variable is added to this class.
 
 %\ab{Isn't this more appropriate for a post-load \emph{do-it} than an \ct{initialize} method?  Do such things not exist (they did with change sets \ldots}
-%\alex{Probably, but this seems to be broken with \MC}
+%\alex{Probably, but this seems to be broken with \Mont}
 
 %=================================================================
 \section{Getting a change set from two versions}
@@ -730,15 +732,15 @@ The difference between two Monticello versions may be easily captured by creatin
 \seclabel{monti:repositories}
 
 \index{Monticello!repository}
-Several kinds of repositories are supported by \MC, each with different characteristics and uses. Repositories can be read-only, write-only or read-write. Access rights may be defined globally or can be tied to a particular user (as in \sqsrc, for example).
+Several kinds of repositories are supported by \Mont, each with different characteristics and uses. Repositories can be read-only, write-only or read-write. Access rights may be defined globally or can be tied to a particular user (as in \sqsrc, for example).
 % and are related to the way of storing data used.
 
 \index{Monticello!HTTP repository}
-\paragraph{HTTP} HTTP repositories are probably the most popular kind of repository since this is the kind supported by \sqsrc. % (Such servers can also be configured for read-only access. Saving versions via HTTP uses the PUT method \ab{Is ``put'' the right word}, which must be enabled on the server.)
+\paragraph{HTTP.} HTTP repositories are probably the most popular kind of repository since this is the kind supported by \sqsrc. % (Such servers can also be configured for read-only access. Saving versions via HTTP uses the PUT method \ab{Is ``put'' the right word}, which must be enabled on the server.)
 
 The nice thing about HTTP repositories is that it's easy to link directly to specific versions from web sites. With a little configuration work on the HTTP server, HTTP repositories can be made browsable by ordinary web browsers, WebDAV clients, and so on.
 
-HTTP repositories may be used with an HTTP server other than \ind{\sqsrc}. For example, a simple configuration\footnote{\url{http://www.visoracle.com/squeak/faq/monticello-1.html}} turns \ind{Apache} into a \MC repository with restricted access rights:
+HTTP repositories may be used with an HTTP server other than \ind{\sqsrc}. For example, a simple configuration\footnote{\url{http://www.visoracle.com/squeak/faq/monticello-1.html}} turns \ind{Apache} into a \Mont repository with restricted access rights:
 
 \begin{code}{}
 "My apache2 install worked as a Monticello repository right out of the box on my
@@ -764,22 +766,22 @@ I love Monticello and look forward to future improvements."
 \end{code}
 
 \index{Monticello!FTP repository}
-\paragraph{FTP} This is similar to an HTTP repository, except that it uses an FTP server instead. An FTP server may also offer restricted access right and different FTP clients may be used to browse such \MC repository.
+\paragraph{FTP.} This is similar to an HTTP repository, except that it uses an FTP server instead. An FTP server may also offer restricted access right and different FTP clients may be used to browse such \Mont repository.
 
 \index{Monticello!GOODS repository}
-\paragraph{GOODS}
+\paragraph{GOODS.}
 This repository type stores versions in a GOODS object database.
 GOODS is a fully distributed object-oriented database management system that uses an active client model\footnote{\url{http://www.garret.ru/goods.html}}.
 It's a read-write repository, so it makes a good ``working'' repository where versions can be saved and retreived. Because of the transaction support, journaling and replication capabilities offered by GOODS, it is suitable for large repositories used by many clients.  
 
 \index{Monticello!directory repository}
 \index{package-cache}
-\paragraph{Directory} A directory repository stores versions in a directory in the local file system. Since it requires very little work to set up, it's handy for private projects; since it requires no network connection, it's the only option for disconnected development. The \ct{package-cache} we have been using in the exercises for this chapter is an example of this kind of repository. Versions in a directory repository may be copied to a public or shared repository at a later time. \sqsrc supports this feature by allowing package versions (.mcz files) to be imported for a given project. Simply log in to \sqsrc, navigate to the project, and click on the \menu{Import Versions} link.
+\paragraph{Directory.} A directory repository stores versions in a directory in the local file system. Since it requires very little work to set up, it's handy for private projects; since it requires no network connection, it's the only option for disconnected development. The \ct{package-cache} we have been using in the exercises for this chapter is an example of this kind of repository. Versions in a directory repository may be copied to a public or shared repository at a later time. \sqsrc supports this feature by allowing package versions (.mcz files) to be imported for a given project. Simply log in to \sqsrc, navigate to the project, and click on the \menu{Import Versions} link.
 
-\paragraph{Directory with Subdirectories}  A ``directory with subdirectories'' is very similar to ``directory'' except that it looks in subdirectories to retrieve list of available packages. Instead of having a flat directory that contains all package versions, such as repository may be hierarchically  structured with  subdirectories.
+\paragraph{Directory with Subdirectories.}  A ``directory with subdirectories'' is very similar to ``directory'' except that it looks in subdirectories to retrieve list of available packages. Instead of having a flat directory that contains all package versions, such as repository may be hierarchically  structured with  subdirectories.
 
 \index{Monticello!SMTP repository}
-\paragraph{SMTP} SMTP repositories are useful for sending versions by mail. When creating an SMTP repository, you specify a destination email address. This could be the address of another developer\,---\,the package's maintainer, for example\,---\,or a mailing list such as pharo-project. Any versions saved in such a repository will be emailed to this address.  SMTP repositories are write-only.
+\paragraph{SMTP.} SMTP repositories are useful for sending versions by mail. When creating an SMTP repository, you specify a destination email address. This could be the address of another developer\,---\,the package's maintainer, for example\,---\,or a mailing list such as pharo-project. Any versions saved in such a repository will be emailed to this address.  SMTP repositories are write-only.
 
 \paragraph{Programmatically adding repositories} For particular purposes, it may be necessary to programmatically add new repositories. This happens when managing configuration and large set of distributed monticello packages or simply customizing the entries available in the Monticello browser. For example, the following code snippet programmatically adds new directory repositories
 
@@ -801,7 +803,7 @@ It's a read-write repository, so it makes a good ``working'' repository where ve
 %\alex{I added few sentences about adding package on squeakmap. But not many people are using it now. It is progressively being replaced by universe.}
 %\ab{We havn't talked bout how to put stuff on \sqmap, only about how to load it.  So, we should add that material, either here, or in a subsequent subsection.}
 
-%\paragraph{\sqmap Cache} When packages are installed via \sqmap, downloaded files are stored in a dedicated subdirectory in your working directory that acts as a cache. In order to make these files available to \MC for loading, merging, \etc, a \sqmap Cache repository is created when these files are loaded for the first time.
+%\paragraph{\sqmap Cache} When packages are installed via \sqmap, downloaded files are stored in a dedicated subdirectory in your working directory that acts as a cache. In order to make these files available to \Mont for loading, merging, \etc, a \sqmap Cache repository is created when these files are loaded for the first time.
 
 %\on{why don't you first talk about the package cache?  I see you commented it out.}
 %\alex{Because it does not appear in \pharo anymore. Maybe it was buggy or simply obsolete}
@@ -811,7 +813,7 @@ It's a read-write repository, so it makes a good ``working'' repository where ve
 
 %\paragraph{package-cache}
 
-%The package cache is a special repository that \MC creates automatically. Like a directory repository, the package cache stores files in a directory on your local filesystem. See Elements of \MC for more information.
+%The package cache is a special repository that \Mont creates automatically. Like a directory repository, the package cache stores files in a directory on your local filesystem. See Elements of \Mont for more information.
 
 %\ab{what about ``Directory with Subdirectories''?} 
 %\alex{I added a new paragraph on it above}
@@ -819,11 +821,11 @@ It's a read-write repository, so it makes a good ``working'' repository where ve
 %-----------------------------------------------------------------
 \subsection{Using \sqsrc}
 
-\indmain{\sqsrc} is a online repository that you can use to store your \MC packages. An instance is running and accessible from \url{http://www.squeaksource.com}. At the time this chapter is being written, over 1500 projects are registered on \sqsrc and nearly 2000 people have an account. \figref{squeaksource} shows the main web page.  
+\indmain{\sqsrc} is a online repository that you can use to store your \Mont packages. An instance is running and accessible from \url{http://www.squeaksource.com}. At the time this chapter is being written, over 1500 projects are registered on \sqsrc and nearly 2000 people have an account. \figref{squeaksource} shows the main web page.  
 
 \begin{figure}[ht]\centering
 	\includegraphics[width=\textwidth]{squeaksource2}
-	\caption{\sqsrc, the online \MC code repository.\figlabel{squeaksource}}
+	\caption{\sqsrc, the online \Mont code repository.\figlabel{squeaksource}}
 \end{figure}
 
 \dothis{Use a web browser to visit the \pbe project at \url{http://www.squeaksource.com/PharoByExample.html}. This project contains the Lights Out project from \charef{firstApp}. In the registration section on that web page you should see this \emph{repository expression:}}
@@ -835,7 +837,7 @@ MCHttpRepository
     password: ''
 \end{code}
 \noindent
-\emph{Add this repository to \MC by clicking \button{+Repository}, and then selecting \menu{HTTP}. Fill out the template with the URL corresponding to the Lights Out project\,---\,you can copy the above repository expression from the web page and paste it into the template.
+\emph{Add this repository to \Mont by clicking \button{+Repository}, and then selecting \menu{HTTP}. Fill out the template with the URL corresponding to the Lights Out project\,---\,you can copy the above repository expression from the web page and paste it into the template.
 Since you are not going to commit new versions of this package, you do not need to fill in the user and password.
 \button{Open} the repository, select the latest version and click \button{Load}.}
 
@@ -848,7 +850,7 @@ Once you are a member, \link{Register Project} allows you to create a new projec
 	\caption{Repositories under \sqsrc are highly configurable.\figlabel{squeaksourcesetting}}
 \end{figure}
 
-\MC offers a large range of options (cf. \figref{squeaksourcesetting}) to configure a project repository: tags may be assigned, a license may be chosen, access for people who are not part of the project may be restricted (read/write, read, no access), emails may be sent upon commits, mailing list may be managed, and users may be defined to be members of the project (as administrator, developer, or guest).
+\Mont offers a large range of options (cf. \figref{squeaksourcesetting}) to configure a project repository: tags may be assigned, a license may be chosen, access for people who are not part of the project may be restricted (read/write, read, no access), emails may be sent upon commits, mailing list may be managed, and users may be defined to be members of the project (as administrator, developer, or guest).
 
 % \on{This section seems too painfully obvious to include.}
 %\paragraph{Troubleshooting} Not being able to remotely save your package may be due to a large range of causes. You will have to run through the usually network debugging routine:
@@ -861,7 +863,7 @@ Once you are a member, \link{Register Project} allows you to create a new projec
 %\item Is \sqsrc accessible from other sites?\footnote{A handy link to check this is: \url{http://downforeveryoneorjustme.com/squeaksource.com}}
 %\item Can you ping \url{http://squeaksource.com/} from Pharo?:\\
 %   \ct{Socket pingPorts: #(80) on: 'squeaksource.com' timeOutSecs: 30}.
-%\item Can you load packages using \MC from \\\url{http://squeaksource.com/}?
+%\item Can you load packages using \Mont from \\\url{http://squeaksource.com/}?
 %\end{enumerate}
 
 
@@ -874,9 +876,9 @@ Once you are a member, \link{Register Project} allows you to create a new projec
 \index{mcz format|see{Monticello, mcz format}}
 Versions are stored in repositories as binary files.
 These files are commonly call ``mcz files'' as they carry the extension .mcz.
-This stands for ``\MC zip'' since an mcz file is simply a zipped file containing the source code and other meta-data.
+This stands for ``\Mont zip'' since an mcz file is simply a zipped file containing the source code and other meta-data.
 
-\important{An mcz file can be dragged and dropped onto an open image file, just like a change set. \pharo will then prompt you to ask if you want to load the package it contains. \MC will not know which repository the package came from, however, so do not use this technique for development.}
+\important{An mcz file can be dragged and dropped onto an open image file, just like a change set. \pharo will then prompt you to ask if you want to load the package it contains. \Mont will not know which repository the package came from, however, so do not use this technique for development.}
 
 % \sd{but you lose the fact that this is a package so don't do that.}
 
@@ -895,10 +897,10 @@ Mcz files are actually ZIP archives that follow certain conventions. Conceptuall
 A version doesn't contain a full history of the source code. It's a snapshot of the code at a single point in time, with a UUID identifying that snapshot, and a record of the UUIDs of all the previous snapshots it's descended from.
 
 \index{Monticello!snapshot}
-\item \emph{Snapshot}. A Snapshot is a record of the state of the package at a particular time. Each mcz file contains a directory named ``snapshot/''. All the members in this directory contain definitions of program elements, which when combined form the Snapshot. Current versions of \MC only create one member in this directory, called ``source.st''.
+\item \emph{Snapshot}. A Snapshot is a record of the state of the package at a particular time. Each mcz file contains a directory named ``snapshot/''. All the members in this directory contain definitions of program elements, which when combined form the Snapshot. Current versions of \Mont only create one member in this directory, called ``source.st''.
 
 \index{Monticello!dependency}
-\item \emph{Dependencies}. A version may depend on specific version of other packages. An mcz file may contain a ``dependencies/'' directory with a member for each dependency. These members will be named after each package the \MC package depends upon. For example, a \ct{Pier-All} mcz file will contains files named \ct{Pier-Blog} and \ct{Pier-Caching} in its dependencies directory.
+\item \emph{Dependencies}. A version may depend on specific version of other packages. An mcz file may contain a ``dependencies/'' directory with a member for each dependency. These members will be named after each package the \Mont package depends upon. For example, a \ct{Pier-All} mcz file will contains files named \ct{Pier-Blog} and \ct{Pier-Caching} in its dependencies directory.
 \end{itemize}
 
 \paragraph{Source code encoding}
@@ -924,49 +926,49 @@ It basically says that the version \ct{AA-ab.3} has an empty log message, was cr
 %=================================================================
 \section{Chapter Summary}
 
-%This chapter explained how to use \MC and \sqsrc to manage the source code of your application.
+%This chapter explained how to use \Mont and \sqsrc to manage the source code of your application.
 
-This chapter has presented the functionality of \MC in detail.
+This chapter has presented the functionality of \Mont in detail.
 The following points were covered:
 
 \begin{itemize}
-\item \MC are mapped to Smalltalk categories and method protocols.
-	If you add a package called \ct{Foo} to \MC, it will include all classes in categories called \ct{Foo} or starting with \ct{Foo-}. It will also include all methods in those categories, except those in protocols starting with \ct{*}. Finally it will include all \emph{class extension} methods in protocols called \ct{*foo} or starting with \ct{*foo-} anywhere else in the system.
+\item \Mont are mapped to Smalltalk categories and method protocols.
+	If you add a package called \ct{Foo} to \Mont, it will include all classes in categories called \ct{Foo} or starting with \ct{Foo-}. It will also include all methods in those categories, except those in protocols starting with \ct{*}. Finally it will include all \emph{class extension} methods in protocols called \ct{*foo} or starting with \ct{*foo-} anywhere else in the system.
 
-\item When you modify any methods or classes in a package, it will be marked as ``dirty'' in \MC, and can be saved to a repository.
+\item When you modify any methods or classes in a package, it will be marked as ``dirty'' in \Mont, and can be saved to a repository.
 
 \item There are many kinds of repositories, the most popular being HTTP repositories, such as those hosted by \sqsrc.
 
 \index{package-cache}
 \item Saved packages are caches locally in a directory called \ct{package-cache}.
 
-\item The \MC \RI can be used to browse a repository. You can select which versions of packages to load or unload.
+\item The \Mont \RI can be used to browse a repository. You can select which versions of packages to load or unload.
 
 \item You can create a new \emph{branch} of a package by basing a new version on another version which is earlier than the latest version. The \RI keeps track of the ancestry of packages and can tell you which versions belong to separate branches.
 
-\item Branches can be \emph{merged}. \MC offers a fine degree of control over the resolution of conflicts between merged versions. The merged version will have as its ancestor the two versions it was merged from.
+\item Branches can be \emph{merged}. \Mont offers a fine degree of control over the resolution of conflicts between merged versions. The merged version will have as its ancestor the two versions it was merged from.
 
 \item Alternatively, selected changes of a branch can be \emph{backported} to an arbitrary earlier version. This will create a new version that can be merged with any other version that needs those changes. The original backported branch remains independent in this case.
 
-\item \MC can keep track of dependencies between packages. When a package with dependencies to required packages is saved, a new version of that package is created, which then depends on the latest versions of all the required packages.
+\item \Mont can keep track of dependencies between packages. When a package with dependencies to required packages is saved, a new version of that package is created, which then depends on the latest versions of all the required packages.
 
 \item If classes in your packages have class-side \ct{initialize} methods, then \ct{initialize} will be sent to those classes when your package is loaded. This mechanism can be used to perform various checks or start-up actions. A particularly useful application is to add new instance variables to classes for which you are defining extension methods.
 
-\item \MC stores package versions in a special zipped file with the file extension \ct{.mcz}. The mcz file contains a snapshot of the complete source code of that version of your package, as well as files containing other important metadata, such a package dependencies.
+\item \Mont stores package versions in a special zipped file with the file extension \ct{.mcz}. The mcz file contains a snapshot of the complete source code of that version of your package, as well as files containing other important metadata, such a package dependencies.
 
 \item You can drag and drop an mcz file onto your image as a quick way to load it.
 
-%\item \MC is used to manage your packages. \MC is part of the Pharo standard distribution.
+%\item \Mont is used to manage your packages. \Mont is part of the Pharo standard distribution.
 
 %\item \sqsrc is a remote online central repository in which you can store your code.
 
-%\item \MC packages are mapped to categories. 
+%\item \Mont packages are mapped to categories. 
 
-%\item After having created a package in \MC, you may store it in a remote repository such as that offered by \sqsrc.
+%\item After having created a package in \Mont, you may store it in a remote repository such as that offered by \sqsrc.
 
-%\item Merging and backporting are feature provided by \MC that allow changes to cross different version line and to move along a same package version line.
+%\item Merging and backporting are feature provided by \Mont that allow changes to cross different version line and to move along a same package version line.
 
-%\item \MC allows a package version different from the local version to be merged, creating a new branch and changing the local version of your package.
+%\item \Mont allows a package version different from the local version to be merged, creating a new branch and changing the local version of your package.
 %\on{confusing sentence --- not sure what you want to say}
 %\ab{ditto}
 \end{itemize}
@@ -974,7 +976,7 @@ The following points were covered:
 %ACK: Dale Henrichs
 %=================================================================
 
-%\section{Packages in \MC: PackageInfo}
+%\section{Packages in \Mont: PackageInfo}
 
 %The PackageInfo system is a simple, lightweight way of organizing Smalltalk source: it is nothing more than a naming convention, which uses (or abuses) the existing categorization mechanisms to group related code. Let me give you an example: say that you are developing a framework named PharoLink to facilitate using relational databases from Pharo. You will probably have a series of categories to contain all of your classes (e.g., category \cat{PharoLink-Connections} containing the classes \ct{OracleConnection}, \ct{MySQLConnection} and \ct{PostgresConnection})
 %(\cat{PharoLink-Model} containing \ct{DBTable}, \ct{DBRow}  and \ct{DBQuery}) and so on. But not all of your code will reside in these classes\,---\,you may also have, for example, a series of methods to convert objects into an SQL friendly format: \mthind{Object}{asSQL},  \mthind{String}{asSQL} and \mthind{Date}{asSQL}.
@@ -990,7 +992,7 @@ The following points were covered:
 
 %\paragraph{Creating a Working Copy}
 
-%The first thing you need to do is tell \MC about the package you are interested in versioning. You do this by creating a Working Copy.
+%The first thing you need to do is tell \Mont about the package you are interested in versioning. You do this by creating a Working Copy.
 
 %\paragraph{From an .mcz version file}
 %Open a FileList and navigate to the version file. Click on the 'Load' button to load the package into your image.
@@ -1005,7 +1007,7 @@ The following points were covered:
 
 %If you've already got a Working Copy, click on the package name on the left side of the \MCB, so that your repository will be associated with your package. To connect to a repository, click on the '+Repository' button in the \MCB. A pop-up menu will appear, allowing you to select the type of repository you want to connect to.
 
-%The simplest repository type is 'directory.' When you select this type of repository, \MC will open a FileList2 to allow you to select an existing directory in which to store versions. Other types of repositories typically require more configuration, and will open a text pane to allow you to enter it.
+%The simplest repository type is 'directory.' When you select this type of repository, \Mont will open a FileList2 to allow you to select an existing directory in which to store versions. Other types of repositories typically require more configuration, and will open a text pane to allow you to enter it.
 
 %\paragraph{Saving Changes}
 
@@ -1017,11 +1019,11 @@ The following points were covered:
 
 %
 
-%\section{Elements of \MC}
+%\section{Elements of \Mont}
 
 %\paragraph{Packages}
 
-%Packages are the units of versioning used by \MC; the classes and methods they contain are recorded and versioned together. \MC uses the packages defined by PackageInfo.
+%Packages are the units of versioning used by \Mont; the classes and methods they contain are recorded and versioned together. \Mont uses the packages defined by PackageInfo.
 
 %\paragraph{Snapshots}
 
@@ -1035,25 +1037,25 @@ The following points were covered:
 
 %\paragraph{Working Copies}
 
-%Each package in an image that is being versioned with \MC has a Working Copy. The Working Copy represents the Version of the package that is currently active in the image, and which may be modified by the Smalltalk development tools.
+%Each package in an image that is being versioned with \Mont has a Working Copy. The Working Copy represents the Version of the package that is currently active in the image, and which may be modified by the Smalltalk development tools.
 
 %\paragraph{Repositories}
 
-%These are places to store your Versions. Unlike CVS, in which a Package is associated with one Repository, a \MC Package can have Versions in many repositories. When adding a new Repository to use, you can choose from \sqmap Cache, FTP, HTTP (webdav), \sqmap Release, SMTP, or a directory somewhere on your hard drive (or network drive).
+%These are places to store your Versions. Unlike CVS, in which a Package is associated with one Repository, a \Mont Package can have Versions in many repositories. When adding a new Repository to use, you can choose from \sqmap Cache, FTP, HTTP (webdav), \sqmap Release, SMTP, or a directory somewhere on your hard drive (or network drive).
 
 %For example, if I have six versions of package Foo, I could have Foo versions 1-4 being on my local harddrive, and 5-6 being on an ftp server. You could download version 5, make some changes and commit a new version (7) to your WebDAV repository. I can download and merge that version with my own work to produce version 8, which I save to my ftp repository.
 
-%This is a key element of \MC's distributed development model.
+%This is a key element of \Mont's distributed development model.
 
 %\paragraph{Package cache}
 
-%The package-cache is a local repository the \MC uses to cache any package that is loaded into a particular image in a directory. That means it is filled with .mcz files, whether it is a package you create in your image, or one you download from somewhere else.
+%The package-cache is a local repository the \Mont uses to cache any package that is loaded into a particular image in a directory. That means it is filled with .mcz files, whether it is a package you create in your image, or one you download from somewhere else.
 
-%When you use images in different directories you will have multiple package-caches, and may hold many of the same packages. If \MC is loaded into an image which is subsequently moved, \MC will continue to use the package-cache in the directory the image was moved from. Otherwise \MC creates a new package-cache in the local directory. This can become a real mess and so some have used symlinks on unix systems to centralize it.
+%When you use images in different directories you will have multiple package-caches, and may hold many of the same packages. If \Mont is loaded into an image which is subsequently moved, \Mont will continue to use the package-cache in the directory the image was moved from. Otherwise \Mont creates a new package-cache in the local directory. This can become a real mess and so some have used symlinks on unix systems to centralize it.
 
 %\paragraph{Why cache packages at all?}
 
-%When a Version is loaded into the image, it is likely to become the ancestor of new versions that are created as part of the development process. During merges, \MC needs to examine the Snapshots of these ancestors in order to detect conflicts. By caching these ancestors as it loads them, \MC reduces the chance that the necessary version will be unavailable\,---\,either because the repository it's in is no longer available or because it was loaded directly from a file and isn't in any repository.
+%When a Version is loaded into the image, it is likely to become the ancestor of new versions that are created as part of the development process. During merges, \Mont needs to examine the Snapshots of these ancestors in order to detect conflicts. By caching these ancestors as it loads them, \Mont reduces the chance that the necessary version will be unavailable\,---\,either because the repository it's in is no longer available or because it was loaded directly from a file and isn't in any repository.
 
 %\section{The Snapshot Browser}
 
@@ -1068,7 +1070,7 @@ The following points were covered:
 
 %Since the PackageInfo naming conventions are based on those used already by \pharo, it is possible to use it to perform analysis even of code that has not explicitly adapted to work with it. For example, (PackageInfo named: 'Collections') externalSubclasses will return a list of all Collection subclasses outside the Collections categories.
 
-%You can send fileOut to an instance of PackageInfo to get a changeset of the entire package. For more sophisticated versioning of packages, see the \MC project.
+%You can send fileOut to an instance of PackageInfo to get a changeset of the entire package. For more sophisticated versioning of packages, see the \Mont project.
 
 %=========================================================
 \ifx\wholebook\relax\else

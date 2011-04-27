@@ -1,7 +1,125 @@
-%%from the online book
+% $Author: ducasse $
+% $Date: 2009-08-24 10:17:33 +0200 (Mon, 24 Aug 2009) $
+% $Revision: 28563 $
+
+%=================================================================
+\ifx\wholebook\relax\else
+% --------------------------------------------
+% Lulu:
+	\documentclass[a4paper,10pt,twoside]{book}
+	\usepackage[
+		papersize={6.13in,9.21in},
+		hmargin={.75in,.75in},
+		vmargin={.75in,1in},
+		ignoreheadfoot
+	]{geometry}
+	\input{../common.tex}
+	\setboolean{lulu}{true}
+% --------------------------------------------
+% A4:
+%	\documentclass[a4paper,11pt,twoside]{book}
+%	\input{../common.tex}
+%	\usepackage{a4wide}
+% --------------------------------------------
+    \graphicspath{{figures/} {../figures/}}
+	\begin{document}
+\fi
+%=================================================================
+%\renewmessage{\nnbb}[2]{} % Disable editorial comments
+\sloppy
+
+%=================================================================
+%\renewcommand{\nnbb}[2]{#2} % Disable editorial comments
+
+\chapter{Traits at Work}
+
+In this chapter we will show you how to define a trait and apply it to a class. Remember traits are just groups of methods that can be reused in different classes. Traits offer simple reuse in single inheritance world. 
+
+\section{Trait methods are Class user methods}
 
 
-In this chapter we will show you how to define a trait and apply it to a class. Remember traits are just groups of methods that can be reused in different classes.
+\begin{figure}[h]
+\begin{center}
+\includegraphics[width=4cm]{TraitsAtESUG1}
+\caption{Trait methods are injected in class using traits.}
+\end{center}
+\end{figure}
+
+Traits are like macros. 
+
+Methods defined in class take precedence over trait methods.
+
+
+
+\begin{figure}[h]
+\begin{center}
+\includegraphics[width=4cm]{TraitsAtESUG}
+\caption{Class methods take precedence over trait methods}
+\end{center}
+\end{figure}
+
+\begin{figure}[h]
+\begin{center}
+\includegraphics[width=4cm]{TraitsAtESUG3}\hfill
+\includegraphics[width=4cm]{TraitsAtESUG4}
+\caption{When a trait is not used anymore, its methods are not available to class that do not use it anymore.}
+\end{center}
+\end{figure}
+
+\newpage
+\section{And Inheritance?}
+
+Traits do not exist at runtime: you can see them as macro. There is no difference for a method 
+
+
+\begin{figure}[h]
+\begin{center}
+\includegraphics[width=5cm]{TraitsAtESUG2d}\hfill
+\includegraphics[width=5cm]{TraitsAtESUG2c}
+\caption{The fact that a class uses a trait or not has no impact on inheritance.}
+\end{center}
+\end{figure}
+
+
+
+\section{Handling Conflict}
+
+\begin{figure}[h]
+\begin{center}
+\includegraphics[width=5cm]{TraitsAtESUGConflict}
+\caption{The fact that a class uses a trait or not has no impact on inheritance.}
+\end{center}
+\end{figure}
+
+
+\begin{figure}[h]
+\begin{center}
+\includegraphics[width=5cm]{TraitsAtESUGConflictResolved1}\hfill
+\includegraphics[width=5cm]{TraitsAtESUGConflictResolved2}
+\caption{Two ways to solve a conflict: redefining locally a method or removing a method from the composition.}
+\end{center}
+\end{figure}
+
+\section{Examples}
+
+We should move the code below the end of the file in the file :)
+%=========================================================
+\ifx\wholebook\relax\else
+   \bibliographystyle{jurabib}
+   \nobibliography{scg}
+   \end{document}
+\fi
+%=========================================================
+
+
+
+%%% Local Variables: 
+%%% coding: utf-8
+%%% mode: latex
+%%% TeX-master: Lint.tex
+%%% TeX-PDF-mode: t
+%%% End:
+
 
 Scenario: Announcer/Subscriber
 
@@ -27,17 +145,10 @@ makes sure that each time the method announceNewAddedItem is executed on the cre
 
 Open an inspector on the expression above and send the message and you will see the trace in the Transcript. Now how can we take benefit of Trait to reuse Announcer behavior amount classes? First we define a Trait TAnnouncer, second we use it to define the class BulletinBoard.
 
+
 Getting the right tool to edit traits
 
-To code with trait make sure that you loaded the O2 Browser since it supports traits programming.
 
-	Gofer new
-		squeaksource: 'MetacelloRepository';
-		package: 'ConfigurationOfO2';
-		load
-Then execute
-
-	ConfigurationOfO2 loadDefault
 Open it, create a package, create a dummy class (yes there is a bug you cannot access the class/trait template creation method otherwise), select the template. You can also directly type the trait definition
 
 Trait named: #TAnnouncer
@@ -121,11 +232,13 @@ You may want to invoke a method defined in the traits. This is really simple. Ju
 Bulletin>>myOn: anAnnouncementClass do: aValuable
 	Transcript show: 'my on: do:'; cr.
 	^ self on: anAnnouncementClass do: aValuable
+	
 Now the question is how can we invoke a method when we already redefined the method in the class. Imagine that we want to add trace to the method on:do:, we can define it in the class as follow:
 
 Bulletin>>on: anAnnouncementClass do: aValuable
 	Transcript show: 'my on: do:'; cr.
 	^ self on: anAnnouncementClass do: aValuable
+	
 But this definition clearly loops. The solution is to use an alias: i.e., to give a new name to the method coming from the trait and use this new name. To do that we use the expression TAnnouncer @ {#announcerOn:do:->#on:do:}. It means that the method on:do: from the trait TAnnouncer now can be invoked using the selector announcerOn:do:.
 
 Object subclass: #BulletinBoard
