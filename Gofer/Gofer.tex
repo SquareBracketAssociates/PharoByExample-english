@@ -64,8 +64,8 @@ Object subclass: #ButtonsBar
 
 \begin{figure}
 \begin{center}
-\includegraphics[width=8cm]{browserExtension}
-\caption{The browser O2 shows that the class \ct{String} gets the methods \ct{asUrl} and \ct{asUrlRelativeTo:} from the package \ct{network-url}}
+\includegraphics[width=9cm]{browserExtension}
+\caption{The browser shows that the class \ct{String} gets the methods \ct{asUrl} and \ct{asUrlRelativeTo:} from the package \ct{network-url}}
 \end{center}
 \end{figure}
 
@@ -74,7 +74,8 @@ We can get the list of changes of package before publication by simply selecting
 
 \begin{figure}
 \begin{center}
-\includegraphics[width=8cm]{changeBrowser}
+\includegraphics[width=9cm]{changeBrowser}
+\caption{The change browser shows that the method \ct{String>>asUrl} has changed.}
 \end{center}
 \end{figure}
 
@@ -97,7 +98,7 @@ Once \ct{b.1} which was dirty is saved on the server yoursource.com, it is versi
 
 \begin{figure}
 \begin{center}
-\includegraphics[width=7cm]{Architecture3}
+\includegraphics[width=9cm]{Architecture3}
 \caption{(left)Typical setup with clean and dirty packages loaded and cached  --- (right) Package published. \label{fig:archi}}
 \end{center}
 \end{figure}
@@ -135,13 +136,12 @@ MCHttpRepository
 \end{code}
 
 Here is a typical Gofer script: it says that we want to load the package \ct{GoferLinuxMag} from the repository \ct{GoferLinuxMag} that is available on \ct{http://www.squeaksource.com}.
-\sd{we should change the name GoferLinuxMag to something else}
 
 \begin{code}{}
 Gofer new
-    url: 'http://www.squeaksource.com/GoferLinuxMag'	
-    package:'GoferLinuxMag';
-	load
+    url: 'http://www.squeaksource.com/PBE2GoferExample';
+    package:'PBE2GoferExample';
+    load
 \end{code}
 
 When the repository (HTTP or FTP) requires an identification, the message \ct{url:username:password:} is available.  The message \ct{directory:} supports the access to local files. 
@@ -150,8 +150,8 @@ In such a case you do not need to specify the full path as shown with the next s
 
 \begin{code}{}
 Gofer new
-    squeaksource: 'GoferLinuxMag';
-    package: 'GoferLinuxMag'; 
+    squeaksource: 'PBE2GoferExample';
+    package: 'PBE2GoferExample'; 
     load
 \end{code}
 
@@ -161,14 +161,14 @@ Gofer new
 
 \begin{code}{}
 Gofer new
-    "we work on the project GoferLinuxMag"
-    url: 'http://www.squeaksource.com/GoferLinuxMag'	
+    "we work on the project PBE2GoferExample"
+    url: 'http://www.squeaksource.com/PBE2GoferExample'	
     "we specify a user name"
     username: 'pharoUser'
     "we specify a password" 
     password: 'pharoPwd'; 
     "we define the package to be loaded"
-    package:'GoferLinuxMag'; 
+    package:'PBE2GoferExample'; 
     "we disable the lookup of package in the local cache"
     disablePackageCache; 
     "we stop the error raising"
@@ -190,8 +190,8 @@ Once an URL and the option are specified, we should define the packages we want 
 The following example load the version 2 of the package. 
 \begin{code}{}
 Gofer new
-    squeaksource: 'GoferLinuxMag';
-    version: 'GoferLinuxMag-jannik.laval.2';
+    squeaksource: 'PBE2GoferExample';
+    version: 'PBE2GoferExample-janniklaval.1';
     load
 \end{code}
 
@@ -201,8 +201,8 @@ For example the following code will load the latest version of the package saved
 
 \begin{code}{}
 Gofer new
-    squeaksource: 'GoferLinuxMag';
-    package: 'GoferLinuxMag' constraint: [ :version | version author = 'jannik.laval' ];
+    squeaksource: 'PBE2GoferExample';
+    package: 'PBE2GoferExample' constraint: [ :version | version author = 'janniklaval' ];
     load
 \end{code}
 
@@ -234,9 +234,9 @@ Gofer new
     "we will load the latest version of the configuration of Seaside "
     squeaksource: 'MetacelloRepository';
     package: 'ConfigurationOfSeaside30'; 
-    load	
+    load.
 
-"Now to load seaside you need to ask its configuration.
+"Now to load seaside you need to ask its configuration."
 (Smalltalk at: #ConfigurationOfSeaside30) load.
 \end{code}
 
@@ -343,8 +343,8 @@ It is often the case that after a merge, the working copy gets dirty and should 
 
 \begin{code}{}
 Gofer new
-    squeaksource: 'GoferLinuxMag';
-    package: 'GoferLinuxMag';
+    squeaksource: 'PBE2GoferExample';
+    package: 'PBE2GoferExample';
     merge
 \end{code}
     
@@ -360,10 +360,10 @@ the messages \ct{commit} and \ct{commit:}. The second one is expecting a comment
 \begin{code}{}
 Gofer new
     "We save the package in the repository"
-    squeaksource: 'GoferLinuxMag';
-    package: 'GoferLinuxMag';
+    squeaksource: 'PBE2GoferExample';
+    package: 'PBE2GoferExample';
     "We comments the changes and save"
-    commit: 'changed a lot of things'
+    commit: 'I try to use the message commit: '
 \end{code}    
 
 
@@ -376,8 +376,8 @@ Both return a list of changes.
 
 \begin{code}{}
 Gofer new
-    squeaksource: 'GoferLinuxMag';
-    package: 'GoferLinuxMag'; 
+    squeaksource: 'PBE2GoferExample';
+    package: 'PBE2GoferExample'; 
     "We check that we will publish only our changes by comparing local changes versus the packages published on the server"
     localChanges
 \end{code}
@@ -386,9 +386,9 @@ Using the messages \ct{browseLocalChanges} and \ct{browseRemoteChanges}, it is p
 
 \begin{code}{}
 Gofer new
-    squeaksource: 'GoferLinuxMag';
-    "on ajoute la dernière version de GoferLinuxMag"
-    package: 'GoferLinuxMag';
+    squeaksource: 'PBE2GoferExample';
+    "on ajoute la dernière version de PBE2GoferExample"
+    package: 'PBE2GoferExample';
     "on navigue dans les changements effectués sur le serveur"
     browseRemoteChanges		
 \end{code}    
@@ -400,8 +400,8 @@ The message \ct{unload} unloads from the image the packages. Note that using the
 The following code unloads the packages and its classes from the current image.
 \begin{code}{}
 Gofer new
-    squeaksource: 'GoferLinuxMag';
-    package: 'GoferLinuxMag';
+    squeaksource: 'PBE2GoferExample';
+    package: 'PBE2GoferExample';
     unload
 \end{code}    
 
@@ -415,8 +415,8 @@ The message \ct{fetch} copies from the remote server the packages that are missi
 
 \begin{code}{}
 Gofer new
-    squeaksource: 'GoferLinuxMag';
-    package: 'GoferLinuxMag';
+    squeaksource: 'PBE2GoferExample';
+    package: 'PBE2GoferExample';
     fetch
 \end{code}    
 
@@ -426,8 +426,8 @@ The message \ct{push} performs the inverse operation. It published to the remote
 
 \begin{code}{}
 Gofer new
-    squeaksource: 'GoferLinuxMag';
-    package: 'GoferLinuxMag';
+    squeaksource: 'PBE2GoferExample';
+    package: 'PBE2GoferExample';
     push
 \end{code}    
 
@@ -435,14 +435,13 @@ As a pattern, we always keep in our local cache the copies of all the versions o
 
 With these two messages, it is easy to write a script \ct{sync} that synchronize local and remote repositories. 
 \begin{code}{}
-sync
- Gofer new
-     squeaksource: 'GoferLinuxMag';
-     package: 'GoferLinuxMag';
-     push
- Gofer new
-     squeaksource: 'GoferLinuxMag';
-     package: 'GoferLinuxMag';
+Gofer new
+     squeaksource: 'PBE2GoferExample';
+     package: 'PBE2GoferExample';
+     push.
+Gofer new
+     squeaksource: 'PBE2GoferExample';
+     package: 'PBE2GoferExample';
      fetch
 \end{code}
 
