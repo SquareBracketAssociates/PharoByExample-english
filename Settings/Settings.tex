@@ -651,9 +651,11 @@ Once this method is compiled, open the Setting Browser and popup the \textit{Sty
 %\subsection{Producing a style from the Setting Browser}
 %\apl{How to automatically produce a style skeleton}
 
-%\section{Extending the setting browser}
-%\label{sec:ExtendingTheSettingsBrowser}
-%\apl{How to add new setting node kinds}
+\section{Extending the \setbrowser}
+\label{sec:ExtendingTheSettingsBrowser}
+As explained in the section \ref{sec:browsing-settings}, the \setbrowser is by default able to manage preference values of a limited set of types. These default possibilities are generally enough. But there are some situation where it could be very helpful to be able to handle more complex preference values. As an example, let focus on the text selection preferences. We have the primary selection and two other kinds of text selection, the secondary selection and the find and replace selection. These two last kinds of selection can be unplugged and for all selections, a background and a text color can be chosen. Each of this 
+
+
 
 %\section{Design of the Settings Framework}
 %\apl{To be kept but remove squeak ref and review some points}
@@ -680,7 +682,7 @@ Once this method is compiled, open the Setting Browser and popup the \textit{Sty
 
 \section{Conclusion}
 
-We presented Settings a new framework to manage preference in a modular way. The key point of Settings is that it supports a modular flow of control: a package is responsible to define customization points and can use them locally, then using Settings it is possible to describe such customization points. Finally the Settings Browser collects such setting descriptions and present them to the user. The flow is then from Settings Browser to the customized packages. 
+We presented Settings, a new framework to manage preferences in a modular way. The key point of Settings is that it supports a modular flow of control: a package is responsible to define customization points and can use them locally, then using Settings it is possible to describe such customization points. Finally the Settings Browser collects such setting descriptions and present them to the user. The flow is then from the \setbrowser to the customized packages. 
 
 %=========================================================
 \ifx\wholebook\relax\else
