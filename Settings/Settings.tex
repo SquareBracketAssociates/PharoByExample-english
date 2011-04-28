@@ -27,18 +27,16 @@
 %	\usepackage{a4wide}
 % --------------------------------------------
     \graphicspath{{figures/} {../figures/}}
-    \newcommand{\apl}[1]{\nnbb{Alain}{#1}} % Plantec
-    \newcommand{\setbrowser}{\textit{Settings Browser}\xspace}
 	\begin{document}
 \fi
 %=================================================================
 %\renewmessage{\nnbb}[2]{} % Disable editorial comments
 \sloppy
 %=================================================================
-
+\newcommand{\apl}[1]{\nnbb{Alain}{#1}} % Plantec
+\newcommand{\setbrowser}{\textit{Settings Browser}\xspace}
 
 \chapter{The Settings Framework}
-\chapterauthor{\authoralain{}}
 
 As an application matures it often needs to provide variations such as
 a default selection color, a default font or a default font size.
@@ -156,8 +154,7 @@ A setting is declared by a particular \emph{class} method that should be  implem
 The argument, \ct{aBuilder}, serves as an API or facade for building setting declarations. The pragma allows the \setbrowser to dynamically discover current setting declarations.
 
 The important point is that a setting declaration should be package specific. It means that each package is responsible for the declaring of its own settings. For a particular package, specific settings are declared by one or several of its classes or a companion package. There is no global setting defining class or package (as it was the case in Pharo1.0). The direct benefit is that when the package is loaded, then its settings are automatically loaded and that when a package is unloaded, then its settings are automatically unloaded. In addition a Setting declaration should not refer to any Setting class but to the builder argument. This makes sure that your application is not dependent from Settings and that you will be able to remove Setting if you want to define extremely small footprint applications. 
-
-\subsection{A simple setting}
+\paragraph{}
 Let's take the example of the \ct{caseSensitiveFinds} preference. It is a boolean preference which is used for text searching. If it is \ct{true}, then text finding is case sensitive. This preference is stored in the \ct{CaseSensitiveFinds} class variable of the class \ct{TextEditor}. Its value can be queried and changed by, respectively, \ct{TextEditor class>>caseSensitiveFinds} and \ct{TextEditor class>>caseSensitiveFinds:} given below:
 \begin{code}{}
 TextEditor class>>caseSensitiveFinds
@@ -189,7 +186,7 @@ CodeHolderSystemSettings class>>caseSensitiveFindsSettingsOn: aBuilder
 
 Now, let's study this setting declaration in details. 
 
-\subsubsection{The header}
+\subsection{The header}
 \begin{code}{}
 CodeHolderSystemSettings class>>caseSensitiveFindsSettingsOn: !\textbf{aBuilder}!
    ...
@@ -198,7 +195,7 @@ This class method is declared in the class \ct{CodeHolderSystemSettings}. This c
 
 This method takes a builder as argument. This object serves as an API ors facade for setting buildings: the contents of the method essentially consists in sending messages to the builder to declare and organize a sub-tree of settings.
 
-\subsubsection{The pragma}
+\subsection{The pragma}
 A setting declaration is tagged with the \ct{<systemsettings>} pragma.
 \begin{code}{}
 CodeHolderSystemSettings class>>caseSensitiveFindsSettingsOn: aBuilder
@@ -207,7 +204,7 @@ CodeHolderSystemSettings class>>caseSensitiveFindsSettingsOn: aBuilder
 \end{code}
 In fact, when the settings browser is opened, it first collects all settings declarations by searching all methods with the \ct{<systemsettings>} pragma. In addition, if you compile a setting declaration method while a \setbrowser is opened then it is automatically updated with the new setting. 
 
-\subsubsection{The setting configuration}
+\subsection{The setting configuration}
 A setting is declared by sending the message \ct{setting:} to the builder with an identifier passed as argument. Here the identifier is \ct{#caseSensitiveFinds}. Here is an example: 
 \begin{code}{}
 CodeHolderSystemSettings class>>caseSensitiveFindsSettingsOn: aBuilder
@@ -266,7 +263,7 @@ Don't forget to send \ct{translated} to the label and the description strings, i
 
 Concerning the classification and the settings tree organization, there are several ways to improve it and this point is fully detailed in the next section.
 
-\subsubsection{More about the target}
+\subsection{More about the target}
 The target of a setting is the receiver for getting and changing the preference value. Most of the time, it is a class. Indeed, typically, a preference value is stored in a class variable. Thus, class side methods are used as accessors for accessing the setting. 
 
 But the receiver can also be a singleton object. This is currently the case for many preferences. As an example, the Free Type fonts preferences, they are all stored in the instance variables of a \ct{FreeTypeSettings} singleton. Thus, here, the receiver is the \ct{FreeTypeSettings} instance that you can get by evaluating the following expression:
@@ -287,6 +284,23 @@ This is simple but unfortunately, declaring such a singleton target like this is
 	target: FreeTypeSettings;
 	!\textbf{targetSelector:}! #current;
 	label: 'Glyph contrast' translated;
+    ...
+\end{code}
+
+\subsection{More about default values}
+The way the \setbrowser build a setting input widget depends on the actual value type of a preference. Having $nil$ as a value for a preference is a problem for the \setbrowser because it can't figure out which input widget to use.
+So, basically, in order to be properly shown with the good input widget, a preference must always be set with a non $nil$ value.
+You can set a default value to a preference by initializing it as usual, with a \#initialize method or with a lazy initialization programed in the accessor method of the preference. 
+
+Regarding the \setbrowser, the best way is the lazy initialization (see the example of the \#caseSensitiveFinds preference given in the section \ref{sec:DeclaringASetting}).
+Indeed, as explained in the section~\ref{sec:browsing-settings}, from the \setbrowser contextual menu, you can reset a preference value to its default one or globally reset all preference values. In fact it is done by setting the preference value to reset to $nil$. As a consequence, the preference is automatically set to its default value as soon as it is get by using its dedicated accessor.
+
+It is not always possible to change the way an accessor is implemented. A reason for that could be that the preference accessor is maintained within another package which you are'nt allowed to change. As shown in the example below, as a workaround, you can indicate a default value from the declaration of the setting:
+\begin{code}{}
+CodeHolderSystemSettings class>>caseSensitiveFindsSettingsOn: aBuilder
+	<systemsettings>
+	(aBuilder setting: #caseSensitiveFinds)
+		!\textbf{default:}! true;
     ...
 \end{code}
 
