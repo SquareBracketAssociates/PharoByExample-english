@@ -408,7 +408,7 @@ A tool a bit less crude than \ct{MessageTally} is \ct{TimeProfileBrowser}. It sh
 
 \begin{figure}
 	\begin{center}
-	\includegraphics[width=.8\linewidth]{TimeProfiler}
+	\includegraphics[width=.9\linewidth]{TimeProfiler}
 	\caption{TimeProfiler uses MessageTally and navigates in executed methods.
 %	\ct{TimeProfileBrowser spyOn:  [20 timesRepeat: [Transcript show: 100 factorial printString]]}
 }
@@ -470,7 +470,35 @@ The complete result is:
 \ja{incr is bugus}
 \begin{code}
 
- - 24038 tallies, 24081 msec.**Tree**--------------------------------Process: (40s)  535298048: nil--------------------------------29.7% {7152ms} primitives11.5% {2759ms} ByteString(SequenceableCollection)>>copyReplaceFrom:to:with:  5.9% {1410ms} primitives  5.6% {1349ms} ByteString class(String class)>>new:**Leaves**29.7% {7152ms} ByteString(SequenceableCollection)>>,9.2% {2226ms} SmallInteger(Integer)>>timesRepeat:5.9% {1410ms} ByteString(SequenceableCollection)>>copyReplaceFrom:to:with:5.6% {1349ms} ByteString class(String class)>>new:4.4% {1052ms} UndefinedObject>>DoIt**Memory**	old			+0 bytes	young		+9,536 bytes	used		+9,536 bytes	free		-9,536 bytes**GCs**	full			0 totalling 0ms (0.0% uptime)	incr		13875 totalling 3,122,594ms (12967.0% uptime), avg 225.0ms	tenures		0	root table	0 overflows
+ - 24038 tallies, 24081 msec.
+
+**Tree**
+--------------------------------
+Process: (40s)  535298048: nil
+--------------------------------
+29.7% {7152ms} primitives
+11.5% {2759ms} ByteString(SequenceableCollection)>>copyReplaceFrom:to:with:
+  5.9% {1410ms} primitives
+  5.6% {1349ms} ByteString class(String class)>>new:
+
+**Leaves**
+29.7% {7152ms} ByteString(SequenceableCollection)>>,
+9.2% {2226ms} SmallInteger(Integer)>>timesRepeat:
+5.9% {1410ms} ByteString(SequenceableCollection)>>copyReplaceFrom:to:with:
+5.6% {1349ms} ByteString class(String class)>>new:
+4.4% {1052ms} UndefinedObject>>DoIt
+
+**Memory**
+	old			+0 bytes
+	young		+9,536 bytes
+	used		+9,536 bytes
+	free		-9,536 bytes
+
+**GCs**
+	full			0 totalling 0ms (0.0% uptime)
+	incr		13875 totalling 3,122,594ms (12967.0% uptime), avg 225.0ms
+	tenures		0
+	root table	0 overflows
 \end{code}
 
 The first line gives the overall execution time and the number of samplings (also called \emph{tallies}, we will come back on sampling at the end of the chapter). 
@@ -481,7 +509,14 @@ The \ct{**Tree**} section represents the execution tree per processes. The tree 
 
 \begin{code}
 
-**Tree**--------------------------------Process: (40s)  535298048: nil--------------------------------29.7% {7152ms} primitives11.5% {2759ms} ByteString(SequenceableCollection)>>copyReplaceFrom:to:with:  5.9% {1410ms} primitives  5.6% {1349ms} ByteString class(String class)>>new:
+**Tree**
+--------------------------------
+Process: (40s)  535298048: nil
+--------------------------------
+29.7% {7152ms} primitives
+11.5% {2759ms} ByteString(SequenceableCollection)>>copyReplaceFrom:to:with:
+  5.9% {1410ms} primitives
+  5.6% {1349ms} ByteString class(String class)>>new:
 \end{code}
 
 This tree shows that 11.5\% of the total execution time is spent in the method \ct{SequenceableCollection>>copyReplaceFrom:to:with:}. This method is called when concatenating character strings using the message comma (\ct{,}), itself indirectly invoking \ct{new:} and some virtual machine primitives.
@@ -499,7 +534,12 @@ The \ct{** Leaves**} part lists \emph{leaf methods} for the code block that has 
 
 \begin{code}
 
-**Leaves**29.7% {7152ms} ByteString(SequenceableCollection)>>,9.2% {2226ms} SmallInteger(Integer)>>timesRepeat:5.9% {1410ms} ByteString(SequenceableCollection)>>copyReplaceFrom:to:with:5.6% {1349ms} ByteString class(String class)>>new:4.4% {1052ms} UndefinedObject>>DoIt
+**Leaves**
+29.7% {7152ms} ByteString(SequenceableCollection)>>,
+9.2% {2226ms} SmallInteger(Integer)>>timesRepeat:
+5.9% {1410ms} ByteString(SequenceableCollection)>>copyReplaceFrom:to:with:
+5.6% {1349ms} ByteString class(String class)>>new:
+4.4% {1052ms} UndefinedObject>>DoIt
 \end{code}
 
 %Some leaf methods may not appear in the information tree described above. Profiling is obtained by regularly introspecting the method call stack. The information tree is a method call arborescence. A method for which the callers cannot be identified are not part of the tree. This happens when the control flow is modified by other means than a simple method call: 
@@ -548,7 +588,11 @@ An example of the memory analyze realized by MessageTally:
 
 \begin{code}
 
-**Memory**	old			+0 bytes	young		+9,536 bytes	used		+9,536 bytes	free		-9,536 bytes
+**Memory**
+	old			+0 bytes
+	young		+9,536 bytes
+	used		+9,536 bytes
+	free		-9,536 bytes
 \end{code}
 
 \ct{MessageTally} describes the memory usage using four values:
@@ -575,7 +619,11 @@ The \ct{**GCs**} provides statistics about the garbage collector. An example of 
 \ja{in the GC results bellow, there are strange values for incr information \%}
 \begin{code}
 
-**GCs**	full			0 totalling 0ms (0.0% uptime)	incr		13875 totalling 3,122,594ms (12967.0% uptime), avg 225.0ms	tenures		0	root table	0 overflows
+**GCs**
+	full			0 totalling 0ms (0.0% uptime)
+	incr		13875 totalling 3,122,594ms (12967.0% uptime), avg 225.0ms
+	tenures		0
+	root table	0 overflows
 \end{code}
 
 Four values are available.
@@ -625,7 +673,28 @@ MessageTally spyOn:
 \ja{here again, there is a strange value for incr information}
 \begin{code}{}
 
- - 807 tallies, 807 msec.**Tree**--------------------------------Process: (40s)  535298048: nil--------------------------------**Leaves**33.0% {266ms} SmallInteger(Integer)>>timesRepeat:21.2% {171ms} UndefinedObject>>DoIt**Memory**	old			+0 bytes	young		-18,272 bytes	used		-18,272 bytes	free		+18,272 bytes**GCs**	full			0 totalling 0ms (0.0% uptime)	incr		1168 totalling 75,789ms (9391.0% uptime), avg 65.0ms	tenures		0	root table	0 overflows
+ - 807 tallies, 807 msec.
+
+**Tree**
+--------------------------------
+Process: (40s)  535298048: nil
+--------------------------------
+
+**Leaves**
+33.0% {266ms} SmallInteger(Integer)>>timesRepeat:
+21.2% {171ms} UndefinedObject>>DoIt
+
+**Memory**
+	old			+0 bytes
+	young		-18,272 bytes
+	used		-18,272 bytes
+	free		+18,272 bytes
+
+**GCs**
+	full			0 totalling 0ms (0.0% uptime)
+	incr		1168 totalling 75,789ms (9391.0% uptime), avg 65.0ms
+	tenures		0
+	root table	0 overflows
 \end{code}
 
 \paragraph{Replacing \ct{nextPut:} by \ct{nextPutAll:}} We will now study an alternative way to add characters in a stream. The \ct{nextPut: aCharacter} method accepts a single character. Adding a string of characters is realized via \ct{nextPutAll: aString}.
@@ -643,7 +712,30 @@ The first intuition tells us that adding a single character is faster than addin
 
 \begin{code}{}
 
- - 1883 tallies, 1883 msec.**Tree**--------------------------------Process: (40s)  535298048: nil--------------------------------20.8% {392ms} primitives**Leaves**22.7% {427ms} UndefinedObject>>DoIt20.8% {392ms} WriteStream>>nextPutAll:18.4% {347ms} SmallInteger(Integer)>>timesRepeat:**Memory**	old			+0 bytes	young		+127,920 bytes	used		+127,920 bytes	free		-127,920 bytes**GCs**	full			0 totalling 0ms (0.0% uptime)	incr		1177 totalling 246,100ms (13070.0% uptime), avg 209.0ms	tenures		0	root table	0 overflows
+ - 1883 tallies, 1883 msec.
+
+**Tree**
+--------------------------------
+Process: (40s)  535298048: nil
+--------------------------------
+20.8% {392ms} primitives
+
+**Leaves**
+22.7% {427ms} UndefinedObject>>DoIt
+20.8% {392ms} WriteStream>>nextPutAll:
+18.4% {347ms} SmallInteger(Integer)>>timesRepeat:
+
+**Memory**
+	old			+0 bytes
+	young		+127,920 bytes
+	used		+127,920 bytes
+	free		-127,920 bytes
+
+**GCs**
+	full			0 totalling 0ms (0.0% uptime)
+	incr		1177 totalling 246,100ms (13070.0% uptime), avg 209.0ms
+	tenures		0
+	root table	0 overflows
 \end{code}
 
 
@@ -669,11 +761,15 @@ The time of the profiled execution is also an important quality factor for the r
 \section{Counting messages}
 The profiling we have realized so far is focused on method execution time. The advantage of method call stack sampling is that it has a relatively low impact on the execution. The disadvantage is the relatively imprecision of the result. Even though the obtained results are sufficient in most of the case, they are always an approximation of the real execution.
 
-MessageTally allows for a profiling based on program interpretation. The idea is to use a bytecode interpreter instead of execution sampler. The main advantage is the exactness of the result. The information obtained with the message \ct{tallySends:} indicates the amount of time each method involved in a computation has been executed. \figref{sendTally} gives the result obtained by executing \ct{MessageTally tallySends:[ 1000 timesRepeat:  [3.14159 printString]]}.
+MessageTally allows for a profiling based on program interpretation. The idea is to use a bytecode interpreter instead of execution sampler. The main advantage is the exactness of the result. The information obtained with the message \ct{tallySends:} indicates the amount of time each method involved in a computation has been executed. \figref{sendTally} gives the result obtained by executing 
+
+\begin{code}{}
+MessageTally tallySends:[ 1000 timesRepeat:  [3.14159 printString]].
+\end{code}
 
 \begin{figure}
 	\begin{center}
-	\includegraphics[width=.8\linewidth]{sendTally}
+	\includegraphics[width=.9\linewidth]{sendTally}
 	\caption{All executed messages during an execution.}
 	\figlabel{sendTally}
 	\end{center}
