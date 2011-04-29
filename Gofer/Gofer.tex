@@ -37,21 +37,21 @@
 
 \chapter{Gofer: Scripting package loading}
 
-Pharo proposes powerful tools to manage source code such as semantics-based merging, three diff-merge, and a git-like distributed versioning system. In particular as presented in the Monticello Chapter, Pharo uses a package system named Monticello. In this chapter after a first reminder of the key aspects of Monticello we will show how we can script package using Gofer. Gofer is a simple API for Monticello. It is used by Metacello, the language to manage package maps that we present in Chapter Metacello. 
+Pharo proposes powerful tools to manage source code such as semantics-based merging, tree diff-merge, and a git-like distributed versioning system. In particular as presented in the Monticello Chapter, Pharo uses a package system named Monticello. In this chapter after a first reminder of the key aspects of Monticello we will show how we can script package using Gofer. Gofer is a simple API for Monticello. It is used by Metacello, the language to manage package maps that we present in Chapter Metacello. 
 
 
 
 \section{Preamble: Package management system}
 
 \paragraph{Packages.}
-A package is a list of class and method definition. In Pharo a package is not associated with a namespace. A package can extend class defined in other package: it measn that a package, for example \ct{Network} can add methods to the class \ct{String}, eventhough \ct{String} is not defined in the package \ct{Network}. Class extensions support the definition of layers and allows for the natural definition of packages. 
+A package is a list of class and method definition. In Pharo a package is not associated with a namespace. A package can extend a class defined in another package: it means that a package, for example \ct{Network} can add methods to the class \ct{String}, even though \ct{String} is not defined in the package \ct{Network}. Class extensions support the definition of layers and allows for the natural definition of packages. 
 
 
 \begin{figure}
 \begin{center}\includegraphics[width=6cm]{classExtension}\end{center}
 \end{figure}
 
-To define a package, you simply need to declare one using the Monticello browswer and to define a class extensions, it is enough to define a method with a category starting with '*' followed by the package name (here \ct{'*-network'}). 
+To define a package, you simply need to declare one using the Monticello browser and to define a class extensions, it is enough to define a method with a category starting with `*' followed by the package name (here \ct{'*network'}). 
 
 \begin{code}{}
 Object subclass: #ButtonsBar
@@ -69,7 +69,7 @@ Object subclass: #ButtonsBar
 \end{center}
 \end{figure}
 
-We can get the list of changes of package before publication by simply selecting the package and clicking on the \button{Changes} of the Monticello Browser. 
+We can get the list of changes of a package before publication by simply selecting the package and clicking on the \button{Changes} of the Monticello Browser. 
 
 
 \begin{figure}
@@ -80,9 +80,9 @@ We can get the list of changes of package before publication by simply selecting
 \end{figure}
 
 \paragraph{Package Versioning System.}
-A version management system helps for version storage and keeps an history of system evolution. Moreover, it provides the management of concurrent accesses to a source code repository. It keep traces of all saved changes and allows us to collaborate with other engineers. More a project grows, more it is important to use a version management system.
+A version management system helps for version storage and keeps an history of system evolution. Moreover, it provides the management of concurrent accesses to a source code repository. It keeps traces of all saved changes and allows us to collaborate with other engineers. More a project grows, more it is important to use a version management system.
 
-Monticello defines the package system and version management of Pharo. In Pharo, classes (superclass change, instance variable changes \ldots) and methods (adding, changing, deleting) are elementary entities which are versioned by Monticello. A source is an HTTP server which allows us to save projects (particularly packages) managed by Monticello. This is the equivalent of a forge: It provides the management of contributors and their status, visibility information, a wiki with RSS feed. A source open to everybody is available at \url{http://www.squeaksource.com/}.
+Monticello defines the package system and version management of Pharo. In Pharo, classes and methods are elementary entities which are versioned by Monticello when actions were done (superclass change, instance variable changes, methods adding, changing, deleting \ldots). A source is an HTTP server which allows us to save projects (particularly packages) managed by Monticello. This is the equivalent of a forge: It provides the management of contributors and their status, visibility information, a wiki with RSS feed. A source open to everybody is available at \url{http://www.squeaksource.com/}.
 
 
 \paragraph{Distributed architecture of Monticello.} Monticello is a distributed version control management system like git but dedicated to Smalltalk. Monticello manipulates source code entities such as classes, methods,... It is then possible to manage local and distributed code servers. Gofer allows one to script such servers to publish, download and synchronize servers. 
@@ -135,7 +135,7 @@ MCHttpRepository
     password: 'pharoPwd'
 \end{code}
 
-Here is a typical Gofer script: it says that we want to load the package \ct{GoferLinuxMag} from the repository \ct{GoferLinuxMag} that is available on \ct{http://www.squeaksource.com}.
+Here is a typical Gofer script: it says that we want to load the package \ct{PBE2GoferExample} from the repository \ct{PBE2GoferExample} that is available on \ct{http://www.squeaksource.com}.
 
 \begin{code}{}
 Gofer new
@@ -145,19 +145,6 @@ Gofer new
 \end{code}
 
 When the repository (HTTP or FTP) requires an identification, the message \ct{url:username:password:} is available.  The message \ct{directory:} supports the access to local files. 
-Since we often use the same public servers, there are some shortcuts in the API to use them. For example, \ct{squeaksource:} is a shortcut for \ct{http://www.squeaksource.com}, \ct{wiresong:} for \ct{http://source.wiresong.ca/} and \ct{gemsource:} for \ct{http://seaside.gemstone.com/ss/}.
-In such a case you do not need to specify the full path as shown with the next snippet:
-
-\begin{code}{}
-Gofer new
-    squeaksource: 'PBE2GoferExample';
-    package: 'PBE2GoferExample'; 
-    load
-\end{code}
-
-
-
-
 
 \begin{code}{}
 Gofer new
@@ -177,7 +164,24 @@ Gofer new
     load.
 \end{code}
 
-In addition, when gofer does not succeed to load a package in a specified URL, it looks in the local cache which is normally at the root of your image. It is possible to force Gofer not to use the cache using the message \ct{disablePackageCache} or to use it using the message \ct{enbalePackageCache}.
+
+Since we often use the same public servers, there are some shortcuts in the API to use them. For example, \ct{squeaksource:} is a shortcut for \ct{http://www.squeaksource.com}, \ct{wiresong:} for \ct{http://source.wiresong.ca/} and \ct{gemsource:} for \ct{http://seaside.gemstone.com/ss/}.
+In such a case you do not need to specify the full path as shown with the next snippet:
+
+\begin{code}{}
+Gofer new
+    squeaksource: 'PBE2GoferExample';
+    package: 'PBE2GoferExample'; 
+    load
+\end{code}
+
+
+
+
+
+
+
+In addition, when Gofer does not succeed to load a package in a specified URL, it looks in the local cache which is normally at the root of your image. It is possible to force Gofer not to use the cache using the message \ct{disablePackageCache} or to use it using the message \ct{enablePackageCache}.
 
 In a similar manner, Gofer returns an error when one of the repositories is not reachable. We can instruct it to ignore such errors using the message \ct{disableRepositoryErrors}. To enable it the message we can use the message \ct{enableRepositoryErrors}.
 
@@ -197,7 +201,7 @@ Gofer new
 
 We can also specify some constraints to identify packages using the message \ct{package: aString constraint: aBlock} to pass a block. 
 
-For example the following code will load the latest version of the package saved by the developer named \ct{jannik.laval}.
+For example the following code will load the latest version of the package saved by the developer named \ct{janniklaval}.
 
 \begin{code}{}
 Gofer new
@@ -227,7 +231,7 @@ Gofer new
 %Pay attention that the last expression will load the complete seaside application, \ie around 70 packages. 
 
 \subsection{Loading several packages}
-We can load several packages from different servers. To show you a concrete example, you have to load first the configuration of Seaside using its configuration.
+We can load several packages from different servers. To show you a concrete example, you have to load first the configuration of Seaside using its Metacello configuration.
 
 \begin{code}{}
 Gofer new
@@ -242,7 +246,7 @@ Gofer new
 
 Pay attention that the last expression will load the complete seaside application, \ie around 70 packages, so it can take a moment.
 
-The following code snippet loads multiple packages from different servers.  The loading order is respected: the script loads first \ct{Pier-All} then \ct{Picasa-Model} and finally  \ct{Picasa-Seaside}.
+The following code snippet loads multiple packages from different servers.  The loading order is respected: the script loads first \ct{Pier-All}, then \ct{Picasa-Model}, and finally  \ct{Picasa-Seaside}.
 
 \begin{code}{}
 Gofer new 		
@@ -298,7 +302,7 @@ Gofer new
     ...
 \end{code}
 
-To work on a local directority, the message \ct{directory:} followed by the absolute path of the directory should be used. Here we specify that the directory to use is reachable at \ct{/home/pharoer/hacking/MCPackages}
+To work on a local directory, the message \ct{directory:} followed by the absolute path of the directory should be used. Here we specify that the directory to use is reachable at \ct{/home/pharoer/hacking/MCPackages}
 
 \begin{code}{}
 Gofer new
@@ -313,7 +317,7 @@ Gofer new
     ...
     \end{code}
 
-Once a gofer instance is parametrized, we can send it messages to perform differenct actions. 
+Once a Gofer instance is parametrized, we can send it messages to perform different actions. 
 Here is a list of the possible actions. Some of them are described later. 
 
 \begin{tabular}{lp{8cm}}
@@ -369,7 +373,7 @@ Gofer new
 
 \paragraph{The \ct{localChanges} and \ct{remoteChanges} operations.}
 
-Before loading or saving a verion, it is often useful to verify the changes 
+Before loading or saving a version, it is often useful to verify the changes 
 made locally or on the server. The message \ct{localChanges}  shows the changes between the last loaded version and the working copy. 
 The \ct{remoteChanges} shows the differences between the working copy and the last published version on the server. 
 Both return a list of changes. 
