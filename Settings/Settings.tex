@@ -651,9 +651,42 @@ Once this method is compiled, open the Setting Browser and popup the \textit{Sty
 %\subsection{Producing a style from the Setting Browser}
 %\apl{How to automatically produce a style skeleton}
 
-%\section{Extending the setting browser}
-%\label{sec:ExtendingTheSettingsBrowser}
-%\apl{How to add new setting node kinds}
+\section{Extending the \setbrowser}
+\label{sec:ExtendingTheSettingsBrowser}
+As explained in the section \ref{sec:browsing-settings}, the \setbrowser is by default able to manage a simple preference types. These default possibilities are generally enough. But there are some situations where it can be very helpful to be able to handle more complex preference values. 
+
+As an example, let focus on the text selection preferences. We have the primary selection and three other optional kinds of text selection, the secondary selection, the find and replace selection and the selection bar. For all selections, a background color can be set. For the primary, the secondary and the find and replace selection, a text color can also be chosen.
+
+\subsection{Declaring selection settings individually}
+So far, according to the default possibilities, a setting can be declared for each of the text selection characteristics so that each corresponding preference can be changed individually from the \setbrowser. Settings declared for a particular selection kind can be grouped together as children of a setting group. As an immediate improvement, for an optional text selection, a boolean setting can be used instead of a simple group.
+
+As an example, let's take the secondary selection. This text selection kind is optional and one can set a background and a text color for it. Corresponding preferences are declared as instance variables of \ct{ThemeSettings}. Their values can be read and changed from the current theme by getting its associated \ct{ThemeSettings} instance. Thus, the two color settings can be declared as children of the \ct{#useSecondarySelection} boolean setting as given below:
+\begin{code}{}
+(aBuilder setting: #useSecondarySelection)
+	target: UITheme;
+	targetSelector: #currentSettings;
+	label: 'Use the secondary selection' translated;
+	with: [
+		(aBuilder setting: #secondarySelectionColor)
+			label: 'Secondary selection color' translated.
+		(aBuilder setting: #secondarySelectionTextColor)
+			label: 'Secondary selection text color' translated].
+\end{code}
+The figure~\figref{fig:secondarySelectionColorV1} shows these setting declarations in the \setbrowser. The look and feel is clean but in fact two observations can be made:
+\begin{enumerate}
+\item it takes three lines for each selection kind, this is a little bit uncomfortable because the view for one selection takes a lot of vertical space,
+\item the underlying model is not explicitly designed, the settings for one selection kind are grouped together in the \setbrowser but corresponding preference values are declared as separated instances variables of \ct{ThemeSettings}. In the next section we see how to improve this first solution with a better design.
+\end{enumerate}
+\begin{figure}[tbh]
+\begin{center}
+\includegraphics[scale=0.45]{secondarySelectionColorV1}
+\caption{The secondary selection settings declared with basic setting values}
+\figlabel{fig:secondarySelectionColorV1}
+\end{center}
+\end{figure}
+
+\subsection{An improved selection preference design}
+
 
 %\section{Design of the Settings Framework}
 %\apl{To be kept but remove squeak ref and review some points}
@@ -680,7 +713,7 @@ Once this method is compiled, open the Setting Browser and popup the \textit{Sty
 
 \section{Conclusion}
 
-We presented Settings a new framework to manage preference in a modular way. The key point of Settings is that it supports a modular flow of control: a package is responsible to define customization points and can use them locally, then using Settings it is possible to describe such customization points. Finally the Settings Browser collects such setting descriptions and present them to the user. The flow is then from Settings Browser to the customized packages. 
+We presented Settings, a new framework to manage preferences in a modular way. The key point of Settings is that it supports a modular flow of control: a package is responsible to define customization points and can use them locally, then using Settings it is possible to describe such customization points. Finally the Settings Browser collects such setting descriptions and present them to the user. The flow is then from the \setbrowser to the customized packages. 
 
 %=========================================================
 \ifx\wholebook\relax\else

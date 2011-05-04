@@ -373,7 +373,7 @@ As you have probably guessed already, other collections such as \ct{Set} and \ct
 \begin{figure}
 	\begin{center}
 	\includegraphics[width=.8\linewidth]{MessageTallyOne}
-	\caption{MessageTally in action.}
+	\caption{MessageTally in action.\ja{we should redo this screenshot with correct incr value}}
 	\figlabel{MessageTallyOne}
 	\end{center}
 \end{figure}
@@ -402,8 +402,7 @@ The message \ct{spyOn:} executes the provided block in a new process. The analys
 
 %Le message \ct{spyAt:on:} permet de s\'electionner le niveau de processus. Par exemple pour ne voir que le temps pris par l'expression utilisez \ct{MessageTally spyAt: 40 on: [20 timesRepeat: [Transcript show: 100 factorial printString]]}
 
-A tool a bit less crude than \ct{MessageTally} is \ct{TimeProfileBrowser}. It shows the implementation of the executed method in addition (\figref{TimeProfiler}).  \ct{TimeProfileBrowser} understand the message \ct{spyOn:}.
-\ja{It means that in the below source code, MessageTally can be replaced with TimeProfileBrowser to obtain the better user interface.}
+A tool a bit less crude than \ct{MessageTally} is \ct{TimeProfileBrowser}. It shows the implementation of the executed method in addition (\figref{TimeProfiler}).  \ct{TimeProfileBrowser} understand the message \ct{spyOn:}. It means that in the below source code, MessageTally can be replaced with TimeProfileBrowser to obtain the better user interface.
 
 \begin{figure}
 	\begin{center}
@@ -425,7 +424,7 @@ The World menu (obtained by clicking outside any Pharo window) offers some profi
 \begin{figure}[h]
 	\begin{center}
 	\includegraphics[width=.6\linewidth]{menu}
-	\caption{Access by the menu. \ja{redo}}
+	\caption{Access by the menu.}
 	\figlabel{menu}
 	\end{center}
 \end{figure}
@@ -615,7 +614,7 @@ In our example, none of the objects created during the execution have been promo
 
 The \ct{**GCs**} provides statistics about the garbage collector. An example of a garbage collector report is:
 
-\ja{in the GC results bellow, there are strange values for incr information \%}
+\ja{strange incr information \%}
 \begin{code}
 
 **GCs**
@@ -696,58 +695,67 @@ Process: (40s)  535298048: nil
 	root table	0 overflows
 \end{code}
 
-\paragraph{Replacing \ct{nextPut:} by \ct{nextPutAll:}} We will now study an alternative way to add characters in a stream. The \ct{nextPut: aCharacter} method accepts a single character. Adding a string of characters is realized via \ct{nextPutAll: aString}.
-
-\begin{code}{}
-MessageTally spyOn: 
-    [ 500 timesRepeat: [
-                    | str |  
-                    str := WriteStream on: (String new). 
-                    9000 timesRepeat: [ str nextPutAll: 'A' ]]].
-\end{code}
-
-\ja{with Pharo 1.3 and VM 4.2.5, bellow text is false}
-The first intuition tells us that adding a single character is faster than adding a string composed of the character solely. However, a simple benchmark shows the opposite. It is faster to add an one-character long string than a single character: 1610 ms against 1790 ms while using the double of memory.
-
-\begin{code}{}
-
- - 1883 tallies, 1883 msec.
-
-**Tree**
---------------------------------
-Process: (40s)  535298048: nil
---------------------------------
-20.8% {392ms} primitives
-
-**Leaves**
-22.7% {427ms} UndefinedObject>>DoIt
-20.8% {392ms} WriteStream>>nextPutAll:
-18.4% {347ms} SmallInteger(Integer)>>timesRepeat:
-
-**Memory**
-	old			+0 bytes
-	young		+127,920 bytes
-	used		+127,920 bytes
-	free		-127,920 bytes
-
-**GCs**
-	full			0 totalling 0ms (0.0% uptime)
-	incr		1177 totalling 246,100ms (13070.0% uptime), avg 209.0ms
-	tenures		0
-	root table	0 overflows
-\end{code}
-
+%\paragraph{Replacing \ct{nextPut:} by \ct{nextPutAll:}} \ja{we should remove this wrong paragraph} We will now study an alternative way to add characters in a stream. The \ct{nextPut: aCharacter} method accepts a single character. Adding a string of characters is realized via \ct{nextPutAll: aString}.
+%
+%\begin{code}{}
+%MessageTally spyOn: 
+%    [ 500 timesRepeat: [
+%                    | str |  
+%                    str := WriteStream on: (String new). 
+%                    9000 timesRepeat: [ str nextPutAll: 'A' ]]].
+%\end{code}
+%
+%\ja{with Pharo 1.3 and VM 4.2.5, below text is false}
+%The first intuition tells us that adding a single character is faster than adding a string composed of the character solely. However, a simple benchmark shows the opposite. It is faster to add an one-character long string than a single character: 1610 ms against 1790 ms while using the double of memory.
+%
+%\begin{code}{}
+%
+% - 1883 tallies, 1883 msec.
+%
+%**Tree**
+%--------------------------------
+%Process: (40s)  535298048: nil
+%--------------------------------
+%20.8% {392ms} primitives
+%
+%**Leaves**
+%22.7% {427ms} UndefinedObject>>DoIt
+%20.8% {392ms} WriteStream>>nextPutAll:
+%18.4% {347ms} SmallInteger(Integer)>>timesRepeat:
+%
+%**Memory**
+%	old			+0 bytes
+%	young		+127,920 bytes
+%	used		+127,920 bytes
+%	free		-127,920 bytes
+%
+%**GCs**
+%	full			0 totalling 0ms (0.0% uptime)
+%	incr		1177 totalling 246,100ms (13070.0% uptime), avg 209.0ms
+%	tenures		0
+%	root table	0 overflows
+%\end{code}
+%
 
 
 \paragraph{String preallocation.} Using \ct{OrderedCollection} without a preallocation of the collection is well known for being costly. Each time the collection is full, its content has to be copied into a larger collection. Carefully choosing a preallocation has an impact of using ordered collections. The message \ct{new: aNumber} could be used instead of \ct{new}.
 
-\ja{the example do not produce better results for me... }.
 \begin{code}{}
 MessageTally spyOn: 
     [ 500 timesRepeat: [
                     | str |  
-                    str := WriteStream on: (String new: 10000). 
-                    9000 timesRepeat: [ str nextPutAll: 'A' ]]].
+                    str := WriteStream on: (String new: 9000). 
+                    9000 timesRepeat: [ str nextPut: 'A' ]]].
+\end{code}
+
+For this example, it is possible to improve the script by using the method \ct{atAllPut:}. The script below takes only a couple of milliseconds.
+ 
+\begin{code}{}
+MessageTally spyOn:
+	[ 500 timesRepeat: [
+		| str |
+		str :=String new: 9000.
+		str atAllPut: $A ]].
 \end{code}
 
 \paragraph{An experiment.}
@@ -808,7 +816,7 @@ Integer>>>fibWithCache:  cache
 	^ ((self - 1) fibLookup: cache) + ((self - 2) fibLookup: cache)  
 \end{code}
 
-\ja{we should not do 1200 fibslow... When I do 35 fibSlow: 5605 ms, so for 1200, the time spent is exponential.} \sd{ but the cache is there? no}
+\ja{we should not do 1200 fibslow... When I do 35 fibSlow: 5605 ms, so for 1200, the time spent is exponential.} \sd{ but the cache is there? no} \ja{not in fibSlow. What I say is that 1200 fibSlow takes to much time, whereas 1200 fib run in a couple of seconds.}
 
 As an exercise, profile \ct{1200 fibSlow} and \ct{1200 fib} to be convinced of the gain of memoizing. 
 %Preallocating the ordered collection plays an important role again.
@@ -879,7 +887,7 @@ ByteSymbol     					920       	   40109        1009703     4.1
 
 \ct{SpaceTally} may also be executed on a reduced set of classes. Consider:
 
-\ja{what is the relation between the information before and bellow ?}
+\ja{what is the relation between the information before and below ?}
 
 \begin{code}{}
 ((SpaceTally new spaceTally: (Array with: TextMorph with: Point)) 
