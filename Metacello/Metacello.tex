@@ -21,7 +21,7 @@
 %	\input{../common.tex}
 %	\usepackage{a4wide}
 % --------------------------------------------
-    \graphicspath{{figures/} {../figures/}}
+     \graphicspath{{figures/} {../figures/}}
 	\begin{document}
 \fi
 %=================================================================
@@ -134,7 +134,7 @@ In this example, there are a lot of things we need to explain:
 \item Immediately after the method selector you see the pragma definition:  {\em <version: '0.1'>}. The pragma indicates that the version created in this method should be associated with version '0.1' of the CoolBrowser project. That's why we said that the name of the method is not that important. Metacello uses the pragma to identify the version being constructed.
 
 \item Looking a little closer you see that the argument to the method, \ct{spec}, is the only variable in
-the method and it is used as the receiver to four different messages:   \ct{for:do:},   \ct{package:with:},  \ct{file:}  and  \ct{repository:}.
+the method and it is used as the receiver to four different messages:    \ct{for:do:},    \ct{package:with:},  \ct{file:}  and  \ct{repository:}.
 
 \item Each time a block expression is executed a new object is pushed on a stack and the messages within the block are sent to the object on the top of the stack.
 
@@ -147,7 +147,7 @@ The  method \ct{version01:} should be read as: Create version '0.1'. The common 
 Sometimes, a Monticello repository can be restricted and requires username and password. In such case the following message can be used:
 
 \begin{code}{}
-       spec repository: 'http://www.example.com/private' username: 'foo' password: 'bar' 
+         spec repository: 'http://www.example.com/private' username: 'foo' password: 'bar' 
 \end{code}
 
 We can access the specification created for version 0.1 by executing the following expression: \ct{(ConfigurationOfCoolBrowser project version: '0.1') spec}. 
@@ -219,6 +219,19 @@ the packages that you are interested in as an argument to the \ct{load:} method 
 \begin{code}{}
   (ConfigurationOfCoolBrowser project version: '0.2') load: { 'CoolBrowser-Core' 'CoolBrowser-Addons' }.
 \end{code}
+
+
+Note that if you want to load simulate the loading of a configuration but not load it, you should use \ct{record:} instead of \ct{load:}
+
+\begin{code}{}
+  (ConfigurationOfCoolBrowser project version: '0.2') record: { 'CoolBrowser-Core' 'CoolBrowser-Addons' }.
+\end{code}
+
+But instead of doing a "do it", do a "print it", send it the message loadDirective.
+
+\begin{code}{}
+  ((ConfigurationOfCoolBrowser project version: '0.2') record: { 'CoolBrowser-Core' 'CoolBrowser-Addons' }) loadDirective.
+\end{code} loadDirective.
 
 
 \section{Managing package internal dependencies}
@@ -444,7 +457,7 @@ ConfigurationOfCoolBrowser>>version06: spec
 	"Load a single group"
  
 (ConfigurationOfCoolBrowser project version: '1.0') 
-	load: #('CoolBrowser-Core' 'Tests').   
+	load: #('CoolBrowser-Core' 'Tests').    
 	"Loads a package and a group"
 
 (ConfigurationOfCoolBrowser project version: '1.0') load: #('CoolBrowser-Core' 'CoolBrowser-Addons' 'Tests'). 
@@ -459,7 +472,7 @@ ConfigurationOfCoolBrowser>>version06: spec
 
 
 \paragraph{Default group.} The \ct{'default'} group is a special one and when a default group is defined, the \ct{load} method loads the members of the 'default' group instead of all of the packages:
-   
+    
 \begin{code}{}
 (ConfigurationOfCoolBrowser project version: '1.0') load.
 \end{code}
@@ -517,7 +530,7 @@ ConfigurationOfCoolToolSet >>baseline01: spec
 		spec repository: 'http://www.example.com/CoolToolSet'.
 		spec project: 'CoolBrowser ALL' with: [
 				spec 
-				    !\textbf{className:}! 'ConfigurationOfCoolBrowser';
+				     !\textbf{className:}! 'ConfigurationOfCoolBrowser';
 					versionString: '1.0';
 					loads: #('ALL' );
 					!\textbf{file:}! 'CoolBrowser-Metacello';
@@ -727,7 +740,7 @@ ConfigurationOfCoolBrowser>>version09: spec
 	!\textbf{spec for: \#common do: [}!
 		...
 		spec 
-	        ...
+	          ...
 			package: 'CoolBrowser-AddonsTests' with: 'CoolBrowser-AddonsTests-JohnLewis.1' ].
 	
 	!\textbf{spec for: \#gemstone do: [}!
@@ -838,10 +851,10 @@ The latest version of Metacello introduces \emph{symbolic versions} whose purpos
 
 \begin{code}{}
 OmniBrowser>>stable: spec
-    <symbolicVersion: #'stable'>
-    spec for: #'pharo1.0.x' version: '1.1.3'.
-    spec for: #'pharo1.1.x' version: '1.1.5'.
-    spec for: #'pharo1.2.x' version: '1.2.3'.
+     <symbolicVersion: #'stable'>
+     spec for: #'pharo1.0.x' version: '1.1.3'.
+     spec for: #'pharo1.1.x' version: '1.1.5'.
+     spec for: #'pharo1.2.x' version: '1.2.3'.
 \end{code}
 
 Symbolic versions can be used anywhere that a literal version can be used. From a load expressions such as \ct{(ConfigurationOfOmniBrowser project version: #'stable') load}
@@ -851,25 +864,25 @@ to a project reference in a baseline version:
 baseline10: spec
   <version: '1.0-baseline'>
   spec for: #squeakCommon do: [
-    spec blessing: #baseline.
-    spec repository: 'http://seaside.gemstone.com/ss/GLASSClient'.
-    spec
-      project: 'OmniBrowser' with: [
-        spec
-          className: 'OmniBrowser';
-          !\textbf{versionString: \#'stable';}!
-          repository: 'http://www.squeaksource.com/MetacelloRepository' ].
-    spec
-       package: 'OB-SUnitGUI' with: [
-         spec requires: #( 'OmniBrowser') ];
-       package: 'GemTools-Client' with: [
-         spec requires: #( 'OB-SUnitGUI'. ) ];
-       package: 'GemTools-Platform' with: [
-         spec requires: #( 'GemTools-Client'. ) ]].
+     spec blessing: #baseline.
+     spec repository: 'http://seaside.gemstone.com/ss/GLASSClient'.
+     spec
+        project: 'OmniBrowser' with: [
+          spec
+             className: 'OmniBrowser';
+             !\textbf{versionString: \#'stable';}!
+             repository: 'http://www.squeaksource.com/MetacelloRepository' ].
+     spec
+         package: 'OB-SUnitGUI' with: [
+            spec requires: #( 'OmniBrowser') ];
+         package: 'GemTools-Client' with: [
+            spec requires: #( 'OB-SUnitGUI'. ) ];
+         package: 'GemTools-Platform' with: [
+            spec requires: #( 'GemTools-Client'. ) ]].
 \end{code}
-      
-   
-\subsection{Standard Symbolic Versions}
+        
+    
+\subsection{Project Blessing and Loading}
 
 In software development it is very common that packages or projects pass through several stages or steps during the software development process or life cycle such as for example, development, alpha, beta,  release, release candidate, etc. Sometimes we want to refer also to the state of a project.
  %or sometimes we just want to use any other tag that may be useful. The blessing attribute can be used for all of these cases. --- would be better tohave separated tag: attributes.
@@ -902,6 +915,7 @@ Since the latest \ct{#baseline} version should reflect the most up-to-date proje
 
 
 
+\subsection{Standard Symbolic Versions}
 
 A couple of standard symbolic versions have already been defined:
 
@@ -962,6 +976,50 @@ latestVersion ].
 	^ bleedingEdgeVersion versionString
 \end{code}
 
+
+\subsubsection{Hints.}
+Some patterns emerge when working with Metacello. Here is a good one: 
+Create a baseline version and use the \ct{#stable} version for all of the projects in the baseline. In the literal version, use the explicit version, so that you get an explicit repeatable specification for a set of projects that were known to work together.
+
+Here is an example, the pharo 1.2.2-baseline would include specs that look like this:
+
+\begin{code}{}
+ spec
+    project: 'OB Dev' with: [
+      spec
+         className: 'ConfigurationOfOmniBrowser';
+         versionString: #stable;
+         ...];
+    project: 'ScriptManager' with: [
+      spec
+         className: 'ConfigurationOfScriptManager';
+         versionString: #stable;
+         ...];
+    project: 'Shout' with: [
+      spec
+         className: 'ConfigurationOfShout';
+         versionString: #stable;
+         ...];
+    ....].
+
+Loading Pharo 1.2.2-baseline would cause the \ct{#stable} version for each of those projects to be loaded ... 
+but remember over time the \ct{#stable} version will change and incompatibilities between packages can creep in. 
+By using \ct{#stable} versions you will be in better shape than using \ct{#bleedingEdge} because the \ct{#stable} version is known to work.
+
+Pharo 1.2.2 (literal version) will have corresponding specs that look like this:
+
+\begin{code}{}
+ spec
+    project: 'OB Dev' with: '1.2.4';
+    project: 'ScriptManager' with: '1.2';
+    project: 'Shout' with: '1.2.2';
+    ....].
+\edn{code}
+
+So that you have driven a stake into the ground stating that these versions are known to work together (have passed tests as a unit). 5 years in the future, you will be able to load Pharo 1.2.2 and get exactly the same packages every time, whereas the \ct{#stable} versions may have drifted over time.
+
+If you are just bringing up a PharoCore1.2 image and would like to load the Pharo dev code, you should load the \ct{#stable} version of Pharo (which may be 1.2.2 today and 1.2.3 tomorrow).
+If you want to duplicate the environment that someone is working in, you will ask them for the version of Pharo and load that explicit version to reproduce the bug or whatever. 
 
 
 \section{Script and Tool Support}
@@ -1028,61 +1086,61 @@ Here we use the toolbox API to create the initial baseline version by specifying
 
 \begin{code}{}
   MetacelloToolBox
-    createBaseline: '1.0-baseline'
-    for: 'GemToolsExample'
-    repository: 'http://seaside.gemstone.com/ss/GLASSClient'
-    requiredProjects: #('FFI' 'OmniBrowser' 'Shout' 'HelpSystem')
-    packages: #('OB-SUnitGUI' 'GemTools-Client' 'GemTools-Platform' 'GemTools-Help' )
-    dependencies:
-      {('OB-SUnitGUI' -> #('OmniBrowser')).
-      ('GemTools-Client' -> #('OmniBrowser' 'FFI' 'Shout' 'OB-SUnitGUI')).
-      ('GemTools-Platform' -> #('GemTools-Client')).
-      ('GemTools-Help' -> #( 'HelpSystem' 'GemTools-Client'))}
-    groups:
-      {('default' -> #('OB-SUnitGUI' 'GemTools-Client' 'GemTools-Platform' 'GemTools-Help'))}.
-\end{code}            
-            
+     createBaseline: '1.0-baseline'
+     for: 'GemToolsExample'
+     repository: 'http://seaside.gemstone.com/ss/GLASSClient'
+     requiredProjects: #('FFI' 'OmniBrowser' 'Shout' 'HelpSystem')
+     packages: #('OB-SUnitGUI' 'GemTools-Client' 'GemTools-Platform' 'GemTools-Help' )
+     dependencies:
+        {('OB-SUnitGUI' -> #('OmniBrowser')).
+        ('GemTools-Client' -> #('OmniBrowser' 'FFI' 'Shout' 'OB-SUnitGUI')).
+        ('GemTools-Platform' -> #('GemTools-Client')).
+        ('GemTools-Help' -> #( 'HelpSystem' 'GemTools-Client'))}
+     groups:
+        {('default' -> #('OB-SUnitGUI' 'GemTools-Client' 'GemTools-Platform' 'GemTools-Help'))}.
+\end{code}                
+                
 The \ct{createBaseline:...} message copies the class \ct{MetacelloConfigTemplate} to \ct{ConfigurationOfGemToolsExample} and creates a \ct{#baseline10:} method that looks like the following:
 
 \begin{code}{}
 ConfigurationOfGemToolsExample>>baseline10: spec
   <version: '1.0-baseline'>
   spec for: #'common' do: [
-    spec blessing: #'baseline'.
-    spec repository: 'http://seaside.gemstone.com/ss/GLASSClient'.
-    spec
-      project: 'FFI' with: [
-        spec
-          className: 'ConfigurationOfFFI';
-          versionString: #'bleedingEdge';
-          repository: 'http://www.squeaksource.com/MetacelloRepository' ];
-      project: 'OmniBrowser' with: [
-        spec
-          className: 'ConfigurationOfOmniBrowser';
-          versionString: #'stable';
-          repository: 'http://www.squeaksource.com/MetacelloRepository' ];
-      project: 'Shout' with: [
-        spec
-          className: 'ConfigurationOfShout';
-          versionString: #'stable';
-          repository: 'http://www.squeaksource.com/MetacelloRepository' ];
-      project: 'HelpSystem' with: [
-        spec
-          className: 'ConfigurationOfHelpSystem';
-          versionString: #'stable';
-          repository: 'http://www.squeaksource.com/MetacelloRepository' ].
-    spec
-      package: 'OB-SUnitGUI' with: [
-        spec requires: #('OmniBrowser' ). ];
-      package: 'GemTools-Client' with: [
-        spec requires: #('OmniBrowser' 'FFI' 'Shout' 'OB-SUnitGUI' ). ];
-      package: 'GemTools-Platform' with: [
-        spec requires: #('GemTools-Client' ). ];
-      package: 'GemTools-Help' with: [
-        spec requires: #('HelpSystem' 'GemTools-Client' ). ].
-    spec group: 'default' with: #('OB-SUnitGUI' 'GemTools-Client'
-          'GemTools-Platform' 'GemTools-Help' ). ].
-\end{code}          
+     spec blessing: #'baseline'.
+     spec repository: 'http://seaside.gemstone.com/ss/GLASSClient'.
+     spec
+        project: 'FFI' with: [
+          spec
+             className: 'ConfigurationOfFFI';
+             versionString: #'bleedingEdge';
+             repository: 'http://www.squeaksource.com/MetacelloRepository' ];
+        project: 'OmniBrowser' with: [
+          spec
+             className: 'ConfigurationOfOmniBrowser';
+             versionString: #'stable';
+             repository: 'http://www.squeaksource.com/MetacelloRepository' ];
+        project: 'Shout' with: [
+          spec
+             className: 'ConfigurationOfShout';
+             versionString: #'stable';
+             repository: 'http://www.squeaksource.com/MetacelloRepository' ];
+        project: 'HelpSystem' with: [
+          spec
+             className: 'ConfigurationOfHelpSystem';
+             versionString: #'stable';
+             repository: 'http://www.squeaksource.com/MetacelloRepository' ].
+     spec
+        package: 'OB-SUnitGUI' with: [
+          spec requires: #('OmniBrowser' ). ];
+        package: 'GemTools-Client' with: [
+          spec requires: #('OmniBrowser' 'FFI' 'Shout' 'OB-SUnitGUI' ). ];
+        package: 'GemTools-Platform' with: [
+          spec requires: #('GemTools-Client' ). ];
+        package: 'GemTools-Help' with: [
+          spec requires: #('HelpSystem' 'GemTools-Client' ). ].
+     spec group: 'default' with: #('OB-SUnitGUI' 'GemTools-Client'
+             'GemTools-Platform' 'GemTools-Help' ). ].
+\end{code}             
 
 
 
@@ -1096,10 +1154,10 @@ Now we use the toolbox API to create the initial literal version of the project 
 
 \begin{code}{}
   MetacelloToolBox
-    createDevelopment: '1.0'
-    for: 'GemToolsExample'
-    importFromBaseline: '1.0-baseline'
-    description: 'initial development version'.
+     createDevelopment: '1.0'
+     for: 'GemToolsExample'
+     importFromBaseline: '1.0-baseline'
+     description: 'initial development version'.
 \end{code}
 
 The \ct{createDevelopment:...} method creates a \ct{#version10:} method in your configuration that looks like this:
@@ -1108,20 +1166,20 @@ The \ct{createDevelopment:...} method creates a \ct{#version10:} method in your 
 ConfigurationOfGemToolsExample>>version10: spec
   <version: '1.0' imports: #('1.0-baseline' )>
   spec for: #'common' do: [
-    spec blessing: #'development'.
-    spec description: 'initial development version'.
-    spec author: 'dkh'.
-    spec timestamp: '1/12/2011 12:29'.
-    spec 
-      project: 'FFI' with: '1.2';
-      project: 'OmniBrowser' with: #'stable';
-      project: 'Shout' with: #'stable';
-      project: 'HelpSystem' with: #'stable'.
-    spec
-      package: 'OB-SUnitGUI' with: 'OB-SUnitGUI-dkh.52';
-      package: 'GemTools-Client' with: 'GemTools-Client-NorbertHartl.544';
-      package: 'GemTools-Platform' with: 'GemTools-Platform.pharo10beta-dkh.5';
-      package: 'GemTools-Help' with: 'GemTools-Help-DaleHenrichs.24'. ].
+     spec blessing: #'development'.
+     spec description: 'initial development version'.
+     spec author: 'dkh'.
+     spec timestamp: '1/12/2011 12:29'.
+     spec 
+        project: 'FFI' with: '1.2';
+        project: 'OmniBrowser' with: #'stable';
+        project: 'Shout' with: #'stable';
+        project: 'HelpSystem' with: #'stable'.
+     spec
+        package: 'OB-SUnitGUI' with: 'OB-SUnitGUI-dkh.52';
+        package: 'GemTools-Client' with: 'GemTools-Client-NorbertHartl.544';
+        package: 'GemTools-Platform' with: 'GemTools-Platform.pharo10beta-dkh.5';
+        package: 'GemTools-Help' with: 'GemTools-Help-DaleHenrichs.24'. ].
 \end{code}
 
 Note how the \ct{#stable} symbolic version specifications were carried through into the literal version. If the version isn't \ct{#stable}, then the currentVersion of the project is filled in, just as the current version of each mcz file is set for the packages. Note also that the blessing of the version '1.0' is set to \ct{#development}. By setting the blessing of a newly created version to \ct{#development}, you indicate that the version is under development and is subject to change without notice. The \ct{createDevelopment:...} method also creates a \ct{#development:} method and specifies that version '1.0' is a \ct{#development symbolic version}:
@@ -1148,10 +1206,10 @@ If the list comes back empty then you are clean. Otherwise you should address th
 Here's an example of a Critical Warning validation issue:
 \begin{code}{}
 Critical Warning: No version specified for the project reference 'OCompletion'
-            in version '1.1'
-    { noVersionSpecified }
-    [ ConfigurationOfOmniBrowser #validateVersionSpec: ]
-\end{code}    
+                in version '1.1'
+     { noVersionSpecified }
+     [ ConfigurationOfOmniBrowser #validateVersionSpec: ]
+\end{code}     
 
 The first and second line is the explanation, a human readable error message. The third line is the reasonCode, a symbol that represents the category of the issue. You can check out the meanings of the various reasonCodes online or through the following toolbox message:
 \ct{(MetacelloToolBox descriptionForValidationReasonCode: #noVersionSpecified)  inspect.}
@@ -1166,10 +1224,10 @@ The first time you save your configuration, you have to decide where to keep you
 
 \begin{code}{}
   Gofer new
-    url: 'http://www.example.com/GemToolsRepository';
-    package: 'ConfigurationOfGemToolsExample';
-    commit: 'Initial version of configuration'.
-\end{code}    
+     url: 'http://www.example.com/GemToolsRepository';
+     package: 'ConfigurationOfGemToolsExample';
+     commit: 'Initial version of configuration'.
+\end{code}     
 
 
 \subsection{Development Cycle}
@@ -1184,9 +1242,9 @@ Gofer new
   package: 'ConfigurationOfGemToolsExample';
   load.
 ((Smalltalk at: #ConfigurationOfGemToolsExample)
-    project version: #development) load.
-\end{code}    
-    
+     project version: #development) load.
+\end{code}     
+     
 Now this is the moment to run the unit tests. Note that for the GemTools unit tests you need to have GemStone installed.
 
 \subsubsection{Release}
@@ -1194,9 +1252,9 @@ Once you are satisfied that the configuration loads correctly on your target pla
 
 \begin{code}{}
   MetacelloToolBox
-    releaseDevelopmentVersionIn: ConfigurationOfGemToolsExample
-    description: '- release version 1.0'.
-\end{code}    
+     releaseDevelopmentVersionIn: ConfigurationOfGemToolsExample
+     description: '- release version 1.0'.
+\end{code}     
 
 The toolbox method \ct{releaseDevelopmentVersionIn:description:} does the following:
 \begin{itemize}
@@ -1227,8 +1285,8 @@ Finally you can copy the configuration to the MetacelloRepository using the foll
 
 \begin{code}{}
   MetacelloToolBox
-    copyConfiguration: ConfigurationOfGemToolsExample
-    to: 'http://www.squeaksource.com/MetacelloRepository'.
+     copyConfiguration: ConfigurationOfGemToolsExample
+     to: 'http://www.squeaksource.com/MetacelloRepository'.
 \end{code}
 
 
@@ -1268,7 +1326,7 @@ MetacelloToolBox
   saveConfigurationPackageFor: 'GemToolsExample'
   description: '- fixed Issue 1090'.
  \end{code}
-   
+    
 Or do both steps with one toolbox method:
 
 \begin{code}{}
@@ -1298,19 +1356,19 @@ toolbox := MetacelloToolBox configurationNamed: 'GemToolsExample'.
 toolbox
   createVersionMethod: 'baseline11:' inCategory: 'baselines' forVersion: '1.1-baseline';
   addSectionsFrom: '1.0-baseline'
-    forBaseline: true
-    updateProjects: false
-    updatePackages: false
-    versionSpecsDo: [ :attribute :versionSpec |
-      attribute == #common
-        ifTrue: [ versionSpec packages add: (toolbox createPackageSpec: 'GemTools-Overrides') ].
-      true ];
+     forBaseline: true
+     updateProjects: false
+     updatePackages: false
+     versionSpecsDo: [ :attribute :versionSpec |
+        attribute == #common
+          ifTrue: [ versionSpec packages add: (toolbox createPackageSpec: 'GemTools-Overrides') ].
+        true ];
   commitMethod;
   modifyVersionMethodForVersion: '1.1'
-    versionSpecsDo: [ :attribute :versionSpec |
-      attribute == #common
-        ifTrue: [ versionSpec packages add: (toolbox createPackageSpec: 'GemTools-Overrides') ].
-      false ];
+     versionSpecsDo: [ :attribute :versionSpec |
+        attribute == #common
+          ifTrue: [ versionSpec packages add: (toolbox createPackageSpec: 'GemTools-Overrides') ].
+        false ];
   commitMethod.
 \end{code}
 
@@ -1425,7 +1483,7 @@ Again, notice that inside the \ct{for:do:} you are free to do whatever you want.
  
 % First, let us tell you something. Metacello not only includes all what we have been learning and what we will be still learning along this chapter, but also a complete set of tools with UI (user interface). These tools are based on OmniBrowser (OB), and thus, they are called OB-Metacello. This tool lets you save packages, spawn new versions, update package methods, load latest packages, save projects, update projects, among others. Unfortunately, this topic is not covered in this chapter. That's all you need to know for the moment.  
  
-A configuration can have several optional attributes such as   
+A configuration can have several optional attributes such as    
 an author, a description, a blessing and a timestamp.  Let's see an example with a new version 0.7 of our project.
  
 \begin{code}{}
@@ -1470,9 +1528,9 @@ Metacello is an important part of Pharo. It will allow your project to scale. It
 
 %=========================================================
 \ifx\wholebook\relax\else
-   \bibliographystyle{jurabib}
-   \nobibliography{scg}
-   \end{document}
+    \bibliographystyle{jurabib}
+    \nobibliography{scg}
+    \end{document}
 \fi
 %=========================================================
 
