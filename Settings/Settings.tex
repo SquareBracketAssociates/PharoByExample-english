@@ -672,7 +672,7 @@ As an example, let's take the secondary selection. This text selection kind is o
 		(aBuilder setting: #secondarySelectionTextColor)
 			label: 'Secondary selection text color' translated].
 \end{code}
-The figure~\figref{fig:secondarySelectionColorV1} shows these setting declarations in the \setbrowser. The look and feel is clean but in fact two observations can be made:
+The~\figref{fig:secondarySelectionColorV1} shows these setting declarations in the \setbrowser. The look and feel is clean but in fact two observations can be made:
 \begin{enumerate}
 \item it takes three lines for each selection kind, this is a little bit uncomfortable because the view for one selection takes a lot of vertical space,
 \item the underlying model is not explicitly designed, the settings for one selection kind are grouped together in the \setbrowser but corresponding preference values are declared as separated instances variables of \ct{ThemeSettings}. In the next section we see how to improve this first solution with a better design.
@@ -686,7 +686,119 @@ The figure~\figref{fig:secondarySelectionColorV1} shows these setting declaratio
 \end{figure}
 
 \subsection{An improved selection preference design}
+A better solution would be to design the concept of text selection preference. Then, we have only one value to manage for each selection preference instead of three. A text selection preference is basically made of two colors, one for the background and the second for the text. Except the primary selection, each selection is optional. Then, we could design a text selection preference as follow:
+\begin{code}{}
+Object subclass: #TextSelectionPreference
+	instanceVariableNames: 'backgroundColor textColor mandatory used'
+	classVariableNames: 'FindReplaceSelection PrimarySelection SecondarySelection SelectionBar'
+	poolDictionaries: ''
+	category: 'Settings-Tools'
+\end{code}
+\ct{TextSelectionPreference} is made of four instance variables. Two of them are for the colors. If the \ct{mandatory} instance variable is set to \ct{false} then, the \ct{used} boolean instance variable can be changed. Instead, if the \ct{mandatory} is set to \ct{true}, then, the used instance variable is set to \ct{true} and is not changeable. 
 
+\ct{TextSelectionPreference} have also four class variables, one for each kind of possible text selection preference. The getters and the setters have also to be implemented in order to be able to manage these preferences from the \setbrowser.
+As an example, for \ct{PrimarySelection}:
+\begin{code}{}
+TextSelectionPreference class>>primarySelection
+	^ PrimarySelection
+		ifNil: [PrimarySelection := self new 
+						textColor: Color black;
+						backgroundColor: (Color blue alpha: 0.5);
+						!\textbf{mandatory: true}!;
+						yourself]
+\end{code}
+You can notice that the \ct{mandatory} attribute is initialize to \ct{true}.
+
+Another example with the selection bar preference:
+\begin{code}{}
+TextSelectionPreference class>>selectionBar
+	^ SelectionBar
+		ifNil: [SelectionBar := self new 
+					backgroundColor: Color lightBlue veryMuchLighter;
+					!\textbf{mandatory: false}!;
+					yourself]
+\end{code}
+Here, you can notice that the preference is declared as optional and with no text color. 
+
+In order for these preferences to be changeable from the \setbrowser, we have to declare two methods. The first one is for the setting declaration and the second is to implement the view. 
+
+The setting declaration is implemented as follow:
+\begin{code}{}
+TextSelectionPreference class>>selectionPreferenceOn: aBuilder 
+	<systemsettings>
+	(aBuilder group: #selectionColors) 
+		label: 'Text selection colors' translated;
+		parent: #appearance;
+		target: self;
+		with: [(aBuilder setting: #primarySelection) order: 1;
+				 label: 'Primary'.
+			(aBuilder setting: #secondarySelection)
+				label: 'Secondary'.
+			(aBuilder setting: #findReplaceSelection)
+				label: 'Find/replace'.
+			(aBuilder setting: #selectionBar)
+				label: 'Selection bar']
+\end{code}
+As you can see, there is absolutely nothing new in this declaration. The only thing that changes is that the value of the preferences are of a user defined class. In fact, in case of user defined or application specific preference class, the only particular thing to do is to implement one supplementary method for the view. This method must be named \ct{#settingInputWidgetForNode:} and must be implemented as a class method.
+
+\ct{#settingInputWidgetForNode:} method responsibility is to build the input widget for the \setbrowser. This method takes a \ct{SettingDeclaration} as argument. \ct{SettingDeclaration} is basically a model and its instances are managed by the \setbrowser. 
+
+Each \ct{SettingDeclaration} instance serves as a preference value holder. Indeed, each setting that you can view in the \setbrowser is internally represented by a \ct{SettingDeclaration} instance. 
+
+For each of our text selection preferences, we want to be able to change its colors and if the selection is optional, then we want to have the possibility to enable or disable it. Regarding the colors, depending on the selection preference value, only the background color is always shown. Indeed, if the text color of the preference value is \ct{nil}, this means that having a text color does'nt makes sense and then, the corresponding color chooser is not built. 
+
+The \ct{#settingInputWidgetForNode:} method can be implemeented as below:
+\begin{code}{}
+TextSelectionPreference class>>settingInputWidgetForNode: aSettingDeclaration 
+	| preferenceValue backColorUI usedUI uiElements |
+	preferenceValue := aSettingDeclaration preferenceValue.
+	usedUI := self usedCheckboxForPreference: preferenceValue.
+	backColorUI := self backgroundColorChooserForPreference: preferenceValue.
+	uiElements := {usedUI. backColorUI}, 
+		(preferenceValue textColor 
+			ifNotNil: [ { self textColorChooserForPreference: preferenceValue } ] 
+			ifNil: [{}]).
+	^ (self theme newRowIn: self world for: uiElements) 
+		 cellInset: 20;
+		 yourself 
+\end{code}
+This method simply adds some basic elements in a row and returns the row. At a first place, you can notice that the actual preference value, an instance of \ct{TextSelectionPreference}, is got from the \ct{SettingDeclaration} instance by sending \ct{#preferenceValue} to it. Then, the user interface elements can be built based on the actual \ct{TextSelectionPreference} instance.
+
+The first element is a \textit{checkbox} or an empty space returned by the \ct{#usedCheckboxForPreference:} invocation. This method is implemented as follow:
+\begin{code}{}
+TextSelectionPreference class>>usedCheckboxForPreference: aSelectionPreference 
+	^ !\textbf{aSelectionPreference optional}!
+		ifTrue: [self theme
+				newCheckboxIn: self world
+				for: aSelectionPreference
+				getSelected: #used
+				setSelected: #used:
+				getEnabled: #optional
+				label: ''
+				help: 'Enable or disable the selection']
+		ifFalse: [Morph new height: 1;
+				 width: 30;
+				 color: Color transparent]
+\end{code}
+The next elements are two color choosers. As an example, the background color chooser is built as follow:
+\begin{code}{}
+TextSelectionPreference class>>backgroundColorChooserForPreference: aSelectionPreference 
+	^ self theme
+		newColorChooserIn: self world
+		for: aSelectionPreference
+		getColor: #backgroundColor
+		setColor: #backgroundColor:
+		getEnabled: #used
+		help: 'Background color' translated
+\end{code}
+Now, in the \setbrowser, the user interface looks as shown in \figref{fig:textSelectionColorSettings}, with only one line for each selection kind instead of three as in our previous version. 
+\begin{figure}[tbh]
+\begin{center}
+\includegraphics[scale=0.45]{textSelectionColorSettings}
+\caption{The text selection settings implemented with a specific preference class}
+\figlabel{fig:textSelectionColorSettings}
+\end{center}
+\end{figure}
 
 %\section{Design of the Settings Framework}
 %\apl{To be kept but remove squeak ref and review some points}
