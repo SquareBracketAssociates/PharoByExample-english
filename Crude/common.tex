@@ -1,0 +1,524 @@
+% $Author: oscar $
+% $Date: 2009-04-22 18:48:21 +0200 (Wed, 22 Apr 2009) $
+% $Revision: 26391 $
+%=============================================================
+% NB: documentclass must be set in main document.
+% Allows book to be generated in multiple formats.
+%=============================================================
+%:Packages
+\usepackage[T1]{fontenc}  %%%%%% really important to get the code directly in the text!
+\usepackage{lmodern}
+%\usepackage[scaled=0.85]{bookmanx} % needs another scale factor if used with \renewcommand{\sfdefault}{cmbr}
+\usepackage{palatino}
+\usepackage[scaled=0.85]{helvet}
+\usepackage{microtype}
+\usepackage{graphicx}
+\usepackage{theorem}
+\usepackage[english]{babel}
+% ON: pdfsync breaks the use of p{width} for tabular columns!
+\ifdefined\usepdfsync\usepackage{pdfsync}\fi % Requires texlive 2007
+%=============================================================
+%:More packages
+%Stef should check which ones are used!
+%\usepackage{picinpar}
+%\usepackage{layout}
+%\usepackage{color}
+%\usepackage{enum}
+%\usepackage{a4wide}
+% \usepackage{fancyhdr}
+\usepackage{ifthen}
+\usepackage{float}
+\usepackage{longtable}
+\usepackage{makeidx}
+\usepackage[nottoc]{tocbibind}
+\usepackage{multicol}
+\usepackage{booktabs}	% book-style tables
+\usepackage{topcapt}	% enables \topcaption
+\usepackage{multirow}
+\usepackage{tabularx}
+%\usepackage[bottom]{footmisc}
+\usepackage{xspace}
+\usepackage{alltt}
+\usepackage{amssymb,textcomp}
+\usepackage[usenames,dvipsnames]{color}
+%\usepackage{colortbl}
+\usepackage[hang]{subfigure}\makeatletter\def\p@subfigure{\thefigure\,}\makeatother
+\usepackage{rotating}
+\usepackage{enumitem}	% apb: allows more control over tags in enumerations
+\usepackage{verbatim}     % for comment environment
+\usepackage{varioref}	% for page references that work
+\labelformat{footnote}{\thechapter--#1} % to distinguish citations from jurabib
+\usepackage{needspace}
+\usepackage{isodateo} % enable \isodate
+\usepackage[newparttoc]{titlesec}
+\usepackage{titletoc}
+\usepackage{wrapfig}
+\usepackage[
+	super,
+	citefull=first,
+	authorformat={allreversed,and},
+	titleformat={commasep,italic}
+]{jurabib} % citations as footnotes
+\usepackage[
+	colorlinks=true,
+	linkcolor=black,
+	urlcolor=black,
+	citecolor=black
+]{hyperref}   % should come last
+%=============================================================
+%:URL style
+\makeatletter
+\def\url@leostyle{%
+  \@ifundefined{selectfont}{\def\UrlFont{\sf}}{\def\UrlFont{\sffamily}}}
+\makeatother
+% Now actually use the newly defined style.
+\urlstyle{leo}
+%=============================================================
+%:Booleans
+\newboolean{lulu}
+\setboolean{lulu}{false}
+\newcommand{\ifluluelse}[2]{\ifthenelse{\boolean{lulu}}{#1}{#2}}
+%=============================================================
+%:Names
+\newcommand{\SUnit}{SUnit\xspace}
+\newcommand{\sunit}{SUnit\xspace}
+\newcommand{\xUnit}{$x$Unit\xspace}
+\newcommand{\JUnit}{JUnit\xspace}
+\newcommand{\st}{Smalltalk\xspace}
+\newcommand{\Pharo}{Pharo\xspace}
+\newcommand{\pharo}{Pharo\xspace}
+\newcommand{\Squeak}{Squeak\xspace} % Please don't change this to "Pharo"! (ON)
+\newcommand{\sq}{Squeak\xspace} % Please don't change this to "Pharo"! (ON)
+\newcommand{\sqmap}{SqueakMap\xspace}
+\newcommand{\squeak}{Squeak\xspace}
+%\newcommand{\sbe}{\url{scg.unibe.ch/SBE}\xspace}
+%\newcommand{\sbe}{\url{squeakbyexample.org}\xspace}
+\newcommand{\sbe}{\url{SqueakByExample.org}\xspace}
+\newcommand{\pbe}{\url{PharoByExample.org}\xspace}
+\newcommand{\sba}{\url{SquareBracketAssociates.org}\xspace}
+%=============================================================
+%:Markup macros for proof-reading
+\usepackage[normalem]{ulem} % for \sout
+\usepackage{xcolor}
+\newcommand{\ra}{$\rightarrow$}
+\newcommand{\ugh}[1]{\textcolor{red}{\uwave{#1}}} % please rephrase
+\newcommand{\ins}[1]{\textcolor{blue}{\uline{#1}}} % please insert
+\newcommand{\del}[1]{\textcolor{red}{\sout{#1}}} % please delete
+\newcommand{\chg}[2]{\textcolor{red}{\sout{#1}}{\ra}\textcolor{blue}{\uline{#2}}} % please change
+%=============================================================
+%:Editorial comment macros
+\newcommand{\nnbb}[2]{
+    % \fbox{\bfseries\sffamily\scriptsize#1}
+    \fcolorbox{gray}{yellow}{\bfseries\sffamily\scriptsize#1}
+    {\sf\small$\blacktriangleright$\textit{#2}$\blacktriangleleft$}
+   }
+\newcommand{\ab}[1]{\nnbb{Andrew}{#1}}
+\newcommand{\sd}[1]{\nnbb{St\'{e}f}{#1}}
+\newcommand{\md}[1]{\nnbb{Marcus}{#1}}
+\newcommand{\on}[1]{\nnbb{Oscar}{#1}}
+\newcommand{\damien}[1]{\nnbb{Damien}{#1}}
+\newcommand{\lr}[1]{\nnbb{Lukas}{#1}}
+\newcommand{\orla}[1]{\nnbb{Orla}{#1}}
+\newcommand{\alex}[1]{\nnbb{Alex}{#1}}
+\newcommand{\alx}[1]{\nnbb{Alex}{#1}}
+\newcommand{\dr}[1]{\nnbb{David}{#1}}
+\newcommand{\ja}[1]{\nnbb{Jannik}{#1}}
+\newcommand{\jr}[1]{\nnbb{Jorge}{#1}}
+\newcommand{\fp}[1]{\nnbb{Fabrizio}{#1}}
+\newcommand{\here}{\nnbb{CONTINUE}{HERE}}
+%=============================================================
+%:Abbreviation macros
+\newcommand{\ie}{\emph{i.e.},\xspace}
+\newcommand{\eg}{\emph{e.g.},\xspace}
+\newcommand{\etc}{etc.\xspace}
+%=============================================================
+%:Cross reference macros
+\newcommand{\charef}[1]{Chapter~\ref{cha:#1}\xspace}
+\newcommand{\secref}[1]{Section~\ref{sec:#1}\xspace}
+\newcommand{\figref}[1]{Figure~\ref{fig:#1}\xspace}
+\newcommand{\Figref}[1]{Figure~\ref{fig:#1}\xspace}
+\newcommand{\appref}[1]{Appendix~\ref{app:#1}\xspace}
+\newcommand{\tabref}[1]{Table~\ref{tab:#1}\xspace}
+\newcommand{\faqref}[1]{FAQ~\ref{faq:#1}, p.~\pageref{faq:#1}\xspace}
+% APB: I removed trailing \xspace commands from these macros because
+% \xspace mostly doesn't work.  If you want a space after your
+% references, type one!
+% ON: xspace has always worked just fine for me!  Please leave them in.
+%
+\newcommand{\ruleref}[1]{\ref{rule:#1}\xspace}
+%
+\newcommand{\egref}[1]{example~\ref{eg:#1}\xspace}
+\newcommand{\Egref}[1]{Example~\ref{eg:#1}\xspace}
+%
+\newcommand{\scrref}[1]{script~\ref{scr:#1}\xspace}
+\newcommand{\Scrref}[1]{Script~\ref{scr:#1}\xspace}
+\newcommand{\tscrref}[1]{the script~\ref{scr:#1}\xspace}
+\newcommand{\Tscrref}[1]{The script~\ref{scr:#1}\xspace}
+%
+\newcommand{\mthref}[1]{method~\ref{mth:#1}\xspace}
+\newcommand{\mthsref}[1]{methods~\ref{mth:#1}\xspace}
+\newcommand{\Mthref}[1]{Method~\ref{mth:#1}\xspace}
+\newcommand{\tmthref}[1]{the method~\ref{mth:#1}\xspace}
+\newcommand{\Tmthref}[1]{The method~\ref{mth:#1}\xspace}
+%
+\newcommand{\clsref}[1]{class~\ref{cls:#1}\xspace}
+\newcommand{\tclsref}[1]{the class~\ref{cls:#1}\xspace}
+\newcommand{\Tclsref}[1]{The class~\ref{cls:#1}\xspace}
+
+\newcommand{\figlabel}[1]{\label{fig:#1}}
+\newcommand{\seclabel}[1]{\label{sec:#1}}
+%=============================================================
+%:Menu item macro
+% for menu items, so we can change our minds on how to print them! (apb)
+\definecolor{lightgray}{gray}{0.89}
+\newcommand{\menu}[1]{{%
+	\setlength{\fboxsep}{0pt}%
+	\colorbox{lightgray}{{{\upshape\sffamily\strut \,#1\,}}}}}
+\newcommand{\link}[1]{{%
+	\fontfamily{lmr}\selectfont
+ 	\upshape{\sffamily \underline{#1}}}}
+% For submenu items:
+\newcommand{\go}{\,$\triangleright$\,}
+% \newcommand{\go}{\,$\blacktriangleright$\,}
+% For keyboard shortcuts:
+%\newcommand{\short}[1]{\mbox{$\langle${\sc CMD}$\rangle$-#1}\xspace}
+\newcommand{\short}[1]{\mbox{{\sc cmd}\hspace{0.08em}--\hspace{0.09em}#1}\xspace}
+% For buttons:
+\newcommand{\button}[1]{{%
+	\setlength{\fboxsep}{0pt}%
+	\fbox{{\upshape\sffamily\strut \,#1\,}}}}
+% NB: The button macro does not work within captions -- incompatible with xcolor package :-(
+\newcommand{\toolsflap}{\textit{Tools} flap\xspace}
+%=============================================================
+%:Reader cues (do this)
+%
+% Indicate something the reader should try out.
+\newcommand{\dothisicon}{\raisebox{-.5ex}{\includegraphics[width=1.4em]{squeak-logo}}}
+\newcommand{\dothis}[1]{%
+	\medskip
+	\noindent\dothisicon
+	\ifx#1\empty\else\quad\emph{#1}\fi
+	\par\smallskip\nopagebreak}
+% NB: To use this in an individual chapter, you must set:
+%\graphicspath{{figures/} {../figures/}}
+% at the head of the chapter.  Don't forget the final /
+%=============================================================
+%:Reader hints (hint)
+%
+% Indicates a non-obvious consequence 
+\newcommand{\hint}[1]{\vspace{1ex}\noindent\fbox{\textsc{Hint}} \emph{#1}}
+%=================================================================
+% graphics for Morphic handles
+\newcommand{\grabHandle}{\raisebox{-0.2ex}{\includegraphics[width=1em]{blackHandle}}}
+\newcommand{\moveHandle}{\raisebox{-0.2ex}{\includegraphics[width=1em]{moveHandle}}}
+\newcommand{\debugHandle}{\raisebox{-0.2ex}{\includegraphics[width=1em]{debugHandle}}}
+%=============================================================
+%:Highlighting Important stuff (doublebox)
+%
+% From Seaside book ...
+\newsavebox{\SavedText}
+\newlength{\InnerBoxRule}\setlength{\InnerBoxRule}{.75\fboxrule}
+\newlength{\OuterBoxRule}\setlength{\OuterBoxRule}{1.5\fboxrule}
+\newlength{\BoxSeparation}\setlength{\BoxSeparation}{1.5\fboxrule}
+\addtolength{\BoxSeparation}{.5pt}
+\newlength{\SaveBoxSep}\setlength{\SaveBoxSep}{2\fboxsep}
+%
+\newenvironment{doublebox}{\begin{lrbox}{\SavedText}
+    \begin{minipage}{.75\textwidth}}
+    {\end{minipage}\end{lrbox}\begin{center}
+    \setlength{\fboxsep}{\BoxSeparation}\setlength{\fboxrule}{\OuterBoxRule}
+    \fbox{\setlength{\fboxsep}{\SaveBoxSep}\setlength{\fboxrule}{\InnerBoxRule}%
+      \fbox{\usebox{\SavedText}}}
+  \end{center}}
+% Use this:
+\newcommand{\important}[1]{\begin{doublebox}#1\end{doublebox}}
+%=============================================================
+%:Section depth
+\setcounter{secnumdepth}{2}
+%% for this to happen start the file with
+%\ifx\wholebook\relax\else
+%\input{../common.tex}
+%\begin{document}
+%\fi
+% and terminate by
+% \ifx\wholebook\relax\else\end{document}\fi
+
+\DeclareGraphicsExtensions{.pdf, .jpg, .png}
+%=============================================================
+%:PDF setup
+\hypersetup{
+%   a4paper,
+%   pdfstartview=FitV,
+%   colorlinks,
+%   linkcolor=darkblue,
+%   citecolor=darkblue,
+   pdftitle={Squeak by Example},
+   pdfauthor={Andrew P. Black, St\'ephane Ducasse,	Oscar Nierstrasz,
+Damien Pollet},
+   pdfkeywords={Smalltalk, Squeak, Object-Oriented Programming, OOP},
+   pdfsubject={Computer Science}
+}
+%=============================================================
+%:Page layout and appearance
+%
+% \renewcommand{\headrulewidth}{0pt}
+\renewcommand{\chaptermark}[1]{\markboth{#1}{}}
+\renewcommand{\sectionmark}[1]{\markright{\thesection\ #1}}
+\renewpagestyle{plain}[\small\itshape]{%
+	\setheadrule{0pt}%
+	\sethead[][][]{}{}{}%
+	\setfoot[][][]{}{}{}}
+\renewpagestyle{headings}[\small\itshape]{%
+	\setheadrule{0pt}%
+	\setmarks{chapter}{section}%
+	\sethead[\thepage][][\chaptertitle]{\sectiontitle}{}{\thepage}%
+	\setfoot[][][]{}{}{}}
+%=============================================================
+%:Title section setup and TOC numbering depth
+\setcounter{secnumdepth}{1}
+\setcounter{tocdepth}{1}
+\titleformat{\part}[display]{\centering}{\huge\partname\ \thepart}{1em}{\Huge\textbf}[]
+\titleformat{\chapter}[display]{}{\huge\chaptertitlename\ \thechapter}{1em}{\Huge\raggedright\textbf}[]
+\titlecontents{part}[3pc]{%
+		\pagebreak[2]\addvspace{1em plus.4em minus.2em}%
+		\leavevmode\large\bfseries}
+	{\contentslabel{3pc}}{\hspace*{-3pc}}
+	{}[\nopagebreak]
+\titlecontents{chapter}[3pc]{%
+		\pagebreak[0]\addvspace{1em plus.2em minus.2em}%
+		\leavevmode\bfseries}
+	{\contentslabel{3pc}}{}
+	{\hfill\contentspage}[\nopagebreak]
+\dottedcontents{section}[3pc]{}{3pc}{1pc}
+\dottedcontents{subsection}[3pc]{}{0pc}{1pc}
+% \dottedcontents{subsection}[4.5em]{}{0pt}{1pc}
+% Make \cleardoublepage insert really blank pages http://www.tex.ac.uk/cgi-bin/texfaq2html?label=reallyblank
+\let\origdoublepage\cleardoublepage
+\newcommand{\clearemptydoublepage}{%
+  \clearpage
+  {\pagestyle{empty}\origdoublepage}}
+\let\cleardoublepage\clearemptydoublepage % see http://www.tex.ac.uk/cgi-bin/texfaq2html?label=patch
+%=============================================================
+%:FAQ macros (for FAQ chapter)
+\newtheorem{faq}{FAQ}
+\newcommand{\answer}{\paragraph{Answer}\ }
+%=============================================================
+%:Listings package configuration
+% \newcommand{\caret}{\makebox{\raisebox{0.4ex}{\footnotesize{$\wedge$}}}}
+\newcommand{\caret}{\^\,}
+\newcommand{\escape}{{\sf \textbackslash}}
+\usepackage{listings}
+\lstdefinelanguage{Smalltalk}{
+%  morekeywords={self,super,true,false,nil,thisContext}, % This is overkill
+  morestring=[d]',
+  morecomment=[s]{"}{"},
+  alsoletter={\#:},
+  escapechar={!},
+  literate=
+    {BANG}{!}1
+    {CARET}{\^}1
+    {UNDERSCORE}{\_}1
+    {\\st}{Smalltalk}9 % convenience -- in case \st occurs in code
+    % {'}{{\textquotesingle}}1 % replaced by upquote=true in \lstset
+    {_}{{$\leftarrow$}}1
+    {>>>}{{\sep}}1
+    {^}{{$\uparrow$}}1
+    {~}{{$\sim$}}1
+    {-}{{\sf -\hspace{-0.13em}-}}1  % the goal is to make - the same width as +
+    {+}{\raisebox{0.08ex}{+}}1		% and to raise + off the baseline to match -
+    {-->}{{\quad$\longrightarrow$\quad}}3
+	, % Don't forget the comma at the end!
+  tabsize=4
+}[keywords,comments,strings]
+
+\lstset{language=Smalltalk,
+	basicstyle=\sffamily,
+	keywordstyle=\color{black}\bfseries,
+	% stringstyle=\ttfamily, % Ugly! do we really want this? -- on
+	mathescape=true,
+	showstringspaces=false,
+	keepspaces=true,
+	breaklines=true,
+	breakautoindent=true,
+	lineskip={-1pt}, % Ugly hack
+	upquote=true, % straight quote; requires textcomp package
+	columns=fullflexible} % no fixed width fonts
+% In-line code (literal)
+% Normally use this for all in-line code:
+\newcommand{\ct}{\lstinline[mathescape=false,basicstyle={\sffamily\upshape}]}
+% apb 2007.8.28 added the \upshape declaration to avoid getting italicized code in \dothis{ } sections.
+% In-line code (latex enabled)
+% Use this only in special situations where \ct does not work
+% (within section headings ...):
+\newcommand{\lct}[1]{{\textsf{\textup{#1}}}}
+% Use these for system categories and protocols:
+\newcommand{\scat}[1]{\emph{\textsf{#1}}\xspace}
+\newcommand{\pkg}[1]{\emph{\textsf{#1}}\xspace}
+\newcommand{\prot}[1]{\emph{\textsf{#1}}\xspace}
+% Code environments
+% NB: the arg is for tests
+% Only code and example environments may be tests
+\lstnewenvironment{code}[1]{%
+	\lstset{%
+		frame=lines,
+		mathescape=false
+	}
+}{}
+\def\ignoredollar#1{}
+%=============================================================
+%:Code environments (method, script ...)
+% NB: the third arg is for tests
+% Only code and example environments may be tests
+\lstnewenvironment{example}[3][defaultlabel]{%
+	\renewcommand{\lstlistingname}{Example}%
+	\lstset{
+		frame=lines,
+		mathescape=false,
+		caption={\emph{#2}},
+		label={eg:#1}
+	}
+}{}
+\lstnewenvironment{script}[2][defaultlabel]{%
+\renewcommand{\lstlistingname}{Script}%
+	\lstset{
+		frame=lines,
+		mathescape=false,
+		name={Script},
+		caption={\emph{#2}},
+		label={scr:#1}
+	}
+}{}
+\lstnewenvironment{method}[2][defaultlabel]{%
+	\renewcommand{\lstlistingname}{Method}%
+	\lstset{
+		frame=lines,
+		mathescape=false,
+		name={Method},
+		caption={\emph{#2}},
+		label={mth:#1}
+	}
+}{}
+\lstnewenvironment{methods}[2][defaultlabel]{% just for multiple methods at once
+	\renewcommand{\lstlistingname}{Methods}%
+	\lstset{
+		frame=lines,
+		mathescape=false,
+		name={Method},
+		caption={\emph{#2}},
+		label={mth:#1}
+	}
+}{}
+\lstnewenvironment{numMethod}[2][defaultlabel]{%
+	\renewcommand{\lstlistingname}{Method}%
+	\lstset{
+		numbers=left,
+		numberstyle={\tiny\sffamily},
+		frame=lines,
+		mathescape=false,
+		name={Method},
+		caption={\emph{#2}},
+		label={mth:#1}
+	}
+}{}
+\lstnewenvironment{classdef}[2][defaultlabel]{%
+	\renewcommand{\lstlistingname}{Class}%
+	\lstset{
+		frame=lines,
+		mathescape=false,
+		name={Class},
+		caption={\emph{#2}},
+		label={cls:#1}
+	}
+}{}
+%=============================================================
+%:Reserving space
+% Usually need one more line than the actual lines of code
+\newcommand{\needlines}[1]{\Needspace{#1\baselineskip}}
+%=============================================================
+%:Indexing macros
+% Macros ending with "ind" generate text as well as an index entry
+% Macros ending with "index" *only* generate an index entry
+\newcommand{\ind}[1]{\index{#1}#1\xspace} % plain text
+\newcommand{\subind}[2]{\index{#1!#2}#2\xspace} % show #2, subindex under #1
+\newcommand{\emphind}[1]{\index{#1}\emph{#1}\xspace} % emph #1
+\newcommand{\emphsubind}[2]{\index{#1!#2}\emph{#2}\xspace} % show emph #2, subindex inder #1
+\newcommand{\scatind}[1]{\index{#1@\textsf{#1} (category)}\scat{#1}} % category
+\newcommand{\protind}[1]{\index{#1@\textsf{#1} (protocol)}\prot{#1}} % protocol
+% \newcommand{\clsind}[1]{\index{#1@\textsf{#1} (class)}\ct{#1}\xspace}
+\newcommand{\clsind}[1]{\index{#1!\#@(class)}\ct{#1}\xspace} % class
+\newcommand{\clsindplural}[1]{\index{#1!\#@(class)}\ct{#1}s\xspace} % class
+\newcommand{\cvind}[1]{\index{#1@\textsf{#1} (class variable)}\ct{#1}\xspace} % class var
+\newcommand{\glbind}[1]{\index{#1@\textsf{#1} (global)}\ct{#1}\xspace} % global
+\newcommand{\patind}[1]{\index{#1@#1 (pattern)}\ct{#1}\xspace} % pattern
+\newcommand{\pvind}[1]{\index{#1@\textsf{#1} (pseudo variable)}\ct{#1}\xspace} % pseudo var
+\newcommand{\mthind}[2]{\index{#1!#2@\ct{#2}}\ct{#2}\xspace} % show method name only
+\newcommand{\lmthind}[2]{\index{#1!#2@\ct{#2}}\lct{#2}\xspace} % show method name only
+\newcommand{\cmind}[2]{\index{#1!#2@\ct{#2}}\ct{#1>>>#2}\xspace} % show class>>method
+\newcommand{\toolsflapind}{\index{Tools flap}\toolsflap} % index tools flap
+% The following only generate an index entry:
+% \newcommand{\clsindex}[1]{\index{#1@\textsf{#1} (class)}}
+\newcommand{\clsindex}[1]{\index{#1!\#@(class)}} % class
+\newcommand{\cmindex}[2]{\index{#1!#2@\ct{#2}}} % class>>method
+\newcommand{\cvindex}[1]{\index{#1@\textsf{#1} (class variable)}} % class var
+\newcommand{\glbindex}[1]{\index{#1@\textsf{#1} (global)}}% global
+\newcommand{\pvindex}[1]{\index{#1@\textsf{#1} (pseudo variable)}}% pseudo var
+\newcommand{\seeindex}[2]{\index{#1|see{#2}}} % #1, see #2
+\newcommand{\scatindex}[1]{\index{#1@\textsf{#1} (category)}} % category
+\newcommand{\protindex}[1]{\index{#1@\textsf{#1} (protocol)}} % protocol
+% How can we have the main entry page numbers in bold yet not break the hyperlink?
+\newcommand{\boldidx}[1]{{\bf #1}} % breaks hyperlink
+%\newcommand{\indmain}[1]{\index{#1|boldidx}#1\xspace} % plain text, main entry
+%\newcommand{\emphsubindmain}[2]{\index{#1!#2|boldidx}\emph{#2}\xspace} % subindex, main entry
+%\newcommand{\subindmain}[2]{\index{#1!#2|boldidx}#2\xspace} % subindex, main entry
+%\newcommand{\clsindmain}[1]{\index{#1@\textsf{#1} (class)|boldidx}\ct{#1}\xspace}
+%\newcommand{\clsindmain}[1]{\index{#1!\#@(class)|boldidx}\ct{#1}\xspace} % class main
+%\newcommand{\indexmain}[1]{\index{#1|boldidx}} % main index entry only
+\newcommand{\indmain}[1]{\index{#1}#1\xspace} 
+\newcommand{\emphsubindmain}[2]{\index{#1!#2}\emph{#2}\xspace} % subindex, main entry
+\newcommand{\subindmain}[2]{\index{#1!#2}#2\xspace} % subindex, main entry
+%\newcommand{\clsindmain}[1]{\index{#1@\textsf{#1} (class)}\ct{#1}\xspace}
+\newcommand{\clsindmain}[1]{\index{#1!\#@(class)}\ct{#1}\xspace} % class main
+\newcommand{\clsindexmain}[1]{\index{#1!\#@(class)}} % class main index only
+\newcommand{\indexmain}[1]{\index{#1}} 
+%=============================================================
+%:Code macros
+% some constants
+\newcommand{\codesize}{\small}
+\newcommand{\codefont}{\sffamily}
+\newcommand{\cat}[1]{\textit{In category #1}}%%To remove later
+\newlength{\scriptindent}
+\setlength{\scriptindent}{.3cm}
+%% Method presentation constants
+\newlength{\methodindent}
+\newlength{\methodwordlength}
+\newlength{\aftermethod}
+\setlength{\methodindent}{0.2cm}
+\settowidth{\methodwordlength}{\ M\'ethode\ }
+%=============================================================
+%:Smalltalk macros
+%\newcommand{\sep}{{$\gg$}}
+\newcommand{\sep}{\mbox{>>}}
+\newcommand{\self}{\lct{self}\xspace}
+\newcommand{\super}{\lct{super}\xspace}
+\newcommand{\nil}{\lct{nil}\xspace}
+%=============================================================
+% be less conservative about float placement
+% these commands are from http://www.tex.ac.uk/cgi-bin/texfaq2html?label=floats
+\renewcommand{\topfraction}{.9}
+\renewcommand{\bottomfraction}{.9}
+\renewcommand{\textfraction}{.1}
+\renewcommand{\floatpagefraction}{.85}
+\renewcommand{\dbltopfraction}{.66}
+\renewcommand{\dblfloatpagefraction}{.85}
+\setcounter{topnumber}{9}
+\setcounter{bottomnumber}{9}
+\setcounter{totalnumber}{20}
+\setcounter{dbltopnumber}{9}
+%=============================================================
+% apb doesn't like paragraphs to run in to each other without a break
+\parskip 1ex
+%=============================================================
+%:Stuff to check, merge or deprecate
+%\setlength{\marginparsep}{2mm}
+%\renewcommand{\baselinestretch}{1.1}
+%=============================================================
