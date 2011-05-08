@@ -103,16 +103,52 @@ The core of the RedditLink object is now finished. Everything is ready to make i
 Units tests are very important, not so much in small examples like this one, but especially in larger applications. Having a good set of unit tests with descent coverage helps protect the code during changes. At the same time, unit tests function as working documentation. Instead of writing scratch test code in some workspace, you can just as well write a unit test. We created the class \ct{RedditLinkTests} as a subclass of \ct{TestCase} and add 3 test methods.
 
 
+
+After creating a RedditLink object, and/or manipulating it, these methods assert that certain conditions hold. To improve code sharing (we'll need it again in section 5) we add a method called \ct{assertContractUsing:} to RedditLink that checks the basic contract of the receiver, using the method \ct{assert:} on an arbitrary object. For completeness, we also implement a general \ct{isValid} testing method.
+
+
 \begin{code}{}
-RedditLinkTests>>testInitialState| link | link := RedditLink new. link assertContractUsing: self. self assert: link points isZero
+RedditLink>>assertContractUsing: object   object perform: #assert: with: (self url isNil or: [ self url isKindOf: String ]).
+   object perform: #assert: with: (self title isNil or: [ self title isKindOf: String ]).
+   object perform: #assert: with: (self created isKindOf: TimeStamp).
+   object perform: #assert: with: (self points isKindOf: Integer).
+   object perform: #assert: with: (self posted asSeconds >= 0).
+   object perform: #assert: with: (self printString isKindOf: String)
+   
+RedditLink>>isValid
+    self assertContractUsing: self
+\end{code}
+
+Now we can take advantage of these methods in our tests.
+
+\begin{code}{}
+RedditLinkTests>>testInitialState    | link | 
+    link := RedditLink new. 
+    link assertContractUsing: self. 
+    self assert: link points isZero
 \end{code}
 
 \begin{code}{}
-RedditLinkTests>>testCreate| link url title | url := 'http://www.seaside.st'. title := 'Seaside'. link := RedditLink withUrl: url title: title. link assertContractUsing: self. self assert: link points isZero. self assert: link url = url. self assert: link title = title
+RedditLinkTests>>testCreate    | link url title | 
+    url := 'http://www.seaside.st'. 
+    title := 'Seaside'. 
+    link := RedditLink withUrl: url title: title. 
+    link assertContractUsing: self. 
+    self assert: link points isZero. 
+    self assert: link url = url. 
+    self assert: link title = title
 \end{code}
 
 \begin{code}{}
-RedditLinkTests>>testVoting| link | link := RedditLink new. link assertContractUsing: self. self assert: link points isZero. link voteUp. self assert: link points = 1. link voteDown. self assert: link points isZero. link voteDown. self assert: link points isZero
+RedditLinkTests>>testVoting    | link | 
+    link := RedditLink new. 
+    link assertContractUsing: self. 
+    self assert: link points isZero. link voteUp. 
+    self assert: link points = 1. 
+    link voteDown. self assert: 
+    link points isZero. 
+    link voteDown. 
+    self assert: link points isZero
 \end{code}
 
 
