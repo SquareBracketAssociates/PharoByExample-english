@@ -38,7 +38,7 @@
 % --------------------------------------------
     \graphicspath{{figures/} {../figures/}}
 	\begin{document}
-	% \renewcommand{\nnbb}[2]{} % Disable editorial comments
+	\renewcommand{\nnbb}[2]{} % Disable editorial comments
 	\sloppy
 \fi
 
@@ -576,7 +576,7 @@ Object>>>haltIf: condition
 Starting from \ct!thisContext!, \ct!haltIf:! goes up through the execution stack, checking if the name of the calling method is the same as the one passed as parameter.
 If this is the case, then it raises an exception which, by default, summons the debugger.
 
-It is also possible to supply a boolean or a boolean block as an argument to \ct{haltIf:}, but these cases are straightforward and do not make use of \ct{thisContext}.
+It is also possible to supply a boolean or a boolean block as an argument to \ct{haltIf:}, but these cases are straightforward and do not make use of \lct{thisContext}.
 
 %======================================
 \section{Intercepting messages not understood}
@@ -903,8 +903,8 @@ By simply annotating a method with the pragma \ct!<ignoreForCoverage>! one can c
 
 As instances of the class \clsind{Pragma}, pragmas are first class objects. A compiled method answers to the message \mthind{CompiledMethod}{pragmas}. This method returns an array of pragmas. 
 
-\begin{code}{@TEST}
-(SplitJoinTest class >> #showDocumentation) pragmas
+\begin{code}{}
+(SplitJoinTest class >> #showDocumentation) pragmas.
   --> an Array(<ignoreForCoverage>)
 (Float>>#+) pragmas --> an Array(<primitive: 41>)
 \end{code}

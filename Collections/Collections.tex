@@ -320,7 +320,7 @@ There are several ways to create instances of the class \clsind{Array}. We can u
 The following code creates an array of three elements consisting of the number \ct{4}, the fraction \ct{3/2} and the string \ct{'lulu'}.
 
 \begin{code}{@TEST | anArray |}
-Array with: 4 with: 3/2 with: 'lulu' -->  {4 . (3/2) . 'lulu'}
+Array with: 4 with: 3/2 with: 'lulu' -->  {4. (3/2). 'lulu'}
 \end{code}
 
 \paragraph{Literal creation with \ct|\#()|.}
@@ -455,7 +455,7 @@ colors at: #blue put: Color blue.
 colors at: #red put: Color red.
 colors at: #yellow --> Color yellow
 colors keys          --> a Set(#blue #yellow #red)
-colors values       --> {Color blue . Color yellow . Color red}
+colors values       --> {Color blue. Color yellow. Color red}
 \end{code}
 
 Dictionaries compare keys by equality. Two keys are considered to be the same if they return true when compared using \ct{=}. A common and difficult to spot bug is to use as key an object whose \ct{=} method has been redefined but not its \ct{hash} method. Both methods are used in the implementation of dictionary and when comparing objects.
@@ -468,7 +468,7 @@ The class \clsindmain{Dictionary} clearly illustrates that the collection hierar
 \begin{code}{@TEST | colors |}
 colors := Dictionary newFrom: { #blue->Color blue . #red->Color red . #yellow->Color yellow }.
 colors removeKey: #blue.
-colors associations --> {#yellow->Color yellow . #red->Color red}
+colors associations --> {#yellow->Color yellow. #red->Color red}
 \end{code}
 
 \paragraph{IdentityDictionary.}

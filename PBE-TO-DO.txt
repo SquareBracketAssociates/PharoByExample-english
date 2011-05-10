@@ -1,8 +1,5 @@
 ---
 # PBE TO-DO
-$Id$
-
----
 
 This is the TODO list for "Pharo By Example", listing pending actions and current status of chapters.
 
@@ -10,6 +7,9 @@ This is the TODO list for "Pharo By Example", listing pending actions and curren
 # PHARO BOOK 1
 
 ## TO DO:
+
+- Upgrade to new Pharo image (don't forget to check all the tests!)
+
 - Incorporate Thomas Schrader's formatting suggestions? (See Regex/ToSh-Regex.tex)
 - From: "symingz" <symingz@foxmail.com>
 Date: April 10, 2010 13:57:36 GMT+02:00
@@ -32,8 +32,6 @@ What the book says is different, though. For example, when '(1 + 2) + (x a)' is 
 - pretty print (r) shortcut does nothing (issue 1312)
 - context-clicking on process browser raises an error (issue 1313)
 
-## SUPPRESS fi ligatures in headings:
-- perl -pi -e 's/(\\(chapter|section|subsection).*)fi/\1f{}i/g;'  $*
 
 ---
 # PHARO BOOK 2
@@ -72,6 +70,9 @@ What the book says is different, though. For example, when '(1 + 2) + (x a)' is 
 - Metacello nearly finished (mariano is writing the last bits)
 
 - Gofer (Argh this is in french now I wonder if this is not any faster that you read the french and write the english because you will probably rewrite a part of my english)
+
+## Regex
+- stable, but some tests appear to be broken (in the PBE1 image)
 
 ## STATUS OF NEW CHAPTERS
 
