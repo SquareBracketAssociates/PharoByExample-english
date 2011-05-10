@@ -35,12 +35,14 @@
 \chapter{CRUD in Pharo}
 \chapterauthor{\authorsven{}}
 
-CRUD refers to the Create, read, update and delete operations in persistent storage. The term CRUD applications often refers to simple applications managing simple data and that have to be created fast. Often CRUD development is done with languages such as PHP. In this Chapter we want to show that Smalltalk is a really good alternative and that in addition, your CRUD applications can evolve (which is often the problems of the use of traditional languages). We will show you that it  is perfectly possible to write nice web applications in Pharo and really fast and Reddit.st adds persistency in a relational database, unit tests as well as web application components to the mix.
+CRUD refers to the Create, read, update and delete operations in persistent storage. The term CRUD applications often refers to simple applications managing simple data and that have to be created fast. Often CRUD development is done with languages such as PHP. In this Chapter we want to show that Smalltalk is a really good alternative and that in addition, your CRUD applications can evolve (which is often the problems of the use of traditional languages). We will show you that it  is perfectly possible to write nice web applications in Pharo and really fast and 
+Reddit.st adds persistency in a relational database, unit tests as well as web application components to the mix.
 
 We will show how to implement a small but non-trivial web application in Smalltalk using Seaside, Glorp and PostgreSQL. Reddit, is web application where users can post interesting links that get voted up or down. The idea is that the 'best' links end up with the most points automatically. Many other websites exist in the area of social bookmarking, like Delicious, Digg and Hacker News.
 
 
-The 10 main sections of this article follow the development of the 10 classes making up the application. The focus of the Smalltalk version is not so much on the small size or the high developer productivity, but more on the fact that we can cover so much ground using such powerful frameworks, as well as the natural development flow from model over tests and persistence to web GUI.
+
+The 10 main sections of this article follow the development of the 10 classes making up the application. The focus of the Smalltalk version is not so much on the small size or the high developer productivity, but more on the fact that we can cover so much ground using such powerful frameworks, as well as the natural development flow from model over tests and persistence to web GUI.
 
 The material shown in this Chapter was originally written by Sven Van Caekenberghe and we thanks him for his permission to use it to create this book chapter.  We assume that you understand what web applications are and how Seaside basically works. If not, you should the Seaside Chapter for an introduction \sd{should be in the other book I guess or in omnibus}. We also will assume that you have a basic understanding of relational databases and/or SQL.
 
@@ -67,10 +69,12 @@ RedditLink>>initialize
     self points: 0.
     self created: TimeStamp now
 
-RedditLink>>printOn:    super printOn: stream. 
+RedditLink>>printOn:
+    super printOn: stream. 
     stream nextPut: $(. 
     self url printOn: stream. 
-    stream nextPut: $,.    self title printOn: stream. 
+    stream nextPut: $,.
+    self title printOn: stream. 
     stream nextPut: $)
 \end{code}
 
@@ -84,16 +88,19 @@ RedditLink>>posted
 Apart from creating and displaying RedditLinks, users should be able to vote them up and down. Therefore, we add two action methods, \ct{voteUp} and \ct{voteDown}.
 
 \begin{code}{}
-RedditLink>>voteUp    self points: self points + 1
+RedditLink>>voteUp
+    self points: self points + 1
 
-RedditLink>>voteDown    self points > 0 ifTrue: [ self points: self points - 1 ]
+RedditLink>>voteDown
+    self points > 0 ifTrue: [ self points: self points - 1 ]
 \end{code}
 
 
 We also introduce the class method \ct{#withUrl:title:} to create new instances as follows
 
 \begin{code}{}
-RedditLink class>>withUrl: url title: title   ^ self new url: url; title: title; yourself
+RedditLink class>>withUrl: url title: title
+   ^ self new url: url; title: title; yourself
 \end{code}
 
 The core of the RedditLink object is now finished. Everything is ready to make instances and use them.
@@ -110,7 +117,8 @@ After creating a RedditLink object, and/or manipulating it, these methods assert
 
 
 \begin{code}{}
-RedditLink>>assertContractUsing: object   object perform: #assert: with: (self url isNil or: [ self url isKindOf: String ]).
+RedditLink>>assertContractUsing: object
+   object perform: #assert: with: (self url isNil or: [ self url isKindOf: String ]).
    object perform: #assert: with: (self title isNil or: [ self title isKindOf: String ]).
    object perform: #assert: with: (self created isKindOf: TimeStamp).
    object perform: #assert: with: (self points isKindOf: Integer).
@@ -124,14 +132,16 @@ RedditLink>>isValid
 Now we can take advantage of these methods in our tests.
 
 \begin{code}{}
-RedditLinkTests>>testInitialState    | link | 
+RedditLinkTests>>testInitialState
+    | link | 
     link := RedditLink new. 
     link assertContractUsing: self. 
     self assert: link points isZero
 \end{code}
 
 \begin{code}{}
-RedditLinkTests>>testCreate    | link url title | 
+RedditLinkTests>>testCreate
+    | link url title | 
     url := 'http://www.seaside.st'. 
     title := 'Seaside'. 
     link := RedditLink withUrl: url title: title. 
@@ -142,7 +152,8 @@ RedditLinkTests>>testCreate    | link url title |
 \end{code}
 
 \begin{code}{}
-RedditLinkTests>>testVoting    | link | 
+RedditLinkTests>>testVoting
+    | link | 
     link := RedditLink new. 
     link assertContractUsing: self. 
     self assert: link points isZero. link voteUp. 
@@ -155,6 +166,56 @@ RedditLinkTests>>testVoting    | link |
 
 
 \section{}
+
+To make our application less trivial, we are going to make our collection of links persistent in a relation database. For this we are going to use Glorp, an object-relational mapping tool. Glorp will take care of all the SQL! To do its magic, Glorp needs a DescriptorSystem that tells it 3 things: the class models involved, the tables involved and the way the two map (which it calls a descriptor). In this simple case we are just mapping one object into one table, so the descriptor system might look a bit verbose. Just remember that Glorp can do much, much more advanced things. Furthermore, there exist extensions to Glorp that implement ActiveRecord style automatic descriptors.
+
+\paragraph{Loading Glorp.}
+Here is how you should load Glorp \sd{to be done}
+
+
+First let us define a new class description named \ct{RedditDescriptor} subclass of  \ct{DescriptorSystem} for Glorp.
+
+\begin{code}{}
+DescriptorSystem subclass: #RedditDescriptor
+   instanceVariableNames: !! 
+   classVariableNames: '' 
+   poolDictionaries: '' 
+   category: 'Reddit-DB'
+\end{code}
+
+
+Using this class we can tell Glorp about our class model, \ct{RedditLink}, and which instance variables are to be persistent attributes. Instead of some XML description, a much more powerful Smalltalk object model is being built. Conventions in methods names are being used to glue things together.
+
+
+\begin{code}{}
+OnWhichClass>>constructAllClasses    ^ super constructAllClasses add: RedditLink; yourself
+
+OnWhichClass>>classModelForRedditLink: aClassModel    #(id url title created points) do: [ :each | aClassModel newAttributeNamed: each ]
+\end{code}
+
+The second step is to describe which tables are involved. So here we list all the fields (columns) of our table \ct{REDDIT\_LINKS}. Glorp shields us from the differences between different SQL dialects. Note how id is designated to be a primary key. The serial type will result in an SQL sequence being used. \sd{what is that a serial type}
+
+\begin{code}{}
+OnWhichClass>>allTableNames     ^ #( 'REDDIT_LINKS' )
+OnWhichClass>>tableForREDDIT_LINKS: aTable     (aTable createFieldNamed: 'id' type: platform serial) bePrimaryKey. 
+	aTable createFieldNamed: 'url' type: (platform varchar: 64). 
+	aTable createFieldNamed: 'title' type: (platform varchar: 64). 
+	aTable createFieldNamed: 'created' type: platform timestamp.	aTable createFieldNamed: 'points' type: platform integer
+\end{code}
+
+The third and final step is the actual descriptor describing the mapping between the class model \ct{RedditLink} and the table \ct{REDDIT\_LINKS}. In this simple case, direct mappings are used between attributes and fields. As we will see in the next sections, Glorp is now ready to do its work
+
+\begin{code}{}
+OnWhichClass>>descriptorForRedditLink: aDescriptor
+	| table | 
+	table := self tableNamed: 'REDDIT_LINKS'. 
+	aDescriptor table: table. (aDescriptor newMapping: DirectMapping) from: #id to: (table fieldNamed: 'id'). 
+	(aDescriptor newMapping: DirectMapping) from: #url to: (table fieldNamed: 'url'). 
+	(aDescriptor newMapping: DirectMapping) from: #title to: (table fieldNamed: 'title'). 
+	(aDescriptor newMapping: DirectMapping) from: #created to: (table fieldNamed: 'created'). 
+	(aDescriptor newMapping: DirectMapping) from: #points to: (table fieldNamed: 'points')
+\end{code}
+
 \section{}
 
 \section{}
