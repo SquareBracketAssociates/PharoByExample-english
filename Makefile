@@ -27,7 +27,7 @@ BOOK2=PBE2
 OMNIBUS=PBE-Omnibus
 
 # --------------------------------------------------------------------------------
-all : omnibus
+all : BOOK1 # omnibus
 
 # NB: be sure to use texlive and to set the TEXINPUTS variable accordingly
 # See README.txt

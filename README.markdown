@@ -55,7 +55,7 @@ This is a human-readable summary of the Legal Code (the full license).
 
 # File structure
 
-The main file is PBE.tex.  Chapters are in subdirectories.
+The main file is PBE1.tex (resp. PBE2.tex).  Chapters are in subdirectories.
 You can latex either the entire book, or each individual chapter.
 Each chapter file starts and ends with the same incantation
 which will optionally include macros or end the document if it is
@@ -66,9 +66,9 @@ Use the {method} {classdef} {example} and {script} environments for
 multi-line code.
 
 If you add a new chapter: 
--	please be sure to include it from PBE.tex.
+-	please be sure to include it from PBE1.tex.
 -	Remember to include its /figures/ subdirectory in the graphicspath,
-	   which is set in the preamble to PBE.tex.  Don't forget the trailing /
+	   which is set in the preamble to PBE1.tex.  Don't forget the trailing /
 -	Please make sure the chapter compiles with latex both from the main book
 	and as a separate chapter.  
 -	Set the svn:ignore property on the chapter's directory.  The command to do
@@ -94,7 +94,9 @@ part of the book, you will find that printing 2 up at 140% works well.
 
 Tests are automatically generated from the LaTeX sources.
 
-To run the tests, load the package PBE-Testing from the following SqueakSource project, and save the image to the same location as the PBE.tex main file.
+Grab a recent Pharo image and move it to the folder Pharo book folder.  Do *not* use a 1-click image, since the actual image should be located at the same level as the PBE1.tex file.
+
+To run the tests, load the package PBE-Testing from the following SqueakSource project:
 
 	MCHttpRepository
 	    location: 'http://www.squeaksource.com/PharoByExample'
@@ -109,9 +111,9 @@ For PBE2, instead run:
 
 	PBE2main new runTests
 
-This will automatically extract and run the tests in the LaTeX sources of the Squeak by Example book.  It will also load the hands-on exercises, and check that they are working. (Some tests may also be included from the dependent hands-on packages.)
+This will automatically extract and run the tests in the LaTeX sources of the Pharo by Example book.  It will also load the hands-on exercises, and check that they are working. (Some tests may also be included from the dependent hands-on packages.)
 
-This will parse (using Regex) the PBE.tex (resp. PBE2.tex) to locate the included chapter files, parse each chapter file to search for @TEST annotations, generate test case classes for each chapter with tests in a new category PBE-GeneratedTests, and generate a test method (numbered by the line number in the chapter) for each test found.  (NB: Any old generated tests are removed before new ones are generated.) Finally, by sending "runTests", a TestRunner is opened on the new category, and all those tests are run.
+This will parse (using Regex) the PBE1.tex (resp. PBE2.tex) to locate the included chapter files, parse each chapter file to search for @TEST annotations, generate test case classes for each chapter with tests in a new category PBE-GeneratedTests, and generate a test method (numbered by the line number in the chapter) for each test found.  (NB: Any old generated tests are removed before new ones are generated.) Finally, by sending "runTests", a TestRunner is opened on the new category, and all those tests are run.
 
 ## How to write tests in LaTeX
 
