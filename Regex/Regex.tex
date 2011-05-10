@@ -927,6 +927,8 @@ The \ct{String} enumeration and replacement protocols that we saw earlier in thi
 \mthind{RxMatcher}{copy:replacingMatchesWith:} and
 \mthind{RxMatcher}{copy:translatingMatchesUsing:}.
 
+% It seems that tests spanning multiple lines are not handled -- strange, since
+% this must have worked, once upon a time ... omn 2011-05-10
 \begin{code}{@TEST | seuss aWords |}
 seuss := 'The cat in the hat is back'.
 aWords := '\<([^aeiou]|[a])+\>' asRegex.    "match words with 'a' in them"

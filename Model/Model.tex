@@ -720,7 +720,7 @@ We shall see with the following example precisely how this works.
 
 Consider the message \ct{constructorString}, which we can send to any morph:
 \begin{code}{@TEST | anEllipse | anEllipse := EllipseMorph new.}
-anEllipse constructorString --> '((EllipseMorph newBounds: (0@0 corner: 50@40) color: Color yellow) setBorderWidth: 1 borderColor: Color black)'
+anEllipse constructorString --> '(EllipseMorph newBounds: (0@0 corner: 50@40) color: Color yellow)'
 \end{code}
 The return value is a string that can be evaluated to recreate the morph.
 

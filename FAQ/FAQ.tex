@@ -140,7 +140,7 @@ Here we ask which methods are introduced by \ct{True}:
 \begin{code}{@TEST | newMethods |}
 newMethods := [:aClass| aClass methodDict keys select:
 	[:aMethod | (aClass superclass canUnderstand: aMethod) not ]].
-newMethods value: True --> an IdentitySet(#asBit)
+newMethods value: True --> an IdentitySet(#asBit #xor:)
 \end{code}
 
 \begin{faq}
