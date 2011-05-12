@@ -6,23 +6,23 @@
 \ifx\wholebook\relax\else
 % --------------------------------------------
 % Lulu:
-	\documentclass[a4paper,10pt,twoside]{book}
-	\usepackage[
-		papersize={6.13in,9.21in},
-		hmargin={.75in,.75in},
-		vmargin={.75in,1in},
-		ignoreheadfoot
-	]{geometry}
-	\input{../common.tex}
-	\setboolean{lulu}{true}
+     \documentclass[a4paper,10pt,twoside]{book}
+     \usepackage[
+          papersize={6.13in,9.21in},
+          hmargin={.75in,.75in},
+          vmargin={.75in,1in},
+          ignoreheadfoot
+     ]{geometry}
+     \input{../common.tex}
+     \setboolean{lulu}{true}
 % --------------------------------------------
 % A4:
-%	\documentclass[a4paper,11pt,twoside]{book}
-%	\input{../common.tex}
-%	\usepackage{a4wide}
+%     \documentclass[a4paper,11pt,twoside]{book}
+%     \input{../common.tex}
+%     \usepackage{a4wide}
 % --------------------------------------------
      \graphicspath{{figures/} {../figures/}}
-	\begin{document}
+     \begin{document}
 \fi
 %=================================================================
 %\renewmessage{\nnbb}[2]{} % Disable editorial comments
@@ -165,7 +165,7 @@ RedditLinkTests>>testVoting
 \end{code}
 
 
-\section{}
+\section{Describing Database Data}
 
 To make our application less trivial, we are going to make our collection of links persistent in a relation database. For this we are going to use Glorp, an object-relational mapping tool. Glorp will take care of all the SQL! To do its magic, Glorp needs a DescriptorSystem that tells it 3 things: the class models involved, the tables involved and the way the two map (which it calls a descriptor). In this simple case we are just mapping one object into one table, so the descriptor system might look a bit verbose. Just remember that Glorp can do much, much more advanced things. Furthermore, there exist extensions to Glorp that implement ActiveRecord style automatic descriptors.
 
@@ -173,11 +173,11 @@ To make our application less trivial, we are going to make our collection of lin
 Here is how you should load Glorp \sd{to be done}
 
 
-First let us define a new class description named \ct{RedditDescriptor} subclass of  \ct{DescriptorSystem} for Glorp.
+First let us define a new class description named \ct{RedditSchemaDescriptor} subclass of  \ct{DescriptorSystem} for Glorp.
 
 \begin{code}{}
-DescriptorSystem subclass: #RedditDescriptor
-   instanceVariableNames: !! 
+DescriptorSystem subclass: #RedditSchemaDescriptor
+   instanceVariableNames: '' 
    classVariableNames: '' 
    poolDictionaries: '' 
    category: 'Reddit-DB'
@@ -188,41 +188,213 @@ Using this class we can tell Glorp about our class model, \ct{RedditLink}, and w
 
 
 \begin{code}{}
-OnWhichClass>>constructAllClasses    ^ super constructAllClasses add: RedditLink; yourself
+RedditSchemaDescriptor>>constructAllClasses
+    ^ super constructAllClasses add: RedditLink; yourself
 
-OnWhichClass>>classModelForRedditLink: aClassModel    #(id url title created points) do: [ :each | aClassModel newAttributeNamed: each ]
+RedditSchemaDescriptor>>classModelForRedditLink: aClassModel
+    #(id url title created points) do: [ :each | aClassModel newAttributeNamed: each ]
 \end{code}
 
 The second step is to describe which tables are involved. So here we list all the fields (columns) of our table \ct{REDDIT\_LINKS}. Glorp shields us from the differences between different SQL dialects. Note how id is designated to be a primary key. The serial type will result in an SQL sequence being used. \sd{what is that a serial type}
 
 \begin{code}{}
-OnWhichClass>>allTableNames     ^ #( 'REDDIT_LINKS' )
-OnWhichClass>>tableForREDDIT_LINKS: aTable     (aTable createFieldNamed: 'id' type: platform serial) bePrimaryKey. 
-	aTable createFieldNamed: 'url' type: (platform varchar: 64). 
-	aTable createFieldNamed: 'title' type: (platform varchar: 64). 
-	aTable createFieldNamed: 'created' type: platform timestamp.	aTable createFieldNamed: 'points' type: platform integer
+RedditSchemaDescriptor>>allTableNames
+     ^ #( 'REDDIT_LINKS' )
+
+RedditSchemaDescriptor>>tableForREDDIT_LINKS: aTable
+     (aTable createFieldNamed: 'id' type: platform serial) bePrimaryKey. 
+     aTable createFieldNamed: 'url' type: (platform varchar: 64). 
+     aTable createFieldNamed: 'title' type: (platform varchar: 64). 
+     aTable createFieldNamed: 'created' type: platform timestamp.
+     aTable createFieldNamed: 'points' type: platform integer
 \end{code}
 
 The third and final step is the actual descriptor describing the mapping between the class model \ct{RedditLink} and the table \ct{REDDIT\_LINKS}. In this simple case, direct mappings are used between attributes and fields. As we will see in the next sections, Glorp is now ready to do its work
 
 \begin{code}{}
-OnWhichClass>>descriptorForRedditLink: aDescriptor
-	| table | 
-	table := self tableNamed: 'REDDIT_LINKS'. 
-	aDescriptor table: table. (aDescriptor newMapping: DirectMapping) from: #id to: (table fieldNamed: 'id'). 
-	(aDescriptor newMapping: DirectMapping) from: #url to: (table fieldNamed: 'url'). 
-	(aDescriptor newMapping: DirectMapping) from: #title to: (table fieldNamed: 'title'). 
-	(aDescriptor newMapping: DirectMapping) from: #created to: (table fieldNamed: 'created'). 
-	(aDescriptor newMapping: DirectMapping) from: #points to: (table fieldNamed: 'points')
+RedditSchemaDescriptor>>descriptorForRedditLink: aDescriptor
+
+     | table | 
+     table := self tableNamed: 'REDDIT_LINKS'. 
+     aDescriptor table: table. (aDescriptor newMapping: DirectMapping) from: #id to: (table fieldNamed: 'id'). 
+     (aDescriptor newMapping: DirectMapping) from: #url to: (table fieldNamed: 'url'). 
+     (aDescriptor newMapping: DirectMapping) from: #title to: (table fieldNamed: 'title'). 
+     (aDescriptor newMapping: DirectMapping) from: #created to: (table fieldNamed: 'created'). 
+     (aDescriptor newMapping: DirectMapping) from: #points to: (table fieldNamed: 'points')
 \end{code}
 
-\section{}
+\section{Connecting to the Database}
 
-\section{}
-\section{}
-\section{}
+Let's assume you installed and configured PostgreSQL on some machine and that you created some database there. We now have to specify how Glorp has to connect to PostgreSQL. We do this creating a new class named \ct{RedditDatabaseResource}
 
-\section{}
+\begin{code}{}
+Object subclass: #RedditDatabaseResource
+   instanceVariableNames: '' 
+   classVariableNames: 'DefaultLogin' 
+   poolDictionaries: '' 
+   category: 'Reddit-DB'
+\end{code}
+
+We will add some class methods (as well as a class variable called \ct{DefaultLogin}).
+
+\begin{code}{}
+RedditDatabaseResource class>>login
+     DefaultLogin ifNil: [ DefaultLogin := self createLogin ]. 
+     ^ DefaultLogin
+
+RedditDatabaseResource class>>login: aLogin
+     "see #createLogin for an example of how to create a Login object"      
+     DefaultLogin := aLogin
+
+RedditDatabaseResource class>>createLogin
+     ^ Login new 
+          database: PostgreSQLPlatform new; 
+          username: 'svc'; 
+          password: 'secret'; 
+          connectString: 'localhost:5432_playground'; 
+          yourself
+\end{code}
+
+
+\sd{this is fuzzy}
+The username and password speak for themselves, the \ct{connectString} contains the hostname, port number and database name (after an underscore). Glorp accesses a database through sessions. A session is most easily started from a descriptor system given a login as argument, that's what we do in the \ct{session} helper class method.
+
+
+\begin{code}{}
+RedditDatabaseResource>>session
+     ^ RedditSchema sessionForLogin: self login
+
+RedditDatabaseResource>>createTables
+     "self createTables" 
+     "This has to be done only once, be sure to set #login"
+     |session | 
+     session := self session. 
+     session accessor login; logging: true. 
+     session inTransactionDo: [ session createTables ]. 
+     session accessor logout
+\end{code}
+
+Glorp can even help us to create our \ct{REDDIT\_LINKS} table, that is what the \ct{createTables} class method does. So we truly don't have to use any SQL! The flow should be familiar: get a session, login, do some work in a transaction and logout. By setting logging to true, the generated SQL statements will be printed on the Transcript (comment this out for production use).
+
+
+\section{Now this is the time to test: RedditDatabaseTest}
+
+With our RedditSchema descriptor system and our \ct{RedditLinksDatabaseResource} we are now ready to test the persistency of our model. We create another class named \ct{RedditDatabaseTest} which inherits from \ct{TestCase}. These tests need an instance variable called \ct{session} to hold the Glorp session, as well as \ct{setUp} and \ct{teardown} methods.
+
+
+\begin{code}{}
+Object subclass: #RedditDatabaseTest
+   instanceVariableNames: 'session' 
+   classVariableNames: '' 
+   poolDictionaries: '' 
+   category: 'Reddit-DB'
+\end{code}
+
+\begin{code}{}
+RedditDatabaseTest>>setUp
+     session := RedditDatabaseResource session.
+     session accessor logging: true; login
+\end{code}
+
+\begin{code}{}
+RedditDatabaseTest>>tearDown
+     session accessor logout
+\end{code}
+
+
+Our first test reads all RedditLinks from the database, making sure they are valid and of the expected type. Querying doesn't have to be done in a unit of work or transaction.
+
+\begin{code}{}
+RedditDatabaseTest>>testQuery
+    |links|
+    links := session readManyOf: RedditLink.
+     links do: [ :each |
+                 each assertContractUsing: self. 
+                 self assert: (each isKindOf: RedditLink) ]
+\end{code}
+
+
+The second test creates a new RedditLink and then registers it with the session inside a unit of work. This will effectively save the object in the database. The id of the RedditLink will have a value afterwards. Next we reset the session and query the RedditLink with the known id. After making sure that what we put in got out of the database we delete the object.
+
+\begin{code}{A first test}
+RedditDatabaseTest>>testUpdate
+    | link url title id |
+    url := 'http://www.seaside.st'. 
+    title := 'Seaside Unit Test'. 
+    link := RedditLink withUrl: url title: title.
+    session inUnitOfWorkDo: [ session register: link ]. 
+         id := link id. 
+     session inUnitOfWorkDo: [ session register: link. link voteUp ].      
+     session reset.
+\end{code}
+
+ The third test checks if updating an existing persistent object works as expected. Note that the actual modification, the \ct{voteUp}, has to be done inside a unit of work to a registered object for it to be picked up by Glorp.
+
+\begin{code}{}
+RedditDatabaseTest>>testCreate
+     | link url title id |
+     url := 'http://www.seaside.st'.
+     title := 'Seaside Unit Test'.
+     link := RedditLink withUrl: url title: title.
+     session inUnitOfWorkDo: [ session register: link ].
+     id := link id.
+     self assert: id notNil. 
+     session reset.
+     link := session readOneOf: RedditLink where: [ :each | each id = id ]. 
+     link assertContractUsing: self.
+     self assert: link url = url.
+     self assert: link title = title. 
+     session delete: link
+\end{code}
+
+
+\section{RedditSession}
+We are almost ready to start writing the GUI of our actual web application. Seaside web applications often have a session object that keeps the application's state during the user's interaction with it. We need to extend that session with a database session. We define a new class  RedditSession as a subclass of WASession. In addition, it has an instance variable called \ct{glorpSession} to hold a Glorp session to the database.
+
+\begin{code}{}
+WASession subclass: #RedditSession
+   instanceVariableNames: 'glorpSession' 
+   classVariableNames: '' 
+   poolDictionaries: '' 
+   category: 'Reddit-DB'
+\end{code}
+
+Note how we are using lazy initialization in the \ct{glorpSession} accessor. In \ct{newGlorpSession} we're making use of our RedditDatabaseResource. 
+
+\begin{code}{}
+RedditSession>>glorpSession   glorpSession ifNil: [ glorpSession := self newGlorpSession ]. 
+   glorpSession accessor isLoggedIn ifFalse: [ glorpSession accessor login ]. 
+   ^ glorpSession
+\end{code}
+
+\begin{code}{}
+RedditSession>>newGlorpSession
+     | session | 
+     session := RedditDatabaseResource session. "session accessor logging: true." 
+     ^ session
+\end{code}
+
+The \ct{unregistered} is a hook called by Seaside whenever a session expires, we use it clean up our Glorp session by doing a log out.
+
+\begin{code}{}
+RedditSession>>unregistered     super unregistered. 
+     self teardownGlorpSession
+\end{code}
+
+\begin{code}{}
+RedditSession>>teardownGlorpSession     self glorpSession logout
+\end{code}
+
+\section{Web Part}
+
+We can finally start with our web app itself. Figure 1 shows the main page of the Reddit.st app. There are four sections in this page: a header or title section, some action links, a list of some of the highest or top ranking links and a list if some of the latest or most recent links.
+
+\begin{figure}\begin{center}
+\includegraphics[width=8cm]{redditOne}
+\caption{}
+\end{center}
+\end{figure}
+
 \section{}
 
 \section{}
