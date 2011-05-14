@@ -227,39 +227,39 @@ implement the code browser in a dedicated class.
 The first step is then to create the class with some initial methods:
 
 \begin{code}{}
-Object subclass: #PBE2CodeBrowser
+Object subclass: #PBE2CodeNavigator
   instanceVariableNames: 'browser'
   classVariableNames: ''
   poolDictionaries: ''
   category: 'PBE2-CodeBrowser'
 
-PBE2CodeBrowser class>>open
+PBE2CodeNavigator class>>open
   ^ self new open
 
-PBE2CodeBrowser>>open
+PBE2CodeNavigator>>open
   self buildBrowser.
   browser openOn: self organizer.
 
-PBE2CodeBrowser>>organizer
+PBE2CodeNavigator>>organizer
   ^ RPackageOrganizer default
 
-PBE2CodeBrowser>>buildBrowser
+PBE2CodeNavigator>>buildBrowser
   browser := GLMTabulator new.
 \end{code}
 
-Executing \ct{PBE2CodeBrowser open} opens a new browser with the text
+Executing \ct{PBE2CodeNavigator open} opens a new browser with the text
 ``a RPackageOrganizer'' and nothing else. We now extend our browser by
 adding a pane to display a list of packages.
 
 \begin{code}{}
-PBE2CodeBrowser>>buildBrowser
+PBE2CodeNavigator>>buildBrowser
   browser := GLMTabulator new.
   browser
     column: #packages.
 
   browser transmit to: #packages; andShow: [:a | self packagesIn: a].
 
-PBE2CodeBrowser>>packagesIn: constructor
+PBE2CodeNavigator>>packagesIn: constructor
   constructor list
     display: [:organizer | organizer packageNames sorted];
     format: #asString
@@ -274,7 +274,7 @@ exemplify this, we extend our browser with a list of classes for the
 currently selected package (see \figref{showclasses}).
 
 \begin{code}{}
-PBE2CodeBrowser>>buildBrowser
+PBE2CodeNavigator>>buildBrowser
   browser := GLMTabulator new.
   browser
     column: #packages;
@@ -283,7 +283,7 @@ PBE2CodeBrowser>>buildBrowser
   browser transmit to: #packages; andShow: [:a | self packagesIn: a].
   browser transmit from: #packages; to: #classes; andShow: [:a | self classesIn: a].
 
-PBE2CodeBrowser>>classesIn: constructor
+PBE2CodeNavigator>>classesIn: constructor
   constructor list
     display: [:packageName | (self organizer packageNamed: packageName) definedClasses]
 \end{code}
@@ -338,7 +338,7 @@ and we have only been looking at the first level of this structure. To
 mend this, we add a tree presentation for packages:
 
 \begin{code}{}
-PBE2CodeBrowser>>packagesIn: constructor
+PBE2CodeNavigator>>packagesIn: constructor
   constructor list
     display: [ :organizer | organizer packageNames sorted ];
     format: #asString.
@@ -347,65 +347,52 @@ PBE2CodeBrowser>>packagesIn: constructor
     children: [ :rootPackage :organizer | (self childrenOf: rootPackage on: organizer) sorted ];
     format: #asString
 
-PBE2CodeBrowser>>classesIn: constructor
+PBE2CodeNavigator>>classesIn: constructor
   constructor list
     display: [:packageName | (self organizer packageNamed: packageName) definedClasses];
     when: [:packageName | self organizer includesPackageNamed: packageName ]  
 
-PBE2CodeBrowser>>childrenOf: rootPackage on: organizer
+PBE2CodeNavigator>>childrenOf: rootPackage on: organizer
   ^ organizer packageNames select: [ :name | name beginsWith: rootPackage , '-' ]
 
-PBE2CodeBrowser>>rootPackagesOn: organizer
+PBE2CodeNavigator>>rootPackagesOn: organizer
   ^ organizer packageNames collect: [ :string | string readStream upTo: $- ]
 \end{code}
 
 % counter balance the previous $ to avoid a syntax-highlighting bug
 % with Emacs
 
-\dc{HERE}
+This code brings two presentations for packages, one with a list and
+one with a tree. Glamour has automatically added tabs on top of the
+package's pane to switch between the presentations.
 
-Since the registry of packages is specified in \ct{openOn:} and not on
-a explicit pane, we use the keyword \ct{showOn:}---without any
-\ct{from:}---to create a transmission in which we can specify what to
-display on the \emph{packages} pane. The tree presentation uses a
-\ct{children:} argument rather than \ct{display:} that takes a
+The tree presentation uses a \ct{children:} argument that takes a
 selector or a block which specifies how to retrieve the children of a
 given item in the tree. Since the children of each package are now
-selected by our tree presentation, we have to replace the selector for
-all packages with just the roots of the package hierarchy in the
-\ct{openOn:} argument on the last line.
+selected by our tree presentation, we have to pass only the roots of
+the package hierarchy to the \ct{display:} argument.
 
 At this point, we can also add pane~3 that shows the method categories
 as shown in figure~\ref{fig:classnavigator_wireframe}. The listing
 below introduces no new elements that we have not already discussed:
 
 \begin{code}{}
-browser := TableLayoutBrowser new.
-browser
-	column: #packages;
-	column: #classes/+;
-	column: #categories+/.
+PBE2CodeNavigator>>buildBrowser 
+  browser := GLMTabulator new.
+  browser
+    column: #packages;
+    column:  #classes;
+    column: #categories. 
 
-browser showOn: #packages; using: [
-	browser tree
-		children: [:package | Smalltalk organization categories
-                                 select: [:subPackage | subPackage beginsWith: package, '-']]
-].
+  browser transmit to: #packages; andShow: [:a | self packagesIn: a].
+  browser transmit from: #packages; to: #classes; andShow: [:a | self classesIn: a].
+  browser transmit from: #classes; to: #categories; andShow: [:a | self categoriesIn: a].
 
-browser showOn: #classes; from: #packages; using: [
-	browser list
-		display: [ :package | Smalltalk organization listAtCategoryNamed: package]
-].
-
-/+browser showOn: #categories; from: #classes; using: [
-	browser list display: [ :class | class organization categories ].
-].+/
-
-browser openOn: (Smalltalk organization  categories
-                     collect: [:package | package readStream upTo: $-])
-                           asSet asSortedCollection
+PBE2CodeNavigator>>categoriesIn: constructor
+  constructor list
+    display:  [:class | class organization categories]  
 \end{code}
-%$
+
 
 The browser resulting from the above changes is shown in
 figure~\ref{fig:treeandcategories}.
@@ -421,48 +408,39 @@ figure~\ref{fig:treeandcategories}.
 %-------------------------------------------------------------------------------
 \subsection{Multiple Origins}
 
-The mechanism to show the methods is slightly more complicated. When a method category is selected we want to show \emph{only} the methods that belong to that category. If no category is selected, we want to show \emph{all} methods that belong to the current class.
+The mechanism to show the methods is slightly more complicated. When a
+method category is selected we want to show \emph{only} the methods
+that belong to that category. If no category is selected, we want to
+show \emph{all} methods that belong to the current class.
 
-This leads to our methods pane depending on the selection of two other panes. Multiple origins can simply be defined using multiple \ct{from:} keywords as shown below.
+This leads to our methods pane depending on the selection of two other
+panes, the class pane and the category pane. Multiple origins can be
+defined using multiple \ct{from:} keywords as shown below.
 
 \begin{code}{}
-browser := TableLayoutBrowser new.
-browser
-	column: #packages;
-	column: #classes;
-	column: #categories/+;
-	column: #methods+/.
+PBE2CodeNavigator>>buildBrowser
+  browser := GLMTabulator new.
+  browser
+    column: #packages;
+    column:  #classes;
+    column: #categories;
+    column: #methods.
 
-browser showOn: #packages; using: [
-	browser tree
-		children: [:package | Smalltalk organization categories
-                                 select: [:subPackage | subPackage beginsWith: package, '-']]
-].
+  browser transmit to: #packages; andShow: [:a | self packagesIn: a].
+  browser transmit from: #packages; to: #classes; andShow: [:a | self classesIn: a].
+  browser transmit from: #classes; to: #categories; andShow: [:a | self categoriesIn: a].
+  browser transmit from: #classes; from: #categories; to: #methods; andShow: [:a | self methodsIn: a].
 
-browser showOn: #classes; from: #packages; using: [
-	browser list
-		display: [ :package | Smalltalk organization listAtCategoryNamed: package]
-].
-
-browser showOn: #categories; from: #classes; using: [
-	browser list display: [ :class | class organization categories ].
-].
-
-/+browser showOn: #methods; from: #classes; from: #categories; using: [
-	browser list
-		when: [:class :category | class notNil and: [category notNil]].
-		display: [:class :category | (class organization listAtCategoryNamed: category)
-                                                            asSortedCollection];
-	browser list
-		when: [:class :category | class notNil and: [category isNil]];
-		display: [:class :category | class selectors asSortedCollection].
-].+/
-
-browser openOn: (Smalltalk organization  categories
-                     collect: [:package | package readStream upTo: $-])
-                           asSet asSortedCollection
+PBE2CodeNavigator>>methodsIn: constructor
+  constructor list
+    display: [:class :category | (class organization listAtCategoryNamed: category)
+                                      sorted].
+  constructor list
+    when: [:class :category | class notNil and: [category isNil]];
+    display: [:class | class selectors sorted];
+    allowNil
 \end{code}
-%$
+
 
 The listing shows a couple of properties we have not seen
 before. First, the multiple origins are reflected in the number of
@@ -473,9 +451,11 @@ the order that they were defined when the corresponding transmission
 is fired.
 
 In the first presentation, the condition matches when all arguments
-are defined (not nil). The second condition matches only when the
-category is undefined but the class is not. We can therefore omit the
-category from the display block.
+are defined (not nil), this is the default for all presentations. The
+second condition matches only when the category is undefined but the
+class is not. When a presentation must be displayed even in the
+presence of undefined origin, it is necessary to use \ct{allowNil} as
+shown. We can therefore omit the category from the display block.
 
 The completed class navigator is displayed in
 figure~\ref{fig:codenavigator}.
@@ -500,9 +480,12 @@ the user, Glamour uses the \emph{selection} port by default. As a
 result, the following two statements are equivalent:
 
 \begin{code}{}
-browser showOn: #categories; from: #classes; using: [ ... ]
-browser showOn: #categories; from: #classes -> #selection; using: [ ... ]
+browser transmit from: #packages; to: #classes; andShow: [:a | ...].
+browser transmit from: #packages port: #selection; to: #classes; andShow: [:a | ...].
 \end{code}
+
+\dc{It is currently not clear what are the available ports for each
+  presentation. It looks like hover does not exist anymore}
 
 Other ports exist and may be used depending on the presentation. For
 example, the list presentation also populates the \emph{hover} port
@@ -522,9 +505,8 @@ us to reuse browsers and nest them within each other.
 
 In the next example we want to create a class \emph{editor} as shown
 in figure~\ref{fig:classbrowser_wireframe}. Panes 1 through 4 are
-equivalent with those described in the class \emph{navigator} in
-section~\ref{sec:tutorial/getting_started}. Pane~5 shows the source
-code of the method that is currently selected in pane~4.
+equivalent to those described previously. Pane~5 shows the source code
+of the method that is currently selected in pane~4.
 
 \begin{figure}[htbp]
 \centerline{\includegraphics[width=\linewidth]{classbrowser_wireframe.pdf}}
@@ -532,86 +514,124 @@ code of the method that is currently selected in pane~4.
 \label{fig:classbrowser_wireframe}
 \end{figure}
 
-As panes 1 through 4 are the same as in the class navigator it would
-be convenient to reuse the class navigator rather than duplicating its
-code. To achieve this, we make the class navigator available through a
-method named \ct{codeNavigator} which returns the browser, rather than
-opening it. We can then use the browser as shown in the listing for
-the class editor below.
+For the sake of the example, we will create this editor in a new class
+called \ct{PBE2CodeEditor}. This editor will delegate the presentation
+of panes 1 through 4 to the previously implemented
+\ct{PBE2CodeNavigator}. To achieve this, we first have to make the
+existing navigator return the constructed browser.
 
 \begin{code}{}
-browser := TableLayoutBrowser new.
-browser
-	row: #navigator;
-	row: #source.
-
-browser showOn: #navigator; using: [
-	browser custom: self codeNavigator
-].
-
-browser openOn: (Smalltalk organization  categories
-                     collect: [:package | package readStream upTo: $-])
-                           asSet asSortedCollection
+PBE2CodeNavigator>>buildBrowser
+  [...]
+  ^ browswer
 \end{code}
-% $
+
+We can then reuse the navigator in the new editor browser as shown
+below.
+
+\begin{code}{}
+Object subclass: #PBE2CodeEditor
+	instanceVariableNames: 'browser'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'PBE2-CodeBrowser'.
+
+PBE2CodeEditor class>>open
+  ^ self new open
+
+PBE2CodeEditor>>open
+  self buildBrowser.
+  browser openOn:  self  organizer
+
+PBE2CodeEditor>>organizer 
+  ^ RPackageOrganizer default
+
+PBE2CodeEditor>>buildBrowser 
+  browser := GLMTabulator new.
+  browser 
+    row: #navigator;
+    row: #source.
+    
+  browser transmit to: #navigator; andShow:  [:a | self navigatorIn: a ]. 
+
+PBE2CodeEditor>>navigatorIn:  constructor
+  constructor  custom:  (PBE2CodeNavigator new buildBrowser)
+\end{code}
+
 
 The listing shows how the browser is used exactly like we would use a
 list or other type of presentation. In fact, browsers are a type of
 presentation.
 
-When evaluating the code, a new browser is opened that shows the
-navigator embedded in the top pane and an empty pane at the bottom. No
-source code will be displayed because we have not yet created any
-connections between the panes. To get to the source, we need both the
-name of the selected method as well as the class in which it is
-defined. Since this information is defined only within the navigator
-browser, we must first export it to the outside world by using the
-\ct{sendToOutside:from:} message. For this we append the following
-lines to \ct{codeNavigator}:
+When evaluating the code \ct{PBE2CodeEditor open}, a new browser is
+opened that shows the navigator embedded in the top pane and an empty
+pane at the bottom. No source code will be displayed because we have
+not yet created any connections between the panes. To get to the
+source, we need both the name of the selected method as well as the
+class in which it is defined. Since this information is defined only
+within the navigator browser, we must first export it to the outside
+world by using the \ct{sendToOutside:from:} message. For this we
+append the following lines to \ct{codeNavigator}:
 
 \begin{code}{}
-browser
-	sendToOutside: #selectedClass from: #classes -> #selection;
-	sendToOutside: #selectedMethod from: #methods -> #selection.
+PBE2CodeNavigator>>buildBrowser
+  [...]
+  browser transmit from: #classes; toOutsidePort:  #selectedClass. 
+  browser transmit from: #methods; toOutsidePort:  #selectedMethod.
+  
+  ^ browser
 \end{code}
 
 This will send the selection within classes and methods to the
 \emph{selectedClass} and \emph{selectedMethod} ports of the containing
-pane. Alternatively, we could have added these lines to the \ct{self~codeNavigator} instruction in the code editor---it makes no
-difference to Glamour at what point these are added. However, we
-consider it sensible to clearly define the interface on the side of
-the code \emph{navigator} rather than within the code editor in order
-to promote the reuse of this interface as well.
+pane. Alternatively, we could have added these lines to the
+\ct{navigatorIn:} method in the code editor---it makes no difference
+to Glamour.
+
+\begin{code}{}
+PBE2CodeEditor>>navigatorIn: constructor
+
+  "Alternative way of adding outside ports. There is no need to use this
+   code and the previous one simultaneously."
+
+  | navigator |
+  navigator := PBE2CodeNavigator new buildBrowser
+          sendToOutside: #selectedClass from: #classes -> #selection;
+          sendToOutside: #selectedMethod from: #methods -> #selection;
+          yourself.
+  
+  constructor custom: navigator
+\end{code}
+
+However, we consider it sensible to clearly define the interface on
+the side of the code \emph{navigator} rather than within the code
+editor in order to promote the reuse of this interface as well.
 
 Note that a message for achieving the reverse---importing a port from
 the outside pane and storing its value on one of the browser's panes
-also exists and is known as \ct{sendTo:fromOutside:}.
+also exists and requires the use of \ct{fromOutsidePort:} and \ct{to:}.
 
 We extend our code editor example as follows:
 
 \begin{code}{}
-browser := TableLayoutBrowser new.
-browser
-	row: #navigator;
-	row: #source.
+PBE2CodeEditor>>buildBrowser 
+	browser := GLMTabulator new.
+	browser 
+		row: #navigator;
+		row: #source.
+		
+	browser transmit to: #navigator; andShow:  [:a | self navigatorIn: a ]. 
+	browser transmit
+		from:  #navigator port: #selectedClass;
+		from: #navigator port: #selectedMethod;
+		to: #source;
+		andShow:  [:a | self sourceIn: a].
 
-browser showOn: #navigator; using: [
-	browser custom: self codeNavigator
-].
-
-/+browser
-	showOn: #source;
-	from: #navigator -> #selectedClass;
-	from: #navigator -> #selectedMethod; using: [
-	browser text
-		display: [ :class :method | class sourceCodeAt: method ]
-].+/
-
-browser openOn: (Smalltalk organization  categories
-                     collect: [:package | package readStream upTo: $-])
-                           asSet asSortedCollection
+PBE2CodeEditor>>sourceIn: constructor
+	constructor text
+		display: [:class :method | class sourceCodeAt: method] 
 \end{code}
-%$
+
 
 We can now view the source code of any selected method and have
 created a modular browser by reusing the class navigator that we had
@@ -624,6 +644,7 @@ is shown in figure~\ref{fig:composed-browser}.
 \label{fig:composed-browser}
 \end{figure}
 
+\dc{HERE}
 
 %-------------------------------------------------------------------------------
 \subsection{Actions}
