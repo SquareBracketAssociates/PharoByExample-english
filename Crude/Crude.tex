@@ -113,7 +113,7 @@ Units tests are very important, not so much in small examples like this one, but
 
 
 
-After creating a RedditLink object, and/or manipulating it, these methods assert that certain conditions hold. To improve code sharing (we'll need it again in section 5) we add a method called \ct{assertContractUsing:} to RedditLink that checks the basic contract of the receiver, using the method \ct{assert:} on an arbitrary object. For completeness, we also implement a general \ct{isValid} testing method.
+After creating a RedditLink object, and/or manipulating it, these methods assert that certain conditions hold. To improve code sharing (we'll need it again in Section 5) we add a method called \ct{assertContractUsing:} to RedditLink that checks the basic contract of the receiver, using the method \ct{assert:} on an arbitrary object. For completeness, we also implement a general \ct{isValid} testing method.
 
 
 \begin{code}{}
@@ -277,7 +277,7 @@ RedditDatabaseResource>>createTables
 Glorp can even help us to create our \ct{REDDIT\_LINKS} table, that is what the \ct{createTables} class method does. So we truly don't have to use any SQL! The flow should be familiar: get a session, login, do some work in a transaction and logout. By setting logging to true, the generated SQL statements will be printed on the Transcript (comment this out for production use).
 
 
-\section{Now this is the time to test: RedditDatabaseTest}
+\section{Time to test: RedditDatabaseTest}\label{sec:databasetest}
 
 With our RedditSchema descriptor system and our \ct{RedditLinksDatabaseResource} we are now ready to test the persistency of our model. We create another class named \ct{RedditDatabaseTest} which inherits from \ct{TestCase}. These tests need an instance variable called \ct{session} to hold the Glorp session, as well as \ct{setUp} and \ct{teardown} methods.
 
@@ -349,7 +349,7 @@ RedditDatabaseTest>>testCreate
 
 
 \section{RedditSession}
-We are almost ready to start writing the GUI of our actual web application. Seaside web applications often have a session object that keeps the application's state during the user's interaction with it. We need to extend that session with a database session. We define a new class  RedditSession as a subclass of WASession. In addition, it has an instance variable called \ct{glorpSession} to hold a Glorp session to the database.
+We are almost ready to start writing the GUI of our actual web application. Seaside web applications often have a session object that keeps the application's state during the user's interaction with it. We need to extend that session with a database session. We define a new class  RedditSession as a subclass of \ct{WASession}. In addition, it has an instance variable called \ct{glorpSession} to hold a Glorp session to the database.
 
 \begin{code}{}
 WASession subclass: #RedditSession
@@ -359,10 +359,11 @@ WASession subclass: #RedditSession
    category: 'Reddit-DB'
 \end{code}
 
-Note how we are using lazy initialization in the \ct{glorpSession} accessor. In \ct{newGlorpSession} we're making use of our RedditDatabaseResource. 
+Note how we are using lazy initialization in the \ct{glorpSession} accessor. In \ct{newGlorpSession} we're making use of our \ct{RedditDatabaseResource}. 
 
 \begin{code}{}
-RedditSession>>glorpSession   glorpSession ifNil: [ glorpSession := self newGlorpSession ]. 
+RedditSession>>glorpSession
+   glorpSession ifNil: [ glorpSession := self newGlorpSession ]. 
    glorpSession accessor isLoggedIn ifFalse: [ glorpSession accessor login ]. 
    ^ glorpSession
 \end{code}
@@ -377,15 +378,17 @@ RedditSession>>newGlorpSession
 The \ct{unregistered} is a hook called by Seaside whenever a session expires, we use it clean up our Glorp session by doing a log out.
 
 \begin{code}{}
-RedditSession>>unregistered     super unregistered. 
+RedditSession>>unregistered
+     super unregistered. 
      self teardownGlorpSession
 \end{code}
 
 \begin{code}{}
-RedditSession>>teardownGlorpSession     self glorpSession logout
+RedditSession>>teardownGlorpSession
+     self glorpSession logout
 \end{code}
 
-\section{Web Part}
+\section{Web Part: the Component \ct{WAReddit}}
 
 We can finally start with our web app itself. Figure 1 shows the main page of the Reddit.st app. There are four sections in this page: a header or title section, some action links, a list of some of the highest or top ranking links and a list if some of the latest or most recent links.
 
@@ -395,9 +398,167 @@ We can finally start with our web app itself. Figure 1 shows the main page of th
 \end{center}
 \end{figure}
 
-\section{}
+We create a \ct{WAComponent} subclass called \ct{WAReddit}. This will become our central or root web app component. We start by writing the rendering methods.
 
-\section{}
+\begin{code}{}
+WAReddit>>renderContentOn: html    html heading: 'Reddit.st'. 
+    html heading level: 3; with: 'In 10 elegant Smalltalk classes'. 
+    self renderActionsOn: html. 
+    self renderHighestRankingLinksOn: html. 
+    self renderLatestLinksOn: html
+\end{code}
+
+\begin{code}{}
+WAReddit>>renderActionsOn: html    html paragraph: [ html anchor callback: [ ]; with: 'Refresh'. 
+    html anchor callback: [ self inform: 'Not yet implemented' ]; with: 'New Link' ]
+\end{code}
+
+\begin{code}{}WAReddit>>renderHighestRankingLinksOn: html    html heading level: 2; with: 'Highest Ranking Links'. 
+    html orderedList: [          self highestRankingLinks do: [ :each | self renderLink: each on: html ] ]
+\end{code}
+
+\begin{code}{}WAReddit>>renderLatestLinksOn: html    html heading level: 2; with: 'Latest Links'. 
+    html orderedList: [         self latestLinks do: [ :each | self renderLink: each on: html ] ]
+\end{code}
+
+\begin{code}{}
+WAReddit>>renderLink: link on: html    html listItem: [ html anchor url: link url; title: link url; with: link title.   
+    html text: ' Posted ', (self class durationString: link posted), ' ago. '. 
+    html text: link points asString, ' points. '. 
+    html anchor 
+         callback: [ self voteUp: link ]; 
+         title: 'Vote this link up'; 
+         with: 'Up'. 
+    html space. 
+    html anchor 
+         callback: [ self voteDown: link ]; 
+         title: 'Vote this link down'; with: 'Down' ]
+\end{code}
+
+Starting with the main \ct{renderContentOn:} method, the rendering of each section is delegated to its own method. Note how \ct{renderLink:on:} is used 2 times. For now, we're not yet implementing the 'New Link' action. Our rendering methods depend on 5 extra methods: \ct{highestRankingLinks}, \ct{latestLinks}, the class method \ct{durationString:} and the actions methods \ct{voteUp:} and \ct{voteDown:}. Only the first three are needed to render the page itself.
+
+\begin{code}{}
+WAReddit>>highestRankingLinks   | query | 
+   query := (Query readManyOf: RedditLink)              orderBy: [ :each | each points descending ]; limit: 20; yourself.   ^ self session glorpSession execute: query
+\end{code}
+
+\begin{code}{}
+WAReddit>>latestLinks   | query | 
+   query := (Query readManyOf: RedditLink)              orderBy: [ :each | each created descending]; limit: 20; yourself.   ^ self session glorpSession execute: query
+\end{code}
+
+\begin{code}{}
+WAReddit>>durationString: duration   ^ String streamContents: [ :stream | 
+          | needSpace printer | 
+          needSpace := false. 
+          printer := [ :value :word |                         value isZero ifFalse: [ 
+                              needSpace ifTrue: [ stream space ]. 
+                              stream nextPutAll: (value pluralize: word). 
+                              needSpace := true ] ].          printer value: duration days value: 'day'. 
+          printer value: duration hours value: 'hour'. 
+          printer value: duration minutes value: 'minute' ]
+\end{code}
+
+In \ct{highestRankingLinks} and \ct{latestLinks}, we explicitly build up and execute Query objects with some more advanced options. For duration string conversion we use the powerful \ct{pluralize} method. With these in place we can already render the page. Since we did not yet add any CSS styling, the result will look rather dull.
+
+\begin{code}{}
+WAReddit>>voteDown:link
+    self session glorpSession
+              inUnitOfWorkDo: [ :session | session register: link. 
+                            link voteDown]
+\end{code}
+
+
+
+\begin{code}{}
+WAReddit>>voteUp: link   self session glorpSession 
+      inUnitOfWorkDo: [ :session |
+                         session register: link. 
+                         link voteUp ]
+\end{code}
+
+Voting links up or down is trivial, like with our database test, we only have to make sure to do the object modifications inside a Glorp unit of work and the actual SQL update will be done automatically.
+
+\section{RedditFileLibrary}
+
+To style our web app, we'll be reusing the CSS file from Reddit.lisp. This CSS code references one small GIF for its background gradient. We need to make sure our application makes use of the CSS file and that we serve the actual files. Seaside can serve these files in a couple of ways, we'll be using the \ct{FileLibrary} approach. This is a class where each resource served is implemented as a method.
+
+We define a new class, subclass of WAFileLibrary, named \ct{RedditFileLibrary} will thus have 2 methods: \ct{mainCss} and \ct{bgGif}, returning a string and bytes respectively. These are long methods which are not our main focus so we do not list them here. Based on some naming conventions, Seaside will figure out what mime types to use.
+
+\begin{code}{}
+RedditFileLibrary>>updateRoot: anHtmlRoot    super updateRoot: anHtmlRoot. 
+    anHtmlRoot title: 'Reddit.st'. 
+    anHtmlRoot stylesheet url: (RedditFileLibrary urlOf: #mainCss)
+\end{code}
+
+By implementing the \ct{updateRoot:} hook method on \ct{WAReddit}, we can set our page title and CSS. Note again how everything happens in Smalltalk. To install a Seaside application, a class side \ct{initialize} method is typically used.
+
+\begin{code}{}
+RedditFileLibrary class>>initialize   (WAAdmin register: self asApplicationAt: 'reddit') 
+        preferenceAt: #sessionClass put: RedditSession; 
+        addLibrary: RedditFileLibrary
+\end{code}
+
+
+We register our application under the handler 'reddit' so its URL will become something like \ct{http://localhost:8080/reddit}. Then we tell it to use our custom session class and finally add our file library. We now have a nicely styled, working web app.
+
+\section{WARedditLinkEditor}
+
+One of Seaside's main advantages over other web application frameworks is its support for components. Especially for large and complex projects this makes a huge difference. We'll be introducing a new component to allow the user to enter the necessary information when adding a new link. Consider the difference between figure 1 and figure 2: when the user clicks the 'New Link' anchor, we'll add an editor just below (while hiding the 'New Link' anchor). The editor will have its own 'Save' and 'Cancel' buttons. Both of these will dismiss the editor, saving or cancelling the new link.
+
+
+\begin{figure}\begin{center}
+\includegraphics[width=8cm]{redditNewLink}
+\caption{}
+\end{center}
+\end{figure}
+
+
+How is Seaside's component model powerful ? As we will see next, the component is written without any knowledge of where it will be used. Its validation logic is independent. It is used just by embedding it and by wiring it to its user in a simple way. The subcomponent functions independently from its embedding parent while each keeps its own state: whether the component is visible or not, you can keep on voting links up or down, and doing so will not alter the contents of the component.
+
+
+To prove our point, we'll be using yet another component inside our link editor: a simple CAPTCHA component. This will be implemented in the final section, but used here as a black box.
+The first step is to make the necessary additions and modifications to \ct{WAReddit} to accommodate the link editor component. We add an instance variable called \ct{linkEditor} with its accessors.
+
+\begin{code}{}
+WAReddit>>renderContentOn: html     html heading: 'Reddit.st'. 
+     html heading level: 3; with: 'In 10 elegant Smalltalk classes'. 
+     self renderActionsOn: html. 
+     !\textbf{self linkEditor notNil}!
+        !\textbf{     ifTrue: [ html render: self linkEditor ].}!
+     self renderHighestRankingLinksOn: html. 
+     self renderLatestLinksOn: html
+\end{code}
+
+
+\begin{code}{}
+WAReddit>>renderActionsOn: html
+     html paragraph: [ 
+     	html anchor callback: [ ]; with: 'Refresh'. 
+     	self linkEditor isNil ifTrue: [
+     	html anchor callback: [ self showNewLinkEditor ]; with: 'New Link' ] ]
+\end{code}
+
+
+\begin{code}{}
+WAReddit>>showNewLinkEditor     self linkEditor: WARedditLinkEditor new. 
+     self linkEditor onAnswer: [ :answer |          answer ifTrue: [ 
+               self session glorpSession inUnitOfWorkDo: [ :session |                    session register: self linkEditor createLink ] ]. 
+          self linkEditor: nil ]
+\end{code}
+
+
+\begin{code}{}
+WAReddit>>children    ^ self linkEditor notNil 
+        ifTrue: [ Array with: self linkEditor ] 
+        ifFalse: [ super children ]
+\end{code}
+
+There are 2 possible states: either we have a link editor subcomponent or not. So the main \ct{renderContentOn:} method conditionally asks the link editor to render itself. Likewise, in \ct{renderActionsOn:} the 'New Link' anchor is only rendered when there is no link editor yet.
+In the \ct{showNewLinkEditor} action method we instantiate our subcomponent and hook it up. We could have reused just one instance, creating a new one is easier and clearer. The wiring is done by supplying a block to \ct{onAnswer:}. A component can answer a value, in our case true or false for save or cancel respectively. So when the link editor answers true, we save a new link object and hide the editor.
+In Seaside, the \ct{children} method is a hook method that has to be implemented to list all subcomponents. Again this happens conditionally.
+We can now implement the component itself: \ct{WARedditLinkEditor} is a subclass of \ct{WAComponent} with 3 instances variables and their accessors: \ct{url}, \ct{title} and \ct{capcha}.
+
 
 
 %=========================================================
@@ -414,5 +575,5 @@ We can finally start with our web app itself. Figure 1 shows the main page of th
 %%% coding: utf-8
 %%% mode: latex
 %%% TeX-master: Lint.tex
-%%% TeX-PDF-mode: t
+%%% TeX-PDF-mode:
 %%% End:
