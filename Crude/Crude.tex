@@ -437,6 +437,7 @@ WAReddit>>renderLink: link on: html    html listItem: [ html anchor url: link u
 
 Starting with the main \ct{renderContentOn:} method, the rendering of each section is delegated to its own method. Note how \ct{renderLink:on:} is used 2 times. For now, we're not yet implementing the 'New Link' action. Our rendering methods depend on 5 extra methods: \ct{highestRankingLinks}, \ct{latestLinks}, the class method \ct{durationString:} and the actions methods \ct{voteUp:} and \ct{voteDown:}. Only the first three are needed to render the page itself.
 
+\sd{should explain Query class}
 \begin{code}{}
 WAReddit>>highestRankingLinks   | query | 
    query := (Query readManyOf: RedditLink)              orderBy: [ :each | each points descending ]; limit: 20; yourself.   ^ self session glorpSession execute: query
@@ -472,9 +473,7 @@ WAReddit>>voteDown:link
 
 \begin{code}{}
 WAReddit>>voteUp: link   self session glorpSession 
-      inUnitOfWorkDo: [ :session |
-                         session register: link. 
-                         link voteUp ]
+      inUnitOfWorkDo: [ :session | session register: link.  link voteUp ]
 \end{code}
 
 Voting links up or down is trivial, like with our database test, we only have to make sure to do the object modifications inside a Glorp unit of work and the actual SQL update will be done automatically.
@@ -558,6 +557,97 @@ There are 2 possible states: either we have a link editor subcomponent or not. S
 In the \ct{showNewLinkEditor} action method we instantiate our subcomponent and hook it up. We could have reused just one instance, creating a new one is easier and clearer. The wiring is done by supplying a block to \ct{onAnswer:}. A component can answer a value, in our case true or false for save or cancel respectively. So when the link editor answers true, we save a new link object and hide the editor.
 In Seaside, the \ct{children} method is a hook method that has to be implemented to list all subcomponents. Again this happens conditionally.
 We can now implement the component itself: \ct{WARedditLinkEditor} is a subclass of \ct{WAComponent} with 3 instances variables and their accessors: \ct{url}, \ct{title} and \ct{capcha}.
+
+
+
+\begin{code}{}
+WARedditLinkEditor>>renderContentOn: html	html form: [		html paragraph: 'Please enter a URL and title for the link that you want to add:'. 
+		html textInput size: 48; title: 'The URL of the new link'; on: #url of: self. 
+		html textInput size: 48; title: 'The title of the new link'; on: #title of: self. 
+		html render: self captcha.		html submitButton on: #cancel of: self. 
+		html submitButton on: #save of: self ]
+\end{code}
+
+
+\begin{code}{}
+WARedditLinkEditor>>initialize	super initialize. 
+	self url: 'http://'; 
+		title: 'title'; 
+		captcha: WARedditCaptcha new
+\end{code}
+
+
+\begin{code}{}
+WARedditLinkEditor>>children	^ Array with: self captcha
+\end{code}
+
+\begin{code}{}
+WARedditLinkEditor>>updateRoot: anHtmlRoot	super updateRoot: anHtmlRoot. 
+	anHtmlRoot title: 'Reddit.st - Submit a new link'. 
+	anHtmlRoot stylesheet url: (RedditFileLibrary urlOf: #mainCss)
+\end{code}
+
+
+\begin{code}{}
+WARedditLinkEditor>>cancel	self answer: false
+\end{code}
+
+\begin{code}{}
+WARedditLinkEditor>>save	self isUrlMissing ifTrue: [ ^ self inform: 'Please enter an URL' ]. 
+	self isTitleMissing ifTrue: [ ^ self inform: 'Please enter a title' ]. 
+	self captcha isSolved ifFalse: [ ^ self inform: 'Please answer the correct sum using digits' ]. 
+	self isUrlValid ifFalse: [ ^ self inform: 'The URL you entered did not resolve' ]. 
+	self answer: true
+\end{code}
+
+
+
+\begin{code}{}
+WARedditLinkEditor>>isTitleMissing	^ self title isNil or: [ self title isEmpty or: [ self title = 'title' ] ]
+\end{code}
+
+\begin{code}{}WARedditLinkEditor>>isUrlMissing	^ self url isNil or: [ self url isEmpty or: [ self url = 'http://' ] ]
+\end{code}
+
+\begin{code}{}WARedditLinkEditor>>isUrlValid	^ (WebClient httpGet: self url) isSuccess
+\end{code}
+
+\begin{code}{}WARedditLinkEditor>>createLink	^ RedditLink withUrl: self url title: self title
+\end{code}
+
+Most of the code should be familiar by now. New is how \ct{cancel} and \ct{save} use \ct{answer:} to return to whoever called upon this component. Before \ct{save} returns successfully, a number of validation tests are done. When one of these tests fails, a message is shown and the operation is aborted. The \ct{isUrlValid} method actually tries to resolve the URL. Finally, \ct{createLink} instantiates a new \ct{RedditLink} instance based on the valid fields entered by the user. Note how the CAPTCHA is used as a true component.
+
+\section{WARedditCaptcha: A last Web Component}
+
+The last and simplest web component is a CAPTCHA that presents a simple addition in words. This component does not need answer logic. The class \ct{WARedditCaptcha} is again a subclass of \ct{WAComponent} with the following instance variables and accessors: \ct{x}, \ct{y}, and \ct{sum}.
+
+
+\begin{code}{}
+WARedditCaptcha>>renderContentOn: html	self x: 10 atRandom. 
+	self y: 10 atRandom. 
+	html paragraph: 'CAPTCHA: How much is ', 
+		self x asWords, ' plus ', self y asWords, ' ?'. 
+	html textInput 
+		title: 'This functions as a CAPTCHA, type the answer using digits'; 
+		on: #sum of: self
+\end{code}
+
+\begin{code}{}
+WARedditCaptcha>>initialize	super initialize. 
+	self x: 0; y: 0; sum: 0
+\end{code}
+
+\begin{code}{}
+WARedditCaptcha>>isSolved	^ self sum asInteger = (self x + self y)
+\end{code}
+
+Each time the CAPTCHA is rendered, \ct{x} and \ct{y} get a new random value between 1 and 10. Next, the addition is presented in words. The \ct{isSolved} method checks if the user answered correctly.
+
+\section{Conclusion}
+
+The source code discussed in this chapter is available the SqueakSource project called ADayAtTheBeach. Look for the package called Reddit.
+
+Measuring the quality of the design is often a challenge. We believe that having classes with clear responsibilities. This is what we applied when designing such little application. Reddit.st consists of 10 classes for a total of 8 class methods and 75 instance methods. More than half are just one (1) line long, the rest averages just a few lines.
 
 
 
