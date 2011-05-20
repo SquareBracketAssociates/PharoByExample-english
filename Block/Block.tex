@@ -284,16 +284,34 @@ Arguments, temporaries, instance variables are lexically scoped in Smalltalk
 These variables are bound in the context in which the block is defined and not in the context in which the block is evaluated
 
 
-\section{About closure....}
-lukas tests illustrated 
+\section{Lexical Closure}
+Lexical closure is a concept introduced by Scheme in 60s. Scheme use Lambda expression that basically a anonymous function(such the block). But using anonymous function imply to connect it to the current execution context. That why the lexical closure is important because it define how variables of block are bound to the execution context.The variable is depending of the scope where it's define. Let's illustrate that :
 
 \begin{code}{}
-testToDoOutsideTemp
-	| temp |
-	1 to: 5 do: [ :index | 
-		temp := index. 
-		collection add: [ temp ] ].
-	self assertValues: #(5 5 5 5 5)
+blockLocalTemp
+	| collection |
+		collection := OrderedCollection new.
+		1 to: 5 do: [ :index || temp |
+			temp := index. 
+			collection add: [ temp ] ].
+		^collection collect: [:each | each value].
+\end{code}
+
+Let's comment the code, we create a loop the store the arg value, in a temporary variable create in the loop (then local) and change in the loop. We store a block containing the simply temp read access in a collection. And after the loop, we evaluate each block and return the collection of value.
+If we evaluate this method that will return \#(1 2 3 4 5).What happen  ? At each loop we create a variable existing locally and bind it to a block. Then at the end evaluate block, we evaluate each block with this contextual \emph{temp}. 
+Now see another case : 
+\begin{code}{}
+blockOutsideTemp
+		| collection temp |
+		collection := OrderedCollection new.
+		1 to: 5 do: [ :index | 
+			temp := index. 
+			collection add: [ temp ] ].
+		^collection collect: [:each | each value].
+\end{code}
+Same case except the \emph{temp}, variable will be  declare in the upper scope. Then what will happen ? Here the temp at each loop is the \textbf{same} shared variable bind. So when we collect the evaluation of the block at the end we will collect \#(5 5 5 5 5).
+
+\begin{code}{}
 
 (map 
  (lambda (each)
