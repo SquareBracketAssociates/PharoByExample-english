@@ -49,11 +49,23 @@ defined at block compiled time. But let us first recall some basics
 
 \section{Basics}
 
+What are a Block? A block is sustain piece of code. Historically, it's a Lambda expression, or a anonymous function. We can define a piece of code that is prepare to be call later. In Pharo the Block is define by square bracket. That block can be evaluate by sending the \emph{\#value} message to it.
+
+ 
+
+
+
+
+
+
+
+
 value
 value:
 ....
 
 ifTrue:ifFalse: 
+
 
 
 
@@ -283,70 +295,53 @@ We call home context the context in which a block is defined
 Arguments, temporaries, instance variables are lexically scoped in Smalltalk
 These variables are bound in the context in which the block is defined and not in the context in which the block is evaluated
 
-
+\newpage
 \section{Lexical Closure}
-Lexical closure is a concept introduced by Scheme in 60s. Scheme use Lambda expression that basically a anonymous function(such the block). But using anonymous function imply to connect it to the current execution context. That why the lexical closure is important because it define how variables of block are bound to the execution context.The variable is depending of the scope where it's define. Let's illustrate that :
+Lexical closure is a concept introduced by Scheme in 60s. Scheme use Lambda expression that basically a anonymous function(such the block). But using anonymous function imply to connect it to the current execution context. That why the lexical closure is important because it define when variables of block are bound to the execution context.The variable is depending of the scope where it's define. Let's illustrate that :
 
 \begin{code}{}
 blockLocalTemp
 	| collection |
 		collection := OrderedCollection new.
-		1 to: 5 do: [ :index || temp |
+		1 to: 3 do: [ :index || temp |
 			temp := index. 
 			collection add: [ temp ] ].
 		^collection collect: [:each | each value].
 \end{code}
 
-Let's comment the code, we create a loop the store the arg value, in a temporary variable create in the loop (then local) and change in the loop. We store a block containing the simply temp read access in a collection. And after the loop, we evaluate each block and return the collection of value.
-If we evaluate this method that will return \#(1 2 3 4 5).What happen  ? At each loop we create a variable existing locally and bind it to a block. Then at the end evaluate block, we evaluate each block with this contextual \emph{temp}. 
+Let's comment the code, we create a loop the store the arg value, in a temporary variable create in the loop (then local) and change it in the loop. We store a block containing the simply temp read access in a collection. And after the loop, we evaluate each block and return the collection of value.
+If we evaluate this method that will return \#(1 2 3).What happen  ? At each loop we create a variable existing locally and bind it to a block. Then at the end evaluate block, we evaluate each block with this contextual \emph{temp}. 
+
+\begin{figure}[htbp]
+	\centering
+		\includegraphics[width=0.7\linewidth]{blockClosureLocalTemp}
+	\caption{blockLocalTemp Execution}
+	\label{fig:blockLocalTempExecution}
+\end{figure}
+
+
+\newpage
 Now see another case : 
 \begin{code}{}
 blockOutsideTemp
 		| collection temp |
 		collection := OrderedCollection new.
-		1 to: 5 do: [ :index | 
+		1 to: 3 do: [ :index | 
 			temp := index. 
 			collection add: [ temp ] ].
 		^collection collect: [:each | each value].
 \end{code}
-Same case except the \emph{temp}, variable will be  declare in the upper scope. Then what will happen ? Here the temp at each loop is the \textbf{same} shared variable bind. So when we collect the evaluation of the block at the end we will collect \#(5 5 5 5 5).
-
-\begin{code}{}
-
-(map 
- (lambda (each)
-   (apply each '()))
- (let ((r '()) 
-       (tmp 0))
-  (for-each (lambda (each)
-              (set! tmp each)
-              (set! r (cons (lambda () tmp) 
-                            r)))
-            '(1 2 3 4 5))
-  r))
+Same case except the \emph{temp}, variable will be  declare in the upper scope. Then what will happen ? Here the temp at each loop is the \textbf{same} shared variable bind. So when we collect the evaluation of the block at the end we will collect \#(3 3 3).
+\begin{figure}[htbp]
+	\centering
+		\includegraphics[width=0.7\linewidth]{blockClosureOutsideTemp}
+	\caption{blockOutsideTemp Execution}
+	\label{fig:blockClosureOutsideTemp}
+\end{figure}
 
 
-testToDoInsideTemp
-	
-	1 to: 5 do: [ :index | | temp |
-		temp := index. 
-		collection add: [ temp ] ].
-	self assertValues: #(1 2 3 4 5)
 
-(map 
- (lambda (each)
-   (apply each '()))
- 
- (let ((r '()) 
-       (tmp 0))
-  (for-each (lambda (each)
-              (set! tmp each)
-              (set! r (cons (lambda () tmp) 
-                            r)))
-            '(1 2 3 4 5))
-  r))
 
-\end{code}
 When we look at the following Scheme expression and evaluate it you get 4. Indeed a binding is created 
 which associates the variable index to the value 0. Then y a lambda expression is defined and it returns
  the variable index (its value). Then within this context another expression is evaluated which starts
