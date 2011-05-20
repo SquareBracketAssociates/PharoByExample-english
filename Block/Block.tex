@@ -297,7 +297,7 @@ These variables are bound in the context in which the block is defined and not i
 
 \newpage
 \section{Lexical Closure}
-Lexical closure is a concept introduced by Scheme in 60s. Scheme use Lambda expression that basically a anonymous function(such the block). But using anonymous function imply to connect it to the current execution context. That why the lexical closure is important because it define when variables of block are bound to the execution context.The variable is depending of the scope where it's define. Let's illustrate that :
+Lexical closure is a concept introduced by SCHEME in 70s. Scheme uses lambda expression that basically a anonymous function (such the block). But using anonymous function imply to connect it to the current execution context. That why the lexical closure is important because it define when variables of block are bound to the execution context. The variable is depending of the scope where it's define. Let's illustrate that :
 
 \begin{code}{}
 blockLocalTemp
@@ -309,8 +309,8 @@ blockLocalTemp
 		^collection collect: [:each | each value].
 \end{code}
 
-Let's comment the code, we create a loop the store the arg value, in a temporary variable create in the loop (then local) and change it in the loop. We store a block containing the simply temp read access in a collection. And after the loop, we evaluate each block and return the collection of value.
-If we evaluate this method that will return \#(1 2 3).What happen  ? At each loop we create a variable existing locally and bind it to a block. Then at the end evaluate block, we evaluate each block with this contextual \emph{temp}. 
+Let's comment the code, we create a loop the store the arg value, in a temporary variable created in the loop (then local) and change it in the loop. We store a block containing the simply temp read access in a collection. And after the loop, we evaluate each block and return the collection of value.
+If we evaluate this method that will return \#(1 2 3). What's happen? At each loop we create a variable existing locally and bind it to a block. Then at the end evaluate block, we evaluate each block with this contextual \emph{temp}. 
 
 \begin{figure}[htbp]
 	\centering
