@@ -49,12 +49,12 @@ In practice, one is likely to use \ct!SocketStream! instead of plain sockets.
 
 \section{Basic Concepts}
 \subsection{Socket}
-A remote communication involves at least two applications exchanging some data bytes through a network. Each application accesses the network through at least one socket (see Figure~\ref{fig:socketConcept}).
+A remote communication involves at least two system processes exchanging some data bytes through a network. Each process accesses the network through at least one socket (see Figure~\ref{fig:socketConcept}).
 A socket can then be defined as a \textit{plug on a communication network}.
 
 \begin{figure}[ht]\centering
 	\includegraphics[width=.75\linewidth]{socketConcept}
-	\caption{Applications Remote Communication Through Sockets.}
+	\caption{Inter-Process Remote Communication Through Sockets.}
 	\label{fig:socketConcept}
 \end{figure}
 
