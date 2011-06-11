@@ -31,23 +31,24 @@
 %=================================================================
 %\renewcommand{\nnbb}[2]{#2} % Disable editorial comments
 
-\chapter{First stop: VM's SCM and related}
+\chapter{First stop: VM's SCM and old Mess}
 
-You want to compile your own VM, don't you? Compiling the VM just for compiling it and following some instructions is not really helpful, otherwise why don't you directly download the VM binary?  But to understand and learn about the VM, it is important 
+In this Chapter we will explain the infrastructure of the VM source. As you will see the situation is a bit messy and if you want to get started now. Just skim this Chapter and go to the next one, since it uses the latest infrastructure put in place by Igor Stasenko. This new infrastructure resolves a lot of the problems we present here. We present them so that you appreciate the value of the new infrastructure. 
 
-To compile the VM, you will have to deal with the problem of the VM's Software Configuration Management. The first time I tried to compile the Pharo/Squeak VM was like 2 years ago. After that, I tried few times more, and most of the times I got some troubles. In addition, in the last months not only there have been a lot of changes related to code versioning and management, but also Cog VM come into play. A lot of people is confused where each part of the VM is committed, or what is needed to compile each VM. I will clarify all that so that in the next post we can finally compile the VM by ourself.
+
+To compile the VM, you will have to deal with the problem of the VM's Software Configuration Management. The first time I tried to compile the Pharo/Squeak VM was like 2 years ago. After that, I tried few times more, and most of the times I got some troubles. In addition, in the last months not only there have been a lot of changes related to code versioning and management, but also Cog VM come into play. A lot of people are confused where each part of the VM is committed, or what is needed to compile each VM. I will clarify all that so that in the next post we can finally compile the VM by ourself.
 
 Since the Interpreter VM and Cog VM are a little different regarding the code management, I will split them.
 
-Note that a new infrastructure is put in place to simplify all this. It is based on git and connected to hudson build servers. 
+Note that a new infrastructure is put in place to simplify all this. It is based on GIT and connected to hudson build servers and explained in the next Chapter.
 
 \section{Interpreter VM}
 
 \paragraph{Downloading code.}
-If you remember from the previous chapter, we have 2 parts: VMMaker with the core of the VM, and the platform code. For VMMaker it is easy: it is the VMMaker package in squeaksource (\url{http://www.squeaksource.com/VMMaker.html}). The platform code is the official SVN. This sounds pretty straightforward, doesn't it?  But this is not totally true. There are several problems (some may probably be because of my ignorance) that I have found with this approach:
+If you remember from the previous chapter, we have 2 parts: VMMaker with the core of the VM, and the platform code. For VMMaker it is easy: it is the VMMaker package in squeaksource (\url{http://www.squeaksource.com/VMMaker.html}). The platform code is an official SVN repository \url{http://bla}. This sounds pretty straightforward, doesn't it?  But this is not the case. There are several problems (some may probably be because of my ignorance) that I have found with this approach:
 
 \begin{enumerate}
-\item The package VMMaker is not self contained, i.e, it has dependencies on other packages (some packages in the same repository and some in others). First problem, you need to know which other packages you need. For example, to build the VM you may need also the packages: 'FFI-Pools', 'SharedPool-Speech', 'MemoryAccess', 'SlangBrowser', 'Balloon3D-Plugins', 'Plugin-XXX', etc.
+\item The package VMMaker is not self contained, i.e., it has dependencies on other packages (some packages in the same repository and some in others). First problem, you need to know which other packages you need. For example, to build the VM you may need also the packages: 'FFI-Pools', 'SharedPool-Speech', 'MemoryAccess', 'SlangBrowser', 'Balloon3D-Plugins', 'Plugin-XXX', etc.
 
 \item Similar to the previous item, there is not only the problem of knowing which packages are needed, but instead which version. So...how do you know that for 'VMMaker-dtl.221' you need 'FFI-Pools-eem.2', 'MemoryAccess-dtl.3', 'Balloon3D-Plugins-ar.6', etc ?  Using just the last version of every package does work all the times.
 
@@ -230,15 +231,9 @@ To rebuild this image
 
 So, in summary, they way to compile Cog VM is more or less the same as the Interpreter VM: you take a Smalltalk image, you load Cog (you can use ConfigurationOfCog), you generate sources, you checkout SVN branch, and finally compile (the instructions of how to build each VM is in the same SVN). Generating the sources may not be necessary if the /src is in sync with /platforms.
 
-Finally, notice also that Eliot usually uploads regular VM builds (Cog VM binaries for all OS) to this url.
+Finally, notice also that Eliot usually uploads regular VM builds (Cog VM binaries for all OS) to this url \url{http://www.mirandabanda.org/files/Cog/VM/}.
 
-%=========================================================
-\ifx\wholebook\relax\else
-   \bibliographystyle{jurabib}
-   \nobibliography{scg}
-   \end{document}
-\fi
-%=========================================================
+If all these explanations make you think that all that is a bit ad-hoc, you are right. This is why Igor Stasenko built a completely new infrastructure that we will present now and use from then on. 
 
 
 
@@ -246,22 +241,28 @@ Finally, notice also that Eliot usually uploads regular VM builds (Cog VM binari
 
 
 
+\section{New infrastructure}
 
-New infrastructure
 The same way we should thanks Teleplace for Eliot Miranda's work, we should also thanks INRIA for paying a Pharo engineer: Igor Stasenko. The good news is that since he started a couple of months ago he was not working for Pharo but instead for a new VM infrastructure . What is all this about? I'll give you only a quick introduction because in the next post we are going to compile the VM using such infrastructure. Disclaimer: this new infrastructure is only for Cog VM and all its variants, but not Interpreter VM. I guess that's because of the resources/time available.
 
 So...in a nutshell, there are 3 big changes:
 
-Use GIT instead of SVN. There is a new repository for the platform code which is versioned by GIT instead of SVN. There is a new account for CogVM in gitorious. It seems that nowadays if you are not in Git you are not cool, you do not exist. Ok, we are cool now    No one needs to ask for a blessing, everybody can clone, hack and push/share changes. People can pick the changes without having to have the permissions to publish.
-Use CMakeVMMaker instead of VMMakerTool. CMakeVMMaker is a little tool that automates the build. It has two important things: 1) translate VMMaker to C, using the VMMaker class and 2) generate CMake files so that to ease the build. To do this  it automatically assumes (although it can be customized) which plugins are needed and how they are compiled (if internal or external), the needed compiler flags, the directories needed, etc. CMake is an excellent tool for doing cross-platform compiling and for automatic stuff....CMakeVMMaker generates all the necessary files for CMake. For those who doesn't know what CMake is, imagine one abstract step before makefiles. CMake is a cross-platform, open-source build system where you can define all necessary stuff like directories, compiler flags, etc, in text files. Once you have that, using CMake you can generate different outputs: normal makefiles where you can just use the command ''make'', Appel's XCode project or even Microsoft Visual Studio projects 
-Continuous Integration for VMs!!  Can you imagine that for every GIT commit, Mr. Hudson takes the latest PharoCore image, loads the Cog VM, generates sources, and compiles the VM for Windows, Linux and Mac OS ? Come on! isn't this really cool?  Ok, you don't believe me? Go to the Pharo CI for CogVM.
-In the next post we will see how to use this new infrastructure and how is solves some of the mentioned problems along this post. I want to thanks Esteban, Igor, Dave and all who answer my questions in the mailing lists 
-
-Links:
 \begin{enumerate}
-\item CogVM in gitorious
-\item Cog issue tracker
-\item Cog binaries
+\item Use GIT instead of SVN. There is a new repository for the platform code which is versioned by GIT instead of SVN. There is a new account for CogVM in gitorious. No one needs to ask for a blessing, everybody can clone, hack and push/share changes. People can pick the changes without having to have the permissions to publish. Now you are welcome to enhance the VM. 
+
+\item Use CMakeVMMaker instead of VMMakerTool. CMakeVMMaker is a little tool that automates the build. It has two important things: 1) translate VMMaker to C, using the VMMaker class and 2) generate CMake files so that to ease the build. To do this  it automatically assumes (although it can be customized) which plugins are needed and how they are compiled (if internal or external), the needed compiler flags, the directories needed, etc. CMake is an excellent tool for doing cross-platform compiling and for automatic stuff....CMakeVMMaker generates all the necessary files for CMake. For those who doesn't know what CMake is, imagine one abstract step before makefiles. CMake is a cross-platform, open-source build system where you can define all necessary information like directories, compiler flags, etc, in text files. Once you have that, using CMake you can generate different outputs: normal makefiles where you can just use the command ''make'', Apple's XCode project or even Microsoft Visual Studio projects 
+
+\item Continuous Integration for VMs!  Can you imagine that for every GIT commit, Mr. Jenkins takes the latest PharoCore image, loads the Cog VM, generates sources, and compiles the VM for Windows, Linux and Mac OS ? Come on! isn't this really cool?  Ok, you don't believe me? Go to the Pharo CI for CogVM at \url{https://pharo-ic.lille.inria.fr/hudson/view/Cog/}.
+
+\end{enumerate}
+
+
+In the next Chapter we will see how to use this new infrastructure and how is solves some of the mentioned problems along this post. I want to thanks Esteban, Igor, Dave and all who answer my questions in the mailing lists.
+
+\section{Links}
+\begin{enumerate}
+\item CogVM in gitorious \url{https://gitorious.org/cogvm}
+\item Cog issue tracker \url{http://code.google.com/p/cog/}
 \item Official Squeak VM SVN
 \item Cog SVN branch
 \item Squeak VM issue tracker
@@ -271,11 +272,15 @@ Links:
 \item Screencast for compiling Interpreter VM in Pharo using SVN and VMMakerTool
 \item Blog post for building a Pharo/Squeak VM from first Principles (using SVN and VMMakerTool)
 \item Pharo collaborative book, chapter in Virtual Machine
-\item Pharo Hudson server
+\item Pharo Hudson server \url{https://pharo-ic.lille.inria.fr/hudson/}
 \item Official UNIX instructions to compile the VM
 \item Official Mac OS instructions to compiled the VM
 \item Official Win32 instructions to compile the VM
 \end{enumerate}
+
+
+
+
 
 
 %=========================================================
