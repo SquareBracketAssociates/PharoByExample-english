@@ -1,0 +1,53 @@
+% $Author: ducasse $
+% $Date: 2009-08-24 10:17:33 +0200 (Mon, 24 Aug 2009) $
+% $Revision: 28563 $
+
+%=================================================================
+\ifx\wholebook\relax\else
+% --------------------------------------------
+% Lulu:
+	\documentclass[a4paper,10pt,twoside]{book}
+	\usepackage[
+		papersize={6.13in,9.21in},
+		hmargin={.75in,.75in},
+		vmargin={.75in,1in},
+		ignoreheadfoot
+	]{geometry}
+	\input{../common.tex}
+	\setboolean{lulu}{true}
+% --------------------------------------------
+% A4:
+%	\documentclass[a4paper,11pt,twoside]{book}
+%	\input{../common.tex}
+%	\usepackage{a4wide}
+% --------------------------------------------
+    \graphicspath{{figures/} {../figures/}}
+	\begin{document}
+\fi
+%=================================================================
+%\renewmessage{\nnbb}[2]{} % Disable editorial comments
+\sloppy
+
+%=================================================================
+%\renewcommand{\nnbb}[2]{#2} % Disable editorial comments
+
+\chapter{Traits at Work}
+
+
+%=========================================================
+\ifx\wholebook\relax\else
+   \bibliographystyle{jurabib}
+   \nobibliography{scg}
+   \end{document}
+\fi
+%=========================================================
+
+
+
+%%% Local Variables: 
+%%% coding: utf-8
+%%% mode: latex
+%%% TeX-master: Lint.tex
+%%% TeX-PDF-mode: t
+%%% End:
+
