@@ -1,0 +1,134 @@
+% $Author: ducasse $
+% $Date: 2009-08-24 10:17:33 +0200 (Mon, 24 Aug 2009) $
+% $Revision: 28563 $
+
+%=================================================================
+\ifx\wholebook\relax\else
+% --------------------------------------------
+% Lulu:
+	\documentclass[a4paper,10pt,twoside]{book}
+	\usepackage[
+		papersize={6.13in,9.21in},
+		hmargin={.75in,.75in},
+		vmargin={.75in,1in},
+		ignoreheadfoot
+	]{geometry}
+	\input{../common.tex}
+	\setboolean{lulu}{true}
+% --------------------------------------------
+% A4:
+%	\documentclass[a4paper,11pt,twoside]{book}
+%	\input{../common.tex}
+%	\usepackage{a4wide}
+% --------------------------------------------
+    \graphicspath{{figures/} {../figures/}}
+	\begin{document}
+\fi
+%=================================================================
+%\renewmessage{\nnbb}[2]{} % Disable editorial comments
+\sloppy
+
+%=================================================================
+%\renewcommand{\nnbb}[2]{#2} % Disable editorial comments
+
+\chapter{First stop: VM's SCM and related}
+
+You want to compile your own VM, don't you? Compiling the VM just for compiling it and following some instructions is not really helpful, otherwise why don't you directly download the VM binary?  But to understand and learn about the VM, it is important 
+
+To compile the VM, you will have to deal with the problem of the VM's Software Configuration Management. The first time I tried to compile the Pharo/Squeak VM was like 2 years ago. After that, I tried few times more, and most of the times I got some troubles. In addition, in the last months not only there have been a lot of changes related to code versioning and management, but also Cog VM come into play. A lot of people is confused where each part of the VM is committed, or what is needed to compile each VM. I will clarify all that so that in the next post we can finally compile the VM by ourself.
+
+Since the Interpreter VM and Cog VM are a little different regarding the code management, I will split them.
+
+Note that a new infrastructure is put in place to simplify all this. It is based on git and connected to hudson build servers. 
+
+\section{Interpreter VM}
+
+\paragraph{Downloading code.}
+If you remember from the previous chapter, we have 2 parts: VMMaker with the core of the VM, and the platform code. For VMMaker it is easy: it is the VMMaker package in squeaksource (\url{http://www.squeaksource.com/VMMaker.html}). The platform code is the official SVN. This sounds pretty straightforward, doesn't it?  But this is not totally true. There are several problems (some may probably be because of my ignorance) that I have found with this approach:
+
+\begin{enumerate}
+\item The package VMMaker is not self contained, i.e, it has dependencies on other packages (some packages in the same repository and some in others). First problem, you need to know which other packages you need. For example, to build the VM you may need also the packages: 'FFI-Pools', 'SharedPool-Speech', 'MemoryAccess', 'SlangBrowser', 'Balloon3D-Plugins', 'Plugin-XXX', etc.
+
+\item Similar to the previous item, there is not only the problem of knowing which packages are needed, but instead which version. So…how do you know that for 'VMMaker-dtl.221' you need 'FFI-Pools-eem.2', 'MemoryAccess-dtl.3', 'Balloon3D-Plugins-ar.6', etc ?  Using just the last version of every package does work all the times.
+
+\item Sync between VMMaker and platform code. How do you know for each VMMaker version which SVN version you need of the platform code? or vice-versa how do you know which VMMaker version you need for a specific SVN version? once again, relying in the last version is not a reliable solution.
+
+
+\item Similar to 3) there is yet another problem: the platform code, as you can imagine, is split in one folder for every platform (see SVN): there is one for UNIX, one for Windows, for MacOS, and for iOS (but forget this one for the moment). Each platform has a ''leader'' or ''maintainer'', which is the person in charge of implementing/modifying the code. The problem raises when there are changes in VMMaker for example, that require changes in all platform code, and this is not changed in all of them. So for example, in UNIX the changes are committed, but not in Mac OS. So…each platform code is not always in sync with the rest. 
+
+Note that I am not complaining: this is all open-source and we all do our best. I am just telling you the problems I have seen so far.
+
+\item The previous problem happens not only for the commits in the repository, but also for the VM releases. Most of the times, they are not in sync. Maybe there is a particular platform that releases 5 times in a year, and maybe there is another one every 1 year and a half 
+The version of every VM are not in sync. So for Mac for example you have Squeak 4.2.5beta1U, Squeak 5.7.4.1, Squeak 5.8b4, etc. For UNIX, Squeak-4.4.7.2357, Squeak-vm-3.7-7, Squeak 4.0.3.2202, etc.  In Windows, SqueakVM-Win32-4.1.1, SqueakVM-Win32-3.11.5, SqueakVM-Win32-3.10.9, etc. So as you can see, they are all completely different, and for me this is complicated since you cannot just refer to a unique VM version.
+
+
+\item The SVN repository is restricted, so you cannot commit unless you have authorized access. This could be a good and bad point at the same time.
+\end{enumerate}
+
+Scary isn't it? 
+
+
+I want to make it clear: I am not complaining against this, I am just telling the problems I have found, and how certain infrastructure that has been done in the last months helped with some of these issues.
+
+\paragraph{Metacello to the rescue.}
+So now you know that VMMaker is just another Monticello package, and you also know that you have to manage versions, dependencies, why not groups and others. Does that ring a bell with anyone?  YEEES! Of course, Metacello    So, one thing we did in Pharo (although I guess it is/was also used in Squeak), is to create a Metacello Configuration for VMMaker: ConfigurationOfVMMaker. For those that doesn’t know what Metacello is, it is a Package Management System on top of Monticello, where the ConfigurationOfVMMaker is a class where you can define versions, dependencies, etc, about your project. If you are a Smalltalker and you don’t know anything about Metacello I recommend you to take a look and read the chapter available on \url{http://www.pharobyexample.org}
+
+Anyhow, with ConfigurationOfVMMaker we solved the first two problems. With Metacello baselines we define all the structural information of the Interpreter VM: which packages are needed (the dependencies), possible groups (not everybody wants to load the same packages), repositories, etc. And with Metacello versions, we can define a whole set of working versions. For example, for ConfigurationOfVMMaker version 1.5 we load ‘VMMaker-dtl.221?, ‘MemoryAccess-dtl.3?, ‘FFI-Pools-eem.2?, etc. This is a set of frozen versions that we known to work properly all together. Notice that creating versions for ConfigurationOfVMMaker should be done by the ''VM developers''. In fact, it was done by people like Torsten,  Laurent and me. But the important thing is that the user doesn’t need to do that. The only thing the user needs to do in order to load VMMaker with all its dependencies, and all loading a working version of every package, is to load the Metacello version. Do you want to try by yourself?  Just take this Pharo (\url{https://gforge.inria.fr/frs/download.php/28435/Pharo-1.2.1-11.04.03.zip}) image, and evaluate:
+
+\begin{code}{}
+1 Deprecation raiseWarning: false.
+2 Gofer new
+3    squeaksource:'MetacelloRepository';
+4    package:'ConfigurationOfVMMaker';
+5    load.
+6 ((Smalltalk at: #ConfigurationOfVMMaker) project version: '1.5') load.
+\end{code}
+
+Why I told you to download that particular Pharo image? and why I am explicitly loading the version 1.5 instead of using the last one?  Because I want that my posts are reproducible. If you evaluate this instead:
+
+\begin{code}{}
+(Smalltalk at: #ConfigurationOfVMMaker) project lastVersion load.
+\end{code}
+
+I cannot guarantee that everything will be working properly. The same with the Pharo image. If you took any Pharo image 1.0, or 1.1 or 1.2, or Squeak 4.2, I am not sure that VMMaker will load correctly. The same if you load another version than 1.5. So…in this case, I am sure (because I test it before posting) that with that Pharo image and that version of ConfigurationOfVMMaker, VMMaker is working properly.
+
+Coming back….the last point 3) is not yet solved, since you cannot know that for a certain SVN version you need XXX version of ConfigurationOfVMMaker, or vice-versa. But we will come to this later on…The rest of the problems are not solved either.
+
+\paragraph{Towards a bright future.}
+Again note that a new infrastructure developed by the Pharo team and Igor Stasenko is in place to simplify all this. It is based on git and connected to hudson build servers. So a lot of the problems would be avoided if people would use the new infrastructure. 
+
+
+\section{Generating the VM}
+
+You need both things to compile the VM: the C platform code that is directly committed in SVN and the generated C code from the VMMaker. Do you always need to translate VMMaker to C ? Not necessary, because the generated code is also committed in the SVN, usually under the “/src” folder, for example here. It is there so that if someone wants to compile, just download both parts and with GCC it compiles the VM. No need to take a Smalltalk image, load VMMaker, and generate sources. So… when is it really needed to generate sources from VMMaker?
+
+When the /src in the SVN is outdated in relation to the platform code.
+When you did changes in VMMaker. You can do changes in VMMaker just for fun, for your own project, for testing, etc.
+For learning purpose 
+So…how do you compile the VM?  yes, of course, using a C compiler…but that’s not enough information! For example, usually you need to place the /src folder (where the output of the generated VMMaker sources go) in a certain place so that it is found by the makefiles. Even more, the problem is that each platform has its own instructions of how to compile. You can find the instructions for UNIX here, for Windows here, and for Mac OS (after searching this info for a long time) it seems (if it is not this please let me know) to be here.
+
+Not only each platform has its own instructions to build the VM, but also some lack support for IDE. For example, it is not easy to b able to compile the VM out of the box with Microsoft Visual Studio or with Appel’s XCode. For example, for XCode, you need a .xcodeproj file for every project. The problem was that most of the times (at least when I tried) this file contained file locations of the commiter (which of course is different from mine). So, at the end, I usually need to do some modifications to the project in order to being able to compile and run the VM from XCode. I am telling you all this so that you can understand the progress we (the community) did in the last months…
+
+
+
+
+
+
+
+%=========================================================
+\ifx\wholebook\relax\else
+   \bibliographystyle{jurabib}
+   \nobibliography{scg}
+   \end{document}
+\fi
+%=========================================================
+
+
+
+%%% Local Variables: 
+%%% coding: utf-8
+%%% mode: latex
+%%% TeX-master: Lint.tex
+%%% TeX-PDF-mode: t
+%%% End:
+
