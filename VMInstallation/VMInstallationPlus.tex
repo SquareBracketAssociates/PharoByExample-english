@@ -1,0 +1,122 @@
+% $Author: ducasse $
+% $Date: 2009-08-24 10:17:33 +0200 (Mon, 24 Aug 2009) $
+% $Revision: 28563 $
+
+%=================================================================
+\ifx\wholebook\relax\else
+% --------------------------------------------
+% Lulu:
+	\documentclass[a4paper,10pt,twoside]{book}
+	\usepackage[
+		papersize={6.13in,9.21in},
+		hmargin={.75in,.75in},
+		vmargin={.75in,1in},
+		ignoreheadfoot
+	]{geometry}
+	\input{../common.tex}
+	\setboolean{lulu}{true}
+% --------------------------------------------
+% A4:
+%	\documentclass[a4paper,11pt,twoside]{book}
+%	\input{../common.tex}
+%	\usepackage{a4wide}
+% --------------------------------------------
+    \graphicspath{{figures/} {../figures/}}
+	\begin{document}
+\fi
+%=================================================================
+%\renewmessage{\nnbb}[2]{} % Disable editorial comments
+\sloppy
+
+%=================================================================
+%\renewcommand{\nnbb}[2]{#2} % Disable editorial comments
+
+\chapter{Building the VM: second Part}
+
+Some readers may not like all the building part and want to go directly to see the VM internals. But it is really important that you understand how to change the VM, compile it or even debug it. Otherwise, you’ll be very limited.
+
+This Chapter is mostly about a couple of things that I wanted to mention in the previous post, but I couldn't because it was already too long. If you read such Chapter, you may think that compiling the VM from scratch is a lot of work and steps. But the post was long because of my explanations and because of my efforts in making it reproducible. This is why I would like to do a summary of how to compile the VM.
+
+\section{Summary of VM build}
+
+Assuming that you have already installed Git,  CMake, and GCC, then the following are the needed steps to compile the Cog VM:
+
+\begin{code}{}
+mkdir newCog
+cd newCog
+git clone --depth 1 git://gitorious.org/cogvm/blessed.git
+cd blessed/image
+wget http://www.pharo-project.org/pharo-download/unstable-core
+
+"Or we manually download with an Internet Browser the latest PharoCore
+image from that URL and we put it in blessed/image"
+\end{code}
+Then we open the image with a Cog VM (which we can get from here or here) and we evaluate:
+\begin{code}{}
+Deprecation raiseWarning: false.
+Gofer new
+ squeaksource: 'MetacelloRepository';
+ package: 'ConfigurationOfCog';
+ load.
+
+(Smalltalk at: #ConfigurationOfCog) project latestVersion load.
+"Notice that even loading CMakeVMaker is not necessary anymore
+since it is included just as another dependency in ConfigurationOfCog"
+
+MTCocoaIOSCogJitConfig generateWithSources.
+
+"Replace this CMMakeVMMaker configuration class for the one that suites your OS
+like CogUnixConfig and CogMsWindowsConfig"
+\end{code}
+
+Now, come back to the terminal and do:
+
+\begin{code}{}
+cd newCog/blessed/build
+cmake .
+# Or  cmake . -G"MSYS Makefiles"  if you are in Windows
+make
+\end{code}
+
+And that's all, in "blessed/results" (in Windows it should be under "blessed/build/results") you should have the CogVM binary. I know that you probably are a lazy guy, but if you really want to take advantage and learn in my posts, I strongly recommend you to follow those steps. All along this sequence of posts, we will debug and modify the VM (change GC, method lookup, create our own primitives and plugins, etc). Once you have Git and CMake, I promise the process takes less than 5 minutes.
+
+
+
+
+
+
+
+%=========================================================
+\ifx\wholebook\relax\else
+   \bibliographystyle{jurabib}
+   \nobibliography{scg}
+   \end{document}
+\fi
+%=========================================================
+
+
+
+
+
+
+
+
+
+
+%=========================================================
+\ifx\wholebook\relax\else
+   \bibliographystyle{jurabib}
+   \nobibliography{scg}
+   \end{document}
+\fi
+%=========================================================
+
+
+
+%%% Local Variables: 
+%%% coding: utf-8
+%%% mode: latex
+%%% TeX-master: Lint.tex
+%%% TeX-PDF-mode: t
+%%% End:
+
