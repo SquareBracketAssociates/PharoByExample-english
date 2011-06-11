@@ -1,0 +1,113 @@
+% $Author$
+% $Date$
+% $Revision$
+
+% HISTORY:
+% 2008-02-04 - new umbrella
+% 2009-04-23 - pharo -> squeak
+
+%=================================================================
+% This is the main file for the Pharo By Example book.
+% The individual chapters can also be latexed by themselves.
+% Note that the \end{document} marker occurs near the
+% middle of this file, to leave out additional material
+% for a future version of the book.
+%=================================================================
+\documentclass[a4paper,10pt,twoside]{book}
+\usepackage[
+	papersize={6.13in,9.21in},
+	hmargin={.75in,.75in},
+	vmargin={.75in,1in},
+	ignoreheadfoot
+]{geometry}
+\input{common.tex}
+\setboolean{lulu}{true}
+%=================================================================
+% Add the path for the figures of each chapter here:
+\graphicspath{
+	{figures/}
+	{VMIntro/figures}
+	}
+%=================================================================
+\let\wholebook=\relax
+\makeindex
+\makeglossary
+%=================================================================
+\renewcommand{\nnbb}[2]{} % Disable editorial comments
+%=================================================================
+\begin{document}
+\frontmatter
+%=================================================================
+\setcounter{page}{1}
+\pagestyle{headings}
+%=================================================================
+\author{
+	Alexandre Bergel\quad
+	Damien Cassou\quad
+	St\'ephane Ducasse\quad
+	Jannik Laval\quad}
+% (to be updated at the end)
+\title{\Huge\bf More Pharo by Example\\[1ex]
+with the participation of O. Nierstrasz, Dale, Mariano, Sven }
+\isodate
+\date{\emph{Version of \today}}
+\maketitle
+%=================================================================
+\tableofcontents
+% \listoffigures
+% \listoftables
+% \lstlistoflistings
+\sloppy % To avoid LaTeX's annoying habit of letting lines stick over the margins!
+\mainmatter
+%=================================================================
+\input{VMIntro/VMIntro.tex}
+%=================================================================
+%\part{Software Development}
+%\input{Monticello/Monticello.tex}
+
+% \input{Profiling/Profiling.tex}
+
+
+
+%=================================================================
+
+% \printglossary
+\bibliographystyle{jurabib}
+\bibliography{scg}
+
+\printindex
+
+\end{document}
+
+
+\section{How make an image self executable with Pharo}
+We save an image with our main application window already opened, and unwanted things disabled (halos, alt-., menus, etc). Additionally, we have a class-side \#startUp: method to initialize what's necessary on startup, like re-reading config files etc.
+
+The image is started automatically when double-clicking  "plopp.exe", or rather a short-cut in the program menu placed there by the installer. This exe is nothing more than a renamed Pharo.exe, with a different icon patched in using a resource editor. There is a VM config file "plopp.ini", which most importantly contains the path to the image to load (see http://minnow.cc.gatech.edu/squeak/3274).
+
+The exe along with the needed plugins, the image and other data files is installed in the "programs" directory by a regular Windows installer (InstallShield).
+
+It's really not too different from other applications, which nowadays also consist of an executable and several additional files. That the actual application logic in Squeak's case is not contained in the executable but in a "data file" is of no concern to the end user.
+
+Note that this is an FAQ item (http://minnow.cc.gatech.edu/squeak/3563). Feel free to put my explanation on the Swiki, I haven't checked carefully if a similar answer is already there.
+
+- Bert -
+%=================================================================
+
+% \printglossary
+\bibliographystyle{jurabib}
+\bibliography{scg}
+
+\printindex
+
+\end{document}
+
+% \end{document} % NB: The actual end is further up
+%=================================================================
+%%% Local Variables:
+%%% coding: utf-8
+%%% mode: latex
+%%% TeX-master: t
+%%% TeX-PDF-mode: t
+%%% ispell-local-dictionary: "english"
+%%% End:
