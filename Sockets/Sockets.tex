@@ -198,7 +198,7 @@ In practice we use \ct!closeAndDestroy!. It first attempts to close the socket b
 Then, if the socket is still connected after a duration of 20 seconds, the socket is destroyed.
 Note that there exist a variant \ct!closeAndDestroy: seconds! which gets as a parameter the duration to wait before destroying the socket.
 
-\begin{script}[closeAndDestroy]{Closing a TCP Socket After Connection to a Web Site.}
+\begin{script}[script:closeAndDestroy]{Closing a TCP Socket After Connection to a Web Site.}
 | clientSocket serverAddress httpQuery htmlText |
 httpQuery := 'GET / HTTP/1.1', String crlf, 
 	'Host: www.esug.org:80', String crlf, 
@@ -216,7 +216,7 @@ clientSocket := Socket newTCP.
 Transcript cr; show: '...Done'
 \end{script}
 
-To summarize all steps described so far, we use the example of getting a web page from a server in \Scrref{closeAndDestroy}.
+To summarize all steps described so far, we use the example of getting a web page from a server in \Scrref{script:closeAndDestroy}.
 First, we retrieve the IP address of the \url{www.esug.org} server.
 Then, we create a TCP socket and connect it to the server.
 We use the IP address we get in the previous step and the default port for web servers: 80.
@@ -239,7 +239,7 @@ The life-cycle of a TCP server in \pharo  has 5 steps:
 \begin{enumerate}
 \item Create a first TCP socket, let's call it \textit{socket$_1$}.
 \item Wait for connections by making \textit{socket$_1$}  listen on some port.
-\item Accept a client request for connection. As a result,  \textit{socket$_1$} will build a second socket, let's call it \textit{socket$_2$} \nouryComment{\sd{why socket1 is creating a second socket and not the server?}}.
+\item Accept a client request for connection. As a result, \textit{socket$_1$} will build a second socket, let's call it \textit{socket$_2$}.
 \item Exchange data with the client through \textit{socket$_2$}. In the meanwhile, \textit{socket$_1$} can continue to wait for connections, and possibly create new sockets to exchange data with other clients. 
 \item Close \textit{socket$_2$}.
 \item Close \textit{socket$_1$} when we decide to kill the server and stop accepting client connections.
@@ -421,8 +421,46 @@ The interaction as implemented in method \ct!EchoServer>>>interactUsing:! (see \
 The interaction boils down to reading data provided by the client and sending it back prefixed with the \ct!'ECHO: '! string.
 It worth noting that we ensure that the interaction socket is destroyed, whether we have exchanged data or not (timeout).
 
-%%%%%%CONTINUE FROM HERE
 \section{SocketStream}
+\subsection{Client Side SocketStream}
+\ct!SocketStream! is a read-write stream that encapsualtes a TCP socket.
+It eases the interaction with a remote server.
+We illustrate this facility with the code of the following code snipet (\Scrref{script:streamGetLine}).
+
+\begin{script}[script:streamGetLine]{Getting the first line of a web page using \ct!SocketStream!.}
+	|stream httpQuery result|
+	stream := SocketStream openConnectionToHostNamed: 'www.pharo-project.org' port: 80.
+	httpQuery := 'GET / HTTP/1.1', String crlf, 
+		'Host: www.pharo-project.org:80', String crlf, 
+		'Accept: text/html', String crlf.
+	[
+		stream sendCommand: httpQuery.
+		Transcript cr; show: stream nextLine.
+	] ensure: [
+		stream close]
+\end{script}
+
+The first line creates a stream that encapsulates a newly created socket connected to the provided server.
+This is the responsibility of message \ct!openConnectionToHostNamed:port:!.
+It suspends the execution until the connection with the server is estabilished.
+If the server does not respond, the socket stream signals a \ct!ConnectionTimedOut! exception.
+This exception is actually signalled by the underlying socket.
+The timeout delay is 45 seconds (defined in method \ct!Socket class>>>standardTimeout!).
+
+Once our socket stream connected to the server, we forge and send an HTTP GET query.
+Notice that compared to \scrref{script:closeAndDestroy} (page~\pageref{script:closeAndDestroy}) we skipted here (\Scrref{script:streamGetLine}) one final \ct!String crlf!.
+This is because the \ct!SocketStream>>>sendCommand:! method automatically inserts CR and LF caracters after sent data to mark line ending.
+
+Reception of the requested web page is triggered by sending the \ct!nextLine! message to our socket stream.
+It will waits a few seconds until data is received.
+Data is then displayed on the transcript.
+We safely ensure that the connection is closed.
+
+In this example, we only display the first line of response sent by the server.
+We can easily display the full response including the html code by sending the \ct!upToEnd! message to our socket stream.
+Note howver that you'll have to wait a bit longer compared to displaying a single line.
+
+%%%%%%CONTINUE FROM HERE
 \section{A Basic Chat Application}
 \section{Distributed Object Applications}
 \section{Chapter summary}
