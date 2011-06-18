@@ -1,0 +1,849 @@
+% $Author: ducasse $
+% $Date: 2009-08-24 10:17:33 +0200 (Mon, 24 Aug 2009) $
+% $Revision: 28563 $
+
+% HISTORY:
+% 2010-02-19 - Stef started
+% 2011-02-22 - Alain started to finish
+
+
+%=================================================================
+\ifx\wholebook\relax\else
+% --------------------------------------------
+% Lulu:
+	\documentclass[a4paper,10pt,twoside]{book}
+	\usepackage[
+		papersize={6.13in,9.21in},
+		hmargin={.75in,.75in},
+		vmargin={.75in,1in},
+		ignoreheadfoot
+	]{geometry}
+	\input{../common.tex}
+	\setboolean{lulu}{true}
+% --------------------------------------------
+% A4:
+%	\documentclass[a4paper,11pt,twoside]{book}
+%	\input{../common.tex}
+%	\usepackage{a4wide}
+% --------------------------------------------
+    \graphicspath{{figures/} {../figures/}}
+	\begin{document}
+\fi
+%=================================================================
+%\renewmessage{\nnbb}[2]{} % Disable editorial comments
+\sloppy
+%=================================================================
+\newcommand{\apl}[1]{\nnbb{Alain}{#1}} % Plantec
+\newcommand{\setbrowser}{\textit{Settings Browser}\xspace}
+
+\chapter{The Settings Framework}
+
+As an application matures it often needs to provide variations such as
+a default selection color, a default font or a default font size.
+Often such variations represent user preferences for possible software
+customizations. Since the 1.1 release, Pharo has contained and used
+the Settings framework to manage its preferences. With Settings, an
+application can expose its configuration. Settings is not limited to
+managing Pharo preferences and we suggest using it for any
+application. What is nice about Settings is that it is not intrusive,
+it supports modular decomposition of software and it can be added to
+an application even after that application's inception. The Settings
+framework is what we will look at now.
+
+\section{Settings in a Nutshell}
+
+Setting supports an object-oriented approach to preferences definition and manipulation. What we want to express by this sentence is that:
+\begin{enumerate}
+\item each package or subsystem should define its own customization points (often represented as a variable or a class variable). The code of a subsystem then freely accesses such customization value and use it to change its behavior to reflect the preference.
+\item Using Settings, a subsystem describes its preferences so that the end user can manipulate them. However, at not point in time, the code of a subsystem will explicitly refer to setting objects to adapt its behavior. 
+\end{enumerate}
+
+The control flow of a subsystem does not involve Settings. This is the major point of difference between Settings and the preference system available in Pharo1.0.
+
+\subsubsection{Vocabulary}
+A \emph{preference} is a particular \emph{value} which is usually accessible. Basically such a preference value is stored in a class variable or in an instance variable of a singleton and is directly managed through the use of simple accessors. Pharo contains numerous preferences such as the user interface theme, the desktop background color or a boolean flag to allow or prohibit the use of sound are currently declared as preferences. We will show how we can define a preference in Section~\ref{sec:DeclaringASetting}. 
+
+A \emph{setting} is a \emph{declaration} (description) of a preference value. To be viewed and updated through the setting browser, a preference value must be described by a setting. Such a setting is built by a particular method tagged with a pragma (see Figure~\ref{fig:modularflow}). Section~\ref{sec:DeclaringASetting} explains how to declare a setting.
+
+Pharo users need to browse existing preferences and eventually change their value, this is the major role of the \setbrowser presented in Section~\ref{sec:TheSettingsBrowser}.
+
+
+\begin{figure}[tbh]
+\begin{center}
+\includegraphics[scale=0.5]{modularflow}
+\caption{A package defines customization points. Such customization points are described with Settings instances. The \setbrowser collects the description and presents them to the user.}
+\figlabel{modularflow}
+\end{center}
+\end{figure}
+
+Figure~\ref{fig:modularflow} shows important points of the architecture put in place by Settings: The \emph{Settings} package can be unloaded and a package defining preferences does not depend on the \emph{Settings} package. This architecture is supported by the following points:
+
+\begin{description}
+\item[Customization points.] Each application should defined its customization points. For example, the class \ct{RealStateAgent} of the package \emph{UI-Basic} defines the class variable \ct{UsedStrategy} which defines how the windows. The flow of the package \emph{UI-Basic} is modular and self-contained: the class \ct{RealStateAgent} does not depend on the settings framework.  The class  \ct{RealStateAgent} has been designed to be parametrized.
+
+\item[Description of customization point.] The Settings framework supports the description of the setting \ct{UsedStrategy}. In Figure~\ref{fig:modularflow}, the package \emph{UI-Basic Setting} defines a method (it could be an extension to the class \ct{RealStateAgent} or another class. The important point is that the method declaring the setting does not refer directly to Setting classes but describes the setting using a builder. This way this description could even be present in the \emph{UI-Basic} package without introducing a reference.
+
+\item[Collecting setting for user presentation.] The Settings package defines tools to manage settings such as a \setbrowser that the user uses to change his preference. The \setbrowser collects settings and uses their description to change the values of preferences.
+The control flow of the program and the dependencies are always from the package Settings to the package that has preferences and not the inverse. 
+\end{description}
+
+\section{The Settings Browser}
+\label{sec:TheSettingsBrowser}
+
+The \setbrowser, shown in \figref{fig:TheSettingsBrowser}, mainly allows one to browse all currently declared settings and to change related preference values. To open it, just use the World menu (\menu{World \go System \go Settings}) or evaluate the following expression:
+\begin{code}{}
+SettingBrowser open
+\end{code}
+The settings are presented in several trees in the middle panel. Setting searching and filtering is available from the top toolbar whereas the bottom panels show currently selected setting description (left bottom panel) and current package set (right bottom panel). 
+\begin{figure}[tbh]
+\begin{center}
+\includegraphics[scale=0.3]{SettingBrowser}
+\caption{The \setbrowser.}
+\figlabel{fig:TheSettingsBrowser}
+\end{center}
+\end{figure}
+
+\subsection{Browsing and changing preference values}
+\label{sec:browsing-settings}
+Setting declarations are organized in trees which can be browsed in the middle panel. In order to get a description for a setting, just click on it: the setting is selected and the left bottom panel is updated with informations about the selected setting. 
+
+Changing a preference value is simply done through the browser: each line holds a widget on the right with which you can update the value. The kind of widget depends on the actual type of the preference value. Whereas a preference value can be of any kind, the setting browser is currently able to present a specific input widget for the following types: \textit{Boolean}, \textit{Color}, \textit{FilePath}, \textit{FileDirectory}, \textit{Font}, \textit{Number}, \textit{Point} and \textit{String}. A drop-list, a password field or a range input widget using a slider can also be used. Of course, the list of possible widgets is not closed as it is possible to make the setting browser support new kind of preference values or use different input widgets. This point is explained in Section~\ref{sec:ExtendingTheSettingsBrowser}.
+
+If the actual type of a setting is either \textit{String}, \textit{FilePath}, \textit{FileDirectory}, \textit{Number} or \textit{Point},  to change a value, the user has to enter some text in a editable drop-list widget. In such a case, the input must be confirmed by hitting the return key (or with cmd-s). If such a setting value is changed often, the drop-list widget is very handy because you can retrieve and use previously entered values in one click!
+
+Other possible actions are all accessible from the contextual menu.
+Depending on the selected setting, they may be different. Three versions of it are shown in \figref{fig:TheSettingsBrowserPopupMenu}.
+\begin{figure}[tbh]
+\begin{center}
+\begin{tabular}{ccc}
+\includegraphics[scale=0.5]{popup0.png} & 
+	\includegraphics[scale=0.5]{popup1.png} & 
+	\includegraphics[scale=0.5]{popup2.png} \\ 
+\end{tabular} 
+\caption{The contextual popup menu}
+\figlabel{fig:TheSettingsBrowserPopupMenu}
+\end{center}
+\end{figure}
+\begin{itemize}
+\item \textbf{Browse (b)}: open a system browser on the method that declares the setting. It is also accessible via the keyboard shortcut \textit{cmd-b} or if you double-click on a setting. It is very handy if you want to change the setting implementation or simply see how it is implemented to understand the framework by investigating some examples (how to declare a setting is explained in Section~\ref{sec:DeclaringASetting}).
+\item \textbf{Set to default (d)}: set the selected setting value to the default one. It is very handy if, as an example, you have played with a setting to observe its effect and finally decide to come back to its default. It is also possible to set to default all settings is one single action, this is explained in Section \ref{sec:SettingStylesManagement}.
+\item \textbf{Empty list (e)}: If the input widget is an editable drop-list, this menu item allows one to forget previously entered values by emptying the recorded list.
+\end{itemize}
+
+\subsection{Searching and filtering settings}
+Pharo contains a lot of settings and finding one of them can be tedious. 
+You can filter the settings list by entering something in the search text field of the top bar of the SettingsBrowser. Then, only the settings which name or description contains the text you've entered will be shown. The text can be a regular expression if the "Regexp" checkbox is checked.
+
+Another way to filter the list of settings is to choose them by package. Just click on the "Choose package" button, then a dialog is opened with the list of packages in which some settings are declared. If you choose one or several of them, then, only settings which are declared in the selected packages are shown. Notice that the bottom right text pane is updated with the name of the selected packages.
+
+Depending on where and when you are using Pharo, you may have to change preferences repeately. As an example, when you are doing a demonstration, you may want to have bigger fonts, at work you may need to set a proxy whereas at home none is needed. Having to change a set of preferences depending on where you are and what you are doing can be very tedious and boring. With the \setbrowser, it is possible to save the current set of preference values in a named style that can be reloaded later. Setting style management is presented in Section~\ref{sec:SettingStylesManagement}.
+
+\section{Declaring a setting}
+\label{sec:DeclaringASetting}
+
+All global preferences of Pharo can be viewed or changed using the \setbrowser. A preference is typically a class variable or an instance variable of a singleton. If one want to be able to change its value from the \textit{SettingsBrowser}, then a setting must be declared for it.
+A setting is declared by a particular \emph{class} method that should be  implemented as follows: it takes a builder as argument and it is tagged with the \textit{<systemsettings>} pragma. 
+
+%As an example: 
+%\begin{code}{}
+%AClassInMyPackage class>>settingOn: aBuilder
+%  <systemSettings>
+%  (aBuilder group: #MySettings)
+%    label:'My settings' ...
+%\end{code}
+The argument, \ct{aBuilder}, serves as an API or facade for building setting declarations. The pragma allows the \setbrowser to dynamically discover current setting declarations.
+
+The important point is that a setting declaration should be package specific. It means that each package is responsible for the declaring of its own settings. For a particular package, specific settings are declared by one or several of its classes or a companion package. There is no global setting defining class or package (as it was the case in Pharo1.0). The direct benefit is that when the package is loaded, then its settings are automatically loaded and that when a package is unloaded, then its settings are automatically unloaded. In addition a Setting declaration should not refer to any Setting class but to the builder argument. This makes sure that your application is not dependent from Settings and that you will be able to remove Setting if you want to define extremely small footprint applications. 
+\paragraph{}
+Let's take the example of the \ct{caseSensitiveFinds} preference. It is a boolean preference which is used for text searching. If it is \ct{true}, then text finding is case sensitive. This preference is stored in the \ct{CaseSensitiveFinds} class variable of the class \ct{TextEditor}. Its value can be queried and changed by, respectively, \ct{TextEditor class>>caseSensitiveFinds} and \ct{TextEditor class>>caseSensitiveFinds:} given below:
+\begin{code}{}
+TextEditor class>>caseSensitiveFinds
+	^ CaseSensitiveFinds ifNil: [CaseSensitiveFinds := false]
+
+TextEditor class>>caseSensitiveFinds: aBoolean
+	CaseSensitiveFinds := aBoolean
+\end{code}
+
+To define a setting for this preference (\ie for the \ct{CaseSensitiveFinds} class variable) and be able to see it and change it from the \setbrowser, the method below is implemented. The result is shown in the screenshot of the \figref{fig:caseSensitiveFinds1}. 
+
+\begin{code}{}
+CodeHolderSystemSettings class>>caseSensitiveFindsSettingsOn: aBuilder
+	<systemsettings>
+	(aBuilder setting: #caseSensitiveFinds) 
+		target: TextEditor;
+		label: 'Case sensitive search' translated;
+		description: 'If true, then the "find" command in text will always make its searches in a case-sensitive fashion' translated;
+		parent: #codeEditing.
+\end{code}
+
+\begin{figure}[tbh]
+\begin{center}
+\includegraphics[scale=0.4]{caseSensitiveFinds_setting_declaration1}
+\caption{The \textit{caseSensitiveFinds} setting}
+\figlabel{fig:caseSensitiveFinds1}
+\end{center}
+\end{figure}
+
+Now, let's study this setting declaration in details. 
+
+\subsection{The header}
+\begin{code}{}
+CodeHolderSystemSettings class>>caseSensitiveFindsSettingsOn: !\textbf{aBuilder}!
+   ...
+\end{code}
+This class method is declared in the class \ct{CodeHolderSystemSettings}. This class is dedicated to settings and contains nothing but settings declarations. Defining such a class is not mandatory; in fact any class can define settings declarations. We define it that way to make sure that the setting declaration is packaged in a different package than the one of the preference definition -- for layering purposes.
+
+This method takes a builder as argument. This object serves as an API ors facade for setting buildings: the contents of the method essentially consists in sending messages to the builder to declare and organize a sub-tree of settings.
+
+\subsection{The pragma}
+A setting declaration is tagged with the \ct{<systemsettings>} pragma.
+\begin{code}{}
+CodeHolderSystemSettings class>>caseSensitiveFindsSettingsOn: aBuilder
+	!\textbf{<systemsettings>}!
+   ...
+\end{code}
+In fact, when the settings browser is opened, it first collects all settings declarations by searching all methods with the \ct{<systemsettings>} pragma. In addition, if you compile a setting declaration method while a \setbrowser is opened then it is automatically updated with the new setting. 
+
+\subsection{The setting configuration}
+A setting is declared by sending the message \ct{setting:} to the builder with an identifier passed as argument. Here the identifier is \ct{#caseSensitiveFinds}. Here is an example: 
+\begin{code}{}
+CodeHolderSystemSettings class>>caseSensitiveFindsSettingsOn: aBuilder
+	<systemsettings>
+	(aBuilder !\textbf{setting:}! #caseSensitiveFinds) 
+    ...
+\end{code}
+
+
+
+Sending the message \ct{setting:} to a builder creates a \textit{setting node}.
+By default, the symbol passed as argument is considered as the selector used by the \setbrowser to get the preference value. The selector for changing the preference value is by default built by adding a colon to the getter selector (\ie it is \ct{caseSensitiveFinds:} here).
+These selectors are sent to a target which is by default the class in which the method is implemented (\ie \ct{CodeHolderSystemSettings}). Thus, this one line setting declaration would be sufficient if  \ct{caseSensitiveFinds} and \ct{caseSensitiveFinds:} accessors were implemented in \ct{CodeHolderSystemSettings}. 
+
+In fact, very often, these default initializations will not fit your need. Of course you can adapt the setting node configuration to take into account your specific situation. 
+
+For example,  the corresponding getter and setter accessors for the \ct{caseSensitiveFinds} setting are implemented in the class \ct{TextEditor}. Then, we should explicitly set that the target is \ct{TextEditor}. This is done by sending the message \ct{target:} to the setting node with the target class \ct{TextEditor} passed as argument as shown by the updated definition: 
+\begin{code}{}
+CodeHolderSystemSettings class>>caseSensitiveFindsSettingsOn: aBuilder
+	<systemsettings>
+	(aBuilder setting: #caseSensitiveFinds) 
+		 !\textbf{target:}! TextEditor
+\end{code}
+
+This very short version is fully working and enough to be compiled and taken into account by the \setbrowser as shown by \figref{fig:caseSensitiveFinds2}.
+
+\begin{figure}[tbh]
+\begin{center}
+\includegraphics[scale=0.4]{caseSensitiveFinds_setting_declaration2}
+\caption{A first simple version of the \ct{caseSensitiveFinds} setting.}
+\figlabel{fig:caseSensitiveFinds2}
+\end{center}
+\end{figure}
+
+
+Unfortunately, the presentation is not really user-friendly because:
+\begin{itemize}
+\item the label shown in the settings browser is the identifier (the symbol used to build accessors to access it),
+\item there is no description or explanation available for this setting, and
+\item the new setting is simply added at the root of the setting tree. 
+\end{itemize}
+
+To address such shortcomings, you can configure more your setting node with a label and a description with respectively the \ct{label:} and \ct{description:} messages which take a string as argument. 
+
+\begin{code}{}
+CodeHolderSystemSettings class>>caseSensitiveFindsSettingsOn: aBuilder
+	<systemsettings>
+	(aBuilder setting: #caseSensitiveFinds) 
+		target: TextEditor;
+		!\textbf{label:}! 'Case sensitive search' translated;
+		!\textbf{description:}! 'If true, then the "find" command in text will always make its searches in a case-sensitive fashion' translated;
+		parent: #codeEditing.
+\end{code}
+
+Don't forget to send \ct{translated} to the label and the description strings, it will greatly facilitate the translation in other languages.
+
+Concerning the classification and the settings tree organization, there are several ways to improve it and this point is fully detailed in the next section.
+
+\subsection{More about the target}
+The target of a setting is the receiver for getting and changing the preference value. Most of the time, it is a class. Indeed, typically, a preference value is stored in a class variable. Thus, class side methods are used as accessors for accessing the setting. 
+
+But the receiver can also be a singleton object. This is currently the case for many preferences. As an example, the Free Type fonts preferences, they are all stored in the instance variables of a \ct{FreeTypeSettings} singleton. Thus, here, the receiver is the \ct{FreeTypeSettings} instance that you can get by evaluating the following expression:
+\begin{code}{}
+FreeTypeSettings current
+\end{code}
+So, one can use this expression  to configure the target of a corresponding setting. As an example the \ct{#glyphContrast} preference could be declared as follow:
+\begin{code}{}
+(aBuilder setting: #glyphContrast) 
+	target: FreeTypeSettings current;
+	label: 'Glyph contrast' translated;
+    ...
+\end{code}
+This is simple but unfortunately, declaring such a singleton target like this is not a good idea. This declaration is not compatible with the \textit{Setting style} functionalities (see Section~\ref{sec:SettingStylesManagement}). In such a case, one have to separately indicate the target class and the message selector to send to the target class to get the singleton. Thus, as shown in the example below, you should use the \ct{targetSelector:} message:
+
+\begin{code}{}
+(aBuilder setting: #glyphContrast) 
+	target: FreeTypeSettings;
+	!\textbf{targetSelector:}! #current;
+	label: 'Glyph contrast' translated;
+    ...
+\end{code}
+
+\subsection{More about default values}
+The way the \setbrowser build a setting input widget depends on the actual value type of a preference. Having $nil$ as a value for a preference is a problem for the \setbrowser because it can't figure out which input widget to use.
+So, basically, in order to be properly shown with the good input widget, a preference must always be set with a non $nil$ value.
+You can set a default value to a preference by initializing it as usual, with a \#initialize method or with a lazy initialization programed in the accessor method of the preference. 
+
+Regarding the \setbrowser, the best way is the lazy initialization (see the example of the \#caseSensitiveFinds preference given in the section \ref{sec:DeclaringASetting}).
+Indeed, as explained in the section~\ref{sec:browsing-settings}, from the \setbrowser contextual menu, you can reset a preference value to its default one or globally reset all preference values. In fact it is done by setting the preference value to reset to $nil$. As a consequence, the preference is automatically set to its default value as soon as it is get by using its dedicated accessor.
+
+It is not always possible to change the way an accessor is implemented. A reason for that could be that the preference accessor is maintained within another package which you are'nt allowed to change. As shown in the example below, as a workaround, you can indicate a default value from the declaration of the setting:
+\begin{code}{}
+CodeHolderSystemSettings class>>caseSensitiveFindsSettingsOn: aBuilder
+	<systemsettings>
+	(aBuilder setting: #caseSensitiveFinds)
+		!\textbf{default:}! true;
+    ...
+\end{code}
+
+\section{Organizing your settings}
+
+Within the \setbrowser, settings are organized in trees where related settings are shown as children of the same parent. 
+
+\subsection{Declaring a parent}
+The simplest way to declare your setting as a child of another setting is to use the \ct{parent:} message with the identifier of the parent setting passed as argument. In the example below, the parent node is an existing node declared with the \ct{#codeEditing} identifier. 
+
+\begin{code}{}
+CodeHolderSystemSettings class>>caseSensitiveFindsSettingsOn: aBuilder
+	<systemsettings>
+	(aBuilder setting: #caseSensitiveFinds) 
+		target: TextEditor;
+		label: 'Case sensitive search' translated;
+		description: 'If true, then the "find" command in text will always make its searches in a case-sensitive fashion' translated;
+		!\textbf{parent:}! #codeEditing.
+\end{code}
+The \ct{#codeEditing} node is also declared somewhere in the system. For example, it could be defined as a group as we will see now. 
+
+
+\subsection{Declaring a group}
+
+A group is a simple node without any value and which is only used for children grouping.
+The \ct{#codeEditing} node is created by sending the \ct{group:} message to the builder with its identifier passed as argument.  Notice also that, as shown in \figref{fig:caseSensitiveFinds1}, the \ct{#codeEditing} node is not at root because it is declared itself as a child of the \ct{#codeBrowsing} node.
+
+
+\begin{code}{}
+CodeHolderSystemSettings class>>codeEditingSettingsOn: aBuilder
+	<systemsettings>
+	(aBuilder !\textbf{group:}! #codeEditing) 
+		label: 'Editing' translated;
+		parent: #codeBrowsing.
+\end{code}
+
+
+\subsection{Declaring a sub-tree}
+Being able to declare its own settings as a child of a pre-existing node is very useful when a package wants to enrich existing standard settings. But it can also be very tedious for settings which are very application specific. 
+
+Thus, directly declaring a sub-tree of settings in one method is also possible. Typically, a root group is declared for the application settings and the children settings themselves are also declared within the same method. This is simply done through the sending of the \ct{with:} message to the root group. The \ct{with:} message takes a block as argument. In this block, every new settings are implicitely declared as children of the root group (the receiver of the \ct{with:} message). 
+
+\begin{figure}[tbh]
+\begin{center}
+\includegraphics[scale=0.47]{configurableFormatter}
+\caption{Declaring a subtree in one method: the \textit{Configurable formatter} setting example.}
+\figlabel{fig:configurableFormatter}
+\end{center}
+\end{figure}
+
+
+As an example, take a look at \figref{fig:configurableFormatter}, it shows the settings for the refactoring browser configurable formatter. This sub-tree of settings is fully declared in the method \ct{RBConfigurableFormatter class>>settingsOn:} given below. You can see that it declares the new root group \ct{#configurableFormatter} with two children, \ct{#formatCommentWithStatements} and \ct{#indentString}:
+\begin{code}{}
+RBConfigurableFormatter class>>settingsOn: aBuilder
+	<systemsettings>	
+	(aBuilder group: #configurableFormatter)
+		target: self;
+		parent: #refactoring;
+		label: 'Configurable Formatter' translated;
+		description: 'Settings related to the formatter' translated;
+		!\textbf{with:}! [
+				(aBuilder setting: #formatCommentWithStatements)
+					label: 'Format comment with statements' translated.
+				(aBuilder setting: #indentString)
+					label: 'Indent string' translated]
+\end{code}
+
+\subsubsection{Optional sub-tree}
+Depending on the value of a particular preference, one might want to hide some settings because it doesn't make sense to show them. As an example, if the background color of the desktop is plain then it doesn't make sense to show settings which are related to gradient background. Instead, when the user wants a gradient background, then a second color, the gradient direction, and the gradient origin settings should be presented. 
+Look at the \figref{fig:optional-subtree}:
+\begin{itemize}
+\item on the left, the \textit{Gradient} widget is unchecked meaning that its actual value is \ct{false}; in this case, it has no children, 
+\item on the right, the \textit{Gradient} widget is checked, then the setting value is set to \ct{true} and as a consequence, the settings useful in order to set a gradient background are shown.
+\end{itemize}
+\begin{figure}[tbh]
+\begin{center}
+\begin{minipage}[t]{0.49\linewidth}
+\includegraphics[scale=0.35]{smart-subtree1}
+\end{minipage}
+\begin{minipage}[t]{0.49\linewidth}
+\includegraphics[scale=0.35]{smart-subtree2}
+\end{minipage}
+\caption{Example of optional subtree. Right -- no gradient is selected. Left -- gradient is selected so additional preferences are available.}
+\figlabel{fig:optional-subtree}
+\end{center}
+\end{figure}
+
+To handle such optional settings is simple: optional settings should be declared as children of a boolean parent setting. In this case, children settings are shown only if the parent value is \ct{true}. Concerning the desktop gradient example, the setting is declared in \ct{PolymorphSystemSettings} as given below:
+\begin{code}{}
+	(aBuilder setting: #useDesktopGradientFill)
+		label: 'Gradient';
+		description: 'If true, then more settings will be available in order to define the desktop background color gradient';
+		with: [
+			(aBuilder setting: #desktopGradientFillColor)
+				label: 'Other color';
+				description: 'This is the second color of your gradient (the first one is given by the "Color" setting' translated.
+			(aBuilder pickOne: #desktopGradientDirection)
+				label: 'Direction';
+				domainValues: {#Horizontal. #Vertical. #Radial}.
+			(aBuilder pickOne: #desktopGradientOrigin)
+				label: 'Origin';
+				domainValues: {
+					'Top left' translated -> #topLeft. ...
+\end{code} 
+The parent setting value is given by evaluating \ct{PolymorphSystemSettings class>>useDesktopGradientFill}. If it returns \ct{true}, then the children \ct{#desktopGradientFillColor}, \ct{#desktopGradientDirection}, and \ct{#desktopGradientOrigin} are shown.
+
+\subsection{Ordering your settings}
+By default, sibling settings are sorted alphabetically by their label. You may want to change this default behavior. Changing the settings ordering can be done two ways: by simply forbidding the default ordering or by explicitely specifying an order.
+
+As in the following example of the \ct{#appearance} group, you can indicate that no ordering should be performed by sending the \ct{#noOrdering} message to the parent node. Then its children are let in declaration order.
+
+\begin{code}{}
+appearanceSettingsOn: aBuilder 
+	<systemsettings>
+	(aBuilder !\textbf{group:}! #appearance)
+		label: 'Appearance' translated;  
+		description: 'All settings concerned with the look''n feel of your system' translated;
+		!\textbf{noOrdering}!;
+		with: [... ]
+\end{code}
+
+You can indicate the order of a setting node among its siblings by sending the message \ct{order:} to it with a number passed as argument. The number can be an \ct{Integer} or a \ct{Float}. Nodes with an order number are always placed before others and are sorted according to their respective order number. If an order is given to an item, then no ordering is applied for other siblings.
+
+As an example, take a look at how the \ct{#standardFonts} group is declared:
+\begin{code}{}
+(aBuilder group: #standardFonts)
+	label: 'Standard fonts' translated;
+	target: StandardFonts;
+	parent: #appearance;
+	with: [ 
+		(aBuilder launcher: #updateFromSystem)
+			!\textbf{order:}! 1; 
+			targetSelector: #current;
+			script: #updateFromSystem;
+			label: 'Update fonts from system' translated.
+		(aBuilder setting: #defaultFont)
+			label: 'Default' translated.
+		(aBuilder setting: #codeFont) 
+			label: 'Code' translated.
+		(aBuilder setting: #listFont)
+     ...
+\end{code}
+In this example, the launcher \ct{#updateFromSystem} is declared to be the first node, then other siblings with identifiers \ct{#defaultFont}, \ct{#codeFont}, and \ct{#listFont} are placed according to the declaration order.
+
+\section{Providing more precise value domain}
+By default, the possible value set of a preference is not restricted and is given by the actual type of the preference. For example, for a color preference, the widget allows you to choose whatever color, for a number, the widget allows the user to enter any number.
+But, in some cases, only a particular set of values is desired. As an example, for the standard browser or for the user interface theme settings, the choice must be made among a finite set of classes, for the free type cache size, only a range from 0 to 50000 is allowed. In these cases, it is much more comfortable if the widget can only accept particular values. To address this issue, the domain value set can be constrained either with a range or with a list of values.
+
+\subsection{Declaring a range setting}
+As an example, let's consider the full screen margin preference shown in the \figref{fig:range-setting}. Its value represents the margin size in pixels that is let around a window when it is expanded. 
+
+\begin{figure}[tbh]
+\begin{center}
+\includegraphics[scale=0.38]{fullScreenMargin}
+\caption{Example of range setting.}
+\figlabel{fig:range-setting}
+\end{center}
+\end{figure}
+
+It's value is an integer but it makes no sense to set -100 or 5000 to it. 
+Instead, a minimum of -5 and a maximum of 100 constitute a good range of values. One can use this range to constraint the setting widget. As shown by the example below, comparing to a simple setting, the only two differences are that:
+\begin{itemize}
+\item 
+	the new setting node is created with the \ct{range:} message instead of the \ct{setting:} message and
+\item	the valid range is given by sending the \ct{range:} message to the  setting node, an \ct{Interval} is given as argument.
+\end{itemize}
+
+\begin{code}{}
+screenMarginSettingOn: aBuilder
+	<systemsettings>
+	(aBuilder !\textbf{range:}! #fullScreenMargin)
+		target: SystemWindow;
+		parent: #windows;
+		label: 'Full screen margin' translated;
+		description: 'Specify the amount of space that is let around a windows when it''s opened fullscreen' translated;
+		!\textbf{range:}! (-5 to: 100).
+\end{code}
+
+\subsection{Selecting among a list}
+When a preference value is constrained to be one of a particular list of values, it is possible to declare it so that a drop list is used by the settings browser. This drop list is initialized with the predefined valid values. As an example, consider the \textit{window position strategy} example. The corresponding widget is shown in action within the settings browser by \figref{fig:window-position-strategy-list-setting}. The allowed values are \ct{'Reverse Stagger'}, \ct{'Cascade'}, or \ct{'Standard'}.
+
+\begin{figure}[tbh]
+\begin{center}
+\includegraphics[scale=0.38]{window-position-strategy}
+\caption{Example of a list setting.}
+\figlabel{fig:window-position-strategy-list-setting}
+\end{center}
+\end{figure}
+
+The example below shows a simplified declaration for the \textit{window position strategy} setting. 
+\begin{code}{}
+windowPositionStrategySettingsOn: aBuilder
+	<systemsettings>
+	(aBuilder !\textbf{pickOne:}! #usedStrategy) 
+		label: 'Window position strategy' translated;
+		target: RealEstateAgent;
+		!\textbf{domainValues:}! #(#'Reverse Stagger' #Cascade #Standard)
+\end{code}
+comparing to a simple setting, the only two differences are that:
+\begin{itemize}
+\item 
+	the new setting node is created with the \ct{pickOne:} message instead of the \ct{#setting:} message and
+\item the list of authorized values is given by sending the \ct{domainValues:} message to the newly declared setting node, a \ct{Collection} is given as argument (the default value being the first one).
+\end{itemize}
+
+Concerning this window strategy example, the value set to the preference would be either \ct{#'Reverse Stagger'} or \ct{#Cascade} or \ct{#Standard}. 
+
+Unfortunately, these values are not very handy. A programmer may wish another value as, for example, some kind of \textit{strategy object} or a \ct{Symbol} which could directly serve as a selector. In fact, this second solution has been chosen by the \ct{RealEstateAgent} class maintainers.
+If you inspect the value returned by \ct{RealEstateAgent usedStrategy} you will realize that the result is not a \ct{Symbol} among \ct{#'Reverse Stagger', #Cascade, or #Standard} but another symbol. Then, if you look at the way the window position strategy setting is really implemented you will see that the declaration differs from the basic solution given previously: the \textit{domainValues:} argument is not a simple array of {Symbol}s but an array of \ct{Associations} as you can see in the declaration below:
+
+\begin{code}{}
+windowPositionStrategySettingsOn: aBuilder
+	<systemsettings> 
+	(aBuilder pickOne: #usedStrategy)
+	...
+	domainValues: {'Reverse Stagger' translated -> #staggerFor:initialExtent:world:. 'Cascade' translated -> #cascadeFor:initialExtent:world:. 'Standard' translated -> #standardFor:initialExtent:world:};
+\end{code}
+
+From the \setbrowser point of view, the content of the list is exactly the same and the user can't notice any difference because, if an array of Associations is given as argument to \ct{domainValues:}, then the keys of the Associations are used for the user interface. 
+
+Concerning the value of the preference itself, if you inspect \ct{RealEstateAgent usedStrategy}, you should notice that the result is a value among \ct{#(#staggerFor:initialExtent:world: #cascadeFor:initialExtent:world: #standardFor:initialExtent:world:)}. In fact, the values of the Associations are used to compute all possible real values for the setting.
+
+The list of possible values can be of any kind. As another example, let's take a look at the way the user interface theme setting is declared in the \ct{PolymorphSystemSettings} class:
+\begin{code}{}
+(aBuilder pickOne: #uiThemeClass)
+	label: 'User interface theme' translated;
+	target: self;
+	domainValues: (UITheme allThemeClasses collect: [:c | c themeName -> c])
+\end{code}
+In this example, \ct{domainValues:} takes an array of associations which is computed each time a Settings Browser is opened. Each association is made of the name of the theme as key and of the class which implements the theme as value.
+
+\section{Launching a script}
+Imagine that you want to launch an external configuration tool or that you want to allow one to configure the system or a particular package with the help of a script. In such a case you can declare a \textit{launcher}. A launcher is shown with a label as a regular setting except that no value is to be entered for it. Instead, a button labelled {\textit{Launch} is integrated in the \setbrowser and clicking on it launch an associated script.
+
+\begin{figure}[tbh]
+\begin{center}
+\includegraphics[scale=0.38]{launcher}
+\caption{Example of launchers.}
+\figlabel{fig:launcher}
+\end{center}
+\end{figure}
+
+As an example, to use True Type Fonts, the system must be updated by collecting all the available fonts in the host system. This can be done by evaluating the following expression:
+\begin{code}{}
+FreeTypeFontProvider current updateFromSystem
+\end{code}
+It is  possible to run this script from the \setbrowser. The corresponding launcher is shown in \figref{fig:launcher}.
+The integration of such a launcher is quite simple. You simply have to declare a setting for it! For example, look at how the launcher for the TT fonts is declared:
+
+\begin{code}{}
+GraphicFontSettings class>> standardFontsSettingsOn:
+	<systemsettings>
+	(aBuilder group: #standardFonts)
+		...
+		(aBuilder !\textbf{launcher:}! #updateFromSystem) ...
+				target: FreeTypeFontProvider;
+				targetSelector: #current;
+				!\textbf{script:}! #updateFromSystem;
+				label: 'Update fonts from system' translated.
+\end{code}
+
+Comparing to a simple setting, the only two differences are that:
+\begin{itemize}
+\item the new setting node is created by sending the \ct{launcher:} message to the builder and
+\item the message \ct{script:} is sent to the setting node with the selector of the script passed as argument.
+\end{itemize}
+
+%5 USING SPECIFIC DIALOG
+%For setting browsing and editing, it could be useful to use a specific dialog instead of SystemSettingBrowser simple input widgets. For that purpose, the dialog attribute can be set with the name of a dialog class. While browsing a setting with a dialog, the SystemSettingBrowser presents a button for the dialog opening. The only constraint is that the dialog class must understand the #open message.
+%
+%For a node with children, it can be very useful in order to be able to use a cool dialog for the input of all children instead of being forced to input them one by one as it is the case with the SystemSettingrowser.
+%
+%Here is an example of a setting node with its dialog instance variable set to the value #FontSettingDialog. In the case of fonts, it could be useful in order to allow the using of a specific cool dialog for font preferences settings.
+%------------------
+%FontSettings class>>fontSettingNode
+%	<setting> 
+%	^ (SettingManager newNode: 'Fonts')
+%		description: 'System fonts settings';
+%		dialog: #FontSettingDialog;
+%		parent: #uiSettingNode 
+%------------------
+%
+%The dialog instance variable can be set for a setting value too. Then, neither the default value nor the type is needed:
+%------------------
+%UISettings class>>uiStyle
+%	<setting>
+%	^ UIStyle ifNil: [UIStyle := (SettingManager newSetting: 'UI style') 
+%			dialog: #UIStyleChooserDialog; 
+%			description: 'System style'].
+%------------------
+%
+
+\section{Setting styles management}
+\label{sec:SettingStylesManagement}
+Even if many preferences have been removed from Pharo because they were obsolete, there are a still a large number of them. And even if the \setbrowser is easy to use, it may be tedious to set up your own preferences even for a subset, each time you start working with a new image. A solution is to implement a script to set all your preferred choices. The best way is to create a specific class for that purpose. Then you can include it in a package that you can reload each time you want to setup a fresh image. We call this kind of class a \textit{Setting style}. 
+
+To manage \textit{Setting styles}, the \setbrowser can be helpful in two ways. First, it can help you discover how to change a preference value, and second, it can create and update a particular style for you.
+
+\subsection{Scripting settings}
+Because preference variables are all accessible with accessor methods, it is naturally possible to initialize a set of preferences in a simple script. For the sake of simplicity, let's implement it in a Setting style.
+
+As an example a script can be implemented to change the background color and to set all fonts to a bigger one than the default. Let's create a Setting style class for that. We can call it \ct{MyPreferredStyle}. The script is defined by a method of \ct{MyPreferredStyle}. We call this method \ct{loadStyle} because this selector is the standard hook for settings related script evaluating. 
+
+\begin{code}{}
+MyPreferredStyle>>loadStyle
+	| f n |
+	"Desktop color"
+	PolymorphSystemSettings desktopColor: Color white.
+	"Bigger font"
+	n := StandardFonts defaultFont. "get the current default font"
+	f := LogicalFontfamilyName: n familyName pointSize: 12. "font for my preferred size"
+	StandardFonts setAllStandardFontsTo: f "reset all fonts"
+\end{code}
+\ct{PolymorphSystemSettings} is the class in which all settings related to \textit{PolyMorph} are declared. \ct{StandardFonts} is the class that is used to manage Pharo default fonts.
+
+Now the question is how to find out that the desktop color setting is declared in \ct{PolymorphSystemSettings} and that the \ct{DefaultFonts} class allows fonts management? More generally where are all these settings declared and managed? 
+
+The answer is quite simple: just use the \setbrowser! As explained in Section~\ref{sec:browsing-settings}, \textit{cmd-b} or double clicking on an item open a browser on the declaration of the current setting node. You can also use the contextual menu for that. Browsing the declaration will give you the target class (where the preference variable is stored) and the selector for the preference value.
+
+Now we would like \ct{MyPreferredStyle>>#loadStyle} to be automatically evaluated when \ct{MyPreferredStyle} is itself loaded in the system. For that purpose, the only thing to do is to implement an \ct{initialize} method for the \ct{MyPreferredStyle} class:
+\begin{code}{}
+MyPreferredStyle class>>initialize
+	self new loadStyle
+\end{code}
+
+\subsection{Integrating a style in the \setbrowser}
+Any script can be integrated in the \setbrowser so that it could be loaded, browsed or even removed from it. For that purpose you only have to declare a name for it and to make sure that the \setbrowser will discover it. Just implement a method named \ct{styleName} on the class side of your style class. Concerning the example of previous section, it should be implemented as follows:
+
+\begin{code}{}
+MyPreferredStyle class>>styleName
+	"The style name used by the SettingBrowser"
+	<settingstyle>
+	^ 'My preferred style'
+\end{code}
+
+\ct{MyPreferredStyle class>>styleName} takes no argument and must return the name of your style as a \textit{String}. The \textit{<settingstyle>} pragma is used to let the \setbrowser know that \ct{MyPreferredStyle} is a setting style class.
+
+Once this method is compiled, open the Setting Browser and popup the \textit{Style} top menu. As shown by \figref{fig:load-style-dialog}, you should see a dialog with a list of style names comprising your own one.
+
+\begin{figure}[tbh]
+\begin{center}
+\includegraphics[scale=0.4]{setting-style-load-dialog}
+\caption{The style load dialog with your own style}
+\figlabel{fig:load-style-dialog}
+\end{center}
+\end{figure}
+
+%\subsection{Producing a style from the Setting Browser}
+%\apl{How to automatically produce a style skeleton}
+
+\section{Extending the \setbrowser}
+\label{sec:ExtendingTheSettingsBrowser}
+As explained in the section \ref{sec:browsing-settings}, the \setbrowser is by default able to manage a simple preference types. These default possibilities are generally enough. But there are some situations where it can be very helpful to be able to handle more complex preference values. 
+
+As an example, let focus on the text selection preferences. We have the primary selection and three other optional kinds of text selection, the secondary selection, the find and replace selection and the selection bar. For all selections, a background color can be set. For the primary, the secondary and the find and replace selection, a text color can also be chosen.
+
+\subsection{Declaring selection settings individually}
+So far, according to the default possibilities, a setting can be declared for each of the text selection characteristics so that each corresponding preference can be changed individually from the \setbrowser. Settings declared for a particular selection kind can be grouped together as children of a setting group. As an immediate improvement, for an optional text selection, a boolean setting can be used instead of a simple group.
+
+As an example, let's take the secondary selection. This text selection kind is optional and one can set a background and a text color for it. Corresponding preferences are declared as instance variables of \ct{ThemeSettings}. Their values can be read and changed from the current theme by getting its associated \ct{ThemeSettings} instance. Thus, the two color settings can be declared as children of the \ct{#useSecondarySelection} boolean setting as given below:
+\begin{code}{}
+(aBuilder setting: #useSecondarySelection)
+	target: UITheme;
+	targetSelector: #currentSettings;
+	label: 'Use the secondary selection' translated;
+	with: [
+		(aBuilder setting: #secondarySelectionColor)
+			label: 'Secondary selection color' translated.
+		(aBuilder setting: #secondarySelectionTextColor)
+			label: 'Secondary selection text color' translated].
+\end{code}
+The~\figref{fig:secondarySelectionColorV1} shows these setting declarations in the \setbrowser. The look and feel is clean but in fact two observations can be made:
+\begin{enumerate}
+\item it takes three lines for each selection kind, this is a little bit uncomfortable because the view for one selection takes a lot of vertical space,
+\item the underlying model is not explicitly designed, the settings for one selection kind are grouped together in the \setbrowser but corresponding preference values are declared as separated instances variables of \ct{ThemeSettings}. In the next section we see how to improve this first solution with a better design.
+\end{enumerate}
+\begin{figure}[tbh]
+\begin{center}
+\includegraphics[scale=0.45]{secondarySelectionColorV1}
+\caption{The secondary selection settings declared with basic setting values}
+\figlabel{fig:secondarySelectionColorV1}
+\end{center}
+\end{figure}
+
+\subsection{An improved selection preference design}
+A better solution would be to design the concept of text selection preference. Then, we have only one value to manage for each selection preference instead of three. A text selection preference is basically made of two colors, one for the background and the second for the text. Except the primary selection, each selection is optional. Then, we could design a text selection preference as follow:
+\begin{code}{}
+Object subclass: #TextSelectionPreference
+	instanceVariableNames: 'backgroundColor textColor mandatory used'
+	classVariableNames: 'FindReplaceSelection PrimarySelection SecondarySelection SelectionBar'
+	poolDictionaries: ''
+	category: 'Settings-Tools'
+\end{code}
+\ct{TextSelectionPreference} is made of four instance variables. Two of them are for the colors. If the \ct{mandatory} instance variable is set to \ct{false} then, the \ct{used} boolean instance variable can be changed. Instead, if the \ct{mandatory} is set to \ct{true}, then, the used instance variable is set to \ct{true} and is not changeable. 
+
+\ct{TextSelectionPreference} have also four class variables, one for each kind of possible text selection preference. The getters and the setters have also to be implemented in order to be able to manage these preferences from the \setbrowser.
+As an example, for \ct{PrimarySelection}:
+\begin{code}{}
+TextSelectionPreference class>>primarySelection
+	^ PrimarySelection
+		ifNil: [PrimarySelection := self new 
+						textColor: Color black;
+						backgroundColor: (Color blue alpha: 0.5);
+						!\textbf{mandatory: true}!;
+						yourself]
+\end{code}
+You can notice that the \ct{mandatory} attribute is initialize to \ct{true}.
+
+Another example with the selection bar preference:
+\begin{code}{}
+TextSelectionPreference class>>selectionBar
+	^ SelectionBar
+		ifNil: [SelectionBar := self new 
+					backgroundColor: Color lightBlue veryMuchLighter;
+					!\textbf{mandatory: false}!;
+					yourself]
+\end{code}
+Here, you can notice that the preference is declared as optional and with no text color. 
+
+In order for these preferences to be changeable from the \setbrowser, we have to declare two methods. The first one is for the setting declaration and the second is to implement the view. 
+
+The setting declaration is implemented as follow:
+\begin{code}{}
+TextSelectionPreference class>>selectionPreferenceOn: aBuilder 
+	<systemsettings>
+	(aBuilder group: #selectionColors) 
+		label: 'Text selection colors' translated;
+		parent: #appearance;
+		target: self;
+		with: [(aBuilder setting: #primarySelection) order: 1;
+				 label: 'Primary'.
+			(aBuilder setting: #secondarySelection)
+				label: 'Secondary'.
+			(aBuilder setting: #findReplaceSelection)
+				label: 'Find/replace'.
+			(aBuilder setting: #selectionBar)
+				label: 'Selection bar']
+\end{code}
+As you can see, there is absolutely nothing new in this declaration. The only thing that changes is that the value of the preferences are of a user defined class. In fact, in case of user defined or application specific preference class, the only particular thing to do is to implement one supplementary method for the view. This method must be named \ct{#settingInputWidgetForNode:} and must be implemented as a class method.
+
+\ct{#settingInputWidgetForNode:} method responsibility is to build the input widget for the \setbrowser. This method takes a \ct{SettingDeclaration} as argument. \ct{SettingDeclaration} is basically a model and its instances are managed by the \setbrowser. 
+
+Each \ct{SettingDeclaration} instance serves as a preference value holder. Indeed, each setting that you can view in the \setbrowser is internally represented by a \ct{SettingDeclaration} instance. 
+
+For each of our text selection preferences, we want to be able to change its colors and if the selection is optional, then we want to have the possibility to enable or disable it. Regarding the colors, depending on the selection preference value, only the background color is always shown. Indeed, if the text color of the preference value is \ct{nil}, this means that having a text color does'nt makes sense and then, the corresponding color chooser is not built. 
+
+The \ct{#settingInputWidgetForNode:} method can be implemeented as below:
+\begin{code}{}
+TextSelectionPreference class>>settingInputWidgetForNode: aSettingDeclaration 
+	| preferenceValue backColorUI usedUI uiElements |
+	preferenceValue := aSettingDeclaration preferenceValue.
+	usedUI := self usedCheckboxForPreference: preferenceValue.
+	backColorUI := self backgroundColorChooserForPreference: preferenceValue.
+	uiElements := {usedUI. backColorUI}, 
+		(preferenceValue textColor 
+			ifNotNil: [ { self textColorChooserForPreference: preferenceValue } ] 
+			ifNil: [{}]).
+	^ (self theme newRowIn: self world for: uiElements) 
+		 cellInset: 20;
+		 yourself 
+\end{code}
+This method simply adds some basic elements in a row and returns the row. At a first place, you can notice that the actual preference value, an instance of \ct{TextSelectionPreference}, is got from the \ct{SettingDeclaration} instance by sending \ct{#preferenceValue} to it. Then, the user interface elements can be built based on the actual \ct{TextSelectionPreference} instance.
+
+The first element is a \textit{checkbox} or an empty space returned by the \ct{#usedCheckboxForPreference:} invocation. This method is implemented as follow:
+\begin{code}{}
+TextSelectionPreference class>>usedCheckboxForPreference: aSelectionPreference 
+	^ !\textbf{aSelectionPreference optional}!
+		ifTrue: [self theme
+				newCheckboxIn: self world
+				for: aSelectionPreference
+				getSelected: #used
+				setSelected: #used:
+				getEnabled: #optional
+				label: ''
+				help: 'Enable or disable the selection']
+		ifFalse: [Morph new height: 1;
+				 width: 30;
+				 color: Color transparent]
+\end{code}
+The next elements are two color choosers. As an example, the background color chooser is built as follow:
+\begin{code}{}
+TextSelectionPreference class>>backgroundColorChooserForPreference: aSelectionPreference 
+	^ self theme
+		newColorChooserIn: self world
+		for: aSelectionPreference
+		getColor: #backgroundColor
+		setColor: #backgroundColor:
+		getEnabled: #used
+		help: 'Background color' translated
+\end{code}
+Now, in the \setbrowser, the user interface looks as shown in \figref{fig:textSelectionColorSettings}, with only one line for each selection kind instead of three as in our previous version. 
+\begin{figure}[tbh]
+\begin{center}
+\includegraphics[scale=0.45]{textSelectionColorSettings}
+\caption{The text selection settings implemented with a specific preference class}
+\figlabel{fig:textSelectionColorSettings}
+\end{center}
+\end{figure}
+
+%\section{Design of the Settings Framework}
+%\apl{To be kept but remove squeak ref and review some points}
+%The design of the Settings framework is based on the three following points: (1) a preference is not defined in a global class but local to the package that uses it, (2) settings can be declared independently from the application they refer to, (3) any setting declaration can be loaded even if the Settings framework is not loaded. 
+%
+%Let's explain now these two points since they have an impact on the modular structure of Pharo. 
+%
+%%\begin{figure}[tbh]
+%%\begin{center}
+%%\includegraphics[scale=0.3]{Principles}
+%%\caption{The Settings principles}
+%%\figlabel{principles}
+%%\end{center}
+%%\end{figure}
+%
+%\paragraph{Local value with a local flow.}
+%The Settings framework supports the idea that a preference value is local to a package. A package should define either a singleton or a class variable defined somewhere on a class. The methods of the class are able to refer to the variable. The package should provide some way to get and set the value of the preference.
+%
+%Understanding the difference to previous design as implemented in Squeak3.9 or Pharo1.0 is important. In previous versions, the class \ct{Preferences} was the place where the preferences as well as methods to change their values were defined. This implies that code using preferences was  referencing the class Preferences during its execution. The flow of control was clearly not local the class using the preferences but always executing some methods on the Preferences class. This design led to a system with a lot of hidden dependencies. 
+%
+%\paragraph{No explicit dependency on the Setting Framework.}
+%Finally when declaring a setting, the code does not refer explicitly to any Setting class. This has the good property that you can load code containing setting declaration even if the Settings framework is not loaded. This way we make sure 
+%that we get a modular system. In case the settings framework is not loaded, the method containing the setting declaration is just not used by the system.
+
+\section{Conclusion}
+
+We presented Settings, a new framework to manage preferences in a modular way. The key point of Settings is that it supports a modular flow of control: a package is responsible to define customization points and can use them locally, then using Settings it is possible to describe such customization points. Finally the Settings Browser collects such setting descriptions and present them to the user. The flow is then from the \setbrowser to the customized packages. 
+
+%=========================================================
+\ifx\wholebook\relax\else
+   \bibliographystyle{jurabib}
+   \nobibliography{scg}
+   \end{document}
+\fi
+
+%=================================================================
+\ifx\wholebook\relax\else\end{document}\fi
+%=================================================================
+
+%-----------------------------------------------------------------
+
+%%% Local Variables:
+%%% coding: utf-8
+%%% mode: latex
+%%% TeX-master: t
+%%% TeX-PDF-mode: t
+%%% ispell-local-dictionary: "english"
+%%% End:
