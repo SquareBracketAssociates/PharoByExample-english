@@ -47,13 +47,33 @@ They have an object header which can occupy between one and three words. Followi
 \sd{would be nice to have a diagram taken from the slides of igor tutorial}
 
 
-Objects only having instance variable (whose class is created using the \ct{subclass:} message) have a fixed amount of instance variables which are just pointers to other objects. In this case, these 'slots' (which are one word size, that is 32 or 64 bits) contain the memory address (pointer) of the header of the object they point to. 
+Objects only having named instance variable (whose class is created using the \ct{subclass:} message) have a fixed amount of instance variables which are just pointers to other objects. In this case, these 'slots' (which are one word size, that is 32 or 64 bits) contain the memory address (pointer) of the header of the object they point to. 
 
-Objects having variable number of instance variables (whose class is created using the \ct{variableSubclass:} message) can have a different representations: the variable part is not always pointers (a word), but it can also be bytes. 
+Objects having variable number of instance variables (indexed instance variables, \ie whose class is created using the \ct{variableSubclass:} message) can have a different representations: the variable part is not always pointers (a word), but it can also be bytes. 
 
 The format of a class describes such different situations.
 
-\section{Different class formats}
+\subsection{Different class formats}
+
+The maing difference in format is about access: whether the instance variable is accessed using its name or using an index (using \ct{at:} and \ct{at:put:}) and kind of information stored inside the instance variables: pointers, byte, or words.
+When an object has an indexed structure, it also implies that it has a variable number of instance variables. 
+
+
+\begin{description}
+\item\textbf{Normal} (named instance variables): Objects with named instance variables have a fixed amount of instance variables and each of them is just a pointer to another object. Notice that not only the amount of pointers is fixed by the amount of instance variables, but also, the pointer is always the same, one world (32 or 64 bits). Examples are any normal class like \ct{TestCase}, \ct{Browser} or \ct{Association}.
+
+
+\item\textbf{Bytes}: This format means an object has a variable number of instance variables and that such variable number of indexed variables are storing individual bytes.  Examples are \ct{ByteArray}, \ct{ByteString}, \ct{ByteSymbol}, \ct{LargePositiveInteger}, \ct{LargeNegativeInteger}, etc.
+
+\item\textbf{Words}: it is similar to the Bytes format, in the way that it is variable (indexed), but it is represented by a sequence of words instead. Notice that the normal format also encodes the pointers in words, but in that case, the amount of these words is fixed and second they represent pointers. In this case, the amount of words is variable and they do not represent pointers to objects. Examples are \ct{Bitmap}, \ct{WideString}, \ct{WideSymbol}, \ct{WordArray}, \ct{FloatArray}, etc.
+
+\item\textbf{Weak}: when an object has weak references it means that its pointers to other objects are not considered during the garbage collector mark phase. So the GC removes an object when no non-weak reference point to it. Weak format can be applied to both, variable and fixed formats. For example, WeakFinalizerItem has a normal format, but weak. On the contrary, WeakArray has a variable format and weak.
+
+\item\textbf{Variable}: this is like Normal but where the pointers are not fixed, but instead variable. It can also be seen as “Words” but there each word does represent a pointer. Examples: BlockClosure, MethodDictionary, etc.
+
+
+\item\textbf{CompiledMethod}: Yes, \ct{CompiledMethod} class has its own format. For space optimization purpose, the bytecodes of a compiledMethod are not stored in an array that would be an instance variable of the compiled method. Instead the bytecodes are stored in a variable part of the object. A compiled method is from that perspective a kind of Array. 
+\end{description}
 
 \paragraph{Downloading code.}
 
