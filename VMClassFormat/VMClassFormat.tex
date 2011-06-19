@@ -1,0 +1,83 @@
+% $Author: ducasse $
+% $Date: 2009-08-24 10:17:33 +0200 (Mon, 24 Aug 2009) $
+% $Revision: 28563 $
+
+%=================================================================
+\ifx\wholebook\relax\else
+% --------------------------------------------
+% Lulu:
+	\documentclass[a4paper,10pt,twoside]{book}
+	\usepackage[
+		papersize={6.13in,9.21in},
+		hmargin={.75in,.75in},
+		vmargin={.75in,1in},
+		ignoreheadfoot
+	]{geometry}
+	\input{../common.tex}
+	\setboolean{lulu}{true}
+% --------------------------------------------
+% A4:
+%	\documentclass[a4paper,11pt,twoside]{book}
+%	\input{../common.tex}
+%	\usepackage{a4wide}
+% --------------------------------------------
+    \graphicspath{{figures/} {../figures/}}
+	\begin{document}
+\fi
+%=================================================================
+%\renewmessage{\nnbb}[2]{} % Disable editorial comments
+\sloppy
+
+%=================================================================
+%\renewcommand{\nnbb}[2]{#2} % Disable editorial comments
+
+\chapter{Class formats and CompiledMethod uniqueness}
+
+Before going deeper with CompiledMethods we would like to talk a little bit about class formats. 
+\sd{We should check }
+
+\section{Class formats}
+
+The format of a class format is a really internal and implementation detail of the VM. However this is important to understand it. It may certainly change in the future, but having a description of the current situation is a good start.
+
+The class format defines the structure (layout) of the instances of a class in the VM. 
+In the internal representation of the Virtual Machine, objects are a chunk of memory. 
+They have an object header which can occupy between one and three words. Following this object header, there are slots (normally of 32 or 64 bytes) that are memory addresses which usually represent the instance variables.
+
+\sd{would be nice to have a diagram taken from the slides of igor tutorial}
+
+
+Objects only having instance variable (whose class is created using the \ct{subclass:} message) have a fixed amount of instance variables which are just pointers to other objects. In this case, these 'slots' (which are one word size, that is 32 or 64 bits) contain the memory address (pointer) of the header of the object they point to. 
+
+Objects having variable number of instance variables (whose class is created using the \ct{variableSubclass:} message) can have a different representations: the variable part is not always pointers (a word), but it can also be bytes. 
+
+The format of a class describes such different situations.
+
+\section{Different class formats}
+
+\paragraph{Downloading code.}
+
+
+\section{Different class formats}
+
+
+
+
+
+%=========================================================
+\ifx\wholebook\relax\else
+   \bibliographystyle{jurabib}
+   \nobibliography{scg}
+   \end{document}
+\fi
+%=========================================================
+
+
+
+%%% Local Variables: 
+%%% coding: utf-8
+%%% mode: latex
+%%% TeX-master: Lint.tex
+%%% TeX-PDF-mode: t
+%%% End:
+
