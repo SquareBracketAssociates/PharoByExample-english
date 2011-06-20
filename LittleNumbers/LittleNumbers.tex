@@ -215,13 +215,79 @@ Integer readFrom: '01101' base: 2
 
 
 \begin{code}{}
-Integer>>bitAt: anInteger	"Answer 1 if the bit at position anInteger is set to 1, 0 otherwise.	self is considered an infinite sequence of bits, so anInteger can be any strictly positive integer.	Bit at position 1 is the least significant bit.	Negative numbers are in two-complements.		This is a naive implementation that can be refined in subclass for speed"		^(self bitShift: 1 - anInteger) bitAnd: 1
+Integer>>bitAt: anInteger
+	"Answer 1 if the bit at position anInteger is set to 1, 0 otherwise.
+	self is considered an infinite sequence of bits, so anInteger can be any strictly positive integer.
+	Bit at position 1 is the least significant bit.
+	Negative numbers are in two-complements.
+	
+	This is a naive implementation that can be refined in subclass for speed"
+	
+	^(self bitShift: 1 - anInteger) bitAnd: 1
 \end{code}
 
 We shift to the right from an integer minus one (hence \ct{1 - anInteger})
 and with a \ct{bitAnd:} we know whether there is a one or zero in the location.
 
 %
+
+\section{More here}
+
+\section{2 complement}
+
+
+\section{Hexadecimal}
+
+
+\begin{code}
+15 hex
+	returns '16rF'
+	
+15 printStringHex 'F'
+
+16rF
+	returns 15
+\end{code}
+
+
+\begin{code}
+(1 to: 15) collect: [:each | each -> each hex] 
+
+{(1->'16r1'). (2->'16r2'). (3->'16r3'). (4->'16r4'). (5->'16r5'). (6->'16r6'). (7->'16r7'). (8->'16r8'). (9->'16r9'). (10->'16rA'). (11->'16rB'). (12->'16rC'). (13->'16rD'). (14->'16rE'). (15->'16rF')}
+\end{code}
+
+
+\begin{code}{}
+16rF printStringBase: 2
+	returns '1111'
+\end{code}
+
+
+\subsection*{Selecting a subpart}
+
+\begin{code}{}
+2r1100010100000000 
+	returns 50432
+\end{code}
+
+Imagine that only 4 bits interest us starting at the 9th one.
+We shift out the 8 first and clear all the others after the next 4.  
+
+\begin{code}{}
+(2r1100010100000000 >> 8)
+	returns 2r11000101
+	returns 197
+
+(2r1100010100000000 >> 8) bitAnd: 16rF	
+	returns 0101	
+	returns 5
+	
+2r11000101 bitAnd: 1111
+	returns 0101	
+	returns 5
+\end{code}
+
+
 \section{Conclusion}
 
 %=========================================================
