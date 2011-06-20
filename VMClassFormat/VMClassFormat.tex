@@ -36,7 +36,10 @@
 Before going deeper with CompiledMethods we would like to talk a little bit about class formats. 
 \sd{We should check }
 
-\section{Class formats}
+\section{About Class Formats}
+
+\sd{I'm wondering if we should talk about class format or object format? because we also have HeaderType in addition.}
+
 
 The format of a class format is a really internal and implementation detail of the VM. However this is important to understand it. It may certainly change in the future, but having a description of the current situation is a good start.
 
@@ -125,10 +128,10 @@ Most classes in the Collection's hierarchy  are variable.
 
 \section{Class format encoding in classes and instances}
 
-If you look at the methods such as  \ct{isBytes}, \ct{isVariable}, \ct{isPointers}, etc (all those methods in the category 'testing' in \ct{Behavior} class) you will notice that they all send \ct{instSpec} (instance specification) at the end. And this method looks like this:
+If you look at the methods such as  \ct{isBytes}, \ct{isVariable}, \ct{isPointers}, etc (all these methods in the category 'testing' in \ct{Behavior} class) you will notice that they all send \ct{instSpec} (instance specification) at the end. And this method looks like this:
 
 \begin{code}{}
-Behavior >> instSpec
+Behavior>>instSpec
 
    ^ (format bitShift: -7) bitAnd: 16rF
 \end{code}
@@ -136,14 +139,20 @@ Behavior >> instSpec
 Here is a couple of examples:
 \begin{code}{}
 TestCase instSpec -> 1
+     "This means that the object has only named fields"
 ByteArray instSpec -> 8
+	"This means that the object has only indexed fields"
 CompiledMethod instSpec -> 12
 \end{code}
 
-Let's see if we can make sense out of this. \ct{format} is also an instance variables of the class \ct{Behavior}.
+Let's see if we can make sense out of this. \ct{format} is an instance variables of the class \ct{Behavior}.
 It accessor is defined as follows. 
 \begin{code}{}
-format	"Answer an Integer that encodes the kinds and numbers of variables of 	instances of the receiver."	^format
+format
+	"Answer an Integer that encodes the kinds and numbers of variables of 
+	instances of the receiver."
+
+	^format
 \end{code}
 
 This number without interpretation is not really useful, but it encodes \sd{verify that} the instance size, its format and whether the class is compact or not (we will explain that later). 
@@ -153,7 +162,24 @@ Now an interesting question is to see how this is handle in the VM and in partic
 To answer this question, we will take our image and browse the VM core. Let's see the method \ct{ObjectMemory>>formatOf:}
 
 \begin{code}{}
-ObjectMemory>>formatOf: oop"       0      no fields        1      fixed fields only (all containing pointers)        2      indexable fields only (all containing pointers)        3      both fixed and indexable fields (all containing pointers)        4      both fixed and indexable weak fields (all containing pointers).        5      unused        6      indexable word fields only (no pointers)        7      indexable long (64-bit) fields (only in 64-bit images)     8-11      indexable byte fields only (no pointers) (low 2 bits are low 2 bits of size)   12-15     compiled methods:                   # of literal oops specified in method header,                   followed by indexable bytes (same interpretation of low 2 bits as above)"	<inline: true>	^((self baseHeader: oop) >> 8) bitAnd: 16rF
+ObjectMemory>>formatOf: oop
+"       0      no fields
+        1      fixed fields only (all containing pointers)
+        2      indexable fields only (all containing pointers)
+        3      both fixed and indexable fields (all containing pointers)
+        4      both fixed and indexable weak fields (all containing pointers).
+
+        5      unused
+        6      indexable word fields only (no pointers)
+        7      indexable long (64-bit) fields (only in 64-bit images)
+ 
+    8-11      indexable byte fields only (no pointers) (low 2 bits are low 2 bits of size)
+   12-15     compiled methods:
+                   # of literal oops specified in method header,
+                   followed by indexable bytes (same interpretation of low 2 bits as above)
+"
+	<inline: true>
+	^((self baseHeader: oop) >> 8) bitAnd: 16rF
 \end{code}
 
 As you can see, there are 16 possible formats, encoded from 0 to 15 in 4 bits of the Object Header. The line \ct{^((self baseHeader: oop) >> 8 ) bitAnd: 16rF} is the one that takes those 4 bits from the Object Header of the OOP (object pointer) received as parameter.
@@ -165,7 +191,8 @@ As you can see, there are 16 possible formats, encoded from 0 to 15 in 4 bits of
 If you now browse the class comment of ObjectMemory, you will read it says that there are 4 bits for the object format. As you can guess, that number that represents the format is what we get in the image side with the method \ct{instSpec}. Notice that at the beginning of the post described all the different types of format and they were 6, but here we have 16 possibilities.  Ok, some are for optimizations (for example the number zero means that the object has no instVar, hence the GC can stop there while doing the mark and trace instead of trying to follow non-existent pointers), some are not used (like the number 5), some are only for 64 bits (number 7), the format for “bytes” uses 4 numbers, and CompiledMethod also uses 4 numbers.
 
 \begin{figure}
-\includegraphics[]{}
+\includegraphics[width=\textwidth]{ObjectHeaderClassFormat}
+\caption{In the object header: there are object format bits 8-11}
 \end{figure}
 
 
