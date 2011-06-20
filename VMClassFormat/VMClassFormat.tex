@@ -182,7 +182,7 @@ ObjectMemory>>formatOf: oop
 	^((self baseHeader: oop) >> 8) bitAnd: 16rF
 \end{code}
 
-As you can see, there are 16 possible formats, encoded from 0 to 15 in 4 bits of the Object Header. The line \ct{^((self baseHeader: oop) >> 8 ) bitAnd: 16rF} is the one that takes those 4 bits from the Object Header of the OOP (object pointer) received as parameter.
+As you can see, there are 16 possible formats, encoded from 0 to 15 in 4 bits of the Object Header. The line \ct{^((self baseHeader: oop) >> 8 ) bitAnd: 16rF} is the one that takes those 4 bits (because \ct{16rF} is \ct{2r1111}) from the Object Header of the OOP (object pointer) received as parameter.
 
 \sd{what is the baseHeader:} \sd{would be nice to get a diagram a} \sd{I will do one}
 
