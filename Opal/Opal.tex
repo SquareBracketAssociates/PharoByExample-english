@@ -1,0 +1,975 @@
+% $Author$
+% $Date$
+% $Revision$
+
+% HISTORY: [see also Metaprogramming2.tex]
+% 2007-05-22 - Damien Pollet started (translation from French article by ...?)
+% 2008-01-15 - Alex added text
+% 2008-12-15 - Oscar revised
+% 2009-03-24 - Stef started new chapter (acttalk ... see separate file)
+% 2009-06-01 - Oscar started to revise again and add new material
+% 2009-06-08 - Lukas -- unsent messages
+% 2009-06-15 - Oscar completed revision
+% 2009-06-16 _ Stef comments
+% 2009-06-17 - Alexandre completed revision
+% 2009-06-19 - Lukas comments
+% 2009-07-07 - Oscar migrated to Pharo; fixed broken tests
+% 2009-08-16 - Oscar indexing and cleaning up loose ends
+
+%=================================================================
+\ifx\wholebook\relax\else
+% --------------------------------------------
+% Lulu:
+	\documentclass[a4paper,10pt,twoside]{book}
+	\usepackage[
+		papersize={6.13in,9.21in},
+		hmargin={.75in,.75in},
+		vmargin={.75in,1in},
+		ignoreheadfoot
+	]{geometry}
+	\input{../common.tex}
+	\pagestyle{headings}
+	\setboolean{lulu}{true}
+% --------------------------------------------
+% A4:
+%	\documentclass[a4paper,11pt,twoside]{book}
+%	\input{../common.tex}
+%	\usepackage{a4wide}
+% --------------------------------------------
+    \graphicspath{{figures/} {../figures/}}
+	\begin{document}
+	\renewcommand{\nnbb}[2]{} % Disable editorial comments
+	\sloppy
+\fi
+
+%=================================================================
+\chapter{Reflection}\chalabel{reflection}
+
+%\alex{I addressed lukas comments using editorial macros. Please, if you read this, remove this comment and remove the editorial macros, else their purpose is diminished}
+
+\indexmain{reflection}
+\st is a reflective programming language.
+In a nutshell, this means that programs are able to ``reflect'' on their own execution and structure.
+% \lr{not only on execution, also on the static model}
+More technically, this means that the \emphind{metaobjects} of the runtime system can be \emph{reified} as ordinary objects, which can be queried and inspected.
+The metaobjects in \st are classes, metaclasses, method dictionaries, compiled methods, the run-time stack, and so on.
+This form of reflection is also called \emphind{introspection}, and is supported by many modern programming languages.
+
+\begin{figure}[ht]\centering
+	\includegraphics[width=\linewidth]{reflect}
+	\caption{Reification and reflection.\figlabel{reflect}} % \lr{not referenced, not sure if I understand it}
+\end{figure}
+
+Conversely, it is possible in \st to modify reified metaobjects and \emph{reflect} these changes back to the runtime system (see \figref{reflect}).
+This is also called \emph{intercession}, and is supported mainly by dynamic programming languages, and only to a very limited degree by static languages.
+
+A program that manipulates other programs (or even itself) is a \emphind{metaprogram}.
+For a programming language to be reflective, it should support both \ind{introspection} and \ind{intercession}.
+Introspection is the ability to \emph{examine} the data structures that define the language, such as objects, classes, methods and the execution stack.
+Intercession is the ability to \emph{modify} these structures, in other words to change the language semantics and the behavior of a program from within the program itself.
+\emph{Structural reflection} is about examining and modifying the structures of the run-time system, and \emphind{behavioural reflection} is about modifying the interpretation of these structures.
+
+In this chapter we will focus mainly on \ind{structural reflection}.
+We will explore many practical examples illustrating how \st supports introspection and metaprogramming.
+
+%======================================
+\section{Introspection}
+
+Using the inspector, you can look at an object, change the values of its instance variables, and even send messages to it.
+
+\dothis{Evaluate the following code in a workspace:}
+\begin{code}{| w |}
+w := Workspace new.
+w openLabel: 'My Workspace'.
+w inspect
+\end{code}
+
+This will open a second workspace and an inspector.
+The inspector shows the internal state of this new workspace, listing its instance variables in the left part (\ct!dependents!, \ct!contents!, \ct!bindings!...) and the value of the selected instance variable in the right part.
+The \ct!contents! instance variable represents whatever the workspace is displaying in its text area, so if you select it, the right part will show an empty string.
+
+\begin{figure}[ht]\centering
+	\includegraphics[width=\linewidth]{workspaceInspector}
+	\caption{Inspecting a \ct!Workspace!.\figlabel{workspaceInspector}}
+\end{figure}
+
+\dothis{Now type \ct!'hello'! in place of that empty string, then \emph{accept} it.}
+The value of the \ct!contents! variable will change, but the workspace window will not notice it, so it does not redisplay itself.
+To trigger the window refresh, evaluate \ct!self contentsChanged! in the lower part of the inspector.
+
+%-----------------------------------------------------------------
+\subsection{Accessing instance variables}
+
+How does the inspector work?
+In \st, all instance variables are protected.
+In theory, it is impossible to access them from another object if the class doesn't define any accessor.
+In practice, the inspector can access instance variables without needing accessors, because it uses the reflective abilities of \st.
+In \st, classes define instance variables either by name or by numeric indices.
+The inspector uses methods defined by the \ct!Object! class to access them: \lct{instVarAt: \emph{index}} and \lct{instVarNamed: \emph{aString}} can be used to get the value of the instance variable at position \lct{\emph{index}} or identified by \lct{\emph{aString}}, respectively; to assign new values to these instance variables, it uses \ct!instVarAt:put:! and \ct!instVarNamed:put:!.
+\mthindex{Object}{instVarAt:}
+\mthindex{Object}{instVarNamed:}
+\mthindex{Object}{instVarAt:put:}
+\mthindex{Object}{instVarNamed:put:}
+
+For instance, you can change the value of the \ct!w! binding of the first workspace by evaluating:
+\begin{code}{}
+w instVarNamed: 'contents' put: 'howdy!'; contentsChanged
+\end{code}
+
+\important{\emph{Caveat:} Although these methods are useful for building development tools, using them to develop conventional applications is a bad idea: these reflective methods break the encapsulation boundary of your objects and can therefore make your code much harder to understand and maintain.}
+% \lr{Why? The access does not show up when looking for all readers/writers in the code browser.}
+
+Both \ct!instVarAt:! and \ct!instVarAt:put:! are \ind{primitive methods}, meaning that they are implemented as primitive operations of the \pharo virtual machine.
+If you consult the code of these methods, you will see the special \ind{pragma} syntax \ct!<primitive: N>! where \ct!N! is an integer.
+% \lr{actually this is the syntax of pragmas (method annotations), \ct!primitive:! is just a special kind of pragma}
+
+\needlines{5}
+\begin{code}{}
+Object>>>instVarAt: index 
+	"Primitive. Answer a fixed variable in an object. ..."
+	!\textbf{<primitive: 73>}!
+	"Access beyond fixed variables."
+	^self basicAt: index - self class instSize		
+\end{code}
+
+Typically, the code after the primitive invocation is not executed.
+It is executed only if the primitive fails. In this specific case, if we try to access a variable that does not exist, then the code following the primitive will be tried.
+This also allows the debugger to be started on primitive methods.
+Although it is possible to modify the code of primitive methods, beware that this can be risky business for the stability of your \pharo system.
+
+\begin{figure}[ht]\centering
+	\includegraphics[width=\linewidth]{allInstanceVariables}
+	\caption{Displaying all instance variables of a \ct!Workspace!.\figlabel{allInstanceVariables}}
+\end{figure}
+
+\figref{allInstanceVariables} shows how to display the values of the instance variables of an arbitrary instance (\ct!w!) of class \ct!Workspace!.
+The method \ct!allInstVarNames! returns all the names of the instance variables of a given class.
+
+In the same spirit, it is possible to gather instances that have specific properties.
+For instance, to get all instances of class \ct!SketchMorph! whose instance variable \ct!owner! is set to the world morph (\ie images currently displayed), try this expression:
+\begin{code}{}
+SketchMorph allInstances select: [:c | (c instVarNamed: 'owner') isWorldMorph]
+\end{code}
+
+%-----------------------------------------------------------------
+\subsection{Iterating over instance variables}
+
+\mthindex{Object}{instanceVariableValues}
+Let us consider the message \ct!instanceVariableValues!, which returns a collection of all values of instance variables defined by this class, excluding the inherited instance variables.
+For instance:
+\begin{code}{@TEST}
+(1@2) instanceVariableValues --> an OrderedCollection(1 2)
+\end{code}
+
+The method is implemented in \ct{Object} as follows:
+\needlines{9}
+\begin{code}{}
+Object>>>instanceVariableValues
+	"Answer a collection whose elements are the values of those instance variables of the receiver which were added by the receiver's class."	
+	| c |
+	c := OrderedCollection new.
+	self class superclass instSize + 1
+		to: self class instSize
+		do: [ :i | c add: (self instVarAt: i)].
+	^ c
+\end{code}
+
+This method iterates over the indices of instance variables that the class defines, starting just after the last index used by the superclasses.
+(The method \ct!instSize! returns the number of all named instance variables that a class defines.)
+
+%-----------------------------------------------------------------
+\subsection{Querying classes and interfaces}
+
+The development tools in \pharo (code browser, debugger, inspector...) all use the reflective features we have seen so far.
+
+Here are a few other messages that might be useful to build development tools:
+
+\lct{isKindOf: \emph{aClass}} returns true if the receiver is instance of \lct{\emph{aClass}} or of one of its superclasses.
+For instance:
+\begin{code}{@TEST}
+1.5 class                     --> Float
+1.5 isKindOf: Number --> true
+1.5 isKindOf: Integer   --> false
+\end{code}
+\mthindex{Object}{class}
+\mthindex{Object}{isKindOf:}
+
+\lct{respondsTo: \emph{aSymbol}} returns true if the receiver has a method whose selector is \lct{\emph{aSymbol}}.
+For instance:
+\needlines{3}
+\begin{code}{@TEST}
+1.5 respondsTo: #floor      --> true    "since Number implements floor"
+1.5 floor                            --> 1
+Exception respondsTo: #, --> true    "exception classes can be grouped"
+\end{code}
+\mthindex{Object}{respondsTo:}
+
+\important{\emph{Caveat:} Although these features are especially useful for defining development tools, they are normally not appropriate for typical applications.
+Asking an object for its class, or querying it to discover which messages it understands, are typical signs of design problems, since they violate the principle of encapsulation.
+Development tools, however, are not normal applications, since their domain is that of software itself. As such these tools have a right to dig deep into the internal details of code.}
+
+%There also exist mechanisms for introspecting on various parts of the run-time system, such as  the process scheduler, the memory manager and so on. For now we will focus on navigating through objects, classes and methods, and we will look more closely at rest of the runtime system in an other chapter.
+%\on{let's not mention this if we don't actually write such a chapter!}
+
+%-----------------------------------------------------------------
+\subsection{Code metrics}
+
+Let's see how we can use \st's introspection features to quickly extract some code metrics.
+Code \ind{metrics} measure such aspects as the depth of the inheritance hierarchy, the number of direct or indirect subclasses, the number of methods or of instance variables in each class, or the number of locally defined methods or instance variables.
+Here are a few metrics for the class \ct!Morph!, which is the superclass of all graphical objects in \pharo, revealing that it is a huge class, and that it is at the root of a huge hierarchy. Maybe it needs some refactoring! 
+
+\mthindex{Behavior}{allSuperclasses}
+\mthindex{Behavior}{allSelectors}
+\mthindex{Behavior}{allInstVarNames}
+\mthindex{Behavior}{selectors}
+\mthindex{Behavior}{instVarNames}
+\mthindex{Behavior}{subclasses}
+\mthindex{Behavior}{allSubclasses}
+\mthindex{ClassDescription}{linesOfCode}
+\begin{code}{}
+Morph allSuperclasses size.  -->       2 "inheritance depth"
+Morph allSelectors size.        --> 1378 "number of methods"
+Morph allInstVarNames size. -->      6 "number of instance variables"
+Morph selectors size.             -->  998 "number of new methods"
+Morph instVarNames size.     -->      6 "number of new variables"
+Morph subclasses size.          -->    45 "direct subclasses"
+Morph allSubclasses size.      -->  326 "total subclasses"
+Morph linesOfCode.               --> 5968 "total lines of codeBANG"
+\end{code}
+
+One of the most interesting metrics in the domain of object-oriented languages is the number of methods that extend methods inherited from the superclass.
+This informs us about the relation between the class and its superclasses.
+In the next sections we will see how to exploit our knowledge of the runtime structure to answer such questions.
+
+%======================================
+\section{Browsing code}
+
+In \st, everything is an object. In particular, classes are objects that provide useful features for navigating through their instances.
+Most of the messages we will look at now are implemented in \ct{Behavior}, so they are understood by all classes.
+
+As we saw previously, you can obtain an instance of a given class by sending it the message \ct!#someInstance!.
+\mthindex{Behavior}{someInstance}
+\begin{code}{@TEST} % Possibly fragile!
+Point someInstance --> 0@0
+\end{code}
+
+You can also gather all the instances with \ct!#allInstances!, or the number of alive instances in memory with \ct!#instanceCount!.
+
+\alex{In a Pharo0.1-10342dev09.96.3, I have "ByteString instanceCount --> 63607"}
+\mthindex{Behavior}{allInstances}
+\mthindex{Behavior}{instanceCount}
+\mthindex{Behavior}{allSubInstances}
+\begin{code}{} % Cannot test this
+ByteString allInstances        --> #('collection' 'position'  ...)
+ByteString instanceCount    --> 104565
+String allSubInstances size -->  101675
+\end{code}
+
+These features can be very useful when debugging an application, because you can ask a class to enumerate those of its methods exhibiting specific properties.
+\begin{itemize}
+\item \mthind{Behavior}{whichSelectorsAccess:} returns the list of all selectors of methods that read or write the instance variable named by the argument
+\item \mthind{Behavior}{whichSelectorsStoreInto:} returns the selectors of methods that modify the value of an instance variable
+\item \mthind{Behavior}{whichSelectorsReferTo:} returns the selectors of methods that send a given message
+\item \mthind{Behavior}{crossReference} associates each message with the set of methods that send it.
+\end{itemize}
+
+\begin{code}{} % TOO FRAGILE TO TEST
+Point whichSelectorsAccess: 'x'    --> an IdentitySet(#'\\' #= #scaleBy: ...)
+Point whichSelectorsStoreInto: 'x' --> an IdentitySet(#setX:setY: ...)
+Point whichSelectorsReferTo: #+  --> an IdentitySet(#rotateBy:about: ...)
+Point crossReference --> an Array(
+		an Array('*' an IdentitySet(#rotateBy:about: ...))
+		an Array('+' an IdentitySet(#rotateBy:about: ...))
+		...)
+\end{code}
+
+The following messages take inheritance into account:
+\begin{itemize}
+\item \mthind{Behavior}{whichClassIncludesSelector:} returns the superclass that implements the given message
+\item \mthind{Behavior}{unreferencedInstanceVariables} returns the list of instance variables that are neither used in the receiver class nor any of its subclasses
+\end{itemize}
+
+\begin{code}{@TEST}
+Rectangle whichClassIncludesSelector: #inspect --> Object
+Rectangle unreferencedInstanceVariables            --> #()
+\end{code}
+
+\clsind{SystemNavigation} is a facade that supports various useful methods for querying and browsing the source code of the system.
+\ct{SystemNavigation} \mthind{SystemNavigation class}{default} returns an instance you can use to navigate the system.
+For example:
+
+\mthindex{SystemNavigation}{allClassesImplementing:}
+\begin{code}{@TEST}
+SystemNavigation default allClassesImplementing: #yourself --> {Object}
+\end{code}
+
+The following messages should also be self-explanatory:
+
+\mthindex{SystemNavigation}{allSentMessages}
+\mthindex{SystemNavigation}{allUnsentMessages}
+\mthindex{SystemNavigation}{allUnimplementedCalls}
+\begin{code}{}
+SystemNavigation default allSentMessages size          --> 24930
+SystemNavigation default allUnsentMessages size      --> 6431
+SystemNavigation default allUnimplementedCalls size --> 270
+\end{code}
+
+Note that messages implemented but not sent are not necessarily useless, since they may be sent implicitly (\eg using \ct{perform:}).
+Messages sent but not implemented, however, are more problematic, because the methods sending these messages will fail at runtime.
+They may be a sign of unfinished implementation, obsolete APIs, or missing libraries.
+
+\mthindex{SystemNavigation}{allCallsOn:}
+\ct!SystemNavigation default allCallsOn: #Point! returns all messages sent explicitly to \ct!Point! as a receiver.
+
+All these features are integrated in the programming environment of \pharo, in particular in the code browsers.
+As you are surely already aware, there are convenient keyboard shortcuts for browsing all i\underline{m}plementors (\short{m}) and se\underline{n}ders (\short{n}) of a given message.
+What is perhaps not so well known is that there are many such pre-packaged queries implemented as methods of the \ct{SystemNavigation} class in the \prot{browsing} protocol.
+For example, you can programmatically browse all implementors of the message \ct{ifTrue:} by evaluating:
+\mthindex{SystemNavigation}{browseAllImplementorsOf:}
+\begin{code}{}
+SystemNavigation default browseAllImplementorsOf: #ifTrue:
+\end{code}
+
+\begin{figure}[ht]\centering
+	\includegraphics[width=\linewidth]{implementors}
+	\caption{Browse all implementations of \ct!\#ifTrue:!.\figlabel{implementors}}
+\end{figure}
+
+Particularly useful are the methods \ct{browseAllSelect:} and \lct{browseMethodsWithSourceString:}.  Here are two different ways to browse all methods in the system that perform super sends (the first way is rather brute force; the second way is better and eliminates some false positives):
+\mthindex{SystemNavigation}{browseMethodsWithSourceString:}
+\mthindex{SystemNavigation}{browseAllSelect:}
+\begin{code}{}
+SystemNavigation default browseMethodsWithSourceString: 'super'.
+SystemNavigation default browseAllSelect: [:method | method sendsToSuper ].
+\end{code}
+
+%======================================
+\section{Classes, method dictionaries and methods}
+
+Since classes are objects, we can inspect or explore them just like any other object.
+
+\mthindex{Object}{explore}
+\dothis{Evaluate \ct{Point explore}.}
+
+In \figref{CompiledMethod}, the \ind{explorer} shows the structure of class \clsind{Point}.
+You can see that the class stores its methods in a dictionary, indexing them by their selector.
+The selector \ct{#*} points to the decompiled \ind{bytecode} of \ct!Point>>>*!.
+
+\begin{figure}[ht]\centering
+	\includegraphics[width=.5\linewidth]{CompiledMethod}
+	\caption{Explorer class \ct!Point! and the bytecode of its \ct!\#*! method.\figlabel{CompiledMethod}}
+\end{figure}
+
+Let us consider the relationship between classes and methods.
+In \figref{MethodsAsObjects} we see that classes and metaclasses have the common superclass \ct{Behavior}. This is where \mthind{Behavior}{new} is defined, amongst other key methods for classes.
+Every class has a method dictionary, which maps method selectors to \ind{compiled methods}.
+Each compiled method knows the class in which it is installed.
+In \figref{CompiledMethod} we can even see that this is stored in an association in \ct{literal5}.
+
+\begin{figure}[ht]\centering
+	\includegraphics[width=\linewidth]{MethodsAsObjects}
+	\caption{Classes, method dictionaries and compiled methods\figlabel{MethodsAsObjects}}
+\end{figure}
+
+We can exploit the relationships between classes and methods to pose queries about the system.
+For example, to discover which methods are newly introduced in a given class, \ie do not override superclass methods, we can navigate from the class to the \ind{method dictionary} as follows:
+\mthindex{Behavior}{methodDict}
+\begin{code}{}
+[:aClass| aClass methodDict keys select: [:aMethod |
+  (aClass superclass canUnderstand: aMethod) not ]] value: SmallInteger
+  --> an IdentitySet(#threeDigitName #printStringBase:nDigits: ...)
+\end{code}
+
+A compiled method does not simply store the bytecode of a method.
+It is also an object that provides numerous useful methods for querying the system.
+One such method is \ct{isAbstract} (which tells if the method sends \ct{subclassResponsibility}).
+We can use it to identify all the abstract methods of an abstract class
+\needlines{4}
+\begin{code}{}
+[:aClass| aClass methodDict keys select: [:aMethod |
+  (aClass>>aMethod) isAbstract ]] value: Number
+  --> an IdentitySet(#storeOn:base: #printOn:base: #+ #- #* #/ ...)
+\end{code}
+Note that this code sends the \ct{>>} message to a class to obtain the compiled method for a given selector.
+
+% As a slightly more complex example, we can browse 
+
+To browse the super-sends within a given hierarchy, for example within the Collections hierarchy, we can pose a more sophisticated query:
+\begin{code}{}
+class := Collection.
+SystemNavigation default
+  browseMessageList: (class withAllSubclasses gather: [:each |
+    each methodDict associations
+      select: [:assoc | assoc value sendsToSuper]
+      thenCollect: [:assoc | MethodReference class: each selector: assoc key]])
+  name: 'Supersends of ' , class name , ' and its subclasses'
+\end{code}
+Note how we navigate from classes to method dictionaries to compiled methods to identify the methods we are interested in.
+A \ct{MethodReference} is a lightweight proxy for a compiled method that is used by many tools.
+There is a convenience method \clsmthind{CompiledMethod}{methodReference} to return the method reference for a compiled method.
+\begin{code}{@TEST}
+(Object>>#=) methodReference methodSymbol --> #=
+\end{code}
+
+%======================================
+\section{Browsing environments}
+
+Although \clsind{SystemNavigation} offers some useful ways to programmatically query and browse system code, there is a better way.  The \ind{Refactoring Browser}, which is integrated into \pharo, provides both interactive and programmatic ways to pose complex queries.
+
+Suppose we are interested to discover which methods in the \lct{Collection} hierarchy send a message to \super which is different from the method's selector.
+This is normally considered to be a bad \ind{code smell}, since such a \super-send should normally be replaced by a \self-send. (Think about it --- you only \emph{need} \super to extend a method you are overriding; all other inherited methods can be accessed by sending to \self!)
+
+The refactoring browser provides us with an elegant way to restrict our query to just the classes and methods we are interested in.
+
+\dothis{Open a browser on the class \ct{Collection}.
+\actclick on the class name and select \menu{refactoring scope>subclasses with}.
+This will open a new Browser Environment on just the \ct{Collection} hierarchy.
+Within this restricted scope select \menu{refactoring scope>super-sends} to open a new environment with all methods that perform super-sends within the \ct{Collection} hierarchy.
+Now \click on any method and select \menu{refactor>code critics}.
+Navigate to \menu{Lint checks>Possible bugs>Sends different super message} and \actclick to select \menu{browse}.}
+
+In \figref{sendDifferentSuper} we can see that 19 such methods have been found within the \ct{Collection} hierarchy, including \ct{Collection>>>printNameOn:}, which sends \ct{super printOn:}.
+\begin{figure}[ht]\centering
+	\includegraphics[width=\linewidth]{sendDifferentSuper}
+	\caption{Finding methods that send a different super message.\figlabel{sendDifferentSuper}}
+\end{figure}
+
+Browser environments can also be created programmatically.
+Here, for example, we create a new \clsind{BrowserEnvironment} for \clsind{Collection} and its subclasses, select the super-sending methods, and open the resulting environment.
+\needlines{4}
+\begin{code}{}
+((BrowserEnvironment new forClasses: (Collection withAllSubclasses))
+	selectMethods: [:method | method sendsToSuper])
+	label: 'Collection methods sending super';
+	open.
+\end{code}{}
+
+Note how this is considerably more compact than the earlier, equivalent example using \ct{SystemNavigation}.
+
+Finally, we can find just those methods that send a different super message programmatically as follows:
+\needlines{6}
+\begin{code}{}
+((BrowserEnvironment new forClasses: (Collection withAllSubclasses))
+	selectMethods: [:method | 
+		method sendsToSuper
+		and: [(method parseTree superMessages includes: method selector) not]])
+	label: 'Collection methods sending different super';
+	open
+\end{code}
+Here we ask each compiled method for its (Refactoring Browser) parse tree, in order to find out whether the super messages differ from the method's selector.
+Have a look at the \prot{querying} protocol of the class \ct{RBProgramNode} to see some the things we can ask of parse trees.
+
+%======================================
+\section{Accessing the run-time context}
+
+We have seen how \st's reflective capabilities let us query and explore objects, classes and methods.  But what about the run-time environment?
+
+%-----------------------------------------------------------------
+\subsection{Method contexts}
+
+In fact, the run-time context of an executing method is in the virtual machine --- it is not in the image at all!
+On the other hand, the \ind{debugger} obviously has access to this information, and we can happily explore the run-time context, just like any other object.
+How is this possible?
+
+Actually, there is nothing magical about the debugger.
+The secret is the pseudo-variable \pvind{thisContext}, which we have encountered only in passing before.
+Whenever \ct{thisContext} is referred to in a running method, the entire run-time context of that method is reified and made available to the image as a series of chained \clsind{MethodContext} objects.
+
+We can easily experiment with this mechanism ourselves.
+
+\dothis{Change the definition of \ct{Integer>>>factorial} by inserting the underlined expression as shown below:}
+
+\mthindex{Object}{halt}
+\begin{code}{}
+Integer>>>factorial
+	"Answer the factorial of the receiver."
+	self = 0 ifTrue: [!\underline{thisContext explore. self halt.}! ^ 1].
+	self > 0 ifTrue: [^ self * (self - 1) factorial].
+	self error: 'Not valid for negative integers'
+\end{code}
+
+\dothis{Now evaluate \ct{3 factorial} in a workspace. You should obtain both a debugger window and an explorer, as shown in \figref{exploringThisContext}.}
+
+\begin{figure}[ht]\centering
+	\includegraphics[width=\linewidth]{exploringThisContext}
+	\caption{Exploring \lct{thisContext}.\figlabel{exploringThisContext}}
+\end{figure}
+
+Welcome to the poor-man's debugger!
+If you now browse the class of the explored object (\ie by evaluating \ct{self browse} in the bottom pane of the explorer) you will discover that it is an instance of the class \lct{MethodContext}, as is each \ct{sender} in the chain.
+% All of these objects have been created dynamically in the image by the \st virtual machine at the point where \ct{thisContext} was referred to in the \ct{factorial} method. \lr{Not actually. In all the currently available VMs the context objects are created with every method activation, no matter if they are accessed using \ct{thisContext} or not.}
+
+\ct{thisContext} is not intended to be used for day-to-day programming, but it is essential for implementing tools like debuggers, and for accessing information about the call stack.
+You can evaluate the following expression to discover which methods make use of \ct{thisContext}:
+
+\begin{code}{}
+SystemNavigation default browseMethodsWithSourceString: 'thisContext'
+\end{code}
+
+As it turns out, one of the most common applications is to discover the sender of a message.
+Here is a typical application:
+\begin{code}{}
+Object>>>subclassResponsibility
+	"This message sets up a framework for the behavior of the class' subclasses.
+	Announce that the subclass should have implemented this message."
+
+	self error: 'My subclass should have overridden ', thisContext sender selector printString
+\end{code}
+
+By convention, methods in \st that send \ct{self subclassResponsibility} are considered to be abstract.  But how does \clsmthind{Object}{subclassResponsibility} provide a useful error message indicating which abstract method has been invoked?  Very simply, by asking \ct{thisContext} for the sender.
+
+\lr{I think co-routines and continuations should at least mentioned here. Another very practical application that is simple and could be shown here is the ``escaper''. Store the current context into a temp or inst-var \ct{target := thisContext} and jump back to that stack frame at a later point in time using \ct{target return: 123}.}
+\sd{lukas maybe we should have another chapter showing such kind of beasts. I would love to read it.
+Showing how to use block to build exception and such a kind of point. I think that this chapter should be an introduction may be
+we should have a Reflection applied chapter}
+\lr{I would love to help writing such a chapter}
+%-----------------------------------------------------------------
+\subsection{Intelligent breakpoints}
+
+\mthindex{Object}{halt}
+The \st way to set a breakpoint is to evaluate \ct{self halt} at an interesting point in a method.  This will cause \ct{thisContext} to be reified, and a \ind{debugger} window will open at the breakpoint.
+Unfortunately this poses problems for methods that are intensively used in the system.
+
+Suppose, for instance, that we want to explore the execution of \ct{OrderedCollection>>>add:}.
+Setting a breakpoint in this method is problematic.
+
+\dothis{Take a \emph{fresh} image and set the following breakpoint:}
+\needlines{3}
+\begin{code}{}
+OrderedCollection>>>add: newObject
+	!\underline{self halt.}!
+	^self addLast: newObject
+\end{code}
+
+Notice how your image immediately freezes!  We do not even get a debugger window.
+The problem is clear once we understand that (i) \ct{OrderedCollection>>>add:} is used by many parts of the system, so the breakpoint is triggered very soon after we accept the change, but (ii) \emph{the debugger itself} sends \ct{add:} to an instance of \ct{OrderedCollection}, preventing the debugger from opening!
+What we need is a way to \emph{conditionally halt} only if we are in a context of interest.
+This is exactly what \clsmthind{Object}{haltIf:} offers.
+
+Suppose now that we only want to halt if \ct{add:} is sent from, say, the context of \ct{OrderedCollectionTest>>>testAdd}.
+
+\dothis{Fire up a fresh image again, and set the following breakpoint:}
+\begin{code}{}
+OrderedCollection>>>add: newObject
+	!\underline{self haltIf: \#testAdd.}!
+	^self addLast: newObject
+\end{code}
+
+This time the image does not freeze. Try running the \ct{OrderedCollectionTest}.
+(You can find it in the \scat{CollectionsTests-Sequenceable} category.)
+
+How does this work?  Let's have a look at \clsmthind{Object}{haltIf:}:
+\begin{code}{}
+Object>>>haltIf: condition
+	| cntxt |
+	condition isSymbol ifTrue: [
+		"only halt if a method with selector symbol is in callchain"
+		cntxt := thisContext.
+		[cntxt sender isNil] whileFalse: [
+			cntxt := cntxt sender. 
+			(cntxt selector = condition) ifTrue: [Halt signal]. ].
+		^self.
+	].
+	...
+\end{code}
+
+Starting from \ct!thisContext!, \ct!haltIf:! goes up through the execution stack, checking if the name of the calling method is the same as the one passed as parameter.
+If this is the case, then it raises an exception which, by default, summons the debugger.
+
+It is also possible to supply a boolean or a boolean block as an argument to \ct{haltIf:}, but these cases are straightforward and do not make use of \lct{thisContext}.
+
+%======================================
+\section{Intercepting messages not understood}
+\seclabel{msgnotunderstood}
+
+So far we have used the reflective features of \st mainly to query and explore objects, classes, methods and the run-time stack. Now we will look at how to use our knowledge of the \st system structure to intercept messages and modify behaviour at run-time.
+
+When an object receives a message, it first looks in the method dictionary of its class for a corresponding method to respond to the message.
+If no such method exists, it will continue looking up the class hierarchy, until it reaches \ct{Object}. If still no method is found for that message, the object will \emph{send itself} the message \ct{doesNotUnderstand:} with the message selector as its argument.
+The process then starts all over again, until \clsmthind{Object}{doesNotUnderstand:} is found, and the debugger is launched.
+
+But what if \ct{doesNotUnderstand:} is overridden by one of the subclasses of \ct{Object} in the lookup path?
+As it turns out, this is a convenient way of realizing certain kinds of very dynamic behaviour. An object that does not understand a message can, by overriding \ct{doesNotUnderstand:}, fall back to an alternative strategy for responding to that message.
+
+Two very common applications of this technique are (1) to implement \ind{lightweight proxies} for objects, and (2) to dynamically compile or load missing code.
+
+%-----------------------------------------------------------------
+\subsection{Lightweight proxies}
+
+In the first case, we introduce a ``\ind{minimal object}'' to act as a proxy for an existing object.
+Since the proxy will implement virtually no methods of its own, any message sent to it will be trapped by \ct{doesNotUnderstand:}. By implementing this message, the proxy can then take special action before delegating the message to the real subject it is the proxy for.
+
+Let us have a look at how this may be implemented\footnote{You can also load \pkg{PBE-Reflection} from \url{http://www.squeaksource.com/PharoByExample/}}.
+
+We define a \ct{LoggingProxy} as follows:
+\begin{code}{}
+ProtoObject subclass: #LoggingProxy
+	instanceVariableNames: 'subject invocationCount'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'PBE-Reflection'
+\end{code}
+Note that we subclass \ct{ProtoObject} rather than \ct{Object} because we do not want our proxy to inherit over 400 methods (!) from \ct{Object}.
+
+\begin{code}{}
+Object methodDict size --> 408
+\end{code}
+
+Our proxy has two instance variables: the \ct{subject} it is a proxy for, and a \ct{count} of the number of messages it has intercepted.
+We initialize the two instance variables and we provide an accessor for the message count.
+Initially the \ct{subject} variable points to the proxy object itself.
+\begin{code}{}
+LoggingProxy>>>initialize
+	invocationCount := 0.
+	subject := self.
+\end{code}
+
+\begin{code}{}
+LoggingProxy>>>invocationCount
+	^ invocationCount
+\end{code}
+
+We simply intercept all messages not understood, print them to the Transcript, update the message count, and forward the message to the real subject.
+\begin{code}{}
+LoggingProxy>>>doesNotUnderstand: aMessage 
+	Transcript show: 'performing ', aMessage printString; cr.
+	invocationCount := invocationCount + 1.
+	^ aMessage sendTo: subject
+\end{code}
+
+Here comes a bit of magic.
+We create a new \ct{Point} object and a new \ct{LoggingProxy} object, and then we tell the proxy to \mthind{ProtoObject}{become:} the point object:
+\seeindex{\ct{become:}}{\ct{ProtoObject>>>become:}}
+\begin{code}{}
+point := 1@2.
+LoggingProxy new !\underline{become:}! point.
+\end{code}
+
+This has the effect of swapping all references in the image to the point to now refer to the proxy, and vice versa. Most importantly, the proxy's \ct{subject} instance variable will now refer to the point!
+
+\begin{code}{}
+point invocationCount --> 0
+point + (3@4)             --> 4@6
+point invocationCount --> 1
+\end{code}
+
+This works nicely in most cases, but there are some shortcomings:
+\begin{code}{}
+point class --> LoggingProxy
+\end{code}
+Curiously, the method \ct{class} is not even implemented in \ct{ProtoObject} but in \ct{Object}, which \ct{LoggingProxy} does not inherit from!
+The answer to this riddle is that \ct{class} is never sent as a message but is directly answered by the virtual machine.\footnote{\ct{yourself} is also never truly sent.
+Other messages that may be directly interpreted by the VM, depending on the receiver, include:
+\ct{+- < > <= >= = ~= * / \ ==}
+\ct{@ bitShift: // bitAnd: bitOr:}
+\ct{at: at:put: size}
+\ct{next nextPut: atEnd}
+\ct{blockCopy: value value: do: new new: x y}.
+Selectors that are never sent, because they are inlined by the compiler and transformed to comparison and jump bytecodes:
+\ct{ifTrue: ifFalse: ifTrue:ifFalse: ifFalse:ifTrue:}
+\ct{and: or:}
+\ct{whileFalse: whileTrue: whileFalse whileTrue}
+\ct{to:do: to:by:do:}
+\ct{caseOf: caseOf:otherwise:}
+\ct{ifNil: ifNotNil:  ifNil:ifNotNil: ifNotNil:ifNil:}
+Attempts to send these messages to non-boolean objects can be intercepted and execution can be resumed with a valid boolean value by overriding \ct{mustBeBoolean} in the receiver or by catching the \ct{NonBooleanReceiver} exception.
+}% NB: Notes by Lukas Renggli
+
+Even if we can ignore such special message sends, there is another fundamental problem which cannot be overcome by this approach: \self-sends cannot be intercepted:
+\begin{code}{}
+point := 1@2.
+LoggingProxy new become: point.
+point invocationCount --> 0
+point rect: (3@4)        --> 1@2 corner: 3@4
+point invocationCount --> 1
+\end{code}
+
+Our proxy has been cheated out of two \self-sends in the \ct{rect:} method:
+\begin{code}{}
+Point>>>rect: aPoint 
+	^ Rectangle  origin: (self min: aPoint) corner: (self max: aPoint)
+\end{code}
+
+Although messages can be intercepted by proxies using this technique, one should be aware of the inherent limitations of using a proxy.  In \secref{wrapper} we will see another, more general approach for intercepting messages.
+
+%-----------------------------------------------------------------
+\subsection{Generating missing methods}
+
+The other most common application of intercepting not understood messages is to dynamically load or generate the missing methods.
+Consider a very large library of classes with many methods.  Instead of loading the entire library, we could load a stub for each class in the library. The stubs know where to find the source code of all their methods.  The stubs simply trap all messages not understood, and dynamically load the missing methods on-demand.  At some point, this behaviour can be deactivated, and the loaded code can be saved as the minimal necessary subset for the client application.
+
+%\on{Stef sez: check ObjectOut -- I looked, but this seems to be very old. Depends on SqueakPage.}
+
+Let us look at a simple variant of this technique where we have a class that automatically adds accessors for its instance variables on-demand:
+% \lr{the last statement should return the result of the message, otherwise you cannot proceed with the debugger} \alex{all redefinition of doesNotUnderstand: includes a return statement. However, I do not see your comment lukas, I tried to insert a 'self halt' in the method, I was able to proceed. I added the return in the function} \lr{Of course it depends on the exact circumstances. If you perform a message on self that returns self it does not matter, but in any other case a forgotten return can introduce strange side effects. There was no return in the listing below, but now there is and the problem is solved.}
+
+\begin{code}{}
+DynamicAcccessors>>>doesNotUnderstand: aMessage
+	| messageName |
+	messageName := aMessage selector asString.
+	(self class instVarNames includes: messageName)
+		ifTrue: [
+			self class compile: messageName, String cr, ' ^ ', messageName.
+			^ aMessage sendTo: self ].
+	^ super doesNotUnderstand: aMessage
+\end{code}
+Any message not understood is trapped here. If an instance variable with the same name as the message sent exists, then we ask our class to compile an accessor for that instance variables and we re-send the message.
+
+Suppose the class \ct{DynamicAccessors} has an (uninitialized) instance variable \ct{x} but no pre-defined accessor. Then the following will generate the accessor dynamically and retrieve the value:
+\needlines{2}
+\begin{code}{}
+myDA := DynamicAccessors new.
+myDA x --> nil
+\end{code}
+
+Let us step through what happens the first time the message \ct{x} is sent to our object (see \figref{DynamicAccessors}).
+
+\begin{figure}[ht]\centering
+	\includegraphics[width=\linewidth]{DynamicAccessors}
+	\caption{Dynamically creating accessors.\figlabel{DynamicAccessors}}
+	% \alex{not sure whether the figure is highly necessary. The code is rather simple and the figure complete to follow in my opinion.}}
+	% \on{trust me, it is useful to see all the steps.}
+\end{figure}
+
+(1) We send \ct{x} to \ct{myDA}, (2) the message is looked up in the class, and (3) not found in the class hierarchy. (4) This causes \ct{self doesNotUnderstand: #x} to be sent back to the object, (5) triggering a new lookup. This time \ct{doesNotUnderstand:} is found immediately in \ct{DynamicAccessors}, (6) which asks its class to compile the string \ct{'x ^ x'}. The \ct{compile} method is looked up (7), and (8) finally found in \ct{Behavior}, which (9-10) adds the new compiled method to the method dictionary of \ct{DynamicAccessors}. Finally, (11-13) the message is resent, and this time it is found.
+
+The same technique can be used to generate setters for instance variables, or other kinds of boilerplate code, such as visiting methods for a Visitor.
+
+Note the use of \clsmthind{Object}{perform:} in step (13) which can be used to send messages that are composed at run-time:
+\begin{code}{@TEST}
+5 perform: #factorial                                             --> 120
+6 perform: ('fac', 'torial') asSymbol                       --> 720
+4 perform: #max: withArguments: (Array with: 6) --> 6
+\end{code}
+
+%======================================
+\section{Objects as method wrappers}
+\seclabel{wrapper}
+
+We have already seen that compiled methods are ordinary objects in \st, and they support a number of methods that allow the programmer to query the run-time system.
+What is perhaps a bit more surprising, is that \emph{any object} can play the role of a compiled method. All it has to do is respond to the method \ct{run:with:in:} and a few other important messages.
+
+\dothis{Define an empty class \ct{Demo}. Evaluate \ct{Demo new answer42} and notice how the usual ``Message Not Understood'' error is raised.}
+
+Now we will install a plain \st object in the method dictionary of our \ct{Demo} class.
+
+\dothis{Evaluate \lct{Demo methodDict at: \#answer42 put: ObjectsAsMethodsExample new.}
+Now try again to print the result of \ct{Demo new answer42}. This time we get the answer \ct{42}.}
+
+If we take look at the class \clsind{ObjectsAsMethodsExample} we will find the following methods:
+%\alex{I would prefer having return 42 in the run:with:in: method, and not having answer42 defined in ObjectsAsMethodsExample, this could be confusing I imagine}
+%\on{ObjectsAsMethodsExample is part of the standard pharo image -- it is not in PBE-Reflection}
+\needlines{5}
+\begin{code}{}
+answer42
+	^42
+
+run: oldSelector with: arguments in: aReceiver
+	^self perform: oldSelector withArguments: arguments
+\end{code}
+
+When our \ct{Demo} instance receives the message \ct{answer42}, method lookup proceeds as usual, however the virtual machine will detect that in place of a compiled method, an ordinary \st object is trying to play this role.
+The VM will then send this object a new message \ct{run:with:in:} with the original method selector, arguments and receiver as arguments.
+Since \ct{ObjectsAsMethodsExample} implements this method, it intercepts the message and delegates it to itself.
+
+We can now remove the fake method as follows:
+\begin{code}{}
+Demo methodDict removeKey: #answer42 ifAbsent: []
+\end{code}
+
+If we take a closer look at \ct{ObjectsAsMethodsExample}, we will see that its superclass also implements the methods \ct{flushcache}, \ct{methodClass:} and \lct{selector:}, but they are all empty.  These messages may be sent to a compiled method, so they need to be implemented by an object pretending to be a compiled method.  (\ct{flushcache} is the most important method to be implemented; others may be required depending on whether the method is installed using \clsmthind{Behavior}{addSelector:withMethod:} or directly using \clsmthind{MethodDictionary}{at:put:}.)
+
+%-------------------------------------------------------------------------
+\subsection{Using method wrappers to perform test coverage}
+
+Method wrappers are a well-known technique for intercepting messages \cite{Bran98a}.
+In the original implementation\footnote{http://www.squeaksource.com/MethodWrappers.html}, a method wrapper is an instance of a subclass of \ct{CompiledMethod}. When installed, a method wrapper can perform special actions before or after invoking the original method.
+When uninstalled, the original method is returned to its rightful position in the method dictionary.
+
+In Pharo, \ind{method wrappers} can be implemented more easily by implementing \ct{run:with:in:} instead of by subclassing \ct{CompiledMethod}. In fact, there exists a lightweight implementation of objects as method wrappers\footnote{http://www.squeaksource.com/ObjectsAsMethodsWrap.html}, but it is not part of standard Pharo at the time of this writing.
+
+Nevertheless, the Pharo Test Runner uses precisely this technique to evaluate test coverage.
+Let's have a quick look at how it works.
+
+The entry point for test coverage is the method \clsmthind{TestRunner}{runCoverage}:
+\begin{code}{}
+TestRunner>>>runCoverage
+	| packages methods |
+	... "identify methods to check for coverage"
+	self collectCoverageFor: methods
+\end{code}
+
+The method \clsmthind{TestRunner}{collectCoverageFor:} clearly illustrates the coverage checking algorithm:
+\begin{code}{}
+TestRunner>>>collectCoverageFor: methods
+	| wrappers suite |
+	wrappers := methods collect: [ :each | TestCoverage on: each ].
+	suite := self
+		reset;
+		suiteAll.
+	[ wrappers do: [ :each | each install ].
+	  [ self runSuite: suite ] ensure: [ wrappers do: [ :each | each uninstall ] ] ] valueUnpreemptively.
+	wrappers := wrappers reject: [ :each | each hasRun ].
+	wrappers isEmpty 
+		ifTrue: 
+			[ UIManager default inform: 'Congratulations. Your tests cover all code under analysis.' ]
+		ifFalse: ...
+\end{code}
+A wrapper is created for each method to be checked, and each wrapper is installed.
+The tests are run, and all wrappers are uninstalled.
+Finally the user obtains feedback concerning the methods that have not been covered.
+
+How does the wrapper itself work?
+The \ct{TestCoverage} wrapper has three instance variables, \ct{hasRun}, \ct{reference} and \ct{method}.
+They are initialized as follows:
+\begin{code}{}
+TestCoverage class>>>on: aMethodReference
+	^ self new initializeOn: aMethodReference
+
+TestCoverage>>>initializeOn: aMethodReference
+	hasRun := false.
+	reference := aMethodReference.
+	method := reference compiledMethod
+\end{code}
+
+The install and uninstall methods simply update the method dictionary in the obvious way:
+\begin{code}{}
+TestCoverage>>>install
+	reference actualClass methodDictionary
+		at: reference methodSymbol
+		put: self
+
+TestCoverage>>>uninstall
+	reference actualClass methodDictionary
+		at: reference methodSymbol
+		put: method
+\end{code}
+\noindent
+and the \ct{run:with:in:} method simply updates the \ct{hasRun} variable, uninstalls the wrapper (since coverage has been verified), and resends the message to the original method
+\begin{code}{}
+run: aSelector with: anArray in: aReceiver
+	self mark; uninstall.
+	^ aReceiver withArgs: anArray executeMethod: method
+
+mark
+	hasRun := true
+\end{code}
+(Have a look at \clsmthind{ProtoObject}{withArgs:executeMethod:} to see how a method displaced from its method dictionary can be invoked.)
+
+That's all there is to it!
+
+Method wrappers can be used to perform any kind of suitable behaviour before or after the normal operation of a method.  Typical applications are instrumentation (collecting statistics about the calling patterns of methods), checking optional pre- and post-conditions, and memoization (optionally cacheing computed values of methods).
+
+%======================================
+\section{Pragmas}
+
+A \emphind{pragma} is an annotation that specifies data about a program, but is not involved in the execution of the program. Pragmas have no direct effect on the operation of the method they annotate.
+Pragmas have a number of uses, among them:
+\begin{itemize}
+\item Information for the compiler: \indmain{pragmas} can be used by the compiler to make a method call a primitive function. This function has to be defined by the virtual machine or by an external plug-in.
+\item Runtime processing: Some pragmas are available to be examined at runtime.
+\end{itemize}
+
+Pragmas can be applied to a program's method declarations only. A method may declare one or more pragmas, and the pragmas have to be declared prior any Smalltalk statement. Each pragma is in effect a static message send with literal arguments.
+
+We briefly saw pragmas when we introduced primitives earlier in this chapter. A primitive is nothing more than a pragma declaration. 
+Consider \ct{<primitive: 73>} as contained in \ct{instVarAt:}. The pragma's selector is \ct{primitive:} and its arguments is an immediate literal value, \ct{73}. 
+
+The compiler is probably the bigger user of pragmas. SUnit is another tool that makes use of annotations. SUnit is able to estimate the coverage of an application from a test unit. One may want to exclude some methods from the coverage. This is the case of the \ct!documentation! method in \ct!SplitJointTest class!:
+
+\begin{code}{}
+SplitJointTest class>>>documentation
+	<ignoreForCoverage>
+	"self showDocumentation"
+	
+	^ 'This package provides function.... "
+\end{code}
+
+By simply annotating a method with the pragma \ct!<ignoreForCoverage>! one can control the scope of the coverage.
+
+%Beside the compiler, Lint is a heavy user of pragmas. Lint is a static code analyzer that flags suspicious, non-portable constructs and code that is likely to contain bugs. It may happen that a method needs to be excluded from Lint analysis. This is the case here:
+
+%\begin{code}{}
+%MorphObjectOut>>>doesNotUnderstand: aMessage 
+%	"Bring in the object, install, then resend aMessage"
+%	"Transcript show: thisContext sender selector; cr."
+%	"useful for debugging"
+%	
+%	! \textbf{<lint: 'Unnecessary "= true"' rationale: 'recursionFlag may be nil' author: 'stephane.ducasse'>}!
+%	...
+%\end{code}	
+
+%One of the pragmas used by Lint to filter out methods is \ct{lint:rationale:author:}.
+
+As instances of the class \clsind{Pragma}, pragmas are first class objects. A compiled method answers to the message \mthind{CompiledMethod}{pragmas}. This method returns an array of pragmas. 
+
+\begin{code}{}
+(SplitJoinTest class >> #showDocumentation) pragmas.
+  --> an Array(<ignoreForCoverage>)
+(Float>>#+) pragmas --> an Array(<primitive: 41>)
+\end{code}
+
+Methods defining a particular query may be retrieved from a class. The class side of \ct!SplitJoinTest! contains some methods annotated with \ct!<ignoreForCoverage>!:
+
+\begin{code}{@TEST}
+Pragma allNamed: #ignoreForCoverage in: SplitJoinTest class  --> an Array(<ignoreForCoverage> <ignoreForCoverage> <ignoreForCoverage>)
+\end{code}
+
+A variant of \ct{allNamed:in:} may be found on the class side of \ct{Pragma}.
+
+A pragma knows in which method it is defined (using \ct{method}), the name of the method (\ct{selector}), the class that contains the method (\ct{methodClass}), its number of arguments (\ct{numArgs}), about the literals the pragma has for arguments (\ct{hasLiteral:} and \ct{hasLiteralSuchThat:}). 
+
+\lr{Typically pragmas are performed on an interpreter object that understands the pragma message.}
+
+%======================================
+\section{Chapter summary}
+
+Reflection refers to the ability to query, examine and even modify the metaobjects of the run-time system as ordinary objects.
+
+\begin{itemize}
+\item The Inspector uses \ct{instVarAt:} and related methods to query and modify ``private'' instance variables of objects.
+\item Send \ct{Behavior>>>allInstances} to query instances of a class.
+\item The messages \ct{class}, \ct{isKindOf:}, \ct{respondsTo:} \etc  are useful for gathering metrics or building development tools, but they should be avoided in regular applications: they violate the encapsulation of objects and make your code harder to understand and maintain.
+\item \ct{SystemNavigation} is a utility class holding many useful queries for navigation and browsing the class hierarchy. For example, use \ct{SystemNavigation default browseMethodsWithSourceString: 'pharo'.} to find and browse all methods with a given source string. (Slow, but thorough!)
+\item Every \st class points to an instance of \ct{MethodDictionary} which maps selectors to instances of \ct{CompiledMethod}. A compiled method knows its class, closing the loop.
+\item \ct{MethodReference} is a leightweight proxy for a compiled method, providing additional convenience methods, and used by many \st tools. 
+\item \ct{BrowserEnvironment}, part of the Refactoring Browser infrastructure, offers a more refined interface than \ct{SystemNavigation} for querying the system, since the result of a query can be used as a the scope of a new query. Both GUI and programmatic interfaces are available.
+\item \ct{thisContext} is a pseudo-variable that reifies the run-time stack of the virtual machine. It is mainly used by the debugger to dynamically construct an interactive view of the stack. It is also especially useful for dynamically determining the sender of a message.
+\item Intelligent breakpoints can be set using \ct{haltIf:}, taking a method selector as its argument. \ct{haltIf:} halts only if the named method occurs as a sender in the run-time stack.
+\item A common way to intercept messages sent to a given target is to use a ``minimal object'' as a proxy for that target. The proxy implements as few methods as possible, and traps all message sends by implementing \ct{doesNotunderstand:}. It can then perform some additional action and then forward the message to the original target.
+\item Send \ct{become:} to swap the references of two objects, such as a proxy and its target.
+\item Beware, some messages, like \ct{class} and \ct{yourself} are never really sent, but are interpreted by the VM.  Others, like \ct{+}, \ct{-} and \ct{ifTrue:} may be directly interpreted or inlined by the VM depending on the receiver.
+\item Another typical use for overriding \ct{doesNotUnderstand:} is to lazily load or compile missing methods.
+\item \ct{doesNotUnderstand:} cannot trap \self-sends.
+\item A more rigorous way to intercept messages is to use an object as a method wrapper. Such an object is installed in a method dictionary in place of a compiled method. It should implement \ct{run:with:in:} which is sent by the VM when it detects an ordinary object instead of a compiled method in the method dictionary. This technique is used by the SUnit Test Runner to collect coverage data.
+\end{itemize}
+
+%=========================================================
+\ifx\wholebook\relax\else
+   \bibliographystyle{jurabib}
+   \nobibliography{scg}
+   \end{document}
+\fi
+%=========================================================
+
+%Other stuff:
+%- anonymous classes (uses compile: and primitiveChangeClassTo:) ???
+%- collect direct senders; class collaborations
+%- Object primitiveChangeClassTo: become: and becomeForward: (see tests and slides with minimal object example)
+%- PointerFinder?
+%- anonymous classes (see slides) ?
+
+%Test  Coverage using ObjectsAsMethodsWrap package:
+%\begin{code}{}
+%category := 'SCGPier'.
+%w := (ObjectAsOneTimeMethodWrapper installOnClassCategory: category).
+%tr := TestRunner new.
+%ToolBuilder open: tr.
+%[tr
+%	categoryAt: (tr categoryList indexOf: 'SCGPier') put: true;
+%	selectAllClasses;
+%	runAll.]
+%ensure: [[w do: [:each| each uninstall ]] valueUnpreemptively].
+%((w select: [:each | each executed not ])
+%	collect: [:each | each wrappedClass name, '>>', each selector name ]) explore.
+%\end{code}
