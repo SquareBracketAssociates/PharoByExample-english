@@ -1,0 +1,312 @@
+% $Author: ducasse $
+% $Date: 2009-08-24 10:17:33 +0200 (Mon, 24 Aug 2009) $
+% $Revision: 28563 $
+
+% HISTORY:
+
+
+%=================================================================
+\ifx\wholebook\relax\else
+% --------------------------------------------
+% Lulu:
+	\documentclass[a4paper,10pt,twoside]{book}
+	\usepackage[
+		papersize={6.13in,9.21in},
+		hmargin={.75in,.75in},
+		vmargin={.75in,1in},
+		ignoreheadfoot
+	]{geometry}
+	\input{../common.tex}
+	\setboolean{lulu}{true}
+% --------------------------------------------
+% A4:
+%	\documentclass[a4paper,11pt,twoside]{book}
+%	\input{../common.tex}
+%	\usepackage{a4wide}
+% --------------------------------------------
+    \graphicspath{{figures/} {../figures/}}
+	\begin{document}
+\fi
+%=================================================================
+%\renewmessage{\nnbb}[2]{} % Disable editorial comments
+\sloppy
+%=================================================================
+
+\chapter{Little Numbers}
+
+
+
+
+Let's be dummy for a while.
+
+\section{Power of 2}
+
+Let's start with some simple maths. 
+
+\begin{code}{}
+2 raisedTo: 0
+	returns 1
+
+2 raisedTo: 2
+	returns 4
+	
+2 raisedTo: 8
+	returns 256
+\end{code}
+
+\begin{figure}[h]
+\begin{center}
+\includegraphics[width=0.65\textwidth]{16bits-number}
+\caption{Power of 2 and their numerical equivalence.}
+\end{center}
+\end{figure}
+
+How to encode 13? It cannot be higher than $2^{4}$ because $2^{4}$ = 16. So it should be 8 + 4 + 1, $2^{3} + 2^{2} + 2^{0}$.
+
+\begin{figure}[h]
+\begin{center}
+\includegraphics[width=0.65\textwidth]{16bits-number13}
+\caption{13 = $2^{3} + 2^{2} + 2^{0}$.}
+\end{center}
+\end{figure}
+
+
+\begin{code}{}
+(2 raisedTo: 0)
+	returns 1
+
+2 raisedTo: 2
+	returns 4
+	
+2 raisedTo: 8
+	returns 256
+\end{code}
+
+\subsection*{Binary notation}
+\begin{code}{}
+2r01101
+	returns 13
+
+13 printStringBase: 2
+	returns '01101'
+	
+Integer readFrom: '01101' base: 2 	
+	returns 13
+\end{code}
+
+
+
+\section{Bit shifting is multiplying by 2}
+
+\begin{code}{Using \ct{>>} and \ct{<<}}
+2r000001000 
+	returns 8
+
+2r000001000 >> 1
+	returns 4
+	
+2r000001000 << 1
+	returns 16
+\end{code}
+
+\begin{figure}[h]
+\begin{center}
+\includegraphics[width=0.65\textwidth]{16bits-numberMultiplication}
+\caption{Multiply by 2 or dividing by 2.}
+\end{center}
+\end{figure}
+
+\begin{code}{Using \ct{bitShift:}}
+2r000001000 
+	returns 8
+
+2r000001000 bitShift: -1
+	returns 4
+	
+2r000001000 bitShift: 1
+	returns 16
+\end{code}
+
+\begin{code}{}
+2r000001100 
+	returns 12
+
+2r000001100 bitShift: -1
+	returns 2r00000110
+	returns 6 
+	
+2r000001100 bitShift: 1
+	returns 2r000011000
+	returns 24
+\end{code}
+
+\begin{figure}[h]
+\begin{center}
+\includegraphics[width=0.65\textwidth]{16bits-numberMultiplication2}
+\caption{Mutiply by 2 or dividing by 2. We can move several bits in one direction.}
+\end{center}
+\end{figure}
+
+\subsection*{Shifting bits}
+
+
+\begin{code}{}
+2 raisedTo: 8
+	returns 256
+	
+1 << 8
+	returns 256
+	
+2r100000000
+	returns 256
+		
+\end{code}
+
+\begin{figure}[h]
+\begin{center}
+\includegraphics[width=0.65\textwidth]{16bits-1shifted8}
+\caption{We move 8 times 1 to the left. So from $2^{0}$ we get $2^{8}$.}
+\end{center}
+\end{figure}
+
+\begin{code}{}
+(2 raisedTo: 8) + (2 raisedTo: 10) 
+	returns 1280
+	
+2r010100000000
+	returns 1280
+	
+2r010100000000 >> 8
+	returns	2r0101
+	returns 5
+\end{code}
+
+\begin{figure}[h]
+\begin{center}
+\includegraphics[width=0.65\textwidth]{16bits-1280shifted8}
+\caption{We move 8 times to the right. So from 1280 gets 5.}
+\end{center}
+\end{figure}
+
+
+
+
+
+
+
+\section{Bit Access}
+
+\begin{code}{}
+2r000001101 bitAt: 0
+	returns 0 
+	
+2r000001101 bitAt: 1
+	returns 1 
+	
+2r000001101 bitAt: 2
+	returns 0 
+			
+2r000001101 bitAt: 3
+	returns 1
+	 
+2r000001101 bitAt: 5
+	returns 0 	 
+\end{code}
+
+
+\begin{code}{}
+Integer>>bitAt: anInteger
+	"Answer 1 if the bit at position anInteger is set to 1, 0 otherwise.
+	self is considered an infinite sequence of bits, so anInteger can be any strictly positive integer.
+	Bit at position 1 is the least significant bit.
+	Negative numbers are in two-complements.
+	
+	This is a naive implementation that can be refined in subclass for speed"
+	
+	^(self bitShift: 1 - anInteger) bitAnd: 1
+\end{code}
+
+We shift to the right from an integer minus one (hence \ct{1 - anInteger})
+and with a \ct{bitAnd:} we know whether there is a one or zero in the location.
+
+%
+
+\section{More here}
+
+\section{2 complement}
+
+
+\section{Hexadecimal}
+
+
+\begin{code}
+15 hex
+	returns '16rF'
+	
+15 printStringHex 'F'
+
+16rF
+	returns 15
+\end{code}
+
+
+\begin{code}
+(1 to: 15) collect: [:each | each -> each hex] 
+
+{(1->'16r1'). (2->'16r2'). (3->'16r3'). (4->'16r4'). (5->'16r5'). (6->'16r6'). (7->'16r7'). (8->'16r8'). (9->'16r9'). (10->'16rA'). (11->'16rB'). (12->'16rC'). (13->'16rD'). (14->'16rE'). (15->'16rF')}
+\end{code}
+
+
+\begin{code}{}
+16rF printStringBase: 2
+	returns '1111'
+\end{code}
+
+
+\subsection*{Selecting a subpart}
+
+\begin{code}{}
+2r1100010100000000 
+	returns 50432
+\end{code}
+
+Imagine that only 4 bits interest us starting at the 9th one.
+We shift out the 8 first and clear all the others after the next 4.  
+
+\begin{code}{}
+(2r1100010100000000 >> 8)
+	returns 2r11000101
+	returns 197
+
+(2r1100010100000000 >> 8) bitAnd: 16rF	
+	returns 0101	
+	returns 5
+	
+2r11000101 bitAnd: 1111
+	returns 0101	
+	returns 5
+\end{code}
+
+
+\section{Conclusion}
+
+%=========================================================
+\ifx\wholebook\relax\else
+   \bibliographystyle{jurabib}
+   \nobibliography{scg}
+   \end{document}
+\fi
+
+%=================================================================
+\ifx\wholebook\relax\else\end{document}\fi
+%=================================================================
+
+%-----------------------------------------------------------------
+
+%%% Local Variables:
+%%% coding: utf-8
+%%% mode: latex
+%%% TeX-master: t
+%%% TeX-PDF-mode: t
+%%% ispell-local-dictionary: "english"
+%%% End:

@@ -43,16 +43,18 @@ The concept of socket was first introduced by researchers from Berkeley Universi
 Its API was ported to most existing programming languages including Smalltalk.
 
 In this chapter, we present the socket's API in the context of Pharo Smalltalk.
-We show through some examples how to to use sockets for building both clients and servers.
+We first show through some examples how to to use sockets for building both clients and servers.
+Then, we'll introduce \ct!SocketStream! and how to use it.
+In practice, one is likely to use \ct!SocketStream! instead of plain sockets.
 
 \section{Basic Concepts}
 \subsection{Socket}
-A remote communication involves at least two applications exchanging some data bytes through a network. Each application accesses the network through at least one socket (see Figure~\ref{fig:socketConcept}).
+A remote communication involves at least two system processes exchanging some data bytes through a network. Each process accesses the network through at least one socket (see Figure~\ref{fig:socketConcept}).
 A socket can then be defined as a \textit{plug on a communication network}.
 
 \begin{figure}[ht]\centering
 	\includegraphics[width=.75\linewidth]{socketConcept}
-	\caption{Applications Remote Communication Through Sockets.}
+	\caption{Inter-Process Remote Communication Through Sockets.}
 	\label{fig:socketConcept}
 \end{figure}
 
@@ -196,7 +198,7 @@ In practice we use \ct!closeAndDestroy!. It first attempts to close the socket b
 Then, if the socket is still connected after a duration of 20 seconds, the socket is destroyed.
 Note that there exist a variant \ct!closeAndDestroy: seconds! which gets as a parameter the duration to wait before destroying the socket.
 
-\begin{script}[closeAndDestroy]{Closing a TCP Socket After Connection to a Web Site.}
+\begin{script}[script:closeAndDestroy]{Closing a TCP Socket After Connection to a Web Site.}
 | clientSocket serverAddress httpQuery htmlText |
 httpQuery := 'GET / HTTP/1.1', String crlf, 
 	'Host: www.esug.org:80', String crlf, 
@@ -214,7 +216,7 @@ clientSocket := Socket newTCP.
 Transcript cr; show: '...Done'
 \end{script}
 
-To summarize all steps described so far, we use the example of getting a web page from a server in \Scrref{closeAndDestroy}.
+To summarize all steps described so far, we use the example of getting a web page from a server in \Scrref{script:closeAndDestroy}.
 First, we retrieve the IP address of the \url{www.esug.org} server.
 Then, we create a TCP socket and connect it to the server.
 We use the IP address we get in the previous step and the default port for web servers: 80.
@@ -237,7 +239,7 @@ The life-cycle of a TCP server in \pharo  has 5 steps:
 \begin{enumerate}
 \item Create a first TCP socket, let's call it \textit{socket$_1$}.
 \item Wait for connections by making \textit{socket$_1$}  listen on some port.
-\item Accept a client request for connection. As a result,  \textit{socket$_1$} will build a second socket, let's call it \textit{socket$_2$} \nouryComment{\sd{why socket1 is creating a second socket and not the server?}}.
+\item Accept a client request for connection. As a result, \textit{socket$_1$} will build a second socket, let's call it \textit{socket$_2$}.
 \item Exchange data with the client through \textit{socket$_2$}. In the meanwhile, \textit{socket$_1$} can continue to wait for connections, and possibly create new sockets to exchange data with other clients. 
 \item Close \textit{socket$_2$}.
 \item Close \textit{socket$_1$} when we decide to kill the server and stop accepting client connections.
@@ -316,10 +318,10 @@ Otherwise, the client will fail.
 %Here, we use \ct{nc} as client that sends the text we provided to a server on the local host, listening on port 9999.
 
 \subsection{Echo Server Class}
-We define here the  \ct!EchoServer! class that deals with concurrency issues.
-It allows dealing concurrently with multiple client queries and it does not freeze the UI.
+We define here the \ct!EchoServer! class that deals with concurrency issues.
+It handles concurrent client queries and it does not freeze the UI.
 As we can see in the definition labelled as \clsref{echoServerClassDef}, the \ct!EchoServer! declares three instance variables.
-The first one (\ct! connectionSocket!) refers to the socket used for listening to client connections.
+The first one (\ct!connectionSocket!) refers to the socket used for listening to client connections.
 The two last instance variables (\ct!isRunning! and \ct!isRunningLock!) are used to manage the server process life-cycle while dealing with synchronization issues.
  
 \begin{classdef}[echoServerClassDef]{\ct!EchoServer! Class Definition}
@@ -349,13 +351,31 @@ EchoServer>>>isRunning: aBoolean
 
 The \ct! isRunning! instance variable is a flag that is set to \ct!true! while the serving is running.
 As we'll see below, it can be accessed by different processes.
-Therefore, we use the mutex (see \mthref{meth:serverInitialize}) stored in the \ct!isRunningLock! instance variable in order to ensure that only one process can read or write the value of \ct!isRunning! (use of the \ct!critical:! message in \mthref{meth:isRunningRead} and \mthref{meth:isRunningWrite}).
+Therefore, we use the mutex (see \mthref{meth:serverInitialize}) referenced using the \ct!isRunningLock! instance variable.;
+This mutex ensures that only one process can read or write the value of \ct!isRunning! (use of the \ct!critical:! message in \mthref{meth:isRunningRead} and \mthref{meth:isRunningWrite}).
 
 \begin{method}[meth:stop]{The \ct!EchoServer>>>stop! Method}
 EchoServer>>>stop
 	self isRunning: false
 \end{method}
 
+In order to manage the life-cycle of our server, we introduced two methods \ct!EchoServer>>>start! and \ct!EchoServer>>>stop!.
+Let's begin with the simplest one \ct!EchoServer>>>stop! which definition is provided as \mthref{meth:stop}.
+It simply sets the \ct!isRunning! flag to \ct!false!.
+This will have the consequence of stopping the serving loop in method \ct!EchoServer>>>serve! (see \mthref{meth:serve}). 
+
+\begin{method}[meth:serve]{The \ct!EchoServer>>>serve! Method}
+serve
+	| interactionSocket |
+	[self isRunning] whileTrue: [self interactOnConnection].
+	connectionSocket closeAndDestroy
+\end{method}
+
+The activity of the serving process is implemented in the \ct!serve! method (see \mthref{meth:serve}).
+It interacts with clients on connections while the \ct!isRunning! flag is \ct!true!.
+After a \ct!stop!, the connection socket is destroyed and the serving process is terminated. 
+The creation of this serving process is the responsibility of method \ct!EchoServer>>>start! (see the last line of \mthref{meth:start}).
+eidosco
 \begin{method}[meth:start]{The \ct!EchoServer>>>start! Method}
 start
 	isRunningLock critical: [
@@ -366,21 +386,85 @@ start
 	[self serve] fork
 \end{method}
 
-In order to manage the life-cycle of our server, we introduced two methods \ct!EchoServer>>>start! and \ct!EchoServer>>>stop!.
-Let's start with the simplest one \ct!EchoServer>>>stop! which definition is provided as \mthref{meth:stop}.
-It simply sets the \ct!isRunning! flag  to false.
-This will have the consequence of stopping the serving process created by the \ct!EchoServer>>>start! (see the last line of \mthref{meth:start}).
+The \ct!EchoServer>>>start! method first checks if the server is already running.
+It returns if this is case.
+Otherwise, the a TCP socket dedicated to connection handling is created and made to listen on port 9999.
+The backlog size refers to the size of the system buffer for storing pending client connection requests.
+This value is a trade-off that depends on how fast is the server (varies according to the VM and the hardward) and the maximum rate of client connections requests.
+Thus, the backlog size should be big enough to avoid loosing any connection request, but not too big to avoid wasting memory.
+Finally \ct!EchoServer>>>start! method creates a process by sending the \ct!fork! message to the \ct![self serve]! block.
+The created process has the same priority as the creator process (i.e. the one that performs the \ct!EchoServer>>>start! method).
 
-%%%%%%CONTINUE FROM HERE
-In order to avoid duplicating servers...
+\begin{method}[meth:interactOnConnection]{The \ct!EchoServer>>>interactOnConnection! Method}
+interactOnConnection
+	| interactionSocket |
+	interactionSocket := connectionSocket waitForAcceptFor: 1 ifTimedOut: [^self].
+	[self interactUsing: interactionSocket] fork
+\end{method}
+
+Method \ct!EchoServer>>>serve! (see \mthref{meth:serve}) loop interacts with clients on connections.
+This interaction is handled in the \ct!EchoServer>>>interactOnConnection! method (see \mthref{meth:interactOnConnection}) .
+First, the connection socket waits for client connections for one second.
+If no client attempts to connect during this period we simply return.
+Otherwise, we get as result another socket dedicated to interaction.
+To process other client connection requests, the interaction is performed in another process, hence the \ct!fork! in the last line.
+
+\begin{method}[meth:interactUsing]{The \ct!EchoServer>>>interactUsing:! Method}
+interactUsing: interactionSocket
+		| receivedData |
+		[receivedData := interactionSocket receiveDataTimeout: 5.
+		Transcript cr; show: receivedData.
+		interactionSocket sendData: 'ECHO: ', receivedData] ensure: [interactionSocket closeAndDestroy]
+\end{method}
+
+The interaction as implemented in method \ct!EchoServer>>>interactUsing:! (see \mthref{meth:interactUsing}) with a client is the only application specific part\footnote{In an actual application we should have an abstract server superclass which subclasses implement the \ct!interactUsing:! method.}.
+The interaction boils down to reading data provided by the client and sending it back prefixed with the \ct!'ECHO: '! string.
+It worth noting that we ensure that the interaction socket is destroyed, whether we have exchanged data or not (timeout).
 
 \section{SocketStream}
-\section{Network Interface Initialization?}
-NetNameResolver class>>initializeNetwork
+\subsection{Client Side SocketStream}
+\ct!SocketStream! is a read-write stream that encapsualtes a TCP socket.
+It eases the interaction with a remote server.
+We illustrate this facility with the code of the following code snipet (\Scrref{script:streamGetLine}).
+
+\begin{script}[script:streamGetLine]{Getting the first line of a web page using \ct!SocketStream!.}
+	|stream httpQuery result|
+	stream := SocketStream openConnectionToHostNamed: 'www.pharo-project.org' port: 80.
+	httpQuery := 'GET / HTTP/1.1', String crlf, 
+		'Host: www.pharo-project.org:80', String crlf, 
+		'Accept: text/html', String crlf.
+	[
+		stream sendCommand: httpQuery.
+		Transcript cr; show: stream nextLine.
+	] ensure: [
+		stream close]
+\end{script}
+
+The first line creates a stream that encapsulates a newly created socket connected to the provided server.
+This is the responsibility of message \ct!openConnectionToHostNamed:port:!.
+It suspends the execution until the connection with the server is estabilished.
+If the server does not respond, the socket stream signals a \ct!ConnectionTimedOut! exception.
+This exception is actually signalled by the underlying socket.
+The timeout delay is 45 seconds (defined in method \ct!Socket class>>>standardTimeout!).
+
+Once our socket stream connected to the server, we forge and send an HTTP GET query.
+Notice that compared to \scrref{script:closeAndDestroy} (page~\pageref{script:closeAndDestroy}) we skipted here (\Scrref{script:streamGetLine}) one final \ct!String crlf!.
+This is because the \ct!SocketStream>>>sendCommand:! method automatically inserts CR and LF caracters after sent data to mark line ending.
+
+Reception of the requested web page is triggered by sending the \ct!nextLine! message to our socket stream.
+It will waits a few seconds until data is received.
+Data is then displayed on the transcript.
+We safely ensure that the connection is closed.
+
+In this example, we only display the first line of response sent by the server.
+We can easily display the full response including the html code by sending the \ct!upToEnd! message to our socket stream.
+Note howver that you'll have to wait a bit longer compared to displaying a single line.
+
+%%%%%%CONTINUE FROM HERE
 \section{A Basic Chat Application}
 \section{Distributed Object Applications}
 \section{Chapter summary}
-%Reference to chapter remoteSmalltalk (rST) a faire!
+%Reference to chapter remoteSmalltalk (rST) TODO!
 
 
 %=================================================================

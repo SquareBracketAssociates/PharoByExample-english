@@ -1,0 +1,98 @@
+% $Author: ducasse $
+% $Date: 2009-08-24 10:17:33 +0200 (Mon, 24 Aug 2009) $
+% $Revision: 28563 $
+
+% HISTORY:
+
+
+%=================================================================
+\ifx\wholebook\relax\else
+% --------------------------------------------
+% Lulu:
+	\documentclass[a4paper,10pt,twoside]{book}
+	\usepackage[
+		papersize={6.13in,9.21in},
+		hmargin={.75in,.75in},
+		vmargin={.75in,1in},
+		ignoreheadfoot
+	]{geometry}
+	\input{../common.tex}
+	\setboolean{lulu}{true}
+% --------------------------------------------
+% A4:
+%	\documentclass[a4paper,11pt,twoside]{book}
+%	\input{../common.tex}
+%	\usepackage{a4wide}
+% --------------------------------------------
+    \graphicspath{{figures/} {../figures/}}
+	\begin{document}
+\fi
+%=================================================================
+%\renewmessage{\nnbb}[2]{} % Disable editorial comments
+\sloppy
+%=================================================================
+
+\chapter{Basic Widgets}
+
+
+
+
+
+\section{Settings in a Nutshell}
+
+\begin{code}{}
+(PluggableDialogWindow  labelled: 'Pharo is cool') openInWorld
+\end{code}
+
+\begin{code}{}
+(PluggableDialogWindow new
+	title: 'Pharo is cool') openInWorld
+\end{code}
+
+\begin{code}{}
+(PluggableDialogWindow new
+	title: 'Pharo is cool';
+	addCloseBox) openInWorld
+	
+	""does not work :(
+\end{code}
+
+%
+%\section{The Settings Browser}
+%\label{sec:TheSettingsBrowser}
+%
+%The \setbrowser, shown in \figref{fig:TheSettingsBrowser}, mainly allows one to browse all currently declared settings and to change related preference values. To open it, just use the World menu (\menu{World \go System \go Settings}) or evaluate the following expression:
+%\begin{code}{}
+%SettingBrowser open
+%\end{code}
+%The settings are presented in several trees in the middle panel. Setting searching and filtering is available from the top toolbar whereas the bottom panels show currently selected setting description (left bottom panel) and current package set (right bottom panel). 
+%\begin{figure}[tbh]
+%\begin{center}
+%\includegraphics[scale=0.3]{SettingBrowser}
+%\caption{The \setbrowser.}
+%\figlabel{fig:TheSettingsBrowser}
+%\end{center}
+%\end{figure}
+
+\section{Conclusion}
+
+%=========================================================
+\ifx\wholebook\relax\else
+   \bibliographystyle{jurabib}
+   \nobibliography{scg}
+   \end{document}
+\fi
+
+%=================================================================
+\ifx\wholebook\relax\else\end{document}\fi
+%=================================================================
+
+%-----------------------------------------------------------------
+
+%%% Local Variables:
+%%% coding: utf-8
+%%% mode: latex
+%%% TeX-master: t
+%%% TeX-PDF-mode: t
+%%% ispell-local-dictionary: "english"
+%%% End:

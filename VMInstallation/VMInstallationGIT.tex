@@ -1,0 +1,356 @@
+% $Author: ducasse $
+% $Date: 2009-08-24 10:17:33 +0200 (Mon, 24 Aug 2009) $
+% $Revision: 28563 $
+
+%=================================================================
+\ifx\wholebook\relax\else
+% --------------------------------------------
+% Lulu:
+	\documentclass[a4paper,10pt,twoside]{book}
+	\usepackage[
+		papersize={6.13in,9.21in},
+		hmargin={.75in,.75in},
+		vmargin={.75in,1in},
+		ignoreheadfoot
+	]{geometry}
+	\input{../common.tex}
+	\setboolean{lulu}{true}
+% --------------------------------------------
+% A4:
+%	\documentclass[a4paper,11pt,twoside]{book}
+%	\input{../common.tex}
+%	\usepackage{a4wide}
+% --------------------------------------------
+    \graphicspath{{figures/} {../figures/}}
+	\begin{document}
+\fi
+%=================================================================
+%\renewmessage{\nnbb}[2]{} % Disable editorial comments
+\sloppy
+
+%=================================================================
+%\renewcommand{\nnbb}[2]{#2} % Disable editorial comments
+
+\chapter{Building the VM from scratch using Git and CMakeVMMaker}
+
+This is the chapter we were all waiting for! Take a beer, open your Pharo image and prepare your terminal. 
+
+In this post, we will see how to build a VM from scratch. I will use Mac OS along this post, but I will also explain how to build in Linux and Windows. I will follow the instructions together with you so that they are correct and working. 
+
+The VM is a huge beast and no matter all the effort people do to ease its build, it can fail. But don't get disappointed, if there are problems, please ask!
+
+Remember (I told you this in the previous chapter) that there are different ways of building a VM  from scratch. In this case we will use GIT (instead of the SVN repository) and CMakeVMMaker (instead of VMMakerTool) and we will build a Cog VM. These tools are part of what I called ''new infrastructure'' in the previous Chapter.
+
+\section{Installing necessary tools on each OS}
+
+For all the OSes we need a couple of things: a Git client, CMake, and gcc/make. I will tell you what I think is needed in each OS. I know it is painful, but at least, you have to do it only once...Don't be lazy. If this get's longer, you have the excuse for the second beer 
+
+\subsection{Mac OS}
+\begin{enumerate}
+
+\item ''Just'' (4Gb) installing the whole XCode is enough for compiling. XCode package comes with everything: gcc, make, cmake, etc. You can download it from Apple's website.
+
+\item The Git client for Mac OS. Do not forget to put Git in your PATH.
+
+\item To check if everything is installed, open a terminal and try to execute the different commands: git, make and cmake.
+\end{enumerate}
+
+\subsection{Linux}
+
+\begin{enumerate}
+
+\item You need to install the development tools such as gcc, make, etc. In Ubuntu, you need to install the 'build-essential' package (\ct{sudo apt-get install build-essential}).
+
+\item Install cmake. if it is not already included something like \ct{sudo apt-get install cmake} should work in all Ubuntu and forks.
+
+\item Install Git client (in my Ubuntu this was with \ct{sudo apt-get install git-core}). You may want to put Git in PATH. Usually, when installing with a package system it automatically adds binaries to the PATH.
+\item To check if everything is installed, open a terminal and try to execute the different commands: git, make and cmake.
+\end{enumerate}
+
+\subsection{Windows}
+\begin{enumerate}
+
+\item Download and install Msys, with C/C++ compiler support:  \url{http://www.mingw.org/wiki/msys}
+
+\item Download and install Git: \url{http://code.google.com/p/msysgit/}.
+During the installation, I choose the option 'run git from from the windows command prompt'. Optional: add git to the PATH variable so that you can see git from msys. To do this, add path to git for msys:
+Control panel -> System -> System Properties / Advanced  [ Environment Variables ].   
+There should be already: \ct{C:\Program Files\Git\cmd}. Add \ct{C:\Program Files\Git\bin}  
+
+Notice that the path may not be exactly \ct{C:\Program Files\Git\} but similar...
+
+\item Install CMake: \ct{http://www.cmake.org/cmake/resources/software.html} (during installation, in install options , make sure that you choose to add CMake to PATH).
+
+\item To check if everything is installed, open MSYS program (which should look like a UNIX terminal) and try to execute the different commands: git, make and cmake.
+\end{enumerate}
+
+From now, when we refer to 'terminal' we refer to whatever it is: iTerm and friends in Mac OS, Unix/Linux terminals, and MSYS in Windows.
+
+\section{Downloading platform code from GIT}
+
+
+If and only if you plan to modify and publish your changes, you will need to create an account in \url{https://gitorious.org/} in case you don't have one already. If you just want to download a project, then you don't need an account. Gitorious is not more than a nice, free and public GIT hosting. Creating an account there is a little trick because you need to SSH key. But try it and if you have problems check on the web because there is a lot of documentation and blog posts about that. Once you have your account working, just continue here.
+
+The goal of this post is not to talk about GIT so we will do it fast  If you are reading this post, you may probably be a Smalltalk hacker. A real Smalltalk hacker doesn't use a UI program, but instead command line. Seriously, for this Chapter it is easier to just tell you the git commands instead of using a Git front end. So, all git commands should be run from a command line. What are you waiting for? Open a terminal go to your prefer directory and create your workspace for today:
+
+\begin{code}{}
+mkdir cogVM
+cd cogVM
+\end{code}
+
+
+The Cog VM repository is \url{https://gitorious.org/cogvm}. We need to download the \emph{platform code} from there. To do this, we have two options. The first one is to just clone the CogVM project to your local directory. This option is the most common and it is what you will do if you just want to load CogVM (and not modify it or commit changes). It is like doing a \ct{svn co} for the SVN guys.
+
+\begin{code}{}
+git clone --depth 1 git://gitorious.org/cogvm/blessed.git
+\end{code}
+
+Notice that the \ct{--depth 1} is optional and it is just for avoiding to download the complete history. The second option is to clone Cog VM to your own Git repository. This has to be done from the Git website (maybe it can be done from command line but I don't know it): login in Gitorius, search the project CogVM in the search input, select the CogVM project and you will find a \ct{clone repository} button. Click on it and wait. Once it finishes, you will have your own fork of CogVM, and the Git repository is something like this: \ct{git://gitorious.org/~marianopeck/cogvm/marianopecks-blessed.git}.
+
+
+Now, the last step is to clone from your own fork to your local directory (as we did in the first option). This should be something like:
+
+\begin{code}{}
+git clone git://gitorious.org/~marianopeck/cogvm/marianopecks-blessed.git
+\end{code}
+
+For this Chapter, I recommend to take the first option if you may be a beginner. I told you that I wanted this book contents to be reproducible. With the previous commands, you will clone the latest version in the repository. Since I don't know when you are going to do it, I would like that you load the specific version I know it works. What I am suggesting is doing a kind of \ct{svn co http://xxxx -r 2202}. I checked how to do this in git, and it seems not to provide a clone of a specific version. Instead, you just clone (from the latest one) and then you checkout or revert to a previous one. Execute:
+
+\begin{code}{}
+cd blessed
+git checkout f3fe94c828f66cd0e7c37cfa3434e384ff65915e
+\end{code}
+
+f3fe94c828f66cd0e7c37cfa3434e384ff65915e is the commit hash of the version I want. 
+\sd{I got an error. I could not get it}
+You can do \ct{git log} to see the latest commits or \ct{git rev-parse HEAD} to see the last one.
+
+Ok, if you could successfully load everything from Gitorious you should have something like this:
+
+\begin{code}{}
+mariano @ Aragorn : ~/Pharo/vm/git/cogVM/blessed
+$ls -la
+total 72
+drwxr-xr-x  16 mariano  staff    544 Apr  7 00:14 .
+drwxr-xr-x   3 mariano  staff    102 Apr  7 00:07 ..
+drwxr-xr-x  13 mariano  staff    442 Apr  7 00:14 .git
+-rw-r--r--   1 mariano  staff   6651 Apr  7 00:13 .gitignore
+-rw-r--r--   1 mariano  staff     41 Apr  7 00:13 CHANGES
+-rw-r--r--   1 mariano  staff   1112 Apr  7 00:13 LICENSE
+-rw-r--r--   1 mariano  staff  13597 Apr  7 00:13 README
+-rw-r--r--   1 mariano  staff     17 Apr  7 00:13 VERSION
+drwxr-xr-x   8 mariano  staff    272 Apr  7 00:13 codegen-scripts
+drwxr-xr-x  13 mariano  staff    442 Apr  7 00:13 cygwinbuild
+!\textbf{drwxr-xr-x   3 mariano  staff    102 Apr  7 00:13 image}!
+drwxr-xr-x  24 mariano  staff    816 Apr  7 00:13 macbuild
+!\textbf{drwxr-xr-x   7 mariano  staff    238 Apr  7 00:14 platforms}!
+drwxr-xr-x   4 mariano  staff    136 Apr  7 00:14 processors
+drwxr-xr-x   8 mariano  staff    272 Apr  7 00:14 scripts
+drwxr-xr-x   6 mariano  staff    204 Apr  7 00:14 unixbuild
+\end{code}
+
+
+
+I have highlighted two lines that represent two important directories: \ct{/platforms} and \ct{/image}. For the moment, let's explain what \ct{/platforms} is. First guess it! Yes, there, in that folder, it is the famous \ct{platform code}. You can enter to such directory and see the C code by yourself.
+
+\section{Downloading Cog and dependencies}
+
+So far we have loaded from Git the \ct{platform code}. We are missing the other part, \ct{VMMaker}. In the previous Chapter I told you it may not be necessary to always download VMMAker and generate sources, because such sources may also be commited in the repository. Having the auto-generated source code in the repository is a trade-off, it has advantages and disadvantages. In the new infrastructure under Git, it was decided to remove it. So if you want to compile the VM you have to load VMMaker and translate it to C. We will try to justify why this is a good reason. 
+
+We need to download VMMaker (Cog branch) and translate it to C. But of course, we first need a Smalltalk image. I told you in the previous Chapter that I want all my posts to be reproducible. So, take the PharoCore 1.3 image \url{https://gforge.inria.fr/frs/download.php/28472/PharoCore-1.3-13137.zip}. That image can be opened with both, Interpreter VM and Cog VM. However, if you open it with Cog, and you save it, then you won't be able to run it with the Interpreter VM (this was fixed in the latest code of Interpreter VM but there isn't yet an official VM release for all OSes that contains this fix). Thus, I recommend you to run the image with a CogVM. If you don't have one already, you can download \url{http://www.mirandabanda.org/files/Cog/VM/VM.r2378/}.
+
+
+The default place to put the Smalltalk image that will contain CMakerVMMaker is in the directory \ct{image} of the GIT folder you donwloaded. In my case, it is \ct{~/Pharo/vm/git/cogVM/blessed}.  So, put the \ct{.image} file to \ct{~/Pharo/vm/git/cogVM/blessed/image}. You can create your own directory  \ct{~/Pharo/vm/git/cogVM/generator}  and place it there. The only requirement is that the \ct{platforms} directory is found when accessed via \ct{../platforms}.
+
+
+
+Now, let's load VMMaker branch for Cog and all its dependencies. You have already learned that Cog has dependencies in other packages and to solve that, among other problems, we use a Metacello configuration for it. The following code may take time because since we are evaluating this in a PharoCore image where Metacello is not present, Metacello needs to be installed first. In addition, VMMaker is a big package. Fortunately we are running with a CogVM     
+
+So, take the image and evaluate:
+
+\begin{code}{}
+Deprecation raiseWarning: false.
+Gofer new
+	squeaksource: 'MetacelloRepository';
+	package: 'ConfigurationOfCog';
+	load.
+((Smalltalk at: #ConfigurationOfCog) project version: '1.5') load.
+
+Gofer new
+	squeaksource: 'VMMaker';
+	package: 'CMakeVMMaker';
+	version: 'CMakeVMMaker-MarianoMartinezPeck.83';  "should be better"
+	load.
+\end{code}
+
+\begin{code}{}
+Deprecation raiseWarning: false.
+Gofer new
+	squeaksource: 'MetacelloRepository';
+	package: 'ConfigurationOfCog';
+	load.
+((Smalltalk at: #ConfigurationOfCog) project version: '2.0') load.
+\end{code}
+
+
+How do you know you have to load version '1.5'? Because I'm telling it to you. But how do I know that 1.5 is the one that works with the current version of GIT?  I will answer you that in the next Chapter.
+
+One of the cool things about  Metacello configurations is the possibility to query them. For example, do you want to all the packages that are installed while doing the previous code? Just inspect or print:
+
+\begin{code}{}
+(ConfigurationOfCog project version: '1.5') packages.
+ConfigurationOfCog project versions.
+\end{code}
+
+Now, if you are curious about how defining versions and baselines is achieved in Metacello, take a look to the methods \ct{ConfigurationOfCog>>#version15:}  and \ct{ConfigurationOfCog >>#baseline13:}.
+
+
+\section{Generating VM sources and CMMake files}
+
+What have we done so far? We have just downloaded all the VMMaker branched for Cog with all its required dependencies. Now, it is time to translate from SLANG to C and to generate the CMMake outputs so that we can compile after. This C code generated from VMMaker is known in the Squeak/Pharo VM world as \emph{the sources}. But don't confuse, the platform code is also source code. But anyway, when usually someone says the \ct{sources'} it means the auto-generated C code from VMMaker. This is why this C code is placed (by default) in /src.
+
+To do both things (generate VM sources and CMMake outputs), we use one of the available \ct{CMakeVMMaker} configurations. Metacello configurations are represented by classes (instead of XML like maven or similar package management systems). How do you think CMMakeVMMaker configurations are represented? Of course, with classes too. So, we need to find the accurate class for us. I won't go further now because that's topic of another post, but for the moment, let's use the classes \ct{CogUnixConfig}, \ct{CogMsWindowsConfig} or \ct{CocoaIOSCogJitConfig} depending on your OS.
+
+\paragraph{For the Mac users:}
+You can notice that there are two categories with CMake Mac configurations, \ct{CMakeVMMaker-MacOS} and \ct{CMakeVMMaker-IOS}. The first one, is for Mac OS versions that use Carbon library. \ct{CMakeVMMaker-IOS} contains CMMake configurations that use Cocoa instead, which is the new library for Mac OS. Carbon is legacy, and it may be removed soon in next MacOS versions. So, the new ones, and the ones you should use, are the configurations under \ct{CMakeVMMaker-IOS}.
+
+These configurations are flexible enough to set specific directories for sources, platforms, results, etc. In addition, if you follow certain conventions (defaults), the build is more automatic. In this Chapter, we will follow the conventions and use the expected default directories. The only real convention we should follow is that the .image should be in a subdirectory of the directory where you downloaded the GIT code. In my case (see the result of the ls before), it is \ct{~/Pharo/vm/git/cogVM/blessed}.  So, I moved the \ct{.image} file to \ct{~/Pharo/vm/git/cogVM/blessed/image}. You can create your own directory  \ct{~/Pharo/vm/git/cogVM/generator}  and place it there. The only requirement is that the \ct{platforms} directory is found in \ct{../platforms}.  So...did you move your image?   Perfect, let's continue.
+
+No...wait. Why you need \ct{platforms} directory if we are not really compiling right now?  Ask yourself...do you think VMMaker translation to C needs the platform code?  No! So...we only need the platform directory for the second part, \ie for CMMake. Now yes, we continue, take the Pharo image (which should have been moved) and evaluate:
+
+\begin{code}{}
+"CocoaIOSCogJitConfig is an example. If you are not in Mac, replace it with CogMsWindowsConfig or CogUnixConfig"
+CocoaIOSCogJitConfig  new
+	"Using VMMaker we translate Cog to C"
+	generateSources;
+	"We generate all the CMake necessary directories and files"
+	generate.
+\end{code}
+
+\begin{code}{For version 2.0}
+CogCocoaIOSConfig generateWithSources
+\end{code}
+
+
+
+Ok...As the comments say, \ct{generateSources} uses VMMaker class to translate from SLANG to C. Instead of using a UI (VMMakerTool) we directly translate by code but do you remember that for compiling the VM we needed to say which plugins to compile and whether to compile them like internal or external? When I explained that, I told you that most of the developers shouldn't be aware of that. And this is the case, \ct{CMakeVMMaker} does the job for us. We will come later to this topic, but if you want to know which plugins are compiled, check implementors of \ct{internalPlugins} and \ct{externalPlugins}. Once again, CMakeVMMaker has defaults for these things, but you can customize and change them.
+
+Where is the C generated code? By default (yes, it can be changed) is placed in \ct{../src}. Here it should be in \ct{~/Pharo/vm/git/cogVM/blessed/src} and should look like this:
+
+\begin{code}{}
+mariano @ Aragorn : ~/Pharo/vm/git/cogVM/blessed/src
+ls -la
+total 16
+drwxr-xr-x   6 mariano  staff   204 Apr  9 14:55 .
+drwxr-xr-x  18 mariano  staff   612 Apr  9 14:55 ..
+-rw-r--r--@  1 mariano  staff   776 Apr  9 14:55 examplePlugins.ext
+-rw-r--r--@  1 mariano  staff    83 Apr  9 14:55 examplePlugins.int
+drwxr-xr-x  43 mariano  staff  1462 Apr  9 14:55 plugins
+drwxr-xr-x  11 mariano  staff   374 Apr  9 14:55 vm
+\end{code}
+
+
+In a future Chapter, we will go deeper in how is the C translated cog but if you want to take a look, go ahead!! Inspect the file \ct{/src/vm/cointerp.c}  for example. So...do you already love SLANG? 
+
+With the method \ct{generate}, we create all the directories and files needed by CMMake so that we can after use CMake to generate different makefiles. You will notice that this method creates a directory \ct{/build}. In my case, it is \ct{~/Pharo/vm/git/cogVM/blessed/build}. If you check inside that directory, there are a couple of important files generated for CMake (so that we can use it after), such as \ct{CMakeLists.txt}, \ct{directories.cmake}, etc. If you are curious, take a look at them.
+
+If you are interested, I strongly recommend you to take a look to both methods: \ct{generateSources} and \ct{generate}. Now that I have explained the two big steps, I can tell you that there is a shortcut:
+
+\begin{code}{}
+CocoaIOSCogJitConfig generateWithSources
+\end{code}
+
+\section{Using CMake and compiling the VM}
+
+
+We are almost done...we already have all the necessary C code, and all the CMMake files and directories. The next step is to just use CMMake. I am newbie in both GIT and CMMake. But as far as I could see, CMMake is a wonderful tool for being able to generate different makefiles from the same ''definition''. So, we have already tell CMake which was our code, the directories, compiler flags, ec, etc. Then CMMake can take such information and generate different makefiles: UNIX makefiles, MSYS (for Windows), XCode, Visual Studio, etc...In this post we will see just how to use regular Unix makefiles.
+
+Now...come back to your terminal. We need to first go the /build directory and then execute CMake. In MacOS and Linux, evaluate:
+
+\begin{code}{}
+cd build
+cmake .
+\end{code}
+
+
+Now, in Windows we are compiling in MSYS, so we need to create special makefiles for it. The way to do this with CMake is using the parameter -G''Generator Name'' where ''Generator Name'' is ''MSYS Makefiles'' in this case. So, in MSYS (in Windows) we evaluate:
+
+\begin{code}{}
+cd build
+cmake . -G"MSYS Makefiles"
+\end{code}
+ 
+Once that is done, we have created all the necessary makefiles. Now, the last pending thing is just to execute \ct{make}. It is the same whether you're on windows or not. The makefiles have been generated, so only a make is needed:
+
+\begin{code}{}
+make
+\end{code}
+
+Hopefully, you didn't receive any compilation error and you can find your VM binary in \ct{/results} (in Windows it is under \ct{/build/results}) . Again, here it is \ct{~/Pharo/vm/git/cogVM/blessed/results}.
+
+\section{Problems}
+
+\subsection{Linux}
+
+It seems that the default \ct{CogUnixConfig} needs OpenGL dev files (headers) and libs. This is because some plugins like Croquet or Balloon3D require such lib. And those plugins are being included by default in \ct{CogUnixConfig}. So in my case I've got the error ''The file was not found sqUnixOpenGL.h'' which I fixed by installing the dev package:
+
+\begin{code}{}
+sudo apt-get install mesa-common-dev
+\end{code}
+
+Then, I have a problem at linking time, ''/usr/bin/ld: cannot find -lGL'', which I solved by doing:
+
+\begin{code}{}
+delete /usr/lib/libGL.so
+cd /usr/lib/
+sudo ln -s libGL.so.1.2 libGL.so
+\end{code}
+
+Another solution (but I couldn't test it by myself) to avoid using \ct{ln}, could be to simply install the package libgl1-mesa-dev (\ct{sudo apt-get install libgl1-mesa-dev}).
+
+After having done all that, I then realised there is a special  \ct{CogUnixNoGLConfig}  which avoids linking to OpenGL. The VM will work until you use something like Croquet or the Ballon3D. For a more detailed explanation, read this thread \url{http://forum.world.st/Cannot-generate-VM-in-Windows-with-CMake-and-Git-td3434566.html}.
+
+If you have the error ''alsa/asoundlib.h: No such file or directory'' then you should install libasound2-dev, for example, by doing \ct{sudo apt-get install libasound2-dev}. Be aware that depending on your Linux distro and what packages you have installed on in, you may require to install a couple of packages or non. If you have a problem with a C header file not found (a .h file) you will probably need to install the ''dev'' package of the project. And if what it is not found is a library (a .so for example), then it is likely you will need to install the package that contains such libs. How do you know which package contains a specific header file or lib ? I have no idea. I always go to Google and I find the answer.
+
+\subsection{Windows}
+As you can read in this thread I could generate the VM in Windows by myself but I had a problem at compile time: \ct{cc1.exe: error: invalid option 'no-fused-madd'}. To solve that problem I edited the method CPlatformConfig >> configureFloatMathPlugin:.  I've changed the line \ct{maker addDefinitions: '-O0 -mno-fused-madd'} to \ct{maker addDefinitions: '-O0'.}. The effects of this change, may be that Croquet doesn't work properly. For further details, read another thread \url{http://forum.world.st/Portability-problems-compiler-flags-td3235321.html}.
+
+Ok, this is the end of the post. I still remember (ok, only two years ago) the first day I could compile the VM. I felt so hacky and happy at the same time. I remember I chatted with my SqueakDBX companions about that. If you spent a couple of hours and you couldn't.....mmmm... ask the mailing list. Seriously, as I told you, compiling the VM from scratch is complicated, even with all the effort made to ease that. If you had problems, please ask in the mailing lists. They will probably be able to help you, and your questions will make this process easier in a near future.
+
+In the next Chapter we will see some advanced topics of compiling the VM, and after that we will start to take a look to the VM inside. Once again, thanks Esteban, Igor, and everybody who answered my questions in the mailing lists.
+
+
+%=========================================================
+\ifx\wholebook\relax\else
+   \bibliographystyle{jurabib}
+   \nobibliography{scg}
+   \end{document}
+\fi
+%=========================================================
+
+
+
+
+
+
+
+
+
+
+%=========================================================
+\ifx\wholebook\relax\else
+   \bibliographystyle{jurabib}
+   \nobibliography{scg}
+   \end{document}
+\fi
+%=========================================================
+
+
+
+%%% Local Variables: 
+%%% coding: utf-8
+%%% mode: latex
+%%% TeX-master: Lint.tex
+%%% TeX-PDF-mode: t
+%%% End:
+

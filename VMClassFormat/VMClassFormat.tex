@@ -1,0 +1,229 @@
+% $Author: ducasse $
+% $Date: 2009-08-24 10:17:33 +0200 (Mon, 24 Aug 2009) $
+% $Revision: 28563 $
+
+%=================================================================
+\ifx\wholebook\relax\else
+% --------------------------------------------
+% Lulu:
+	\documentclass[a4paper,10pt,twoside]{book}
+	\usepackage[
+		papersize={6.13in,9.21in},
+		hmargin={.75in,.75in},
+		vmargin={.75in,1in},
+		ignoreheadfoot
+	]{geometry}
+	\input{../common.tex}
+	\setboolean{lulu}{true}
+% --------------------------------------------
+% A4:
+%	\documentclass[a4paper,11pt,twoside]{book}
+%	\input{../common.tex}
+%	\usepackage{a4wide}
+% --------------------------------------------
+    \graphicspath{{figures/} {../figures/}}
+	\begin{document}
+\fi
+%=================================================================
+%\renewmessage{\nnbb}[2]{} % Disable editorial comments
+\sloppy
+
+%=================================================================
+%\renewcommand{\nnbb}[2]{#2} % Disable editorial comments
+
+\chapter{Class formats and CompiledMethod uniqueness}
+
+why git does not save it
+
+
+Before going deeper with CompiledMethods we would like to talk a little bit about class formats. 
+\sd{We should check }
+
+\section{About Class Formats}
+
+\sd{I'm wondering if we should talk about class format or object format? because we also have HeaderType in addition.}
+
+
+The format of a class format is a really internal and implementation detail of the VM. However this is important to understand it. It may certainly change in the future, but having a description of the current situation is a good start.
+
+The class format defines the structure (layout) of the instances of a class in the VM. 
+In the internal representation of the Virtual Machine, objects are a chunk of memory. 
+They have an object header which can occupy between one and three words. Following this object header, there are slots (normally of 32 or 64 bytes) that are memory addresses which usually represent the instance variables.
+
+\sd{would be nice to have a diagram taken from the slides of igor tutorial}
+
+
+Objects only having named instance variable (whose class is created using the \ct{subclass:} message) have a fixed amount of instance variables which are just pointers to other objects. In this case, these 'slots' (which are one word size, that is 32 or 64 bits) contain the memory address (pointer) of the header of the object they point to. 
+
+Objects having variable number of instance variables (indexed instance variables, \ie whose class is created using the \ct{variableSubclass:} message) can have a different representations: the variable part is not always pointers (a word), but it can also be bytes. 
+
+The format of a class describes such different situations.
+
+\subsection{Different class formats}
+
+The maing difference in format is about access: whether the instance variable is accessed using its name or using an index (using \ct{at:} and \ct{at:put:}) and kind of information stored inside the instance variables: pointers, byte, or words.
+When an object has an indexed structure, it also implies that it has a variable number of instance variables. 
+
+
+\begin{description}
+\item\textbf{Normal} (named instance variables): Objects with named instance variables have a fixed amount of instance variables and each of them is just a pointer to another object. Notice that not only the amount of pointers is fixed by the amount of instance variables, but also, the pointer is always the same, one world (32 or 64 bits). Examples are any normal class like \ct{TestCase}, \ct{Browser} or \ct{Association}.
+
+
+\item\textbf{Bytes}: This format means an object has a variable number of instance variables and that such variable number of indexed variables are storing individual bytes.  Examples are \ct{ByteArray}, \ct{ByteString}, \ct{ByteSymbol}, \ct{LargePositiveInteger}, \ct{LargeNegativeInteger}, etc.
+
+\item\textbf{Words}: it is similar to the Bytes format, in the way that it is variable (indexed), but it is represented by a sequence of words instead. Notice that the normal format also encodes the pointers in words, but in that case, the amount of these words is fixed and second they represent pointers. In this case, the amount of words is variable and they do not represent pointers to objects. Examples are \ct{Bitmap}, \ct{WideString}, \ct{WideSymbol}, \ct{WordArray}, \ct{FloatArray}, etc.
+
+\item\textbf{Weak}: when an object has weak references it means that its pointers to other objects are not considered during the garbage collector mark phase. So the GC removes an object when no non-weak reference point to it. Weak format can be applied to both, variable and fixed formats. For example, WeakFinalizerItem has a normal format, but weak. On the contrary, WeakArray has a variable format and weak.
+
+\item\textbf{Variable}: this is like Normal but where the pointers are not fixed, but instead variable. It can also be seen as “Words” but there each word does represent a pointer. Examples: BlockClosure, MethodDictionary, etc.
+
+
+\item\textbf{CompiledMethod}: Yes, \ct{CompiledMethod} class has its own format. For space optimization purpose, the bytecodes of a compiledMethod are not stored in an array that would be an instance variable of the compiled method. Instead the bytecodes are stored in a variable part of the object. A compiled method is from that perspective a kind of Array. 
+\end{description}
+
+Check the method \ct{Behavior>>typeOfClass} answers a symbol uniquely describing the format of the receiver class:
+
+\begin{code}{Obtaining the type format of a class}
+Behavior>>typeOfClass
+    "Answer a symbol uniquely describing the type of the receiver"
+    self instSpec = CompiledMethod instSpec ifTrue:[^#compiledMethod]. "Very special"
+    self isBytes ifTrue: [^#bytes ].
+    (self isWords and: [self isPointers not]) ifTrue:[^#words].
+    self isWeak ifTrue:[^#weak].
+    self isVariable ifTrue:[^#variable].
+	^#normal.
+\end{code}
+
+Therefore we can query the class type of format.
+
+\begin{code}{}
+TestCase typeOfClass 
+	returns #normal
+ByteArray typeOfClass 
+    returns #bytes
+Bitmap typeOfClass
+    returns #words
+WeakArray typeOfClass
+    returns #weak
+BlockClosure typeOfClass 
+    returns #variable
+\end{code}
+
+Or you can inspect all classes of a certain type:
+\begin{code}{}
+(Smalltalk allClasses select: [:each | each typeOfClass = #weak ]) inspect
+\end{code}
+
+Now, if you take a look to the method \ct{typeOfClass} we can see that it asks to itself whether it is bytes, or bits, or pointers, etc. Notice that while a class has a given format: it is the composition of several basic properties as we explained above. 
+
+\begin{code}{}
+Bitmap isVariable -> true
+Bitmap isWords -> true
+Bitmap isPointers -> false
+ 
+BlockClosure isVariable -> true
+BlockClosure isWords -> true
+BlockClosure isPointers -> true
+\end{code}
+
+This example shows that the classes whose format is \ct{\#words} or \ct{\#bytes} are also \ct{\#variable}. This is normal since such class holds a sequence of items. \ct{Behavior>>#new: sizeOfVariables} is then the typical class creation method. 
+Most classes in the Collection's hierarchy  are variable.
+
+\section{Class format encoding in classes and instances}
+
+If you look at the methods such as  \ct{isBytes}, \ct{isVariable}, \ct{isPointers}, etc (all these methods in the category 'testing' in \ct{Behavior} class) you will notice that they all send \ct{instSpec} (instance specification) at the end. And this method looks like this:
+
+\begin{code}{}
+Behavior>>instSpec
+
+   ^ (format bitShift: -7) bitAnd: 16rF
+\end{code}
+
+Here is a couple of examples:
+\begin{code}{}
+TestCase instSpec -> 1
+     "This means that the object has only named fields"
+ByteArray instSpec -> 8
+	"This means that the object has only indexed fields"
+CompiledMethod instSpec -> 12
+\end{code}
+
+Let's see if we can make sense out of this. \ct{format} is an instance variables of the class \ct{Behavior}.
+It accessor is defined as follows. 
+\begin{code}{}
+format
+	"Answer an Integer that encodes the kinds and numbers of variables of 
+	instances of the receiver."
+
+	^format
+\end{code}
+
+This number without interpretation is not really useful, but it encodes \sd{verify that} the instance size, its format and whether the class is compact or not (we will explain that later). 
+
+Now an interesting question is to see how this is handle in the VM and in particular since the format of a class is used a lot how such information is accessed when the VM manipulates an object. Indeed fetching the object class every time may be expensive. Let's have a look at where this information is stored.
+
+To answer this question, we will take our image and browse the VM core. Let's see the method \ct{ObjectMemory>>formatOf:}
+
+\begin{code}{}
+ObjectMemory>>formatOf: oop
+"       0      no fields
+        1      fixed fields only (all containing pointers)
+        2      indexable fields only (all containing pointers)
+        3      both fixed and indexable fields (all containing pointers)
+        4      both fixed and indexable weak fields (all containing pointers).
+
+        5      unused
+        6      indexable word fields only (no pointers)
+        7      indexable long (64-bit) fields (only in 64-bit images)
+ 
+    8-11      indexable byte fields only (no pointers) (low 2 bits are low 2 bits of size)
+   12-15     compiled methods:
+                   # of literal oops specified in method header,
+                   followed by indexable bytes (same interpretation of low 2 bits as above)
+"
+	<inline: true>
+	^((self baseHeader: oop) >> 8) bitAnd: 16rF
+\end{code}
+
+As you can see, there are 16 possible formats, encoded from 0 to 15 in 4 bits of the Object Header. The line \ct{^((self baseHeader: oop) >> 8 ) bitAnd: 16rF} is the one that takes those 4 bits (because \ct{16rF} is \ct{2r1111}) from the Object Header of the OOP (object pointer) received as parameter.
+
+\sd{what is the baseHeader:} \sd{would be nice to get a diagram a} \sd{I will do one}
+
+
+\sd{here}
+If you now browse the class comment of ObjectMemory, you will read it says that there are 4 bits for the object format. As you can guess, that number that represents the format is what we get in the image side with the method \ct{instSpec}. Notice that at the beginning of the post described all the different types of format and they were 6, but here we have 16 possibilities.  Ok, some are for optimizations (for example the number zero means that the object has no instVar, hence the GC can stop there while doing the mark and trace instead of trying to follow non-existent pointers), some are not used (like the number 5), some are only for 64 bits (number 7), the format for “bytes” uses 4 numbers, and CompiledMethod also uses 4 numbers.
+
+\begin{figure}
+\includegraphics[width=\textwidth]{ObjectHeaderClassFormat}
+\caption{In the object header: there are object format bits 8-11}
+\end{figure}
+
+
+
+Don’t get confused:  In the image side, we have an instVar which is called “format” in Behavior that keeps an integer with both, what WE call format plus the amount of variables. What we call format, is the method \ct{instSpec} in the image (which in fact gets the format from the “format” instVar). Finally, the VM agree with us, the method is \ct{formatOf:}  and it refers to what we call format. All in all, the instVar “format” of Behavior is misleading. Don’t get confused.
+
+Finally, if you are curious you can check senders of \ct{formatOf:} and you will see all the places where the VM needs to know the format of an object. \sd{list some examples}
+
+\section{Creating classes with a special format}
+
+
+
+
+
+%=========================================================
+\ifx\wholebook\relax\else
+   \bibliographystyle{jurabib}
+   \nobibliography{scg}
+   \end{document}
+\fi
+%=========================================================
+
+
+
+%%% Local Variables: 
+%%% coding: utf-8
+%%% mode: latex
+%%% TeX-master: Lint.tex
+%%% TeX-PDF-mode: t
+%%% End:
+
