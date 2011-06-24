@@ -1,0 +1,96 @@
+% $Author$
+% $Date$
+% $Revision$
+
+% HISTORY:
+% 2008-02-04 - new umbrella
+% 2009-04-23 - pharo -> squeak
+
+%=================================================================
+% This is the main file for the Pharo By Example book.
+% The individual chapters can also be latexed by themselves.
+% Note that the \end{document} marker occurs near the
+% middle of this file, to leave out additional material
+% for a future version of the book.
+%=================================================================
+\documentclass[a4paper,10pt,twoside]{book}
+\usepackage[
+	papersize={6.13in,9.21in},
+	hmargin={.75in,.75in},
+	vmargin={.75in,1in},
+	ignoreheadfoot
+]{geometry}
+\input{common.tex}
+\setboolean{lulu}{true}
+%=================================================================
+% Add the path for the figures of each chapter here:
+\graphicspath{
+	{figures/}
+	{VMIntro/figures/}
+	{VMInstallation/figures/}
+	{VMClassFormat/figures/}
+	}
+%=================================================================
+\let\wholebook=\relax
+\makeindex
+\makeglossary
+%=================================================================
+\renewcommand{\nnbb}[2]{} % Disable editorial comments
+%=================================================================
+\begin{document}
+\frontmatter
+%=================================================================
+\setcounter{page}{1}
+\pagestyle{headings}
+%=================================================================
+\author{Olivier Auverlot and St\'ephane Ducasse}
+\title{\Huge\textbf{Pharo for the Entreprise}}
+\isodate
+\date{\emph{Version of \today}}
+\maketitle
+%=================================================================
+\tableofcontents
+\sloppy % To avoid LaTeX's annoying habit of letting lines stick over the margins!
+\mainmatter
+%=================================================================
+\chapter{AJP}
+
+\chapter{XML}
+
+\chapter{XMLRPC}
+
+\chapter{STOMP and MsgPack}
+
+\chapter{Databases}
+
+\chapter{LDAP}
+
+
+%=================================================================
+
+\bibliographystyle{jurabib}
+\bibliography{scg}
+
+\printindex
+
+\end{document}
+
+%=================================================================
+
+% \printglossary
+\bibliographystyle{jurabib}
+\bibliography{scg}
+
+\printindex
+
+\end{document}
+
+% \end{document} % NB: The actual end is further up
+%=================================================================
+%%% Local Variables:
+%%% coding: utf-8
+%%% mode: latex
+%%% TeX-master: t
+%%% TeX-PDF-mode: t
+%%% ispell-local-dictionary: "english"
+%%% End:
