@@ -28,7 +28,7 @@
 % --------------------------------------------
     \graphicspath{{figures/} {../figures/}}
 	\begin{document}
-	\renewcommand{\nnbb}[2]{} % Disable editorial comments
+	%\renewcommand{\nnbb}[2]{} % Disable editorial comments
 	\sloppy
 \fi
 
@@ -80,17 +80,20 @@ The Abstract Syntax Tree (AST) is a tree representation of the source code. The 
 The structure of an AST is a simple tree. Evaluate and explore the following expression:
 
 \begin{code}{}
-RBParser parseExpression: '1 + 2'.
+t := RBParser parseExpression: '1 + 2'.
 "explore it"
+
 \end{code}
 
 
-\sd{so what do we see?}
+\sd{so what do we see? we should add t something }
+
+Using the message \ct{parseExpression:} we get an AST representing the expression.
 
 \begin{figure}[ht]
 	\centering
 	\includegraphics[width=0.7\linewidth]{SimpleAtomicExpression}
-	\caption{Generated Tree: '1 + 2'  \figlabel{SimpleAtomicExpression}}
+	\caption{Generated tree for  '1 + 2'  \figlabel{SimpleAtomicExpression}}
 \end{figure}
 
 Let's try another example
@@ -102,7 +105,7 @@ RBParser parseExpression: 'one plus: two'.
 
 \begin{figure}[ht]\centering
 	\includegraphics[width=0.7\linewidth]{SimpleAtomicExpressionP}
-	\caption{Tree generated : 'one plus: two' \figlabel{SimpleAtomicExpressionP}}
+	\caption{Generated tree for  'one plus: two' \figlabel{SimpleAtomicExpressionP}}
 \end{figure}
 
 
@@ -113,40 +116,56 @@ RBParser parseExpression: 'one plus: two plus: three'.
 \end{code}
 \begin{figure}[ht]\centering
 	\includegraphics[width=0.7\linewidth]{SimpleMultiExpression}
-	\caption{Tree generated :  'one plus: two plus: three' \figlabel{SimpleMultiExpression}}
+	\caption{Generated tree for  'one plus: two plus: three' \figlabel{SimpleMultiExpression}}
 \end{figure}
 
-You can also compile a Method and have a structure methodNode :
+You can also compile a method using the message \ct{parseMethod:} instead of \ct{parseExpression:}. We will get a methodNode object:
+
 \begin{code}{}
 RBParser parseMethod: 'xPlusY x + y'.
 "inspect it"
 \end{code}
+
+
+\sd{so what do we see? we should add t something }
+
 \begin{figure}[ht]\centering
 	\includegraphics[width=0.7\linewidth]{ASTbeforeSemanticAnalysis}
-	\caption{Tree generated :  'xPlusY x + y' \figlabel{ASTbeforeSemanticAnalysis}}
+	\caption{Generated tree for  'xPlusY x + y' \figlabel{ASTbeforeSemanticAnalysis}}
 \end{figure}
 
 
 \subsubsection{Annotated the Abstract Syntax Tree}
-Then we do the semantic analysis on the AST. The goal of the semantic analysis is to add semantic data to the generated tree. One of the key function of the semantic analysis is to bind the variable. Because the as we see before the AST check only the \emph{syntax} of the code. That check the semantic of the code. If in context of the specific class this code is valid. If a variable is undeclared or used out of scope, a message is send to the UI. 
-The graph is annotated by visiting the graph by two visitor :
+
+Once parsed we can perform a semantic analysis of the AST. The goal of a semantic analysis is to add semantic data to the generated tree. One of the key function of the semantic analysis is to bind variables. 
+Because as we see before the AST only checks the \emph{syntax} of the code. A semantic analysis  checks the semantics of the code: for example, if in context of a specific class, the code is valid. We can identify if a variable is undeclared or used out of scope, or if a message is send to the UI. 
+
+The AST is annotated by visiting the graph by two visitors:
 \begin{itemize}
-\item OCASTSemanticAnalyzer : do the var binding
-\item OCASTClosureAnalyzer : do the closure analysis
+\item \ct{OCASTSemanticAnalyzer} performs the variable binding.
+\item \ct{OCASTClosureAnalyzer} performs the closure analysis.
 \end{itemize}
-let try a Example :
+
+Let's try an example:
 
 \begin{code}{}
-ast :=RBParser parseExpression: '1 + 2'.
+|ast|
+ast := RBParser parseExpression: '1 + 2'.
+
 "visit and annotated the AST for the closure analysis "
 OCASTClosureAnalyzer new visitNode: ast.
 "visit and annotated the AST for the var binding"
+
 OCASTSemanticAnalyzer new
 		scope: Object parseScope;
 		visitNode: ast.
 ast. "inspect It"
 \end{code}
-All the data of binding is inject in AST, when you inspect your AST you can see the value properties is now set to a RBSmallDictionary 
+
+\sd{what do we get?}
+
+All the data of binding is injected in the AST, when you inspect your AST you can see the value properties is now 
+set to a dictionary. \sd{show it}
 
 
 
