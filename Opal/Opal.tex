@@ -40,38 +40,57 @@
 %\alex{I addressed lukas comments using editorial macros. Please, if you read this, remove this comment and remove the editorial macros, else their purpose is diminished}
 
 \indexmain{opal}
-\opal is a Smalltalk to Bytecode compiler for Pharo. This project was initiate for replace the old Compiler, which was made in 80s. It was design in one process Scanner/Parser. The result is the old compiler is hard to understand, to extend and completely unadapted to the new needs. That why \opal project was made.
+\opal is a Smalltalk to Bytecode compiler for Pharo. This project was initiated to replace the original compiler, which slowly evolved from the one developed in the 80s. It was designed in one process Scanner/Parser. The result is the old compiler is hard to understand, to extend, and completely unadapted to the new needs. That's why the \opal project started. 
 
-\opal process, is made in 3 step, covering all the step from Source code to the bytecode.
-\begin{itemize}
-\item Source Code to Abstract Syntax Tree
-\item Abstract Syntax Tree to Intermediary Representation
-\item Intermediary Representation to Bytecode
-\end{itemize}
+The \opal process, is built around 3 steps, covering all the steps from source code to the bytecode.
+
+\begin{enumerate}
+\item Source code to abstract syntax tree,
+\item Abstract syntax tree to intermediary representation,
+\item Intermediary representation to bytecode.
+\end{enumerate}
 
 \begin{figure}[ht]\centering
 	\includegraphics[width=\linewidth]{fullProcess}
-	\caption{complete process of compilation with \opal \figlabel{fullProcess}}
+	\caption{\opal complete compilation process. \figlabel{fullProcess}}
 \end{figure}
 
-\subsection{Abstract Syntax Tree process}
+
+\subsection{Loading Opal}
+
+\opal will be the default compiler for Pharo. Right now we should load it to be able to execute the code snippets used in this chapter.
+
+\begin{code}{}
+Gofer
+	...
+	
+
+\end{code}
+
+
+\section{Abstract Syntax Tree process}
 
 \begin{figure}[ht]\centering
 	\includegraphics[width=\linewidth]{SourceToAnnotatedAST}
 	\caption{Source to AST Annotated \figlabel{SourceToAnnotatedAST}}
 \end{figure}
 
-The Abstract Syntax Tree (AST) is a tree representation of the source code. The AST is easy to manipulate and to visit. The AST used in \opal come from Refactoring Browser using RBParser to generate it, that step check the syntax.
-The structure of AST is simple tree : 
-Evaluate expression:
+The Abstract Syntax Tree (AST) is a tree representation of the source code. The AST is easy to manipulate and to visit. The AST used by \opal comes from Refactoring Engine. It uses \ct{RBParser} to generate ASTs, this step verifies the syntax.
+
+The structure of an AST is a simple tree. Evaluate and explore the following expression:
+
 \begin{code}{}
 RBParser parseExpression: '1 + 2'.
-"inspect it"
+"explore it"
 \end{code}
 
-\begin{figure}[ht]\centering
+
+\sd{so what do we see?}
+
+\begin{figure}[ht]
+	\centering
 	\includegraphics[width=0.7\linewidth]{SimpleAtomicExpression}
-	\caption{Tree generated : '1 + 2'  \figlabel{SimpleAtomicExpression}}
+	\caption{Generated Tree: '1 + 2'  \figlabel{SimpleAtomicExpression}}
 \end{figure}
 
 Let's try another example
