@@ -172,7 +172,7 @@ set to a dictionary. \sd{show it}
 
 
 \section{Intermediary Representation}
-Once we obtain a AST annotated with semantic data, we can translate it into an intermediary representation (IR). The intermediary representation is a abstraction over bytecode structured in tree. The advantages of IR over bytecode is that it is higher-level. In addition with IR we can plug different bytecode sets in the compilation process. We could think about generating bytecode from a Smalltalk subset to LegoOS. In addition IR is easier to manipulate  than bytecode itself.
+Once we obtain an AST annotated with semantic data, we can translate it into an intermediary representation (IR). The intermediary representation is a abstraction over bytecode structured in tree. The advantages of IR over bytecode is that it is higher-level. In addition with IR we can plug different bytecode sets in the compilation process. We could think about generating bytecode from a Smalltalk subset to LegoOS. In addition IR is easier to manipulate  than bytecode itself.
  Usually the bytecode optimization will be realized after this step.
  
 \begin{figure}[ht]\centering
@@ -181,18 +181,20 @@ Once we obtain a AST annotated with semantic data, we can translate it into an i
 \end{figure}
 
 
-\sd{stef here}
-As we have a AST structure, it is easy to transform AST to Intermediary Representation(IR). The IR have a builder IRBuilder, that offer all the infrastructure to add each possible node. We apply the pattern visitor to the AST to build the corresponding IR. ASTTranslator will visit each node and for each node will build the corresponding IR node sequence.
+
+Once we have an AST, it is easy to transform an AST to an Intermediary Representation Tree. The class \ct{IRBuilder} offers all the infrastructure to add each possible node. A Visitor walks an AST and builds its corresponding IR tree. \ct{ASTTranslator}  visits each node and for each node  builds the corresponding IR node sequence.
 
 \sd{we need a code snippet}
 
 \section{Bytecode}
-At the specific step of the compilation process, we have the IR generated, once again to transform the IR in bytecode we apply the pattern visitor on the IR tree, the IR tree is close to the bytecode, then we just visit each node and push then corresponding bytecode.
+Once we have an IR tree, we will transform the IR tree in a bytecode sequence. We apply a new visitor but on the IR tree this time. Since IR is close to bytecode, the visitors visits each node and pushes the corresponding bytecode.
 
 \begin{figure}[ht]\centering
 	\includegraphics[width=\linewidth]{IRToBytecode}
 	\caption{Intermediary Representation to Bytecode \figlabel{IRToBytecode}}
 \end{figure}
+
+\sd{we need a code snippet}
 
 \section{Decompilation}
 Such the compilation process
