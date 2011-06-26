@@ -31,104 +31,122 @@
 %=================================================================
 %\renewcommand{\nnbb}[2]{#2} % Disable editorial comments
 
-\chapter{Getting Started}
+\chapter{Reef}
 
-My main goals of this ÒJourney through the VMÓ are that the reader learns about the VM and to spread the VM knowledge, mostly for people who doesnÕt know anything about VM. For these same reasons months ago IÕve created a special mailing list for beginners. Please, ask everything you donÕt understand, correct me when I say something wrong, give your opinion, etc. There are always people ready to help in the mailing lists. So, letÕs start.
+Reef is a framework to build dynamic components. As a complement to Seaside, Reef does not replace it, instead, it makes easier the use of AJAX/Javascript inside it. A reef component can be embedded inside a Seaside one (we often call Reef components, component part for this reason), but a Seaside component can be embedded inside a Reef one. 
 
-\section{Intro to VM}
-As you may know, there are different Smalltalk dialects and each of them has its own VM. In this Journey through the VM, we will use the PharoVM. I hope there are newcomers reading this blog, so I will explain for them: Pharo, was a fork of another Smalltalk dialect called Squeak. However, both of them still uses the same VM. To avoid confusions, I will try to just say VM, but know that it is the Pharo/Squeak VM.
-
-As far as I am aware of, most, if not all, Smalltalk VMs are implemented in C (or maybe parts in C++). Fortunately for us, happy smalltalkers, the Pharo/Squeak VM consist of two parts of code: a) VMMaker (written in Smalltalk) ; b) Òplatform codeÓ (C/Smalltalk-C hand-written code)
-
-\subsection{VMMaker}
-VMMaker is a normal repository in squeaksource, but its name is very misleading for me. One would imagine that it is a tool for building the VM, but the truth is that it is much more than that. In this VMMaker repository, there are different interesting packages but for the moment, we will concentrate in the most important one: the package VMMaker itself:
-
-It is where the Smalltalk part of the VM is contained. I consider this part of the VM as the ÒcoreÓ, and it is written in Smalltalk. In fact, it is not really in Smalltalk but instead in a subset (limited) of Smalltalk called SLANG, which is then translated to C. So, even if this is much happier thank coding in C, you have to be aware that writing in SLANG has some limitations.
-
-VMMaker has two very important classes: Interpreter and ObjectMemory. As it says in Interpreter class comment, they both together represents a complete implementation of the Smalltalk-80 virtual machine, derived originally from the Blue Book specification but quite different in some areas.
-
-As you may know, every time to save a method in Smalltalk, the Compiler takes such source code, it analyzes, validates, parses, and finally compiles it, generating a CompiledMethod instance. In this object, all the literals and bytecodes are encoded. So, one of the main tasks of the VM is to interpret (thatÕs why its name) and execute Smalltalk bytecodes that reads from the image. In addition, Interpreter implements some VM responsibilities like methods lookup, cache and execution, primitives, arithmetic operations, etc.
-
-ObjectMemory describes the object memory of the VM. Its responsibility includes allocating/deallocating memory, Garbage Collector and memory compaction, it defines the structure and flags of the object header, object enumeration, etc.
+In this Chapter, you are going to create a dynamic search of classes, to show basic AJAX interaction.
 
 
-\subsection{Platform code}
+\section{Installation}
 
-Fortunately, the VM is decoupled from the issue of the supporting platform specific stuff, hence the Òplatform codeÓ. It contains those parts that depends on the OS like sockets, display and files, where performance is needed, etc. As I told you, I understand the VMMaker part as the ÒcoreÓ. But there are a lot of other features that the VM should provide and they are not part of the ÒcoreÓ but instead they are written like plugins. There several plugins like FilePlugin, SocketPlugin, SoundPlugin, etc. We are not going further now with the plugins since there will be a post later for that (you will be even able to write you own plugin!!!). What is important to understand now is that the platform has code both things: for the VM ÒcoreÓ part, and for plugins.
+To get started with download the latest Seaside image that you can find on \url{http://www.seaside.st} then execute the following expression:
 
-Another good reason to have the Òplatform codeÓ is to increase VM portabilty. Suppose you need to run the VM on a particular hardware/OS that supports C. In this case, you will probably need to change a little or even anything of the VM core (VMMaker). What you will need is to create a specific platform code for that hardware/OS. I think this is one of the reasons why you see Squeak VM running everywhere.
+\begin{code}{Loading Reef}
+Gofer new
+	squeaksource: 'Reef';
+	package: 'Reef';
+	load
+\end{code}
 
-Most of the times that you want to hack, play or do research (I'm not sure that there is a difference anyway between these verbs) with the VM, you usually modify the VMMaker part. It is not likely that you will need to modify something in the platform code.
+\sd{I got This package depends on the following classes:  JQAlphaNumericYou must resolve these dependencies before you will be able to load these definitions:   JQAlphaNumeric>>beDecimal  JQAlphaNumeric>>beInteger}
 
-\section{How the VM is built?}
-So...we have two parts of the VM: VMMaker (written in SLANG) and the platform code written in C (for the new MacOS platform there are parts written in Objective-C in order to talk with the cocoa library). There are two steps:
+\section{Creating a search component}
 
-\begin{enumerate}
-\item Translate VMMaker VM entities (ObjectMemory, Interpreter, the plugins, etc)  to C. This is done by the classes that are in the category 'VMMaker-Translation to C'.
+We will create a Reef component and embed it inside a Seaside one. 
 
-\item Compile the C source code generated from the previous step, together with the platform code.
-We will not go further on this topic now because this is explained in the next chapter.
-\end{enumerate}
 
-\section{The VM is written is Smalltalk? really? is that cool?}
+\subsection{A Simple Reef Component Form}
 
-Ok, this can be controversial, so as always, this is just my point of view. I love Smalltalk. I love browsing for senders, implementors, references, doing refactorings, browsing methods and classes, etc. If you are reading this blog, you probably understand my feelings. 
-There are people who love C. Ok, I donÕt. IÕve even contributed (with code and fixes) to the OpenDBX library (written in C), so I can do it. But... do you know how cool is to be able to read and modify the VM from the same image that you usually use ? SLANG is quite limited, and sometimes it looks like C, of course, but it is still much better than coding in C for me:
+To create a form in Reef, you need to subclass from \ct{REForm}. \ct{REForm} is the class responsible for creating forms in Reef. 
 
-\begin{enumerate}
-\item You use the SAME Smalltalk image you use for other purposes
 
-\item You have all the tools provided by the Smalltalk IDE: senders, implementors, refactorings, monticello, versions, etc. You browse Interpreter and ObjectMemory classes like if they were regular classes (indeed they are!).
+\begin{code}{}
+REForm subclass: #RTSearchPart
+	...
 
-\item Most of the cases, you donÕt need to deal with C (sometimes you do need).
+\end{code}
 
-\item It can be versioned  in Monticello just like any other project.
+\ct{REForm} is a subclass of \ct{REContainer} which is the root of the components that can have children. Other reef container components are \ct{REPanel}, \ct{REGrid}, and \ct{REList}. Of course such components can be further specialized: hence \ct{REPanel} is the superclass of \ct{REDialog}, \ct{REAccordion}, \ct{RECarousel} and \ct{RETabs}. All these components can then contain other components as shown in Figure~\ref{review}. 
 
-\item This is cool: you take you image, you modify something in VMMaker, generate sources, go to a command line and using gcc (and the platform code) compiles the vm. Then, you take the compiled VM and run the same image you used for generating it hhehehe. IsnÕt that cool?
 
-\item Finally, and this is the most important for several persons, the VM can be simulated. Since it is Smalltalk, you can run a InterpreterSimulator, inside a host image/VM. But we will talk about this later in the journey.
-\end{enumerate}
+\begin{figure}[h]
+\begin{center}
+\includegraphics[width=3cm]{REViewHierarchy}
+\caption{The REView hierarchy: The REContainer is the root of the component container components.\label{review}}
+\end{center}
+\end{figure}
 
-\section{Cog VM and current status}
 
-Some time ago, Eliot Miranda (thanks to Teleplace company) started to work on a new VM for Squeak (and all its fork, like Pharo). This VM is called Cog VM and it has been already released. In fact, is the default VM included in the PharoOneClick 1.1.1 and beyond. Cog VM includes a lot of new features, but in a glance:
+Now let us go back to our \ct{SearchPart}.  You need to override the method \ct{initialize} to add children components to your container widget. 
 
-\begin{enumerate}
-\item Real and optimized block closure implementation. This is why from the image side blocks are now instances of BlockClosure instead of BlockContext.
+\sd{why this is initializeContents and not initialize?}
+\begin{code}{}
+initializeContents
+	self add: 'Search'.
+	self add: RETextField new.
+\end{code}
 
-\item Context-to-stack mapping.
-\item JIT (just in time compiler) that compiles methods to machine code.
-\item PIC (polymorphic inline caching).
-\item Multi-threading.
-\end{enumerate}
+\sd{Should explain what add: is}
+\sd{should avoid to harcode class name}
 
-If you are a little around Smalltalk you may have heard about Cog VM and Stack VM. What is the big difference? Stack VM implements 1) and 2). And Cog VM is on top of the Stack VM and adds 3) and 4). Finally, there is CogMT VM which is on top of Cog VM and adds multi-threading support for external calls (like FFI for example). Now, to be able to put names to all these VMs and not get confused, we will call our old VM Interpreter VM.
+And this is it for our first 'part component' (we usually call reef components \emph{parts}, as a convention to make explicit the fact that a Reef component is often just a part of a Seaside component.
 
-Cog VMs have increased performance around 4x-10x. In addition, it has refactored a couple of things. For example, in Interpreter VM, the Interpreter was a subclass of ObjectMemory. But that was necessary in order to easily translate to C. In Cog, there are new classes like CoInterpreter and NewObjectMemory. But the good news is that we can have composition!! The CoInterpreter has an instance variable that is the object memory (in this case an instance of NewObjectMemory). This is awesome for us, and of course, it required changes in the SLANG to C translator. So as you can see, Cog is really important for the Squeak and Pharo community.
 
-\section{Links}
-One of the problems I found when trying to learn the VM is that there is little documentation and even more, it is not very known. This is why in every post I will try to put the links I know to the related topics. Keep and share them. They may be useful if you want to go further in the VM or in certain areas. Notice that it is probable that some information in there is outdated, but thatÕs better than nothing  
+\subsection{A Host Seaside Component}
+Now to see our creation in action we will define a simple traditional Seaside component.
 
-\begin{itemize}
-\item Smalltalk-80: The Language and its Implementation. Also knowns as Blue Book or THE book. You can download it from \url{http://stephane.ducasse.free.fr/FreeBooks.html}.
+\begin{code}{}
+WAComponent subclass: #RTWebApplication
+	instanceVariableNames: 'searchComponent'
+	...
+\end{code}
 
-\item Chapter in the Pharo collaborative book. http://book.pharo-project.org/book/Virtual-Machine/
-\item Official website of the Squeak VM. \url{http://www.squeakvm.org/index.html}
+\sd{the name sucks!}
 
-\item A Tour of the Squeak Object Engine. This is a chapter in the book 'Squeak, Open Personal Computing and Multimedia'. \url{http://stephane.ducasse.free.fr/FreeBooks/CollectiveNBlueBook/Rowledge-Final.pdf}
+\begin{code}{}
+RTWebApplication>>initialize
+	super initialize.
+	searchComponent := RTSearchPart new asComponent.
+\end{code}
 
-\item Screencasts related to the VM. \url{http://www.pharocasts.com/search/label/vm}
+Since the part will be a children of the application, we should return it as part of the children protocol. 
 
-\item Eliot Miranda Cog Blog. \url{http://www.mirandabanda.org/cogblog/}
+\begin{code}{}
+RTWebApplication>>children
+	^ Array with: searchComponent
+\end{code}
 
-\item Back to the Future: The Story of Squeak, A Practical Smalltalk Written in Itself.
+Finally we just render the part and do nothing special. 
 
-\item VMMaker in Squeak swiki. \url{http://wiki.squeak.org/squeak/2105}
+\begin{code}{}
+RTWebApplication>>renderContentOn: html
+	html render: searchComponent
+\end{code}
 
-\item The Squeak Virtual Machine in squeak swiki. \url{http://wiki.squeak.org/squeak/1447}
-\end{itemize}
-\section{End words}
-So, that was all for today. I tried to give you a first overview of the VM. The first posts may be ÒboringÓ but they will get better     If you have questions, remarks, or any kind of feedback, let me know.
+As you may have noticed, search component is not just holding an instance of RTSearchPart. Indeed we send the asComponent to this instance before assigning it to the instance variable. And indeed a part of the magic here is this \ct{asComponent} message send. This message says to any Reef component to be wrapped into a Seaside component. This component can now be added to your Seaside application as any other component.
+
+\paragraph{Registering.} As any Seaside application we should register it. Execute in a workspace or define as class \ct{initialize}method the following expression and execute it. 
+
+\begin{code}{Registering our application as a Reef application.}
+REApplication 
+	registerAsApplication: 'simpleTutorial'
+	root: RTWebApplication
+\end{code}
+
+
+You may wonder why we should register our application as a Reef application and not as a simple Seaside application. This is because
+Reef supports client side updates and other cool feature that we will present later. 
+In addition, a Reef application needs to be configured with some elements: 1) we need some jQuery libraries 2) We need a div tag always present in our browser (a ''dispatcher area'' to process AJAX requests) \ct{REApplication class>>registerAsApplication:root:} does that for you, but you could do this by yourself and use the common application registering mechanism.
+\sd{check that this is class level}
+
+
+\paragraph{First }
+So, executing your application in \url{http://localhost:8080/simpleTutorial}, we get:
+
+
+
+
 
 %=========================================================
 \ifx\wholebook\relax\else
