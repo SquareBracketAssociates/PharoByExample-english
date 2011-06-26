@@ -448,7 +448,7 @@ This exception is actually signalled by the underlying socket.
 The timeout delay is 45 seconds (defined in method \ct!Socket class>>>standardTimeout!).
 
 Once our socket stream connected to the server, we forge and send an HTTP GET query.
-Notice that compared to \scrref{script:closeAndDestroy} (page~\pageref{script:closeAndDestroy}) we skipted here (\Scrref{script:streamGetLine}) one final \ct!String crlf!.
+Notice that compared to \scrref{script:closeAndDestroy} (page~\pageref{scr:script:closeAndDestroy}) we skipted here (\Scrref{script:streamGetLine}) one final \ct!String crlf!.
 This is because the \ct!SocketStream>>>sendCommand:! method automatically inserts CR and LF caracters after sent data to mark line ending.
 
 Reception of the requested web page is triggered by sending the \ct!nextLine! message to our socket stream.

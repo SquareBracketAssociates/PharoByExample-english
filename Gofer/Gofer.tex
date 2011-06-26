@@ -36,6 +36,7 @@
 
 
 \chapter{Gofer: Scripting package loading}
+\chalabel{gofer}
 
 Pharo proposes powerful tools to manage source code such as semantics-based merging, tree diff-merge, and a git-like distributed versioning system. In particular as presented in the Monticello Chapter, Pharo uses a package system named Monticello. In this chapter after a first reminder of the key aspects of Monticello we will show how we can script package using Gofer. Gofer is a simple API for Monticello. It is used by Metacello, the language to manage package maps that we present in Chapter Metacello. 
 
@@ -472,7 +473,9 @@ This message should be sent to a block giving a list of questions and their answ
 
 
 \section{Conclusion}
-Gofer provides a robust and stable implementation to script the management of your packages. Now when you project grows you should really consider to use Metacello (see Chapter~\ref{}).
+Gofer provides a robust and stable implementation to script the
+management of your packages. Now when you project grows you should
+really consider to use Metacello (see \charef{metacello}).
 
 %=================================================================
 
