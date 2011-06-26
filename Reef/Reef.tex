@@ -82,7 +82,7 @@ Now let us go back to our \ct{SearchPart}.  You need to override the method \ct{
 
 \sd{why this is initializeContents and not initialize?}
 \begin{code}{}
-initializeContents
+RTSearchPart>>initializeContents
 	self add: 'Search'.
 	self add: RETextField new.
 \end{code}
@@ -142,8 +142,43 @@ In addition, a Reef application needs to be configured with some elements: 1) we
 
 
 \paragraph{First }
-So, executing your application in \url{http://localhost:8080/simpleTutorial}, we get:
+So, executing your application in \url{http://localhost:8080/simpleTutorial}, we get the result shown in Figure~\ref{first}:
 
+\begin{figure}[h]
+\begin{center}
+\includegraphics[width=2cm]{REViewHierarchy}
+\caption{A simple component (version 1).\label{first}}
+\end{center}
+\end{figure}
+
+Ok, no so great at the moment, but we are going to add more functionalities.Right now, our Reef component doesn't do anything (just render a form with a text field), but this is 
+just the first step, now we are going to add behavior to our text field widget.
+
+
+\begin{figure}[h]
+\begin{center}
+\includegraphics[width=2cm]{REViewHierarchy}
+\caption{A simple component (version 2).\label{first}}
+\end{center}
+\end{figure}
+
+\begin{code}{}
+RTSearchPart>>initializeContents
+	self add: 'Search'.
+	self add: (RETextField new
+		onKeyPressed: [:me | me triggerThenDo: [self inform: text] ];
+		callback: [:v | text := v]
+\end{code}
+
+Changes introduced: 
+\begin{enumerate}
+\item We added a \ct{callback:} message. The \ct{callback:} message looks like a standard seaside brush...and in fact is the same.
+
+\item We added an \ct{onKeyPress:} message. This is different from Seaside. In plain Seaside,you need to send a Javascript string to this kind of messages (tag events). 
+In Reef, that's not what you do. Instead, you use a block with Smalltalk code (at least in most cases). 
+In this case, the \ct{onKeyPress:} block is getting the text field as a parameter (it is optional), and we are saying: trigger this widget and then execute another action.
+\sd{wht is trigger this widget means?}
+\end{enumerate}Let?s test it!
 
 
 
