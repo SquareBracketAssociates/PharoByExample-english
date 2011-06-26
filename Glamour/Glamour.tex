@@ -52,6 +52,7 @@ browsers to have an overview of the Glamour framework. In a second
 part, we will describe Glamour in more details.
 
 \section{Installation and first browser}
+\label{sec:inst-first-brows}
 
 To install Glamour on your \pharo{} image execute the following code:
 
@@ -136,9 +137,9 @@ contained entries if the selected element is a file:
 
 \begin{code}{}
 browser list
+  when: #isDirectory;
   display: #children;
-  format: #basename;
-  when: #isDirectory.
+  format: #basename.
 \end{code}
 
 This works well but the user can't distinguish between a line
@@ -147,9 +148,9 @@ adding a slash at the end of the file name if it is a directory:
 
 \begin{code}{}
 browser list
+  when: #isDirectory;
   display: #children;
-  format: #basenameWithIndicator;
-  when: #isDirectory.
+  format: #basenameWithIndicator.
 \end{code}
 
 The last thing we might want to do is to display the contents of the
@@ -164,17 +165,17 @@ browser := GLMFinder new
   yourself.
 
 browser list
+  when: #isDirectory;
   display: [:each | [each children sorted]
                        on: Exception
                        do: [Array new]];
-  format: #basenameWithIndicator;
-  when: #isDirectory.
+  format: #basenameWithIndicator.
 
 browser text
+  when: #isFile;
   display: [:entry | [entry readStream contents]
                         on: Exception
-                        do: ['Can''t display the content of this file']];
-  when: #isFile.
+                        do: ['Can''t display the content of this file']].
 browser openOn: FSFilesystem onDisk root.
 \end{code}
 
@@ -335,13 +336,10 @@ display variable argument is not \ct{nil}.
 Up to now, we have been displaying the packages as a list. The
 packages in Smalltalk, howerver, are actually organized in a hierarchy
 and we have only been looking at the first level of this structure. To
-mend this, we add a tree presentation for packages:
+mend this, we replace the list by a tree presentation for packages:
 
 \begin{code}{}
 PBE2CodeNavigator>>packagesIn: constructor
-  constructor list
-    display: [ :organizer | organizer packageNames sorted ];
-    format: #asString.
   constructor tree
     display: [ :organizer | (self rootPackagesOn: organizer) asSet sorted ];
     children: [ :rootPackage :organizer | (self childrenOf: rootPackage on: organizer) sorted ];
@@ -349,8 +347,8 @@ PBE2CodeNavigator>>packagesIn: constructor
 
 PBE2CodeNavigator>>classesIn: constructor
   constructor list
+    when: [:packageName | self organizer includesPackageNamed: packageName ]
     display: [:packageName | (self organizer packageNamed: packageName) definedClasses];
-    when: [:packageName | self organizer includesPackageNamed: packageName ]  
 
 PBE2CodeNavigator>>childrenOf: rootPackage on: organizer
   ^ organizer packageNames select: [ :name | name beginsWith: rootPackage , '-' ]
@@ -361,10 +359,6 @@ PBE2CodeNavigator>>rootPackagesOn: organizer
 
 % counter balance the previous $ to avoid a syntax-highlighting bug
 % with Emacs
-
-This code brings two presentations for packages, one with a list and
-one with a tree. Glamour has automatically added tabs on top of the
-package's pane to switch between the presentations.
 
 The tree presentation uses a \ct{children:} argument that takes a
 selector or a block which specifies how to retrieve the children of a
@@ -381,7 +375,7 @@ PBE2CodeNavigator>>buildBrowser
   browser := GLMTabulator new.
   browser
     column: #packages;
-    column:  #classes;
+    column: #classes;
     column: #categories. 
 
   browser transmit to: #packages; andShow: [:a | self packagesIn: a].
@@ -644,8 +638,6 @@ is shown in figure~\ref{fig:composed-browser}.
 \label{fig:composed-browser}
 \end{figure}
 
-\dc{HERE}
-
 %-------------------------------------------------------------------------------
 \subsection{Actions}
 \label{sec:tutorial/actions}
@@ -653,30 +645,13 @@ is shown in figure~\ref{fig:composed-browser}.
 Browsers generally rely on \emph{actions}---first-class behavioral objects that are executed when a keyboard shortcut is pressed or when an entry in a context menu is clicked. Glamour supports such actions through the \ct{act:on:} message sent to a presentation:
 
 \begin{code}{}
-browser := TableLayoutBrowser new.
-browser
-	row: #navigator;
-	row: #source.
-
-browser showOn: #navigator; using: [
-	browser custom: self codeNavigator
-].
-
-browser
-	showOn: #source;
-	from: #navigator -> #selectedClass;
-	from: #navigator -> #selectedMethod; using: [
-	browser text
-		display: [ :class :method | class sourceCodeAt: method ];
-		/+act: [ :presentation :class :method |
-			(Smalltalk classNamed: class) compile: presentation text
-		] on: $s+/
-].
-
-browser openOn: (Smalltalk organization  categories
-                     collect: [:package | package readStream upTo: $-])
-                           asSet asSortedCollection
+PBE2CodeEditor>>sourceIn: constructor
+  constructor text
+    display: [:class :method | class sourceCodeAt: method ];
+    act: [:presentation :class :method | class compile: presentation text] on: $s.
 \end{code}
+
+% a $ for balance
 
 The argument passed to \ct{on:} is a character that specifies the
 keyboard shortcut that should be used to trigger the action when the
@@ -697,10 +672,11 @@ extends the above example to provide a context menu entry to ``save''
 the current method back to the class:
 \begin{code}{}
 ...
-	act: [ :presentation :class :method |
-		(Smalltalk classNamed: class) compile: presentation text
-	] on: $s entitled: 'Save'
+  act: [:presentation :class :method | class compile: presentation text]
+  on: $s.
+  entitled: 'Save'
 \end{code}
+
 %$
 
 %-------------------------------------------------------------------------------
@@ -715,19 +691,21 @@ and interact with visualizations created using the \emph{Mondrian
 define it in the \ct{using:} block as well:
 
 \begin{code}{}
-browser showOn: #classes; from: #packages; using: [
-	browser list
-        display: [ :package | Smalltalk organization listAtCategoryNamed: package]/+;
-        title: 'Class list'.
+PBE2CodeNavigator>>classesIn: constructor
+  constructor list
+    when: [:packageName | self organizer includesPackageNamed: packageName ];
+    display: [:packageName | (self organizer packageNamed: packageName)
+                    definedClasses];
+    title: 'Class list'.
 
-	browser mondrian
-             painting: [ :view :package |
-		view nodes: ((Smalltalk organization listAtCategoryNamed: package)
-                                    collect: [:name | Smalltalk classNamed: name]).
-		view edgesFrom: #superclass.
-		view treeLayout];
-             title: 'Hierarchy'+/
-]
+  constructor mondrian 
+    when: [:packageName | self organizer includesPackageNamed: packageName];
+    painting: [ :view :packageName | 
+          view nodes: (self organizer packageNamed:  packageName)  
+                             definedClasses.
+          view edgesFrom:  #superclass.
+          view treeLayout];
+    title: 'Hierarchy' 
 \end{code}
 
 Glamour distinguishes multiple presentations on the same pane with the
@@ -746,30 +724,27 @@ the name of the tab used to render the presentation.
 %-------------------------------------------------------------------------------
 \subsection{Other Browsers}
 
-Up to now in the tutorial, we have only used the
-\ct{TableLayoutBrowser} which is named after its ability to generate
-custom layouts using the aforementioned \ct{row:} and \ct{column:}
-keywords. Additional browsers are provided in the reference
-implementation or can be written by the user. Browser implementations
-can be subdivided into two categories: browsers that have
-\emph{explicit panes} \emph{i.e.}, they are declared explicitly by the
+Up to now in the tutorial, we have only used the \ct{GLMTabulator}
+which is named after its ability to generate custom layouts using the
+aforementioned \ct{row:} and \ct{column:} keywords. Additional
+browsers are provided or can be written by the user. Browser
+implementations can be subdivided into two categories: browsers that
+have \emph{explicit panes}, \ie{}, they are declared explicitly by the
 user---and browsers that have \emph{implicit panes}.
 
-The \ct{TableLayoutBrowser} is an example of a browser that uses
-explicit panes. With implicit browsers, we do not declare the panes
-directly but the browser creates them and the connections between them
-internally. An example of such a browser is the \ct{Finder}, which
-implements a \emph{Miller Columns} style browsing, and is named after
-Mac~OS~X's \emph{finder}, which also employs such a mode of
-operation. Since the panes are created for us, we need not use the
-\ct{from:to:} keywords but can simply specify our presentations:
+The \ct{GLMTabulator} is an example of a browser that uses explicit
+panes. With implicit browsers, we do not declare the panes directly
+but the browser creates them and the connections between them
+internally. An example of such a browser is the \ct{Finder}, which has
+been discussed in \secref{sec:inst-first-brows}. Since the panes are
+created for us, we need not use the \ct{from:to:} keywords but can
+simply specify our presentations:
 
 \begin{code}{}
 browser := GLMFinder new.
 
 browser list
-  display: [:class | class subclasses];
-  whenKindOf: Class.
+  display: [:class | class subclasses].
 
 browser openOn: Collection
 \end{code}
@@ -785,6 +760,9 @@ indefinitely as long as something to select remains.
 \caption{Subclass navigator using Miller Columns style browsing.}
 \label{fig:finder}
 \end{figure}
+
+To discover other kinds of browsers, explore the hierarchy of the
+\ct{GLMBrowser} class.
 
 %-------------------------------------------------------------------------------
 \subsection{Tutorial Conclusion}
