@@ -28,50 +28,72 @@
 % --------------------------------------------
     \graphicspath{{figures/} {../figures/}}
 	\begin{document}
-	\renewcommand{\nnbb}[2]{} % Disable editorial comments
+	%\renewcommand{\nnbb}[2]{} % Disable editorial comments
 	\sloppy
 \fi
 
 
-\newcommand{\opal}[0]{Opal~Compiler } % Ducasse
+\newcommand{\opal}[0]{Opal\xspace} % Ducasse
 %=================================================================
-\chapter{Opal Compiler} \chalabel{opal}
+\chapter{The Opal Compiler} \chalabel{opal}
 
 %\alex{I addressed lukas comments using editorial macros. Please, if you read this, remove this comment and remove the editorial macros, else their purpose is diminished}
 
 \indexmain{opal}
-\opal is a Smalltalk to Bytecode compiler for Pharo. This project was initiate for replace the old Compiler, which was made in 80s. It was design in one process Scanner/Parser. The result is the old compiler is hard to understand, to extend and completely unadapted to the new needs. That why \opal project was made.
+\opal is a Smalltalk to Bytecode compiler for Pharo. This project was initiated to replace the original compiler, which slowly evolved from the one developed in the 80s. It was designed in one process Scanner/Parser. The result is the old compiler is hard to understand, to extend, and completely unadapted to the new needs. That's why the \opal project started. 
 
-\opal process, is made in 3 step, covering all the step from Source code to the bytecode.
-\begin{itemize}
-\item Source Code to Abstract Syntax Tree
-\item Abstract Syntax Tree to Intermediary Representation
-\item Intermediary Representation to Bytecode
-\end{itemize}
+The \opal process, is built around 3 steps, covering all the steps from source code to the bytecode.
+
+\begin{enumerate}
+\item Source code to abstract syntax tree,
+\item Abstract syntax tree to intermediary representation,
+\item Intermediary representation to bytecode.
+\end{enumerate}
 
 \begin{figure}[ht]\centering
 	\includegraphics[width=\linewidth]{fullProcess}
-	\caption{complete process of compilation with \opal \figlabel{fullProcess}}
+	\caption{\opal complete compilation process. \figlabel{fullProcess}}
 \end{figure}
 
-\subsection{Abstract Syntax Tree process}
+
+\subsection{Loading Opal}
+
+\opal will be the default compiler for Pharo. Right now we should load it to be able to execute the code snippets used in this chapter.
+
+\begin{code}{}
+Gofer
+	...
+	
+
+\end{code}
+
+
+\section{Abstract Syntax Tree process}
 
 \begin{figure}[ht]\centering
 	\includegraphics[width=\linewidth]{SourceToAnnotatedAST}
 	\caption{Source to AST Annotated \figlabel{SourceToAnnotatedAST}}
 \end{figure}
 
-The Abstract Syntax Tree (AST) is a tree representation of the source code. The AST is easy to manipulate and to visit. The AST used in \opal come from Refactoring Browser using RBParser to generate it, that step check the syntax.
-The structure of AST is simple tree : 
-Evaluate expression:
+The Abstract Syntax Tree (AST) is a tree representation of the source code. The AST is easy to manipulate and to visit. The AST used by \opal comes from Refactoring Engine. It uses \ct{RBParser} to generate ASTs, this step verifies the syntax.
+
+The structure of an AST is a simple tree. Evaluate and explore the following expression:
+
 \begin{code}{}
-RBParser parseExpression: '1 + 2'.
-"inspect it"
+t := RBParser parseExpression: '1 + 2'.
+"explore it"
+
 \end{code}
 
-\begin{figure}[ht]\centering
+
+\sd{so what do we see? we should add t something }
+
+Using the message \ct{parseExpression:} we get an AST representing the expression.
+
+\begin{figure}[ht]
+	\centering
 	\includegraphics[width=0.7\linewidth]{SimpleAtomicExpression}
-	\caption{Tree generated : '1 + 2'  \figlabel{SimpleAtomicExpression}}
+	\caption{Generated tree for  '1 + 2'  \figlabel{SimpleAtomicExpression}}
 \end{figure}
 
 Let's try another example
@@ -83,7 +105,7 @@ RBParser parseExpression: 'one plus: two'.
 
 \begin{figure}[ht]\centering
 	\includegraphics[width=0.7\linewidth]{SimpleAtomicExpressionP}
-	\caption{Tree generated : 'one plus: two' \figlabel{SimpleAtomicExpressionP}}
+	\caption{Generated tree for  'one plus: two' \figlabel{SimpleAtomicExpressionP}}
 \end{figure}
 
 
@@ -94,62 +116,85 @@ RBParser parseExpression: 'one plus: two plus: three'.
 \end{code}
 \begin{figure}[ht]\centering
 	\includegraphics[width=0.7\linewidth]{SimpleMultiExpression}
-	\caption{Tree generated :  'one plus: two plus: three' \figlabel{SimpleMultiExpression}}
+	\caption{Generated tree for  'one plus: two plus: three' \figlabel{SimpleMultiExpression}}
 \end{figure}
 
-You can also compile a Method and have a structure methodNode :
+You can also compile a method using the message \ct{parseMethod:} instead of \ct{parseExpression:}. We will get a methodNode object:
+
 \begin{code}{}
 RBParser parseMethod: 'xPlusY x + y'.
 "inspect it"
 \end{code}
+
+
+\sd{so what do we see? we should add t something }
+
 \begin{figure}[ht]\centering
 	\includegraphics[width=0.7\linewidth]{ASTbeforeSemanticAnalysis}
-	\caption{Tree generated :  'xPlusY x + y' \figlabel{ASTbeforeSemanticAnalysis}}
+	\caption{Generated tree for  'xPlusY x + y' \figlabel{ASTbeforeSemanticAnalysis}}
 \end{figure}
 
 
 \subsubsection{Annotated the Abstract Syntax Tree}
-Then we do the semantic analysis on the AST. The goal of the semantic analysis is to add semantic data to the generated tree. One of the key function of the semantic analysis is to bind the variable. Because the as we see before the AST check only the \emph{syntax} of the code. That check the semantic of the code. If in context of the specific class this code is valid. If a variable is undeclared or used out of scope, a message is send to the UI. 
-The graph is annotated by visiting the graph by two visitor :
+
+Once parsed we can perform a semantic analysis of the AST. The goal of a semantic analysis is to add semantic data to the generated tree. One of the key function of the semantic analysis is to bind variables. 
+Because as we see before the AST only checks the \emph{syntax} of the code. A semantic analysis  checks the semantics of the code: for example, if in context of a specific class, the code is valid. We can identify if a variable is undeclared or used out of scope, or if a message is send to the UI. 
+
+The AST is annotated by visiting the graph by two visitors:
 \begin{itemize}
-\item OCASTSemanticAnalyzer : do the var binding
-\item OCASTClosureAnalyzer : do the closure analysis
+\item \ct{OCASTSemanticAnalyzer} performs the variable binding.
+\item \ct{OCASTClosureAnalyzer} performs the closure analysis.
 \end{itemize}
-let try a Example :
+
+Let's try an example:
 
 \begin{code}{}
-ast :=RBParser parseExpression: '1 + 2'.
+|ast|
+ast := RBParser parseExpression: '1 + 2'.
+
 "visit and annotated the AST for the closure analysis "
 OCASTClosureAnalyzer new visitNode: ast.
 "visit and annotated the AST for the var binding"
+
 OCASTSemanticAnalyzer new
 		scope: Object parseScope;
 		visitNode: ast.
 ast. "inspect It"
 \end{code}
-All the data of binding is inject in AST, when you inspect your AST you can see the value properties is now set to a RBSmallDictionary 
+
+\sd{what do we get?}
+
+All the data of binding is injected in the AST, when you inspect your AST you can see the value properties is now 
+set to a dictionary. \sd{show it}
 
 
 
 
-\subsection{Intermediary Representation}
-At the specific step of the compilation process, we have a AST annotated with semantic data. We need to translate it into a intermediary representation. The Intermediary Representation is a bytecode structured in tree. It is easy to manipulate more than the bytecode itself, and really close of the generated bytecode. Usually the bytecode optimization will be injected at this step.
+
+\section{Intermediary Representation}
+Once we obtain an AST annotated with semantic data, we can translate it into an intermediary representation (IR). The intermediary representation is a abstraction over bytecode structured in tree. The advantages of IR over bytecode is that it is higher-level. In addition with IR we can plug different bytecode sets in the compilation process. We could think about generating bytecode from a Smalltalk subset to LegoOS. In addition IR is easier to manipulate  than bytecode itself.
+ Usually the bytecode optimization will be realized after this step.
  
 \begin{figure}[ht]\centering
 	\includegraphics[width=\linewidth]{AnnotatedASTToIR}
 	\caption{AST Annotated to Intermediary Representation \figlabel{AnnotatedASTToIR}}
 \end{figure}
 
-As we have a AST structure, it is easy to transform AST to Intermediary Representation(IR). The IR have a builder IRBuilder, that offer all the infrastructure to add each possible node. We apply the pattern visitor to the AST to build the corresponding IR. ASTTranslator will visit each node and for each node will build the corresponding IR node sequence.
 
 
-\subsection{Bytecode}
-At the specific step of the compilation process, we have the IR generated, once again to transform the IR in bytecode we apply the pattern visitor on the IR tree, the IR tree is close to the bytecode, then we just visit each node and push then corresponding bytecode.
+Once we have an AST, it is easy to transform an AST to an Intermediary Representation Tree. The class \ct{IRBuilder} offers all the infrastructure to add each possible node. A Visitor walks an AST and builds its corresponding IR tree. \ct{ASTTranslator}  visits each node and for each node  builds the corresponding IR node sequence.
+
+\sd{we need a code snippet}
+
+\section{Bytecode}
+Once we have an IR tree, we will transform the IR tree in a bytecode sequence. We apply a new visitor but on the IR tree this time. Since IR is close to bytecode, the visitors visits each node and pushes the corresponding bytecode.
 
 \begin{figure}[ht]\centering
 	\includegraphics[width=\linewidth]{IRToBytecode}
 	\caption{Intermediary Representation to Bytecode \figlabel{IRToBytecode}}
 \end{figure}
+
+\sd{we need a code snippet}
 
 \section{Decompilation}
 Such the compilation process
