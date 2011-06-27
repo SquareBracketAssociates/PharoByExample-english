@@ -146,7 +146,7 @@ In addition, a Reef application needs to be configured with some elements: 1) we
 
 \begin{figure}[h]
 \begin{center}
-\includegraphics[width=2cm]{REViewHierarchy}
+\includegraphics[width=6cm]{SearchPartV1}
 \caption{A simple component (version 1).\label{first}}
 \end{center}
 \end{figure}
@@ -157,10 +157,11 @@ just the first step, now we are going to add behavior to our text field widget.
 
 \begin{figure}[h]
 \begin{center}
-\includegraphics[width=2cm]{REViewHierarchy}
-\caption{A simple component (version 2).\label{first}}
+\includegraphics[width=6cm]{SearchPartV2}
+\caption{A simple component (version 2).\label{second}}
 \end{center}
 \end{figure}
+
 
 \begin{code}{}
 RTSearchPart>>initializeContents
@@ -170,7 +171,7 @@ RTSearchPart>>initializeContents
 		callback: [:v | text := v]
 \end{code}
 
-\sd{what is text? }
+\sd{what is text? a new instance variable in SearchPart}
 
 Changes introduced: 
 \begin{enumerate}
@@ -180,8 +181,67 @@ Changes introduced:
 In Reef, that's not what you do. Instead, you use a block with Smalltalk code (at least in most cases). 
 In this case, the \ct{onKeyPress:} block is getting the text field as a parameter (it is optional), and we are saying: trigger this widget and then execute another action.
 \sd{wht is trigger this widget means?}
-\end{enumerate}Let?s test it!
+\end{enumerate}Let's test it! When you enter a character you should get the inform as shown in Figure~\ref{second}.
 
+\paragraph{Adding a feedback panel}
+
+Now we want to add a panel to show the classes whose name matches the input. 
+For this we are going to modify our \ct{RESearchPart} class again. We add a new instance 
+variable named \ct{resultsPanel} that will display all the matching results.
+
+\begin{code}{}
+REForm subclass: #RTSearchPart
+	instanceVariableNames: 'text resultsPanel'
+	...
+\end{code}
+
+
+
+\begin{code}{Initializing the panel showing the results}
+RESearchPart>>initializeContents	resultsPanel := REPanel new.	self add: 'Search'.	self add: (RETextField new		onKeyPress: [:me | me triggerThenDo: [self search] ];		callback: [:v | text := v]).	self add: resultsPanel
+\end{code}
+
+
+
+\begin{code}{}
+RESearchPart>>search
+	resultsPanel removeAll.
+	text ifNotEmpty: [ 
+		resultsPanel
+			addAll: (Smalltalk classNames
+					select: [:each | each beginsWith: text]
+					thenCollect: [ :each | 
+							REPanel new 
+								add: each ; yourself ]);
+			refresh ]
+\end{code}
+
+\sd{I do not see why we are adding a new panel? because we removeall the items
+so we could just add the items inside}
+
+What changes we introduced?\begin{enumerate}
+\item we added a panel instance variable (\ct{resultPanel}) 
+\item then, we modified \ct{onKeyPress:} to call \ct{search} instead of showing a dialog. 
+\item The \ct{search} method does a refresh of the panel by doing:\begin{itemize}
+\item remove all children (if any) 
+\item add all class names with a name starting with ``text'', as a new panel (we need apanel because we want a name per line...) 
+\item send a \ct{refresh} message, which actually performs the refresh of the panelcontent. 
+\end{itemize}
+\end{enumerate}
+
+
+Once you refreshed your application, you should see Figure~\ref{third}.
+
+\begin{figure}[h]
+\begin{center}
+\includegraphics[width=6cm]{SearchPartV3}
+\caption{With the matching list of classes as feedback (version 3).\label{third}}
+\end{center}
+\end{figure}
+
+So we are done with your first Reef component. What you should notice is that we did not talk about JavaScript since it is encapsulated in Reef components. 
+
+\section{}
 
 
 
