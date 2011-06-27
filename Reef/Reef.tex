@@ -67,27 +67,27 @@ REForm subclass: #RTSearchPart
 
 \end{code}
 
-\ct{REForm} is a subclass of \ct{REContainer} which is the root of the components that can have children. Other reef container components are \ct{REPanel}, \ct{REGrid}, and \ct{REList}. Of course such components can be further specialized: hence \ct{REPanel} is the superclass of \ct{REDialog}, \ct{REAccordion}, \ct{RECarousel} and \ct{RETabs}. All these components can then contain other components as shown in Figure~\ref{review}. 
+\ct{REForm} is a subclass of \ct{REContainer} which is the root of the components that can have children. Other reef container components are \ct{REPanel}, \ct{REGrid}, and \ct{REList}. Of course such components can be further specialized: hence \ct{REPanel} is the superclass of \ct{REDialog}, \ct{REAccordion}, \ct{RECarousel}, and \ct{RETabs}. All these components can then contain other components as shown in Figure~\ref{review}. 
 
 
 \begin{figure}[h]
 \begin{center}
 \includegraphics[width=3cm]{REViewHierarchy}
-\caption{The REView hierarchy: The REContainer is the root of the component container components.\label{review}}
+\caption{The \ct{REView} hierarchy: \ct{REContainer} is the root of the component container components.\label{review}}
 \end{center}
 \end{figure}
 
 
-Now let us go back to our \ct{SearchPart}.  You need to override the method \ct{initialize} to add children components to your container widget. 
+Now let us go back to our \ct{RTSearchPart} class. You need to override the method \ct{initializeContents} to add children components to your container widget. We use the message 
+\ct{add:} to add subcomponents.
+ 
 
-\sd{why this is initializeContents and not initialize?}
 \begin{code}{}
 RTSearchPart>>initializeContents
 	self add: 'Search'.
 	self add: RETextField new.
 \end{code}
 
-\sd{Should explain what add: is}
 \sd{should avoid to harcode class name}
 
 And this is it for our first 'part component' (we usually call reef components \emph{parts}, as a convention to make explicit the fact that a Reef component is often just a part of a Seaside component.
@@ -141,7 +141,7 @@ In addition, a Reef application needs to be configured with some elements: 1) we
 \sd{check that this is class level}
 
 
-\paragraph{First }
+\paragraph{First version.}
 So, executing your application in \url{http://localhost:8080/simpleTutorial}, we get the result shown in Figure~\ref{first}:
 
 \begin{figure}[h]
@@ -241,51 +241,56 @@ Once you refreshed your application, you should see Figure~\ref{third}.
 
 So we are done with your first Reef component. What you should notice is that we did not talk about JavaScript since it is encapsulated in Reef components. 
 
+
+
 \section{Dealing with Callbacks}
-One of the strengths of Reef
+One of the strengths of Reef is that we can control the interaction between the client and the server. 
 
 \subsection{Client-Server interaction in Reef}
 
-One of the most important features in Seaside is it's natural flow, achieved through the use of closures, just as the way of solve the navigation in Smalltalk. One of the problems on using a client-side library, such as \ct{jQuery} or any JavaScript library, is the loose of this natural feeling.
+One of the most important features in Seaside is it's natural flow, achieved through the use of closures under the forms of \textit{callbacks}. One of the problems on using a client-side library, such as \ct{jQuery} or any JavaScript library, is the loose of this natural feeling.
 In Reef, we try to keep this natural flow, as much as we can, by hiding most of the JavaScript complexity, and using smalltalk closures also for JavaScript behavior. 
-For that, we have redefined the event behavior to match a little more with what a Smalltalk programmer can expect.
+For that, we have redefined the event behavior to match a little more with what a Smalltalk programmer can expect. Let us see the different kind of interactions.
 
 
 
 \subsection{Three different kind of interactions}
 
-There are three kind of behaviors possible in the interaction between the page in client and the Seaside server:
+There are three kinds of  possible interactions between a page in a client and the Seaside server:
 
-\begin{enumerate}\item The client application needs to access the server to make something, and then update the status of the page, without rendering a new page. As we think this kind of interaction is the hardest to manage, and the most common used, this is the default Reef behavior.
-\item The client application needs to call server with some functionality, and then renders a new page. This is the ``normal behavior'' of a web application, and in Reef we support them as a way to ``get back'' to normal flow, while inside a Reef flow.
+\begin{enumerate}\item The client application needs to access the server to do something, and then update the status of the page, but without rendering a new page because it can be too costly. As we think this kind of interaction is the hardest to manage, and the most commonly used, this is the default Reef behavior.
+\item The client application needs to call server with some functionality, and then it renders a new page. This is the ``normal behavior'' of a web application, and in Reef we support it as a way to ``get back'' to normal flow, while inside a Reef flow.
+
 \item The page needs to change the DOM (for instance, to hover current selected row), without going to server at all. This is, for us, the most difficult to solve, because the DOM manipulation needs to be a JavaScript sentence.
-
-This three different interactions are defining the ways an application can interact with the user, creating different results, but just one final feeling: we are in a ``desktop'' application.
 \end{enumerate}
-We are going to explain how Reef manages this three approaches.
+
+These three different interactions are defining the ways an application can interact with the user, creating different results, but just one final feeling: we are in a ``desktop'' application.We are going to explain how Reef manages these three approaches.
 
 \subsection{Updating the server, then update the client}
+As we said before, we think this is the most common behavior you can find in a web-application, and for that reason we are focusing in this mode. How does it work?Well, let's suppose you have a validation in a text field that needs to be validated on blur event (once you lost focus), you have something like this:
 
-As we said before, we think this is the most common behavior you can find in a web-application, and for that reason we are focusing in this mode. How does it work?Well, let's suppose you have a validation in a text field, who needs to be validated on blur event (once you lost focus), you have something like this:
-
-\begin{code}{}	... self add: (RETextField new	onBlur: [ :me | me triggerThenDo: 
-						[ self validate ifFalse: [ self error: 'Error validating' ] ] ]; 
-	on: #value of: self)	...
+\begin{code}{}	...
+	self add: (RETextField new				onBlur: [ :me | me triggerThenDo: 
+							[ self validate ifFalse: [ self error: 'Error validating' ] ] ]; 
+				on: #value of: self)	...
 \end{code}
-As you can see, the flow is more or less like it would be in any usual Smalltalk application, with just one minor difference: you need to tell the client that you are going to use the value just typed in this field, and just then we can for real interact with the client side value. Using this kind of callback is the default behavior in any Reef component, with the unique exception of the argument of \ct{callback:} in form elements (those who will become in a FORM element in HTML, like an INPUT, TEXTAREA, etc.).
+As you can see, the flow is more or less like it would be in any usual Smalltalk application, with just one  difference: you need to tell the client that you are going to use the value just typed in this field, \sd{is it validate?} and just then we can for real interact with the client side value. Using this kind of callback is the default behavior in any Reef component, with the unique exception of the argument of \ct{callback:} in form elements (those who will become in a FORM element in HTML, like an INPUT, TEXTAREA, etc.).
+
+\sd{totally unclear to me }
+
 
 \subsection{Update the server, then render a new page}
-This functionality is useful after pressing a button, or after doing some operation who we decide needs a new page. What it does is skip the client/server AJAX interaction and render a full new page (it works just like a common anchor or button press in plain HTML). To tell Reef that the result of a callback should be executed in another page, we use the protocol \ct{asReefPageCallback}. See next example:
+This functionality is useful after pressing a button, or after doing some operations that we decide needs a new page. What it does is to skip the client/server AJAX interaction and render a full new page: it works just like a common anchor or button press in plain HTML. To tell Reef that the result of a callback should be executed in another page, we use the protocol \ct{asReefPageCallback}. See next example:
 
 \begin{code}{}	... 
 	add: (REButton new			label: 'Login'; 
 			callback: [ self login ] asReefPageCallback)	...
 \end{code}
-In this case, pressing the button acts just like pressing a regular button in Seaside (well... not exactly equal, but act like that in almost any case).
+In this case, pressing the button acts just like pressing a regular button in Seaside.
 
+\sd{ (well... not exactly equal, but act like that in almost any case). either we explain it or we remove it}
 
-\subsection{Not updating the server, just the client}
-This third case useful to make some client side validations, or highlighting something on hover. This callback execute it's content in render time, and prepare the page with the resulting JavaScript, so it can act in client side. To tell Reef that it should execute the callback in client side, we use the protocol: \ct{asReefClientCallback}. See the example:
+\subsection{Not updating the server, just the client}This third case is useful to perform client side validations, or highlighting something on hover. This callback executes its contents at render time, and prepare the page with the resulting JavaScript, so it can act on client side. To tell Reef that it should execute the callback on client side, we use the protocol: \ct{asReefClientCallback}. See the example:
 
 \sd{we should put the complete code}
 
@@ -296,16 +301,25 @@ As we said before, we think this is the most common behavior you can find in a w
 		onMouseOut: [ :me | me asClient removeClass: 'hover' ] asReefClientCallback; 
 		add: 'Panel with hover'; yourself).	...
 \end{code}
-As you can see, we introduced the protocol \ct{asClient}, which answer a representation in JavaScript, and you can then send messages of the jQuery package.
-Note: Yes, this is my worst creation, I still can not found a better way to do this... but it works, almost properly :)
+As you can see, we introduced the protocol \ct{asClient}, which answers a representation in JavaScript, and you can then send messages of the jQuery package.
+\sd{where? I only saw asReefClientCallback no asClient}
+
+
 
 \subsection{Hybrids}
 
-There is still one scenario to deal: That in which we want to do something and in some cases the opposite (For example, if we want to validate and if succeed render a new page, and if fails stay in current page, and show a message). To allow us execute different things inside a flow, there are the protocols: \ct{inPage:}, \ct{inClient:}, both allow us to perform different actions to change the render logic. See the example:
+There is still one scenario to deal with: The one in which we want to do something and in some cases the opposite. For example, if we want to validate some inputs and on success render a new page, but on failure stay in the current page, and show a message. 
+
+To allow us execute different client/server interactions inside a flow, there are the protocols: \ct{inPage:}, \ct{inClient:}, both allow us to perform different actions to change the rendering logic. 
+
+\sd{why inPage: and not inServer: (onServer: and onClient: would be better)}
+
+See the example:
 
 \sd{we should put the complete code}
 
-\begin{code}{}	... self add: (REButton new			label: 'Login'; 
+\begin{code}{}	... 
+	self add: (REButton new			label: 'Login'; 
 			callback: [				self triggerThenDo: [ self login							ifTrue: [ self inPage: [ self show: aComponent ] ] 
 							ifFalse: [ self inClient: [ self asClient addClass: 'error' ] ] ] ].
 \end{code}							
@@ -319,16 +333,27 @@ Here is the list
 \ct{[ ... ] asReefPageCallback} Contents of block are executed, but all rendering is do it in a new page.
 \ct{[ ... ] asReefClientCallback} Contents of block are executed in rendering phase, and the result must be a JQuery Stream or a String.
 \ct{[ :me | ... ]}
-\ct{triggerThenDo:} Triggers the form element (if applied to a form triggers full form).
+\ct{triggerThenDo:} 	Triggers the form element (if applied to a form triggers full form).
 
-\ct{asClient} jQuery object representation of reef component.
+\ct{asClient} 	jQuery object representation of reef component.
 
-\ct{inPage:} Renders the block contents in a new page.
+\ct{inPage:} 	Renders the block contents in a new page.
 
-\ct{inClient:} Renders the block, in same page as we are now. It works just like \ct{asReefClientCallback}.
+\ct{inClient:} 	Renders the block, in same page as we are now. It works just like \ct{asReefClientCallback}.
 
 
-%=========================================================
+\section{Reef Defaults widgets}
+
+\subsection{Accordion}
+\subsection{Carousel}
+
+\subsection{Grids}
+
+\subsection{Calendar}
+
+\section{Reef Core}
+
+%=========================================================
 \ifx\wholebook\relax\else
    \bibliographystyle{jurabib}
    \nobibliography{scg}
