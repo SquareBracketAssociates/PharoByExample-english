@@ -141,7 +141,7 @@ In Pharo, you can retrieve these informations:
 	returns 3
 \end{code}
 
-Generally you won't handle the mantissa \sd{nicolas what do you want to say here }, but rather the mantissa shifted 52 bits to the left in order to operate on exact integers. The result includes the leading 1 and should thus be 53 bits long for a normal number (that's the float precision):
+In Pharo, there is no message to handle the normalized mantissa directly. Instead it is possible to handle the mantissa as an Integer after a 52 bits shift to the left. There is one good reason for this: operating on Integer is easier because arithmetic is exact. The result includes the leading 1 and should thus be 53 bits long for a normal number (that's the float precision):
  \begin{code}{}
 11.125 significandAsInteger printStringBase: 2.
 	returns '10110010000000000000000000000000000000000000000000000'
@@ -171,7 +171,7 @@ Until there we retrieved the exact input we've injected into the Float. Are Floa
 	returns false
 \end{code}
 
-Let us see in detail how we could get the fractional bits of \ct{1/10} \ie \ct{2r1 / 2r101}. For that, we must lay out the division:
+Let us see in detail how we could get the fractional bits of \ct{1/10} \ie \mbox{\ct{2r1/2r101}}. For that, we must lay out the division:
 
 \[
 \begin{tabular}{r|l}
@@ -215,7 +215,7 @@ Instead of that we got:
 	returns  (10808639105689191/36028797018963968)
 \end{code}
 
-But that's not all the story... Let us inspect the above fraction: \sd{explain what is the lowBit and highBit}
+But that's not all the story... Let us inspect the bit pattern of above fraction, and check the span of this bit pattern, that is the position of highest bit set to 1 (leftmost) and position of lowest bit set to 1 (rightmost):
  \begin{code}{}
 10808639105689191 printStringBase: 2.
 	returns  '100110011001100110011001100110011001100110011001100111'
