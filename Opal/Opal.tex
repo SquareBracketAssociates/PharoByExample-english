@@ -61,10 +61,12 @@ The \opal process, is built around 3 steps, covering all the steps from source c
 \opal will be the default compiler for Pharo. Right now we should load it to be able to execute the code snippets used in this chapter.
 
 \begin{code}{}
-Gofer
-	...
-	
-
+	Gofer new
+		squeaksource: 'OpalCompiler';
+		package: 'ConfigurationOfOpalCompiler';
+		load.
+		
+	(Smalltalk at: #ConfigurationOfOpalCompiler) load.
 \end{code}
 
 
