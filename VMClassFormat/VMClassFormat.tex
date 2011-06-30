@@ -131,7 +131,13 @@ Most classes in the Collection's hierarchy  are variable.
 
 \section{Class format encoding in classes and instances}
 
-If you look at the methods such as  \ct{isBytes}, \ct{isVariable}, \ct{isPointers}, etc (all these methods in the category 'testing' in \ct{Behavior} class) you will notice that they all send \ct{instSpec} (instance specification) at the end. And this method looks like this:
+If you look at the methods such as  \ct{isBytes}, \ct{isVariable}, \ct{isPointers}, etc (all these methods in the category 'testing' in \ct{Behavior} class) you will notice that they all send \ct{instSpec} (instance specification) at the end. 
+
+\begin{code}{}
+Behavior>>isBytes	"Answer whether the receiver has 8-bit instance variables."	^ self instSpec >= 8
+\end{code}
+
+And the \ct{intSpec} method looks like this:
 
 \begin{code}{}
 Behavior>>instSpec
@@ -148,8 +154,7 @@ ByteArray instSpec -> 8
 CompiledMethod instSpec -> 12
 \end{code}
 
-Let's see if we can make sense out of this. \ct{format} is an instance variables of the class \ct{Behavior}.
-It accessor is defined as follows. 
+Let's see if we can make sense out of this. \ct{format} is an instance variable of the class \ct{Behavior}. It accessor is defined as follows. 
 \begin{code}{}
 format
 	"Answer an Integer that encodes the kinds and numbers of variables of 
@@ -160,6 +165,7 @@ format
 
 This number without interpretation is not really useful, but it encodes \sd{verify that} the instance size, its format and whether the class is compact or not (we will explain that later). 
 
+\subsection{At object level}
 Now an interesting question is to see how this is handle in the VM and in particular since the format of a class is used a lot how such information is accessed when the VM manipulates an object. Indeed fetching the object class every time may be expensive. Let's have a look at where this information is stored.
 
 To answer this question, we will take our image and browse the VM core. Let's see the method \ct{ObjectMemory>>formatOf:}
@@ -187,22 +193,23 @@ ObjectMemory>>formatOf: oop
 
 As you can see, there are 16 possible formats, encoded from 0 to 15 in 4 bits of the Object Header. The line \ct{^((self baseHeader: oop) >> 8 ) bitAnd: 16rF} is the one that takes those 4 bits (because \ct{16rF} is \ct{2r1111}) from the Object Header of the OOP (object pointer) received as parameter.
 
-\sd{what is the baseHeader:} \sd{would be nice to get a diagram a} \sd{I will do one}
-
-
-\sd{here}
-If you now browse the class comment of ObjectMemory, you will read it says that there are 4 bits for the object format. As you can guess, that number that represents the format is what we get in the image side with the method \ct{instSpec}. Notice that at the beginning of the post described all the different types of format and they were 6, but here we have 16 possibilities.  Ok, some are for optimizations (for example the number zero means that the object has no instVar, hence the GC can stop there while doing the mark and trace instead of trying to follow non-existent pointers), some are not used (like the number 5), some are only for 64 bits (number 7), the format for “bytes” uses 4 numbers, and CompiledMethod also uses 4 numbers.
-
-\begin{figure}
+\begin{figure}[h]
 \includegraphics[width=\textwidth]{ObjectHeaderClassFormat}
-\caption{In the object header: there are object format bits 8-11}
+\caption{In the object header: the  object format are bits 8-11.}
 \end{figure}
 
+\sd{here}
+If you now browse the class comment of ObjectMemory, you will read it says that there are 4 bits for the object format. As you can guess, that number that represents the format is what we get in the image side with the method \ct{instSpec}. Notice that at the beginning of the chapter we described all the different types of format and they were 6, but here we have 16 possibilities.  
+
+Why such difference? Because formats are for optimizations (for example the number zero means that the object has no instVar, hence the GC can stop there while doing the mark and trace instead of trying to follow non-existent pointers), some are not used (like the number 5), some are only for 64 bits (number 7), the format for ``byte'' uses 4 numbers, and CompiledMethod also uses 4 numbers.
 
 
-Don’t get confused:  In the image side, we have an instVar which is called “format” in Behavior that keeps an integer with both, what WE call format plus the amount of variables. What we call format, is the method \ct{instSpec} in the image (which in fact gets the format from the “format” instVar). Finally, the VM agree with us, the method is \ct{formatOf:}  and it refers to what we call format. All in all, the instVar “format” of Behavior is misleading. Don’t get confused.
+\paragraph{Don't get confused!}  In the image side, we have an instance variable which is called ``format'' defined in \ct{Behavior}. It keeps an integer with both, what WE call format plus the amount of variables. What we call format, is the method \ct{instSpec} in the image (which in fact gets the format from the “format” instVar). Finally, the VM agree with us, the method is \ct{formatOf:}  and it refers to what we call format. All in all, the instVar ``forma'' of \ct{Behavior} is misleading. Don’t get confused. \sd{to rewrite a bit later}
 
 Finally, if you are curious you can check senders of \ct{formatOf:} and you will see all the places where the VM needs to know the format of an object. \sd{list some examples}
+
+
+
 
 \section{Creating classes with a special format}
 
