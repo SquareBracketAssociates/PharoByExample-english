@@ -43,6 +43,7 @@ Let's be dummy for a while.
 
 Let's start with some simple maths. 
 
+
 \begin{code}{}
 2 raisedTo: 0
 	returns 1
@@ -54,10 +55,11 @@ Let's start with some simple maths.
 	returns 256
 \end{code}
 
+Figure~\ref{power} shows the power of 2. 
 \begin{figure}[h]
 \begin{center}
 \includegraphics[width=0.65\textwidth]{16bits-number}
-\caption{Power of 2 and their numerical equivalence.}
+\caption{Power of 2 and their numerical equivalence.\label{power}}
 \end{center}
 \end{figure}
 
@@ -233,8 +235,37 @@ and with a \ct{bitAnd:} we know whether there is a one or zero in the location.
 
 \section{More here}
 
-\section{2 complement}
+\section{Two's complement of a number}
+The two's complement is a common method to represent signed integers. Addition and subtraction are implemented without checking the sign of the operands and two's complement has only one representation for zero (avoiding negative zero).
 
+The two's complement of a positive number represents a negative number of the number or other said a number is negated by computing its two's complement. 
+
+
+\begin{code}{}
+| v |
+v := 10. 
+String streamContents: [:s | 
+	31 to: 1 by: -1 do: [:i | s nextPut: ((v bitAt: i) + 48) asCharacter   ] .
+	s contents] 
+
+| v |v := -3.  "1111111111101"String streamContents: [:s | 	31 to: 1 by: -1 do: [:i | s nextPut: ((v bitAt: i) + 48) asCharacter   ] .	s contents	] 
+\end{code}
+
+You can add the following method \ct{bitString} to the SmallInteger class. It returns a string of bit representing the bit representation of the receiver.
+
+\begin{code}{}
+SmallInteger>>bitString	"Returns the bit representation of the receiver."	""	^ String streamContents: [:s | 		30 to: 1 by: -1 do: [:i | s nextPut: ((self bitAt: i) + 48) asCharacter ] .		s contents ]
+\end{code}
+
+
+
+
+Creating a two complement version of a number equals negating the number bits and adding one.
+\begin{code}{Calculating two complement of 3}
+3 bitString '0000000000000000000000000000011'3 bitInvert bitString '1111111111111111111111111111100'(3 bitInvert + 1) bitString '1111111111111111111111111111101'-3 bitString '1111111111111111111111111111101'
+\end{code}
+
+2 raisedTo: 30 	1073741824 2 class maxVal 	1073741823(2 raisedTo: 31) class LargePositiveInteger
 
 \section{Hexadecimal}
 
@@ -285,6 +316,24 @@ We shift out the 8 first and clear all the others after the next 4.
 2r11000101 bitAnd: 1111
 	returns 0101	
 	returns 5
+\end{code}
+
+
+\section{SmallIntegers in Smalltalk}
+
+Smalltalk small integers uses a two's complement arithmetic on 31 bits.  
+An N-bit two's-complement numeral system can represent every integer in the range $-1 * 2^{N-1}\ to\ 2^{N-1}-1$. So for 32 bits Smalltalk systems, small integers values are the range -1073741824 to  1073741823. Let's check that a bit (this is the occasion to say it). 
+
+
+\begin{code}{}
+2 raisedTo: 29 	returns 536870912 
+
+536870912 class
+	returns SmallInteger
+2 raisedTo: 30 	returns 10737418241073741824 class	returns LargePositiveInteger-1073741824 class 	returns SmallInteger2 class maxVal 	returns 1073741823-1 * (2 raisedTo: (31-1)) 
+	returns -1073741824
+	(2 raisedTo: 30) - 1
+	returns 1073741823
 \end{code}
 
 

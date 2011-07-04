@@ -38,25 +38,24 @@
 A while ago Colin Putney announced the Filesystem framework, a nice and extensible replacement for the ugly FileDirectory classes in Pharo. While all core classes are well commented, there is a quick start missing that explains how end users are supposed to adopt the framework. 
 
 \section{Getting started}
-
-First we need to load the package:
+From Pharo 1.4 FileSystem is included by default in the system. If you want to load this library, use the following expression:
 
 \begin{code}{}
 Gofer new
   squeaksource: 'fs'; 
   package: 'ConfigurationOfFilesystem';
   load.
-(Smalltalk at: #ConfigurationOfFilesystem) perform: #loadBleedingEdge
+(ConfigurationOfFilesystem project version:  '2.0.1') load
 \end{code}     
 
 The framework supports different kinds of filesystems that can be used interchangeably and that can transparently work with each other. The most obvious one is the filesystem on your hard disk. We are going to work with that one for now:
 
 \begin{code}{}
 | working |
-working := FSFilesystem onDisk working.
+working := FSFilesystem onDisk workingDirectory.
 \end{code} 
 
-Type  the above code into a workspace and evaluate it. It assigns a reference of the current working directory to the variable \ct{working}. References are the central object of the framework and provide the primary mechanism of working with files and directories. They are instances of the class \ct{FSReference}.
+Type the above code into a workspace and evaluate it. It assigns a reference of the current working directory to the variable \ct{working}. References are the central objects of the framework and provide the primary mechanism of working with files and directories. They are instances of the class \ct{FSReference}.
 
 Note that you do not use platform specific classes such as \ct{FSUnixStore} or \ct{FSWindowsStore}. All code below works on \ct{FSReference} instances.
 
