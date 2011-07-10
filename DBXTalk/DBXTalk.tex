@@ -1,0 +1,70 @@
+% $Author: polito $
+% $Date: 2011-07-09 17:14:33 -0300 (Sat, 09 Jul 2011) $
+% $Revision: 1 $
+
+%=================================================================
+\ifx\wholebook\relax\else
+% --------------------------------------------
+% Lulu:
+	\documentclass[a4paper,10pt,twoside]{book}
+	\usepackage[
+		papersize={6.13in,9.21in},
+		hmargin={.75in,.75in},
+		vmargin={.75in,1in},
+		ignoreheadfoot
+	]{geometry}
+	\input{../common.tex}
+	\setboolean{lulu}{true}
+% --------------------------------------------
+% A4:
+%	\documentclass[a4paper,11pt,twoside]{book}
+%	\input{../common.tex}
+%	\usepackage{a4wide}
+% --------------------------------------------
+    \graphicspath{{figures/} {../figures/}}
+	\begin{document}
+\fi
+%=================================================================
+%\renewmessage{\nnbb}[2]{} % Disable editorial comments
+\sloppy
+
+%=================================================================
+%\renewcommand{\nnbb}[2]{#2} % Disable editorial comments
+
+\chapter{DBXTalk}
+DBXTalk is a database driver that allows interaction with major relational database engines such as
+Oracle and MSSQL, apart from those which are open source, like PostgreSQL and MySQL.
+
+Moreover, this driver is integrated with GLORP, enabling a complete and open-source
+solution to relational database access.  To do this, DBXTalk uses a library called OpenDBX.
+\section{DBXTalk Driver Architecture}
+The DBXTalk Driver relies on several components in order to connect to different relational databases:
+\begin{itemize}
+\item The OpenDBXDriver package talks to the OpenDBX library and handles the engines differences.
+\item OpenDBX is a C library which stands as an adapter between the different database engines 
+and our Pharo image, and provides a common interface to interact with through FFI.
+\item We will need the corresponding client database library that OpenDBX will talk to.
+\end{itemize}
+\includegraphics[width=\linewidth]{dbx_architecture.png}
+\section{Installing DBXTalk}
+
+This section will introduce the installation of the components needed to run DBXTalk in MS Windows, Unix and MacOS.
+
+
+%=========================================================
+\ifx\wholebook\relax\else
+   \bibliographystyle{jurabib}
+   \nobibliography{scg}
+   \end{document}
+\fi
+%=========================================================
+
+
+
+%%% Local Variables: 
+%%% coding: utf-8
+%%% mode: latex
+%%% TeX-master: Lint.tex
+%%% TeX-PDF-mode: t
+%%% End:
+
