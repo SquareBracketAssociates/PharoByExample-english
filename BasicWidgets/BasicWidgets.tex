@@ -34,45 +34,35 @@
 
 \chapter{Basic Widgets}
 
-
-
-
-
-\section{Settings in a Nutshell}
-
+\section{The window}
+\subsection{Opening a window}
+The basic class for managing a window is \ct{StandardWindow}. Let's start with an empty one. To create and open an empty window just try the following:
 \begin{code}{}
-(PluggableDialogWindow  labelled: 'Pharo is cool') openInWorld
+StandardWindow new openInWorld
 \end{code}
+You should see a window with a topbar that you can move with the mouse. 
 
-\begin{code}{}
-(PluggableDialogWindow new
-	title: 'Pharo is cool') openInWorld
-\end{code}
+On one side, the topbar has three buttons for closing, collapsing and expanding the window. On the other side, the topbar has a menu button with a default set of items.
 
-\begin{code}{}
-(PluggableDialogWindow new
-	title: 'Pharo is cool';
-	addCloseBox) openInWorld
-	
-	""does not work :(
-\end{code}
+\subsection{A window and its model}
 
-%
-%\section{The Settings Browser}
-%\label{sec:TheSettingsBrowser}
-%
-%The \setbrowser, shown in \figref{fig:TheSettingsBrowser}, mainly allows one to browse all currently declared settings and to change related preference values. To open it, just use the World menu (\menu{World \go System \go Settings}) or evaluate the following expression:
-%\begin{code}{}
-%SettingBrowser open
-%\end{code}
-%The settings are presented in several trees in the middle panel. Setting searching and filtering is available from the top toolbar whereas the bottom panels show currently selected setting description (left bottom panel) and current package set (right bottom panel). 
-%\begin{figure}[tbh]
-%\begin{center}
-%\includegraphics[scale=0.3]{SettingBrowser}
-%\caption{The \setbrowser.}
-%\figlabel{fig:TheSettingsBrowser}
-%\end{center}
-%\end{figure}
+\subsection{Your own topbar menu}
+
+\subsection{Menubar}
+
+\subsection{Taskbar}
+
+\section{Buttons}
+
+\section{Text fields}
+
+\section{Text editor}
+
+\section{Panes and layout managing}
+
+\section{List widgets}
+
+\section{Tree widgets}
 
 \section{Conclusion}
 
