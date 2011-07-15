@@ -422,7 +422,7 @@ The figure shows how all metaclasses are instances of \ct{Metaclass}, including 
 If you compare Figures \ref{fig:metaclassclass} and \ref{fig:metaclassclassclass} you will see how the metaclass \subind{metaclass}{hierarchy} perfectly mirrors the class hierarchy, all the way up to \ct{Object class}.
 
 The following examples show us how we can query the class hierarchy to demonstrate that \figref{metaclassclassclass} is correct.
-(Actually, you will see that we told a white lie\,---\,\ct{Object class superclass -->} {\clsind{ProtoObject class}, not \ct{Class}. In \pharo, we must go one superclass higher to reach \ct{Class}.)
+(Actually, you will see that we told a white lie\,---\,\ct{Object class superclass -->} \clsind{ProtoObject class}, not \ct{Class}. In \pharo, we must go one superclass higher to reach \ct{Class}.)
 
 \begin{example}{The class hierarchy}{@TEST}
 TranslucentColor superclass --> Color
