@@ -44,7 +44,7 @@
 \indexmain{opal}
 \opal is a Smalltalk to Bytecode compiler for Pharo. This project was initiated to replace the original compiler, which slowly evolved from the one developed in the 80s. \ugh{It was designed in one process Scanner/Parser}. The result is \ins{that} the old compiler is hard to understand, to extend, and \ugh{completely unadapted to the new needs}. \chg{That's why the \opal project started}{This is why a new flexible, configurable and adaptable compiler was needed, \opal fulfill this need.}. 
 
-\ugh{The \opal process} \jr{I do not understand the \opal process expression, what does it mean? the compilation process?}, is built around 3 steps, covering all the steps \jr{the steps of what?} from source code to the bytecode.
+The \opal compilation process, is built around 3 steps, from source code to the bytecode.
 
 \begin{enumerate}
 \item Source code to abstract syntax tree,
@@ -60,8 +60,7 @@
 
 \subsection{Loading Opal}
 
-\ugh{\opal will be the default compiler for Pharo} \jr{Weak and irrelevant, it is a compiler, that is good enough}. Right now we should load it to be able to execute the code snippets used in this chapter.
-
+Right now we should load it to be able to execute the code snippets used in this chapter.
 \begin{code}{}
 	Gofer new
 		squeaksource: 'OpalCompiler';
@@ -72,18 +71,16 @@
 \end{code}
 
 
-\section{Abstract Syntax Tree process}
-
-\jr{I do not get the title "process", what does it mean?, what is the AST process?}
+\section{Build of the Abstract Syntax tree}
 
 \begin{figure}[ht]\centering
 	\includegraphics[width=\linewidth]{SourceToAnnotatedAST}
 	\caption{Source to AST Annotated \figlabel{SourceToAnnotatedAST} \jr{what is RBParser and OCASTSemanticAnalyzer? we never explained that}}
 \end{figure}
 
-The Abstract Syntax Tree (AST) is a tree representation of the source code. The AST is easy to manipulate and to \ugh{visit} \jr{Should we assume that the reader knows what the visitor pattern is? at least we should have a reference.}. The AST used by \opal comes from Refactoring Engine \jr{Include reference to the Refactoring Engine chapter.}. It uses \ct{RBParser} to generate ASTs, this step verifies the syntax.
-
-The structure of an AST is a simple tree. Evaluate and explore the following expression:
+The Abstract Syntax Tree (AST) is a tree representation of the source code. The AST is easy to manipulate and scan it.
+\jr{Should we assume that the reader knows what the visitor pattern is? at least we should have a reference.}. \jb{We should define what is the design pattern visitor but maybe not here, is not really specific to AST it's specific to ours implementation}.
+The AST used by \opal comes from Refactoring Engine \jr{Include reference to the Refactoring Engine chapter.}. It uses \ct{RBParser} to generate ASTs, this step verifies the syntax. The structure of an AST is a simple tree. Evaluate and explore the following expression:
 
 \begin{code}{}
 t := RBParser parseExpression: '1 + 2'.
@@ -93,13 +90,12 @@ t := RBParser parseExpression: '1 + 2'.
 
 
 \sd{so what do we see? we should add t something }
-
 Using the message \ct{parseExpression:} we get an AST representing the expression.
 
 \begin{figure}[ht]
 	\centering
 	\includegraphics[width=0.7\linewidth]{SimpleAtomicExpression}
-	\caption{Generated tree for  '1 + 2'  \figlabel{SimpleAtomicExpression} \jr{the font of the image is too small it should be similar to the text font, besides we have space for enlarging the image.}}
+	\caption{Generated tree for  '1 + 2'  \figlabel{SimpleAtomicExpression}}
 \end{figure}
 
 Let's try another example
@@ -111,7 +107,7 @@ RBParser parseExpression: 'one plus: two'.
 
 \begin{figure}[ht]\centering
 	\includegraphics[width=0.7\linewidth]{SimpleAtomicExpressionP}
-	\caption{Generated tree for  'one plus: two' \figlabel{SimpleAtomicExpressionP} \jr{the font of the image is too small it should be similar to the text font, besides we have space for enlarging the image.}}
+	\caption{Generated tree for  'one plus: two' \figlabel{SimpleAtomicExpressionP}}
 \end{figure}
 
 
@@ -125,7 +121,7 @@ RBParser parseExpression: 'one plus: two plus: three'.
 	\caption{Generated tree for  'one plus: two plus: three' \figlabel{SimpleMultiExpression}}
 \end{figure}
 
-You can also \ugh{compile} \jr{we should be careful here, we say that we can compile but we call parse, so maybe we should explain what is going on when we call this method.} a method using the message \ct{parseMethod:} instead of \ct{parseExpression:}. We will get a methodNode object:
+You can also parse a the code of a method using the message \ct{parseMethod:} instead of \ct{parseExpression:}. We will get a methodNode object:
 
 \begin{code}{}
 RBParser parseMethod: 'xPlusY x + y'.
@@ -141,10 +137,10 @@ RBParser parseMethod: 'xPlusY x + y'.
 \end{figure}
 
 
-\subsubsection{\chg{Annotated}{Annotating} the Abstract Syntax Tree}
+\subsubsection{Annotating the Abstract Syntax Tree}
 
 Once parsed we can perform a semantic analysis of the AST. The goal of a semantic analysis is to add semantic data to the generated tree. One of the key function of the semantic analysis is to bind variables. 
-Because as we \chg{see}{saw} before the AST only checks the \emph{syntax} of the code. A semantic analysis  checks the semantics of the code: for example, \ugh{if in context of a specific class}, the code is valid. We can identify if a variable is undeclared or used out of scope, or if a message is send to the UI. 
+Because as we saw before the AST only checks the \emph{syntax} of the code. A semantic analysis  checks the semantics of the code: \ugh{if in context of a class}, the code is valid. We can identify if a variable is undeclared or used out of scope, or if a message is send to the UI. 
 
 The AST is annotated by visiting the graph by two visitors:
 \begin{itemize}
@@ -173,18 +169,15 @@ ast. "inspect It"
 \sd{what do we get?}
 
 All the data of binding is injected in the AST, when you inspect your AST you can see the value properties is now 
-set to a dictionary. \sd{show it}
+set to a dictionary. \sd{show it} 
+\jb{In addition some class need to be compile in a specific way (Context ... need a long form bytecode because the bytecode is used by (Stack and Cog)VM), and it is at this level two the properties is set we should say one word about that }
 
 
 
+\section{Intermediate Representation}
+\jb{In many case people will not manipulate IR, we should just explain when they should. You want to change jump, closure or push of the temp. It is a this level, if you want to indirect all the instance var access it's at the level of the AST.we should simply rewrite this part, the IR is for :	1 different bytecode plug,	2 Bytecode optimization(easier to manipulate,more accurate, and it's more coherent),	3 small grain manipulation. We should explain that without going to much in detail.the question is if we don't explain the utilities of IR because is to low level why have a IR in the process of compilation why not directly do bytecode.}
 
-
-\section{Intermediary Representation}
-
-\jr{Do we want to call this section Intermediary or Intermediate?}
-
-Once we obtain an AST annotated with semantic data, we can translate it into an intermediary representation (IR). \ugh{The intermediary representation is a abstraction over bytecode structured in tree. The advantages of IR over bytecode is that it is higher-level} \jr{we need a better definition}. In addition\ins{,} with IR we can \ugh{plug} different bytecode sets in the compilation process \jr{why? why is that relevant here?}. We could think about generating bytecode from a Smalltalk subset to LegoOS \jr{What the LegoOS, reference?}. In addition IR is easier to manipulate  than bytecode itself \jr{really? why? we need to demonstrate that here}.
- Usually the bytecode optimization will be realized after this step \jr{Now we are talking about optimizations why?}.
+%Once we obtain an AST annotated with semantic data, we can translate it into an intermediary representation (IR). \ugh{The intermediary representation is a abstraction over bytecode structured in tree. The advantages of IR over bytecode is that it is higher-level} \jr{we need a better definition}. In addition\ins{,} with IR we can \ugh{plug} different bytecode sets in the compilation process \jr{why? why is that relevant here?}. We could think about generating bytecode from a Smalltalk subset to LegoOS \jr{What the LegoOS, reference?}. In addition IR is easier to manipulate than bytecode itself \jr{really? why? we need to demonstrate that here}. Usually the bytecode optimization will be realized after this step \jr{Now we are talking about optimizations why?}.
  
 \begin{figure}[ht]\centering
 	\includegraphics[width=\linewidth]{AnnotatedASTToIR}
@@ -192,8 +185,8 @@ Once we obtain an AST annotated with semantic data, we can translate it into an 
 \end{figure}
 
 
-
-\ugh{Once we have an AST, it is easy to transform an AST to an Intermediary Representation Tree} \jr{I do not understand this sentence}. The class \ct{IRBuilder} \jr{Who is this? API? what does it model?} offers all the infrastructure to add each possible node. A \chg{Visitor}{visitor} walks an AST and builds its corresponding IR tree. \ct{ASTTranslator}  visits each node and for each node  builds the corresponding IR node sequence. \jr{How is the IRBuilder, ASTTRanslator, etc related? maybe a picture here would help. }
+\jb{to redo}
+%\ugh{Once we have an AST, it is easy to transform an AST to an Intermediary Representation Tree} \jr{I do not understand this sentence}. The class \ct{IRBuilder} \jr{Who is this? API? what does it model?} offers all the infrastructure to add each possible node. A \chg{Visitor}{visitor} walks an AST and builds its corresponding IR tree. \ct{ASTTranslator}  visits each node and for each node  builds the corresponding IR node sequence. \jr{How is the IRBuilder, ASTTRanslator, etc related? maybe a picture here would help. }
 
 \sd{we need a code snippet}
 
