@@ -347,7 +347,7 @@ PBE2CodeNavigator>>packagesIn: constructor
 
 PBE2CodeNavigator>>classesIn: constructor
   constructor list
-    when: [:packageName | self organizer includesPackageNamed: packageName ]
+    when: [:packageName | self organizer includesPackageNamed: packageName ];
     display: [:packageName | (self organizer packageNamed: packageName) definedClasses];
 
 PBE2CodeNavigator>>childrenOf: rootPackage on: organizer
