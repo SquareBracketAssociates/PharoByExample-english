@@ -64,9 +64,15 @@ reuse some announcements, let clients register interest in events and
 signal events. An event is an object representing an occurrence of a
 specific event. It is the place to define all the information related
 to the event occurrence. An announcer is responsible for registering
-interested clients and announcing events. 
+interested clients and announcing events, see Figure~\ref{fig:announcementFlow}.
 
-\paragraph{An Example.} Here is an example taken from Ramon Leon's
+\begin{figure}[ht]\centering
+	\includegraphics[height=10cm]{AnnouncementFlow}
+	\caption{Announcement flow}
+	\label{fig:announcementFlow}
+\end{figure} 
+
+\subsection{Example} Here is an example taken from Ramon Leon's
 very good Smalltalk blog. This example shows how we can use
 announcements to manage the communication between a parent component
 and its children as for example in the context of a menu and its menu
@@ -135,11 +141,110 @@ Note that depending on where you place the announcer, you can even
 have different sessions sending events to each other, or different
 applications.
 
+%=====
+%BEN
+
+Finally, when you have done with announcement, you may want to unsubscribe your object from the announcer.
+
+\begin{method}{Unsubscribing from the announcer}
+Child>>unsubscribe
+    self session announcer unsubscribe: self
+\end{method}
+
+%=====
+
 Announcements are not always the best way to establish communication
 between components.  On one hand, announcements let you create loosely
 coupled components and thus maximize reusability.  On the other hand,
 they introduce additional complexity when you may be able solve your
 communication problem with a simple message send.
+
+
+
+
+%=====
+%BEN
+
+
+\section{Weak Announcements}
+
+Event if you do not bind the emitter with the receiver, you create a dependency between to the announcer by registering yourself. And because announcers keep a reference to subscribers, this dependency prevent your registered objects to be garbage collected.
+
+To solve this problem, weak announcements have been implemented. It act like regular announcements but keep only a weak reference to subscribers, allowing them to be garbage collected.
+
+\subsection{How to subscribe to weak announcement}
+
+This protocol is really simple, because it's almost the same than for regular announcements.
+
+When you use to do
+
+\begin{code}{}
+self session announcer on: RemoveChild send: #removeChild: to: self
+\end{code}
+
+you just do
+
+\begin{code}{}
+self session announcer !\textbf{weak}! on: RemoveChild send: #removeChild: to: self
+\end{code}
+
+The major difference is that you can't use the method \textbf{when:send:} anymore. Indeed if a weak announcement store a block, it will also store the block context and due to that, keep a strong reference to the subscriber.
+
+\subsection{System Announcements}
+
+We saw that you can create your own announcements to communicate between objects, but there is already existing announcement, all subclass of \ct{SystemAnnouncement}, managed by the system to inform that it changed.
+
+%\paragraph{SystemCategoryAddedAnnouncement}
+%This announcement is emitted when a category is added to the system, by example using \mbox{\ct{SystemOrganizer>>#addCategory:}}
+%
+%\paragraph{SystemCategoryRemovedAnnouncement}
+%This announcement is emitted when a category is removed to the system, by example using \mbox{\ct{SystemOrganizer>>#removeCategory:}}
+%
+%\paragraph{SystemCategoryRenamedAnnouncement}
+%This announcement is emitted when a category is renamed to the system, by example using \mbox{\ct{SystemOrganizer>>#renameCategory:toBe:}}
+%
+%\paragraph{SystemClassAddedAnnouncement}
+%This announcement is emitted when a class or a trait is added to the system, by example using \mbox{\ct{Trait>>#named:}} or \mbox{\ct{Class>>#subclass:}}
+%
+%\paragraph{SystemClassCommentedAnnouncement}
+%This announcement is emitted twice when a class or a trait is commented, by example using \mbox{\ct{Trait>>#comment:}} or \mbox{\ct{Class>>#comment:}}
+%
+%\paragraph{SystemClassRecategorizedAnnouncement}
+%This announcement is emitted when a class or a trait is set, by example using \mbox{\ct{Trait>>#category:}} or \mbox{\ct{Class>>#category:}}
+%
+%\paragraph{SystemClassRemovedAnnouncement}
+%This announcement is emitted when a class or a trait is deleted from the system, by example using \mbox{\ct{Trait>>#removeFromSystem}} or \mbox{\ct{Class>>#removeFromSystem}}
+%
+%\paragraph{SystemClassRenamedAnnouncement}
+%This announcement is emitted when a class or a trait is renamed, by example using \mbox{\ct{Trait>>#rename:}} or \mbox{\ct{Class>>#rename:}}
+%
+%\paragraph{SystemClassReorganizedAnnouncement}
+%This announcement is emitted when a class or a trait's protocol is changed, by example using \mbox{\ct{Trait>>#removeCategory:}} or \mbox{\ct{Class>>#removeCategory:}}
+
+
+\begin{code}{SystemAnnouncement hierarchy}
+SystemAnnouncement
+			SystemCategoryAddedAnnouncement
+			SystemCategoryRemovedAnnouncement
+			SystemCategoryRenamedAnnouncement
+			SystemClassAddedAnnouncement
+			SystemClassCommentedAnnouncement
+			SystemClassRecategorizedAnnouncement
+			SystemClassRemovedAnnouncement
+			SystemClassRenamedAnnouncement
+			SystemClassReorganizedAnnouncement
+			SystemMethodAddedAnnouncement
+			SystemMethodModifiedAnnouncement
+			SystemMethodRecategorizedAnnouncement
+			SystemMethodRemovedAnnouncement
+			SystemProtocolAddedAnnouncement
+			SystemProtocolRemovedAnnouncement
+			SystemUnknownAnnouncement
+\end{code}
+
+
+%=====
+
 
 %=============================================================
 \ifx\wholebook\relax\else
