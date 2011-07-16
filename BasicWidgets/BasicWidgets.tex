@@ -86,7 +86,9 @@ StandardWindow new model: (MyModel new); openInWorld.
 
 So you should see a window with the same size than the previous one, and a small window which size is exactly what you have specified in the method \ct{initialExtent} (see FIG~\ref{fig:withAndWithoutModel}).
 \sd{should we always specifies a model?}
+\ben{If you want to specify the initial extent, either you define a model or you subclass (as far as I know)}
 \sd{what should be put in the model vs. the Morph itself?}
+\ben{I think/hope it will be clear when the API section will be complete}
 
 \begin{figure}[ht]\centering
 	\includegraphics[width=7cm]{WithAndWithoutModel}
@@ -96,7 +98,7 @@ So you should see a window with the same size than the previous one, and a small
 
 You can also defined this method:
 
-\begin{method}{Defined if the model is \sd{not?}ok to change}
+\begin{method}{Define if the model is ok to change or not}
 okToChange
 
 	^ false
@@ -161,11 +163,13 @@ Here is the list of the main API for a window
 \item 
 
 \begin{code}{}
-SystemWindow new	maximumExtent: 200@100; openInWorld
+SystemWindow new
+	maximumExtent: 200@100; openInWorld
 
 pareil pour 
 
-StandardWindow new	unexpandedFrame: (0@0 extent: 200@100) ; openInWorld
+StandardWindow new
+	unexpandedFrame: (0@0 extent: 200@100) ; openInWorld
 \end{code}
 
 je ne comprends pas pourquoi je peux alors avoir une fenetre immense?
