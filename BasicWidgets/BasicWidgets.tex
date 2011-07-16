@@ -60,21 +60,28 @@ StandardWindow new model: myModel
 
 By specifying a model to a window, and by providing specifics methods, the model will be able to control some of the window's behaviors.
 
-\subsubsection{Little example:}
+\subsubsection{Example:}
 
 First, let's create the model class
 
 \begin{classdef}{Defining a specific Model.}
 
-Object subclass: #MyModel	instanceVariableNames: ''	classVariableNames: ''	poolDictionaries: ''	category: 'PBE2-Examples'
+Object subclass: #MyModel
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'PBE2-Examples'
 
-MyModel>>#initialExtent	^ 200@200
+MyModel>>#initialExtent
+
+	^ 200@200
 \end{classdef}
 
 Let's see the result:
 
 \begin{code}{}
-StandardWindow new openInWorld.StandardWindow new model: (MyModel new); openInWorld.
+StandardWindow new openInWorld.
+StandardWindow new model: (MyModel new); openInWorld.
 \end{code}
 
 So you should see a window with the same size than the previous one, and a small window which size is exactly what you have specified in the method \ct{initialExtent} (see FIG~\ref{fig:withAndWithoutModel}).
@@ -88,53 +95,70 @@ So you should see a window with the same size than the previous one, and a small
 You can also defined this method:
 
 \begin{method}{Defined if the model is ok to change}
-okToChange	^ false
+okToChange
+
+	^ false
 \end{method}
 
 Now, when you try to close the small window nothing happens.
 
 \subsection{Your own topbar menu}
 
-\subsection{Menubar}
+Here, we will show you how to easily add direct and simple shortcuts in the window's menu.
 
-Menubar allow you to add direct and simple shortcuts.
-
-First, your window must have a model, then you simply have to implement the method \ct{} and to fill up the menu provided as parameter as following:
+First, your window must have a model, then you simply have to implement the method \mthind{addModelItemsToWindowMenu:}{addModelItemsToWindowMenu: aMenu} and to fill up the menu provided as parameter as following:
 
 \begin{method}{}
 
-addModelItemsToWindowMenu: aMenu	"Add model-related items to the window menu"
+addModelItemsToWindowMenu: aMenu
+	"Add model-related items to the window menu"
 	
-	" First, we add a separator "	aMenu addLine.
+	" First, we add a separator "
+	aMenu addLine.
 	
 	" Then, we add our items "
-	aMenu		add: 'Label of the entry'		target: receiverOfTheFollowingSelector		action: #selectorWeWantToBeExecuted.
+	aMenu
+		add: 'Label of the entry'
+		target: receiverOfTheFollowingSelector
+		action: #selectorWeWantToBeExecuted.
 
 \end{method} 
 
-\subsubsection{Little Example}
+\subsubsection{Example:}
 
 \begin{method}{Define the extra entries of the menu}
-MyModel>>addModelItemsToWindowMenu: aMenu	"Add model-related items to the window menu"	"super addModelItemsToWindowMenu: aMenu."
+MyModel>>addModelItemsToWindowMenu: aMenu
+	"Add model-related items to the window menu"
+	"super addModelItemsToWindowMenu: aMenu."
 	
-	" First, we add a separator "	aMenu addLine.
+	" First, we add a separator "
+	aMenu addLine.
 	
 	" Then, we add our items "
-	aMenu		add: 'Open an inspector on me'		target: self		action: #inspect.
+	aMenu
+		add: 'Open an inspector on me'
+		target: self
+		action: #inspect.
 \end{method} 
 
 So when you click on the menu button, you see at the end of the list the label we typed just before (see FIG~\ref{fig:menuBar}), and when you click on it, an inspector is opened (see FIG~\ref{fig:windowAndInspector})
 
 \begin{figure}[ht]\centering
 	\includegraphics[width=7cm]{MenuBar}
-	\caption{Menu bar with our extra item at the end}
+	\caption{Menu with our extra item at the end}
 	\label{fig:menuBar}
 	\includegraphics[width=7cm]{WindowAndInspector}
 	\caption{The inspector is well opened}
 	\label{fig:windowAndInspector}
 \end{figure}
 
+\subsection{Menubar}
+
+\ben{Stef, what do you want to see here ?}
+
 \subsection{Taskbar}
+
+\ben{Stef, what do you want to see here ?}
 
 \section{Buttons}
 
@@ -147,6 +171,123 @@ So when you click on the menu button, you see at the end of the list the label w
 \section{List widgets}
 
 \section{Tree widgets}
+
+\section{Add submorphs to a morph}
+
+%Now that we have our window as we like, we will fill it up with some other morphs.
+
+\subsection{With the default layout}
+
+The default layout is ProportionalLayout. To use it, you have to use the method \mthind{addMorph:frame:}{addMorph: aMorph frame: aFrame}
+\begin{code}{}
+aWindow
+	addMorph: morphToAdd
+	frame: (x0@y0 corner: x1@y1)
+\end{code}
+where x0, y0, x1 and y1 are defined as shown in the figure.
+Note that those values are between 0 and 1.
+
+\ben{add a figure here as soon as Omnigraffle works again}
+
+Let's do some examples
+
+\subsubsection{Examples:}
+
+%| morphToAdd1 morphToAdd2 morphToAdd3 |
+First, let's define our objects
+\begin{code}{Objects definition}
+| container redMorph blueMorph greenMorph |
+
+redMorph := Morph new 
+				color: (Color red);
+				yourself.
+				
+blueMorph := Morph new 
+				color: (Color blue);
+				yourself.
+				
+greenMorph := Morph new 
+				color: (Color green);
+				yourself.
+				
+container := PanelMorph new.
+\end{code}
+
+\paragraph{Now let's see different configurations and their result}
+
+\begin{code}{}
+window
+	addMorph: redMorph
+	frame: (0@0 corner: 1@1).
+	
+redMorph color: Color red.	
+	
+window openInWorld
+\end{code}
+Note: you have to reset the color of the morph after having added it because the window set the default color. Here it seems strange but for more complicated morphs (like buttons, list \dots) it sets the background color for a better integration.
+
+As a result, you can see that the red morph is stretched the fill the space both vertically and horizontally (see FIG~\ref{fig:simpleLayoutExample1}).
+
+\begin{figure}[ht]\centering
+	\includegraphics[width=7cm]{SimpleLayoutExample1}
+	\caption{The red morph fill the whole space}
+	\label{fig:simpleLayoutExample1}
+\end{figure}
+
+\paragraph{Let's try a little more complicated configuration}
+
+\begin{code}{}
+window	addMorph: redMorph	frame: (0@0 corner: 0.33@1).window	addMorph: blueMorph	frame: (0.33@0 corner: 0.66@1).window	addMorph: greenMorph	frame: (0.66@0 corner: 1@1).redMorph color: Color red.blueMorph color: Color blue.
+greenMorph color: Color green.
+
+windows openInWorld
+\end{code}
+
+As a result, you can see three bands of color where each is horizontally a third of the window size and fill the space vertically (see FIG~\ref{fig:simpleLayoutExample2}).
+
+\begin{figure}[ht]\centering
+	\includegraphics[width=7cm]{SimpleLayoutExample2}
+	\caption{Three bands of colors}
+	\label{fig:simpleLayoutExample2}
+\end{figure}
+
+Note that if you resize the window, proportions are kept.
+Also note that each band can be resized horizontally.
+
+\paragraph{So let's do the last example}
+
+\begin{code}{}
+window	addMorph: redMorph	frame: (0@0 corner: 0.5@0.5).window	addMorph: blueMorph	frame: (0.5@0 corner: 1@0.5).window	addMorph: greenMorph	frame: (0@0.5 corner: 1@1).redMorph color: Color red.blueMorph color: Color blue.
+greenMorph color: Color green.	window openInWorld.
+\end{code}
+
+As you have predicted, the result is composed by two squares above and the green rectangle below (see FIG~\ref{fig:simpleLayoutExample3}).
+
+\begin{figure}[ht]\centering
+	\includegraphics[width=7cm]{SimpleLayoutExample3}
+	\caption{Two squares above and a rectangle below}
+	\label{fig:simpleLayoutExample3}
+\end{figure}
+
+Note that like for the previous example, you can resize each part.
+
+So basically, you now know everything about the default layout.
+
+\subsection{More complicated layouts}
+
+Now that we have seen the default layout, I will introduce you quickly the other layouts:
+\begin{itemize}
+	\item LayoutFrame
+	\item RowLayout
+	\item StackLayout
+	\item TableLayout
+\end{itemize}
+
+\subsubsection{LayoutFrame}
+
+This layout is used when you have to specified both a fix part \footnote{independent of the size of the window} and a proportional part\footnote{like the ProportionalLayout}.
+
+
 
 \section{Conclusion}
 
