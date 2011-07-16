@@ -248,13 +248,23 @@ String streamContents: [:s |
 	31 to: 1 by: -1 do: [:i | s nextPut: ((v bitAt: i) + 48) asCharacter   ] .
 	s contents] 
 
-| v |v := -3.  "1111111111101"String streamContents: [:s | 	31 to: 1 by: -1 do: [:i | s nextPut: ((v bitAt: i) + 48) asCharacter   ] .	s contents	] 
+| v |
+v := -3.  "1111111111101"
+String streamContents: [:s | 
+	31 to: 1 by: -1 do: [:i | s nextPut: ((v bitAt: i) + 48) asCharacter   ] .
+	s contents
+	] 
 \end{code}
 
 You can add the following method \ct{bitString} to the SmallInteger class. It returns a string of bit representing the bit representation of the receiver.
 
 \begin{code}{}
-SmallInteger>>bitString	"Returns the bit representation of the receiver."	""	^ String streamContents: [:s | 		30 to: 1 by: -1 do: [:i | s nextPut: ((self bitAt: i) + 48) asCharacter ] .		s contents ]
+SmallInteger>>bitString
+	"Returns the bit representation of the receiver."
+	""
+	^ String streamContents: [:s | 
+		30 to: 1 by: -1 do: [:i | s nextPut: ((self bitAt: i) + 48) asCharacter ] .
+		s contents ]
 \end{code}
 
 
@@ -262,10 +272,16 @@ SmallInteger>>bitString	"Returns the bit representation of the receiver."	""	
 
 Creating a two complement version of a number equals negating the number bits and adding one.
 \begin{code}{Calculating two complement of 3}
-3 bitString '0000000000000000000000000000011'3 bitInvert bitString '1111111111111111111111111111100'(3 bitInvert + 1) bitString '1111111111111111111111111111101'-3 bitString '1111111111111111111111111111101'
+3 bitString '0000000000000000000000000000011'
+3 bitInvert bitString '1111111111111111111111111111100'
+(3 bitInvert + 1) bitString '1111111111111111111111111111101'
+-3 bitString '1111111111111111111111111111101'
 \end{code}
 
-2 raisedTo: 30 	1073741824 2 class maxVal 	1073741823(2 raisedTo: 31) class LargePositiveInteger
+
+
+
+
 
 \section{Hexadecimal}
 
@@ -326,13 +342,28 @@ An N-bit two's-complement numeral system can represent every integer in the rang
 
 
 \begin{code}{}
-2 raisedTo: 29 	returns 536870912 
+2 raisedTo: 29 
+	returns 536870912 
 
 536870912 class
 	returns SmallInteger
-2 raisedTo: 30 	returns 10737418241073741824 class	returns LargePositiveInteger-1073741824 class 	returns SmallInteger2 class maxVal 	returns 1073741823-1 * (2 raisedTo: (31-1)) 
+
+2 raisedTo: 30 
+	returns 1073741824
+
+1073741824 class
+	returns LargePositiveInteger
+
+-1073741824 class 
+	returns SmallInteger
+
+2 class maxVal 
+	returns 1073741823
+
+-1 * (2 raisedTo: (31-1)) 
 	returns -1073741824
-	(2 raisedTo: 30) - 1
+	
+(2 raisedTo: 30) - 1
 	returns 1073741823
 \end{code}
 
