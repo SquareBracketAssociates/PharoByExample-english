@@ -31,10 +31,14 @@
 %\renewcommand{\nnbb}[2]{} % Disable editorial comments
 \sloppy
 %=================================================================
-\chapter{Announcements: an Object Dependency Framework}\chalabel{announcements}
+\chapter{Announcements: an Object Notification Framework}\chalabel{announcements}
 
-\section{A word about Component Coupling}
+It is often necessary to get notified when an action has been performed. This can be simply done by having an instance variable pointing to the objects to be notified. However such solution is not optimal because of the coupling it introduces between the objects. In this Chapter, we present 
+Announcements, a framework to notify objects based on a registration mechanism and first class announcements. Indeed contrary to the traditional Smalltalk dependency mechanism which broadcast simple symbol, Announcement notification are full objects. Announcement can be the basis to Observer Design pattern.
 
+
+\section{A word about object coupling}
+\sd{should rewrite to get it more about objects and not components}
 Here is an interesting question that often comes up often when writing
 components. It is one that we faced when embedding our components. How
 do the components communicate with each other in a way that doesn't
@@ -50,14 +54,11 @@ change/update mechanism. Since early versions of Smalltalk, a
 dependency mechanism based on a change/update protocol is available
 and it is the foundation of the MVC framework itself. A component
 registers its interest in some event and that event triggers a
-notification. \lr{the reviewer wants to know if this is related to the
-  observer pattern.}
+notification. This is the basis of the Observer design pattern. 
 
-There is a new framework called Announcement developed originally by
-Vassili Bykov which has been ported to several Smalltalk
-implementations. While the original dependency framework relied on
-symbols for the event registration and notification, Announcement
-promotes an object-oriented solution. Events are plain objects.
+
+\section{Announcements}
+Announcement developed originally by Vassili Bykov is a new framework that offers notifications with full objects.  While the original dependency framework relied on symbols for the event registration and notification, Announcements promotes an object-oriented solution. Events are plain objects.
 
 The main idea behind the framework is to set up announcers, define or
 reuse some announcements, let clients register interest in events and
@@ -67,7 +68,7 @@ to the event occurrence. An announcer is responsible for registering
 interested clients and announcing events, see Figure~\ref{fig:announcementFlow}.
 
 \begin{figure}[ht]\centering
-	\includegraphics[height=10cm]{AnnouncementFlow}
+	\includegraphics[height=8cm]{AnnouncementFlow}
 	\caption{Announcement flow}
 	\label{fig:announcementFlow}
 \end{figure} 
@@ -242,6 +243,8 @@ SystemAnnouncement
 			SystemUnknownAnnouncement
 \end{code}
 
+
+Announcements are like exceptions because they notify about events, but they are different in the nature of relationship between the announcer and the handler. Exceptions are for communication along the sender stack chain. There is no explicit connection between the announcer and the handler apart from the fact that the handler calls the announcer, directly or indirectly. Announcements are for communications across the object network, with a connection between the announcer and the handler pre-established by subscribing.
 
 %=====
 
