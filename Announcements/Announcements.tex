@@ -62,18 +62,148 @@ Announcement developed originally by Vassili Bykov is a new framework that offer
 
 The main idea behind the framework is to set up announcers, define or
 reuse some announcements, let clients register interest in events and
-signal events. An event is an object representing an occurrence of a
+signal events. An announcement is an object representing an occurrence of a
 specific event. It is the place to define all the information related
 to the event occurrence. An announcer is responsible for registering
 interested clients and announcing events, see Figure~\ref{fig:announcementFlow}.
 
 \begin{figure}[ht]\centering
-	\includegraphics[height=8cm]{AnnouncementFlow}
+	\includegraphics[width=8cm]{AnnouncementFlow2}
 	\caption{Announcement flow}
 	\label{fig:announcementFlow}
 \end{figure} 
 
-\subsection{Example} Here is an example taken from Ramon Leon's
+\subsection{API}
+
+Any object interested in an announcement registers its interest
+using the method \mthind{on:do:}{on: anAnnouncementClass do: aBlock}
+or \mthind{on: anAnnouncementClass send: aSelector to: anObject}{on:
+  anAnnouncementClass send: aSelector to: anObject}.  The messages
+\ct{on:do:} and \ct{on:send:to:} are strictly equivalent to the
+messages \mthind{subscribe:do:}{subscribe: anAnnouncementClass do:
+  aValuable}  and \mthind{subscribe:send:to:}{subscribe: anAnnouncementClass send:
+  aSelector to: anObject}. You can also ask an announcer to
+\ct{unsubcribe:} an object.
+
+
+\begin{code}{Registering to an announcement}
+	anAnnouncer on: MyAnnouncement do: [:announcement | announcement doSomething ]
+\end{code}
+
+
+\begin{code}{Emitting an announcement}
+	anAnnouncer announce: (MyAnnouncement new)
+\end{code}
+
+\begin{method}{Unsubscribing from the announcer}
+    anAnnouncer unsubscribe: self
+\end{method}
+
+
+
+
+
+
+
+
+%=====
+%BEN
+
+
+\section{Weak Announcements}
+
+Even if you do not bind the emitter with the receiver, you create a dependency between to the announcer by registering yourself. And because announcers keep a reference to subscribers, this dependency prevent your registered objects to be garbage collected.
+
+To solve this problem, weak announcements have been implemented. A weak announcement acts like regular announcements but keeps only a weak reference to subscribers, allowing them to be garbage collected.
+
+\subsection{How to subscribe to weak announcement}
+
+This protocol is really simple, because it's almost the same than for regular announcements.
+
+When you use to do
+
+\begin{code}{}
+self session announcer on: RemoveChild send: #removeChild: to: self
+\end{code}
+
+you just do
+
+\begin{code}{}
+self session announcer !\textbf{weak}! on: RemoveChild send: #removeChild: to: self
+\end{code}
+
+The major difference is that you can't use the method \textbf{when:send:} anymore. Indeed if a weak announcement store a block, it will also store the block context and due to that, keep a strong reference to the subscriber.
+
+\subsection{System Announcements}
+
+We saw that you can create your own announcements to communicate between objects, but there are already existing announcements. All subclasses of \ct{SystemAnnouncement} are managed by the system to inform that it changed.
+
+%\paragraph{SystemCategoryAddedAnnouncement}
+%This announcement is emitted when a category is added to the system, by example using \mbox{\ct{SystemOrganizer>>#addCategory:}}
+%
+%\paragraph{SystemCategoryRemovedAnnouncement}
+%This announcement is emitted when a category is removed to the system, by example using \mbox{\ct{SystemOrganizer>>#removeCategory:}}
+%
+%\paragraph{SystemCategoryRenamedAnnouncement}
+%This announcement is emitted when a category is renamed to the system, by example using \mbox{\ct{SystemOrganizer>>#renameCategory:toBe:}}
+%
+%\paragraph{SystemClassAddedAnnouncement}
+%This announcement is emitted when a class or a trait is added to the system, by example using \mbox{\ct{Trait>>#named:}} or \mbox{\ct{Class>>#subclass:}}
+%
+%\paragraph{SystemClassCommentedAnnouncement}
+%This announcement is emitted twice when a class or a trait is commented, by example using \mbox{\ct{Trait>>#comment:}} or \mbox{\ct{Class>>#comment:}}
+%
+%\paragraph{SystemClassRecategorizedAnnouncement}
+%This announcement is emitted when a class or a trait is set, by example using \mbox{\ct{Trait>>#category:}} or \mbox{\ct{Class>>#category:}}
+%
+%\paragraph{SystemClassRemovedAnnouncement}
+%This announcement is emitted when a class or a trait is deleted from the system, by example using \mbox{\ct{Trait>>#removeFromSystem}} or \mbox{\ct{Class>>#removeFromSystem}}
+%
+%\paragraph{SystemClassRenamedAnnouncement}
+%This announcement is emitted when a class or a trait is renamed, by example using \mbox{\ct{Trait>>#rename:}} or \mbox{\ct{Class>>#rename:}}
+%
+%\paragraph{SystemClassReorganizedAnnouncement}
+%This announcement is emitted when a class or a trait's protocol is changed, by example using \mbox{\ct{Trait>>#removeCategory:}} or \mbox{\ct{Class>>#removeCategory:}}
+
+
+\begin{code}{SystemAnnouncement hierarchy}
+SystemAnnouncement
+			SystemCategoryAddedAnnouncement
+			SystemCategoryRemovedAnnouncement
+			SystemCategoryRenamedAnnouncement
+			SystemClassAddedAnnouncement
+			SystemClassCommentedAnnouncement
+			SystemClassRecategorizedAnnouncement
+			SystemClassRemovedAnnouncement
+			SystemClassRenamedAnnouncement
+			SystemClassReorganizedAnnouncement
+			SystemMethodAddedAnnouncement
+			SystemMethodModifiedAnnouncement
+			SystemMethodRecategorizedAnnouncement
+			SystemMethodRemovedAnnouncement
+			SystemProtocolAddedAnnouncement
+			SystemProtocolRemovedAnnouncement
+			SystemUnknownAnnouncement
+\end{code}
+
+\section{Discussions}
+Announcements are like exceptions because they notify about events, but they are different in the nature of relationship between the announcer and the handler. Exceptions are for communication along the sender stack chain. There is no explicit connection between the announcer and the handler apart from the fact that the handler calls the announcer, directly or indirectly. Announcements are for communications across the object network, with a connection between the announcer and the handler pre-established by subscribing.
+
+%=====
+
+
+%=============================================================
+\ifx\wholebook\relax\else
+   \bibliographystyle{jurabib}
+   \nobibliography{scg}
+   \end{document}
+\fi
+%=============================================================
+
+
+\subsection{Example in Seaside} 
+
+\sd{I would remove this example -  I know I wrote it but....}Here is an example taken from Ramon Leon's
 very good Smalltalk blog. This example shows how we can use
 announcements to manage the communication between a parent component
 and its children as for example in the context of a menu and its menu
@@ -159,104 +289,6 @@ between components.  On one hand, announcements let you create loosely
 coupled components and thus maximize reusability.  On the other hand,
 they introduce additional complexity when you may be able solve your
 communication problem with a simple message send.
-
-
-
-
-%=====
-%BEN
-
-
-\section{Weak Announcements}
-
-Event if you do not bind the emitter with the receiver, you create a dependency between to the announcer by registering yourself. And because announcers keep a reference to subscribers, this dependency prevent your registered objects to be garbage collected.
-
-To solve this problem, weak announcements have been implemented. It act like regular announcements but keep only a weak reference to subscribers, allowing them to be garbage collected.
-
-\subsection{How to subscribe to weak announcement}
-
-This protocol is really simple, because it's almost the same than for regular announcements.
-
-When you use to do
-
-\begin{code}{}
-self session announcer on: RemoveChild send: #removeChild: to: self
-\end{code}
-
-you just do
-
-\begin{code}{}
-self session announcer !\textbf{weak}! on: RemoveChild send: #removeChild: to: self
-\end{code}
-
-The major difference is that you can't use the method \textbf{when:send:} anymore. Indeed if a weak announcement store a block, it will also store the block context and due to that, keep a strong reference to the subscriber.
-
-\subsection{System Announcements}
-
-We saw that you can create your own announcements to communicate between objects, but there is already existing announcement, all subclass of \ct{SystemAnnouncement}, managed by the system to inform that it changed.
-
-%\paragraph{SystemCategoryAddedAnnouncement}
-%This announcement is emitted when a category is added to the system, by example using \mbox{\ct{SystemOrganizer>>#addCategory:}}
-%
-%\paragraph{SystemCategoryRemovedAnnouncement}
-%This announcement is emitted when a category is removed to the system, by example using \mbox{\ct{SystemOrganizer>>#removeCategory:}}
-%
-%\paragraph{SystemCategoryRenamedAnnouncement}
-%This announcement is emitted when a category is renamed to the system, by example using \mbox{\ct{SystemOrganizer>>#renameCategory:toBe:}}
-%
-%\paragraph{SystemClassAddedAnnouncement}
-%This announcement is emitted when a class or a trait is added to the system, by example using \mbox{\ct{Trait>>#named:}} or \mbox{\ct{Class>>#subclass:}}
-%
-%\paragraph{SystemClassCommentedAnnouncement}
-%This announcement is emitted twice when a class or a trait is commented, by example using \mbox{\ct{Trait>>#comment:}} or \mbox{\ct{Class>>#comment:}}
-%
-%\paragraph{SystemClassRecategorizedAnnouncement}
-%This announcement is emitted when a class or a trait is set, by example using \mbox{\ct{Trait>>#category:}} or \mbox{\ct{Class>>#category:}}
-%
-%\paragraph{SystemClassRemovedAnnouncement}
-%This announcement is emitted when a class or a trait is deleted from the system, by example using \mbox{\ct{Trait>>#removeFromSystem}} or \mbox{\ct{Class>>#removeFromSystem}}
-%
-%\paragraph{SystemClassRenamedAnnouncement}
-%This announcement is emitted when a class or a trait is renamed, by example using \mbox{\ct{Trait>>#rename:}} or \mbox{\ct{Class>>#rename:}}
-%
-%\paragraph{SystemClassReorganizedAnnouncement}
-%This announcement is emitted when a class or a trait's protocol is changed, by example using \mbox{\ct{Trait>>#removeCategory:}} or \mbox{\ct{Class>>#removeCategory:}}
-
-
-\begin{code}{SystemAnnouncement hierarchy}
-SystemAnnouncement
-			SystemCategoryAddedAnnouncement
-			SystemCategoryRemovedAnnouncement
-			SystemCategoryRenamedAnnouncement
-			SystemClassAddedAnnouncement
-			SystemClassCommentedAnnouncement
-			SystemClassRecategorizedAnnouncement
-			SystemClassRemovedAnnouncement
-			SystemClassRenamedAnnouncement
-			SystemClassReorganizedAnnouncement
-			SystemMethodAddedAnnouncement
-			SystemMethodModifiedAnnouncement
-			SystemMethodRecategorizedAnnouncement
-			SystemMethodRemovedAnnouncement
-			SystemProtocolAddedAnnouncement
-			SystemProtocolRemovedAnnouncement
-			SystemUnknownAnnouncement
-\end{code}
-
-
-Announcements are like exceptions because they notify about events, but they are different in the nature of relationship between the announcer and the handler. Exceptions are for communication along the sender stack chain. There is no explicit connection between the announcer and the handler apart from the fact that the handler calls the announcer, directly or indirectly. Announcements are for communications across the object network, with a connection between the announcer and the handler pre-established by subscribing.
-
-%=====
-
-
-%=============================================================
-\ifx\wholebook\relax\else
-   \bibliographystyle{jurabib}
-   \nobibliography{scg}
-   \end{document}
-\fi
-%=============================================================
-
 
 
 
