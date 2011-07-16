@@ -252,30 +252,28 @@ Now we are able to write a more complicated grammar for evaluating
 simple arithmetic expressions. Within a workspace we start with the
 grammar for a number (actually an integer):
 
-\begin{code}{}
+\begin{code}{@Test}
 number :=  #digit asParser plus token trim ==> [ :token | token value asNumber ].
+number parse: '123'             --> 123
 \end{code}
 
 Then we define the productions for addition and multiplication in
 order of precedence. Note that we instantiate the productions as
-\ct{PPUnresolvedParser} upfront, because they recursively refer to
-each other. The method \ct{#def:} resolves this recursion using the
-reflective facilities of the host language:
+\ct{PPDelegateParser} upfront, because they recursively refer to each
+other. The method \ct{#setParser:} then resolves this recursion.
 
 \begin{code}{}
-term := PPUnresolvedParser new.
-prod := PPUnresolvedParser new.
-prim := PPUnresolvedParser new.
+term := PPDelegateParser new.
+prod := PPDelegateParser new.
+prim := PPDelegateParser new.
  
-term def: (prod , $+ asParser trim , term ==> [ :nodes | nodes first + nodes last ])
-   / prod.
-prod def: (prim , $* asParser trim , prod ==> [ :nodes | nodes first * nodes last ])
-   / prim.
-prim def: ($( asParser trim , term , $) asParser trim ==> [ :nodes | nodes second ])
-   / number.
+term setParser: (prod , $+ asParser trim , term ==> [ :nodes | nodes first + nodes last ]) / prod.
+prod setParser: (prim , $* asParser trim , prod ==> [ :nodes | nodes first * nodes last ]) / prim.
+prim setParser: ($( asParser trim , term , $) asParser trim ==> [ :nodes | nodes second ]) / number.
 \end{code}
 
-To make sure that our parser consumes all input we wrap it with the end parser into the start production:
+To make sure that our parser consumes all input we wrap it with the
+\ct{end} parser into the \ct{start} production:
 
 \begin{code}{}
 start := term end.
@@ -288,29 +286,24 @@ start parse: '1 + 2 * 3'.       --> 7
 start parse: '(1 + 2) * 3'.     --> 9
 \end{code}
 
-As an exercise we could extend the parser to also accept negative
-numbers and floating point numbers, not only integers. Furthermore it
-would be useful to add support subtraction and division as well. All
-these features can be added with a few lines of PetitParser code.
-
 \section{Composite Grammars with PetitParser}
 
-In a previous post I described the basic principles of PetitParser and
-gave some introductory examples. In this blog post I am going to
+In the previous section we saw the basic principles of PetitParser and
+gave some introductory examples. In this section we are going to
 present a way to define more complicated grammars. We continue where
 we left off the last time, with the expression grammar.
 
-Writing parsers as a script as we did in the previous post can be
-cumbersome, especially if grammar productions that are mutually
-recursive and refer to each other in complicated ways. Furthermore a
-grammar specified in a single script makes it unnecessary hard to
-reuse specific parts of that grammar. Luckily there is
+Writing parsers as a script as we did previously can be cumbersome,
+especially if grammar productions that are mutually recursive and
+refer to each other in complicated ways. Furthermore a grammar
+specified in a single script makes it unnecessary hard to reuse
+specific parts of that grammar. Luckily there is
 \ct{PPCompositeParser} to the rescue.
 
 \section{Defining the Grammar}
 
 As an example let's create a composite parser using the same
-expression grammar we built in the last blog post:
+expression grammar we built in the last section:
 
 \begin{code}{}
 PPCompositeParser subclass: #ExpressionGrammar
@@ -321,7 +314,7 @@ PPCompositeParser subclass: #ExpressionGrammar
 \end{code}
 
 Again we start with the grammar for an integer number. Define the
-method number in \ct{ExpressionGrammar} as follows:
+method \ct{number} in \ct{ExpressionGrammar} as follows:
 
 \begin{code}{}
 ExpressionGrammar>>number
@@ -329,19 +322,14 @@ ExpressionGrammar>>number
 \end{code}
 
 Every production in \ct{ExpressionGrammar} is specified as a method
-that returns its parser. Productions refer to each other by reading
+that returns its parser. Next we define the productions \ct{term},
+\ct{prod}, and \ct{prim}. Productions refer to each other by reading
 the respective instance variable of the same name. This is important
 to be able to create recursive grammars. The instance variables
 themselves are typically not written to as PetitParser takes care to
-initialize them for you automatically.
-
-Next we define the productions term, prod, and prim. Contrary to our
-previous implementation we do not define the production actions yet;
-and we factor out the parts for addition (\ct{add}), multiplication
-(\ct{mul}), and parenthesis (\ct{parens}) into separate productions.
-This will give us better reusability later on. We let Pharo
-automatically add the necessary instance variables as we refer to them
-for the first time.
+initialize them for you automatically. We let Pharo automatically add
+the necessary instance variables as we refer to them for the first
+time.
 
 \begin{code}{}
 ExpressionGrammar>>term
@@ -361,14 +349,27 @@ ExpressionGrammar>>prim
 
 ExpressionGrammar>>parens
    ^ $( asParser trim , term , $) asParser trim
+\end{code}
 
-Last but not least we define the starting point of the expression grammar. This is done by overriding start in the ExpressionGrammar class:
+Contrary to our previous implementation we do not define the
+production actions yet; and we factor out the parts for addition
+(\ct{add}), multiplication (\ct{mul}), and parenthesis (\ct{parens})
+into separate productions. This will give us better reusability later
+on. Usually, production methods are categorized in a protocol named
+\ct{grammar} (which can be refined into more specific protocol names
+when necessary such as \ct{grammar-literals}).
 
+Last but not least we define the starting point of the expression
+grammar. This is done by overriding start in the
+\ct{ExpressionGrammar} class:
+
+\begin{code}{}
 ExpressionGrammar>>start
    ^ term end
 \end{code}
 
-Instantiating the \ct{ExpressionGrammar} gives us an expression parser that returns a default abstract-syntax tree:
+Instantiating the \ct{ExpressionGrammar} gives us an expression parser
+that returns a default abstract-syntax tree:
 
 \begin{code}{@Test}
 parser := ExpressionGrammar new.
@@ -380,7 +381,7 @@ parser parse: '(1 + 2) * 3'.     --> #(#($( #(1 $+ 2) $)) $* 3)
 
 Now that we have defined a grammar we can reuse this definition to
 implement an evaluator. To do this we create a subclass of
-\ct{ExpressionGrammar} called \ct{ExpressionEvaluator}
+\ct{ExpressionGrammar} called \ct{ExpressionEvaluator}.
 
 \begin{code}{}
 ExpressionGrammar subclass: #ExpressionEvaluator
@@ -390,7 +391,7 @@ ExpressionGrammar subclass: #ExpressionEvaluator
    category: 'PetitTutorial'
 \end{code}
 
-and we redefine the implementation of \ct{add}, \ct{mul} and
+We then redefine the implementation of \ct{add}, \ct{mul} and
 \ct{parens} with our evaluation semantics:
 
 \begin{code}{}
@@ -412,14 +413,38 @@ parser parse: '1 + 2 * 3'.       --> 7
 parser parse: '(1 + 2) * 3'.     --> 9
 \end{code}
 
-Similarly — as an exercise — a pretty printer can be defined by
-subclassing \ct{ExpressionGrammar} and by redefining a few of its
-productions:
+Similarly a pretty printer can be defined by subclassing
+\ct{ExpressionGrammar}:
 
 \begin{code}{@Test}
 parser := ExpressionPrinter new.
 parser parse: '1+2 *3'.          --> '1 + 2 * 3'
 parser parse: '(1+ 2 )* 3'.      --> '(1 + 2) * 3'
+\end{code}
+
+This is done with the following code:
+
+\begin{code}{}
+ExpressionGrammar subclass: #ExpressionPrinter
+  instanceVariableNames: ''
+  classVariableNames: ''
+  poolDictionaries: ''
+  category: 'PetitTutorial'
+
+ExpressionPrinter>>add
+  ^ super add ==> [:nodes | nodes first, ' + ', nodes third]
+
+ExpressionPrinter>>mul
+  ^ super mul ==> [:nodes | nodes first, ' * ', nodes third]
+
+ExpressionPrinter>>number
+  ^ super number ==> [:num | num printString]
+
+ExpressionPrinter>>parens
+  ^ super parens ==> [:node | '(', node second, ')']
+
+ExpressionPrinter>>term
+  ^ super term
 \end{code}
 
 \subsection{Tutorial Conclusion}
