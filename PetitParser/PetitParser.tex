@@ -442,9 +442,74 @@ ExpressionPrinter>>number
 
 ExpressionPrinter>>parens
   ^ super parens ==> [:node | '(', node second, ')']
+\end{code}
 
-ExpressionPrinter>>term
-  ^ super term
+\section{Testing a Grammar}
+
+Testing a grammar is done by subclassing \ct{PPCompositeParserTest} as
+follows:
+
+\begin{code}{}
+PPCompositeParserTest subclass: #ExpressionGrammarTest
+  instanceVariableNames: ''
+  classVariableNames: ''
+  poolDictionaries: ''
+  category: 'PetitTutorial'
+\end{code}
+
+Then, the parser class should be defined in the corresponding method:
+
+\begin{code}{}
+ExpressionGrammarTest>>parserClass
+  ^ ExpressionGrammar
+\end{code}
+
+Tests can then be written in separate methods:
+
+\begin{code}{}
+ExpressionGrammarTest>>testNumber
+  self parse: '123 ' rule: #number.
+
+ExpressionGrammarTest>>testAdd
+  self parse: '123+77' rule: #add.
+\end{code}
+
+Testing the evaluator and printer is similarly easy:
+
+\begin{code}{}
+ExpressionGrammarTest subclass: #ExpressionEvaluatorTest
+  instanceVariableNames: ''
+  classVariableNames: ''
+  poolDictionaries: ''
+  category: 'PetitTutorial'
+
+ExpressionEvaluatorTest>>parserClass
+  ^ ExpressionEvaluator 
+
+ExpressionEvaluatorTest>>testAdd
+  super testAdd.
+  self assert: result equals: 200
+
+ExpressionEvaluatorTest>>testNumber
+  super testNumber.
+  self assert: result equals: 123
+
+ExpressionGrammarTest subclass: #ExpressionPrinterTest
+  instanceVariableNames: ''
+  classVariableNames: ''
+  poolDictionaries: ''
+  category: 'PetitTutorial'
+
+ExpressionPrinterTest>>parserClass
+  ^ ExpressionPrinter 
+
+ExpressionPrinterTest>>testAdd
+  super testAdd.
+  self assert: result equals: '123 + 77'
+
+ExpressionPrinterTest>>testNumber
+  super testNumber.
+  self assert: result equals: '123'
 \end{code}
 
 \subsection{Tutorial Conclusion}
@@ -477,3 +542,4 @@ Renggli's PhD have a dedicated chapter dedicated.
 %%% TeX-PDF-mode: t
 %%% ispell-local-dictionary: "english"
 %%% End:
+% LocalWords:  subclassing
