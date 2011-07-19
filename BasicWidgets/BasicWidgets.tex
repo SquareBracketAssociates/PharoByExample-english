@@ -193,9 +193,13 @@ je ne comprends pas pourquoi je peux alors avoir une fenetre immense?
 
 \section{Add submorphs to a morph}
 
-%Now that we have our window as we like, we will fill it up with some other morphs.
+\ben{Maybe we should write a section about layouts to describe their API ?}
 
-\subsection{With the default layout}
+Now that you now how to create UI objects, we will show you how to add those objects into another morph.
+
+\subsection{With the default layout into a window}
+
+This section is explain how to add morph into a window with the default layout.
 
 The default layout is ProportionalLayout. To use it, you have to use the method \mthind{addMorph:frame:}{addMorph: aMorph frame: aFrame}
 \begin{code}{}
@@ -210,7 +214,7 @@ where x0, y0, x1 and y1 are defined as shown in the figure~\ref{fig:defaultFrame
 	\caption{How frames are defined}
 	\label{fig:defaultFrame}
 	\includegraphics[width=7cm]{FrameExplanation}
-	\caption{An exemple}
+	\caption{An example}
 	\label{fig:frameExplanation}
 \end{figure}
 
@@ -329,7 +333,17 @@ Note that like for the previous example, you can resize each part.
 
 So basically, you now know everything about the default layout.
 
+
+%----------------------------------------------------------------------------------------------
+%
+%				More Complicated Layouts
+%
+%----------------------------------------------------------------------------------------------
+
+
 \subsection{More complicated layouts}
+
+This section will explain how to use different layouts and can be used to add morphs into another morph, which is a window or not.
 
 Now that we have seen the default layout, I will introduce you quickly the other layouts:
 \begin{itemize}
@@ -343,6 +357,219 @@ Now that we have seen the default layout, I will introduce you quickly the other
 
 This layout is used when you have to specified both a fix part \footnote{independent of the size of the window} and a proportional part\footnote{like the ProportionalLayout}.
 
+This layout is used by example to add a toolbar.
+
+To use this layout, you will have to use the method \mthind{addMorph:fullFrame:}{addMorph: aMorph fullFrame: aLayout} as follow:
+
+\begin{code}{}
+toolBarHeight := 100.
+
+window
+	addMorph: redMorph
+	fullFrame: (LayoutFrame
+				fractions: (0@0 corner: 1@0) "proportional part"
+				offsets: (0@0 corner: 0@toolBarHeight)). "fix part"
+
+window
+	addMorph: blueMorph
+	fullFrame: (LayoutFrame
+				fractions: (0@0 corner: 1@1) "proportional part"
+				offsets: (0@toolBarHeight corner: 0@0)). "fix part"
+
+redMorph color: Color red.
+blueMorph color: Color blue.
+	
+window openInWorld.
+\end{code}
+
+As a result, you can see the red static part and the blue part which fill the space. When you resize the window, the red part will always stay the same (see FIG~\ref{fig:layoutFrame}).
+
+\begin{figure}[ht]\centering
+	\includegraphics[width=7cm]{LayoutFrame}
+	\caption{Fix red part and dynamic blue part}
+	\label{fig:layoutFrame}
+\end{figure}
+
+Another example:
+\begin{code}{}
+toolBarHeight := 100.
+
+window
+	addMorph: redMorph
+	fullFrame: (LayoutFrame
+				fractions: (0@0 corner: 1@1) "proportional part"
+				offsets: (0@0 corner: 0@(toolBarHeight negated))). "fix part"
+
+window
+	addMorph: blueMorph
+	fullFrame: (LayoutFrame
+				fractions: (0@1 corner: 1@1) "proportional part"
+				offsets: (0@(toolBarHeight negated) corner: 0@0)). "fix part"
+
+redMorph color: Color red.
+blueMorph color: Color blue.
+	
+window openInWorld.
+\end{code}
+
+Here you can see that the fix part (the blue one) is below (see FIG~\ref{fig:layoutFrame2}).
+
+\begin{figure}[ht]\centering
+	\includegraphics[width=7cm]{LayoutFrame2}
+	\caption{Fix blue part and red blue part}
+	\label{fig:layoutFrame2}
+\end{figure}
+
+Let's try a bit more complicated example:
+\begin{code}{}
+toolBarHeight := 100.
+
+window	addMorph: redMorph	fullFrame: (LayoutFrame				fractions: (0@0 corner: 1@0.4) "proportional part"				offsets: (0@0 corner: 0@0)). "fix part"				window	addMorph: greenMorph	fullFrame: (LayoutFrame				fractions: (0@0.4 corner: 1@0.4)				offsets: (0@0 corner: 0@toolBarHeight)).				window	addMorph: blueMorph	fullFrame: (LayoutFrame				fractions: (0@0.4 corner: 1@1) "proportional part"				offsets: (0@toolBarHeight corner: 0@0)). "fix part"redMorph color: Color red.blueMorph color: Color blue.greenMorph color: Color green.
+	
+window openInWorld.
+\end{code}
+
+So now, the fix part is the green morph which stick in the middle of the window (see FIG~\ref{fig:layoutFrame3}).
+
+\begin{figure}[ht]\centering
+	\includegraphics[width=7cm]{LayoutFrame3}
+	\caption{Dynamic red and blue parts and green fix part}
+	\label{fig:layoutFrame3}
+\end{figure}
+
+Of course, you can do the same vertically:
+\begin{code}{}
+toolBarWidth := 50.
+
+window	addMorph: redMorph	fullFrame: (LayoutFrame				fractions: (0@0 corner: 0.4@1) "proportional part"				offsets: (0@0 corner: 0@0)). "fix part"				window	addMorph: greenMorph	fullFrame: (LayoutFrame				fractions: (0.4@0 corner: 0.4@1)				offsets: (0@0 corner: toolBarWidth@0)).				window	addMorph: blueMorph	fullFrame: (LayoutFrame				fractions: (0.4@0 corner: 1@1) "proportional part"				offsets: (toolBarWidth@0 corner: 0@0)). "fix part"redMorph color: Color red.blueMorph color: Color blue.greenMorph color: Color green.
+	
+window openInWorld.
+\end{code}
+
+So the result is the same but vertically (see FIG~\ref{fig:layoutFrame4}).
+
+\begin{figure}[ht]\centering
+	\includegraphics[width=7cm]{LayoutFrame4}
+	\caption{Dynamic red and blue parts and green fix part}
+	\label{fig:layoutFrame4}
+\end{figure}
+
+\subsection{RowLayout}
+
+RowLayout is used to add submorphs in a single row where each submorph will be equally dispatched.
+
+So let's try to use it: 
+\begin{code}{}
+window layoutPolicy: RowLayout new.window 	addMorph: redMorph;	addMorph: blueMorph;	addMorph: greenMorph.window openInWorld.
+\end{code}
+
+As you can see, the window title bar is misplaced\footnote{because it's added using the same method once the layout has been changed} (see FIG~\ref{fig:rowLayout1}).
+
+\begin{figure}[ht]\centering
+	\includegraphics[width=7cm]{RowLayout1}
+	\caption{The title bar is misplaced}
+	\label{fig:rowLayout1}
+\end{figure}
+
+So to fix that, we will use a container
+\begin{code}{}
+container := PanelMorph new.
+
+container layoutPolicy: RowLayout new.
+
+container 	addMorph: redMorph;	addMorph: blueMorph;	addMorph: greenMorph.
+
+window
+	addMorph: container
+	frame: (0@0 corner: 1@1).window openInWorld.
+\end{code}
+
+As you can see, it's a bit better, but the morphs do not fill the whole space (see FIG~\ref{fig:rowLayout2}).
+
+\begin{figure}[ht]\centering
+	\includegraphics[width=7cm]{RowLayout2}
+	\caption{The title bar is well placed, but morphs do not fill the whole space}
+	\label{fig:rowLayout2}
+\end{figure}
+
+So let's fix that:
+\begin{code}{}
+container := PanelMorph new.container layoutPolicy: RowLayout new.redMorph	hResizing: #spaceFill;	vResizing: #spaceFill.blueMorph	hResizing: #spaceFill;	vResizing: #spaceFill.	greenMorph	hResizing: #spaceFill;	vResizing: #spaceFill.container 	addMorph: redMorph;	addMorph: blueMorph;	addMorph: greenMorph.window	addMorph: container	frame: (0@0 corner: 1@1).window openInWorld.
+\end{code}
+
+So for each submorph we have specified that both vertically and horizontally it should fill the space.
+The result is what we have expected (see FIG~\ref{fig:rowLayout3}).
+
+\begin{figure}[ht]\centering
+	\includegraphics[width=7cm]{RowLayout3}
+	\caption{Finally what we expected}
+	\label{fig:rowLayout3}
+\end{figure}
+
+Note that contrary to the ProportionalLayout, here you can't resize any part.
+
+\subsection{StackLayout}
+
+\ben{I do not know how it works ... Should ask Igor}
+
+\subsection{TableLayout}
+
+This layout is used to align submorphs following a row or a column and taking in account a direction.
+
+So by default, the layout construct a column directed from top to bottom
+\begin{code}{}
+container := PanelMorph new.container 	layoutPolicy: TableLayout new;	listDirection: #topToBottom.{ redMorph. blueMorph. greenMorph } do: [:each |	each 		hResizing: #spaceFill;		vResizing: #spaceFill ].	container 	addMorph: redMorph;	addMorph: blueMorph;	addMorph: greenMorph.window	addMorph: container	frame: (0@0 corner: 1@1).window openInWorld.
+\end{code}
+
+So you can see the column where any morph is dispatched equally (see FIG~\ref{fig:tableLayout1}).
+
+\begin{figure}[ht]\centering
+	\includegraphics[width=7cm]{TableLayout1}
+	\caption{TableLayout by default}
+	\label{fig:tableLayout1}
+\end{figure}
+
+Note that you can't resize any submorph and that you have add in order:
+\begin{itemize}
+	\item red
+	\item blue
+	\item green
+\end{itemize}
+and you get
+\begin{itemize}
+	\item green
+	\item blue
+	\item red
+\end{itemize}
+
+The explanation is that when you add a morph following the direction, it's done like in Tetris, you make them fall following the direction. But the direction is kept when there is space to keep.
+
+Let's see an example where we do not force each morph to expanse vertically
+\begin{code}{}
+container := PanelMorph new.container 	layoutPolicy: TableLayout new;	listDirection: #topToBottom.{ redMorph. blueMorph. greenMorph } do: [:each |	each 		hResizing: #spaceFill ].	container 	addMorph: redMorph;	addMorph: blueMorph;	addMorph: greenMorph.window	addMorph: container	frame: (0@0 corner: 1@1).window openInWorld.
+\end{code}
+
+Here you see that the space is kept below submorphs (see FIG~\ref{fig:tableLayout2}).
+
+\begin{figure}[ht]\centering
+	\includegraphics[width=7cm]{TableLayout2}
+	\caption{The space is left below submorphs}
+	\label{fig:tableLayout2}
+\end{figure}
+
+You can also experiment the other directions
+
+\begin{figure}[ht]\centering
+	\includegraphics[width=7cm]{TableLayout3}
+	\caption{Bottom To Top}
+	\label{fig:tableLayout3}
+	\includegraphics[width=7cm]{TableLayout4}
+	\caption{Left To Righ}
+	\label{fig:tableLayout4}
+	\includegraphics[width=7cm]{TableLayout5}
+	\caption{Right To Left}
+	\label{fig:tableLayout5}
+\end{figure}
 
 
 \section{Conclusion}
