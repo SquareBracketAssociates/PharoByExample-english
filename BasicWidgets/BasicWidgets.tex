@@ -342,14 +342,22 @@ window
 	fullFrame: (LayoutFrame
 				fractions: (0@0 corner: 1@0) "proportional part"
 				offsets: (0@0 corner: 0@toolBarHeight)). "fix part"
+				
+				"Here, fractions: (0@0 corner: 1@0) means that the morph will fit the while width of the morph, but that the height is not dynamic (both y values are 0)"
+				"and offsets: (0@0 corner: 0@toolBarHeight) means that the height is static and values toolBarHeight"
+				
 window
 	addMorph: blueMorph
 	fullFrame: (LayoutFrame
 				fractions: (0@0 corner: 1@1) "proportional part"
 				offsets: (0@toolBarHeight corner: 0@0)). "fix part"
+				
+	"Here fractions: (0@0 corner: 1@1) means that the moprh will	fit the whole container"
+	"but offsets: (0@toolBarHeight corner: 0@0) precise that the top of the morph will always be at toolBarHeight from the top of the container"
 \end{code}
 
 \sd{can you explain fractions: (0@0 corner: 1@1)?}
+\ben{is that better ?}
 
 
 As a result, you can see the red static part and the blue part which fill the space. When you resize the window, the red part will always stay the same (see Figure~\ref{fig:layoutFrame}).
