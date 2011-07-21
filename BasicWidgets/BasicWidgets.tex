@@ -35,22 +35,29 @@
 \chapter{Basic Widgets}
 
 \section{The window}
+\index{Morphic!window}
+
 \subsection{Opening a window}
-The basic class for managing a window is \ct{StandardWindow}. Let's start with an empty one. To create and open an empty window just try the following:
+The basic class for managing a window is \clsind{StandardWindow}. Let's start with an empty one.
+
+\dothis{To create and open an empty window just try the following:}
 \begin{code}{}
 StandardWindow new openInWorld
 \end{code}
-You should see a window with a topbar that you can move with the mouse (see FIG~\ref{fig:emptyWindow}). 
+You should see a window with a topbar that you can move with the mouse (see \figref{fig:emptyWindow}). 
 
-\begin{figure}[ht]\centering
+\begin{figure}[ht]
+\begin{center}
 	\includegraphics[width=6cm]{EmptyWindow}
 	\caption{An empty window}
-	\label{fig:emptyWindow}
+	\figlabel{fig:emptyWindow}
+\end{center}
 \end{figure} 
 
 On one side, the topbar has three buttons for closing, collapsing and expanding the window. On the other side, the topbar has a menu button with a default set of items.
 
 \subsection{A window and its model}
+\index{Morphic!window model}
 
 To set a model to a window, it's quite easy:
 
@@ -84,16 +91,18 @@ StandardWindow new openInWorld.
 StandardWindow new model: (MyModel new); openInWorld.
 \end{code}
 
-So you should see a window with the same size than the previous one, and a small window which size is exactly what you have specified in the method \ct{initialExtent} (see FIG~\ref{fig:withAndWithoutModel}).
+So you should see a window with the same size than the previous one, and a small window which size is exactly what you have specified in the method \mthind{Morph}{initialExtent} (see \figref{fig:withAndWithoutModel}).
 \sd{should we always specifies a model?}
 \ben{If you want to specify the initial extent, either you define a model or you subclass (as far as I know)}
 \sd{what should be put in the model vs. the Morph itself?}
 \ben{I think/hope it will be clear when the API section will be complete}
 
-\begin{figure}[ht]\centering
+\begin{figure}[ht]
+\begin{center}
 	\includegraphics[width=7cm]{WithAndWithoutModel}
 	\caption{Two windows: one without a model and one with a model}
-	\label{fig:withAndWithoutModel}
+	\figlabel{fig:withAndWithoutModel}
+\end{center}
 \end{figure}
 
 You can also defined this method:
@@ -110,7 +119,8 @@ Now, when you try to close the small window nothing happens.
 
 Here, we will show you how to easily add direct and simple shortcuts in the window's menu.
 
-First, your window must have a model, then you simply have to implement the method \mthind{addModelItemsToWindowMenu:}{addModelItemsToWindowMenu: aMenu} and to fill up the menu provided as parameter as following:
+First, your window must have a model, then you simply have to implement the method \mthind{Object}{addModelItemsToWindowMenu: aMenu} and to fill up the menu provided as parameter as following:
+\apl{addModelItemsToWindowMenu: is in Object !!}
 
 \begin{method}{}
 addModelItemsToWindowMenu: aMenu
@@ -140,15 +150,22 @@ MyModel>>addModelItemsToWindowMenu: aMenu
 		action: #inspect.
 \end{method} 
 
-So when you click on the menu button, you see at the end of the list the label we typed just before (see FIG~\ref{fig:menuBar}), and when you click on it, an inspector is opened (see FIG~\ref{fig:windowAndInspector})
+So when you click on the menu button, you see at the end of the list the label we typed just before (see \figref{fig:menuBar}), and when you click on it, an inspector is opened (see \figref{fig:windowAndInspector})
 
-\begin{figure}[ht]\centering
+\begin{figure}[ht]
+\begin{center}
 	\includegraphics[width=7cm]{MenuBar}
 	\caption{Menu with our extra item at the end}
-	\label{fig:menuBar}
+	\figlabel{fig:menuBar}
+\end{center}
+\end{figure}
+
+\begin{figure}[ht]
+\begin{center}
 	\includegraphics[width=7cm]{WindowAndInspector}
 	\caption{The inspector is well opened}
-	\label{fig:windowAndInspector}
+	\figlabel{fig:windowAndInspector}
+\end{center}
 \end{figure}
 
 \subsection{Main Window API}
@@ -177,6 +194,32 @@ je ne comprends pas pourquoi je peux alors avoir une fenetre immense?
 \item unresizeable?
 \item Action on close?
 \end{itemize}
+
+\paragraph*{Title.}
+\mthind{StandardWindow}{title:}
+The default title of the window is simply 'Window'. You can change this title by sending \mthind{StandardWindow}{title:} to a window with a String as argument:
+\begin{code}{}
+w := StandardWindow new title: 'My first window'.
+w openInWorld
+\end{code}
+\paragraph*{Position and size.}
+In order to change the position and the size of a window, you can send the messages \mthind{StandardWindow}{extent:} and \mthind{StandardWindow}{position:} to a newly opened window. 
+\needlines{4}
+\begin{code}{}
+w := StandardWindow new title: 'My first window'.
+w openInWorld.
+w extent: 100@50.
+w position: 0@0
+\end{code}
+\dothis{Now try the following: first create a window but without opening it; then set its size and its position and then open it by sending \ct{openInWorld} to it.}
+\needlines{4}
+\begin{code}{}
+w := StandardWindow new title: 'My first window'.
+w extent: 100@50.
+w position: 0@0
+w openInWorld.
+\end{code}
+You should observe that the size and the position are not set with your values. Don't worry, you did nothing wrong, its a normal behavior regarding the way window opening is implemented in Morphic. In fact you have to know that a window internal state is overwritten with default values when it is opened. This is one of the responsibilities of \clsind{RealEstateAgent}. 
 
 
 \section{Buttons}
