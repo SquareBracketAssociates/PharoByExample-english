@@ -191,15 +191,17 @@ je ne comprends pas pourquoi je peux alors avoir une fenetre immense?
 
 \section{Tree widgets}
 
-\section{Add submorphs to a morph}
+\section{Layout or how positioning submorphs}
 
 \ben{Maybe we should write a section about layouts to describe their API ?}
+\sd{yes excellent idea. Do you know that luarent and hilaire wrote some text }
 
-Now that you now how to create UI objects, we will show you how to add those objects into another morph.
+Adding a morph to another one is simple using the \ct{addMorph:} message. Now we often want to place a morph at a given place and in particular that the morph occupies space even if its container morph is resized. For that we use layout. Layout are objects that control how to morphs occupy space. Several layouts exist: proportional, 
+
 
 \subsection{With the default layout into a window}
 
-This section is explain how to add morph into a window with the default layout.
+This section  explains how to add morph into a window with the default layout.
 
 The default layout is ProportionalLayout. To use it, you have to use the method \mthind{addMorph:frame:}{addMorph: aMorph frame: aFrame}
 \begin{code}{}
@@ -207,100 +209,80 @@ aWindow
 	addMorph: morphToAdd
 	frame: (x0@y0 corner: x1@y1)
 \end{code}
-where x0, y0, x1 and y1 are defined as shown in the figure~\ref{fig:defaultFrame}.
+where x0, y0, x1 and y1 are defined as shown in  Figure~\ref{fig:frameExplanation}. Note that their values are floats between 0 and 1.
 
 \begin{figure}[ht]\centering
-	\includegraphics[width=7cm]{DefaultFrame}
-	\caption{How frames are defined}
-	\label{fig:defaultFrame}
-	\includegraphics[width=7cm]{FrameExplanation}
-	\caption{An example}
+	\includegraphics[width=6cm]{DefaultFrame}\includegraphics[width=6cm]{FrameExplanation}
+	%\caption{How frames are defined}
+	%\label{fig:defaultFrame}
+	\caption{An example with a frame \ct{0@0 corner: 0.5@0.5}.}
 	\label{fig:frameExplanation}
 \end{figure}
 
-Note that those values are between 0 and 1.
-
-
-Let's do some examples
-
-\subsubsection{Examples:}
-
-%| morphToAdd1 morphToAdd2 morphToAdd3 |
-First, let's define our objects
+\subsubsection{Some Morphs}
+First, let's define some morphs to illustrate and experiment with.
 \begin{code}{Objects definition}
 | container redMorph blueMorph greenMorph |
-
-redMorph := Morph new 
-				color: (Color red);
-				yourself.
-				
-blueMorph := Morph new 
-				color: (Color blue);
-				yourself.
-				
-greenMorph := Morph new 
-				color: (Color green);
-				yourself.
-				
+redMorph := Morph new color: Color red; yourself.				
+blueMorph := Morph new color: Color blue; yourself.
+greenMorph := Morph new  color: Color green; yourself.
 container := PanelMorph new.
 \end{code}
 
-\paragraph{Now let's see different configurations and their result}
+We will not repeat their definition in the future except in the first code snippet so that you can 
+get its full definition. 
 
+\paragraph{A first configuration.}
+The following snippet of code asks the red morph to occupy all the space of its container.
 \begin{code}{}
+| window |
+window := SystemWindow new.
+redMorph := Morph new color: Color red; yourself.	
 window
 	addMorph: redMorph
 	frame: (0@0 corner: 1@1).
 	
 redMorph color: Color red.	
-	
 window openInWorld
 \end{code}
 Note: you have to reset the color of the morph after having added it because the window set the default color. Here it seems strange but for more complicated morphs (like buttons, list \dots) it sets the background color for a better integration.
 
-As a result, you can see that the red morph is stretched the fill the space both vertically and horizontally (see FIG~\ref{fig:simpleLayoutExample1}).
-
 \begin{figure}[ht]\centering
-	\includegraphics[width=7cm]{SimpleLayoutExample1}
-	\caption{The red morph fill the whole space}
+	\includegraphics[width=6cm]{SimpleLayoutExample1}
+	\caption{The red morph fill the whole space.}
 	\label{fig:simpleLayoutExample1}
 \end{figure}
 
-\paragraph{Let's try a little more complicated configuration}
+As a result, you can see that the red morph is stretched the fill the space both vertically and horizontally (see Figure~\ref{fig:simpleLayoutExample1}).
+
+
+\paragraph{A little more complicated configuration.}
+Now we add three morphs of different colors. 
 
 \begin{code}{}
 window
 	addMorph: redMorph
 	frame: (0@0 corner: 0.33@1).
-
 window
 	addMorph: blueMorph
 	frame: (0.33@0 corner: 0.66@1).
-
 window
 	addMorph: greenMorph
 	frame: (0.66@0 corner: 1@1).
-
-redMorph color: Color red.
-blueMorph color: Color blue.
-greenMorph color: Color green.
-
-windows openInWorld
 \end{code}
 
-As a result, you can see three bands of color where each is horizontally a third of the window size and fill the space vertically (see FIG~\ref{fig:simpleLayoutExample2}).
+As a result, you can see three stripes of color where each is horizontally a third of the window size and fills the space vertically (see Figure~\ref{fig:simpleLayoutExample2}).
 
 \begin{figure}[ht]\centering
-	\includegraphics[width=7cm]{SimpleLayoutExample2}
-	\caption{Three bands of colors}
+	\includegraphics[width=6cm]{SimpleLayoutExample2}
+	\caption{Three color stripes}
 	\label{fig:simpleLayoutExample2}
 \end{figure}
 
-Note that if you resize the window, proportions are kept.
-Also note that each band can be resized horizontally.
+Note that if you resize the window, proportions are kept. Also note that each stripe can be resized horizontally.
 
-\paragraph{So let's do the last example}
-
+\paragraph{A last example.}
+Now we change the configuration of 
 \begin{code}{}
 window
 	addMorph: redMorph
@@ -313,25 +295,17 @@ window
 window
 	addMorph: greenMorph
 	frame: (0@0.5 corner: 1@1).
-
-redMorph color: Color red.
-blueMorph color: Color blue.
-greenMorph color: Color green.
-	
-window openInWorld.
 \end{code}
 
-As you have predicted, the result is composed by two squares above and the green rectangle below (see FIG~\ref{fig:simpleLayoutExample3}).
+As you may guess, the result is composed by two squares above a green rectangle (see Figure~\ref{fig:simpleLayoutExample3}).
 
 \begin{figure}[ht]\centering
-	\includegraphics[width=7cm]{SimpleLayoutExample3}
+	\includegraphics[width=6cm]{SimpleLayoutExample3}
 	\caption{Two squares above and a rectangle below}
 	\label{fig:simpleLayoutExample3}
 \end{figure}
 
-Note that like for the previous example, you can resize each part.
-
-So basically, you now know everything about the default layout.
+Note that like for the previous example, you can resize each part. So basically, you now know everything about the default layout.
 
 
 %----------------------------------------------------------------------------------------------
@@ -424,7 +398,27 @@ Let's try a bit more complicated example:
 \begin{code}{}
 toolBarHeight := 100.
 
-window	addMorph: redMorph	fullFrame: (LayoutFrame				fractions: (0@0 corner: 1@0.4) "proportional part"				offsets: (0@0 corner: 0@0)). "fix part"				window	addMorph: greenMorph	fullFrame: (LayoutFrame				fractions: (0@0.4 corner: 1@0.4)				offsets: (0@0 corner: 0@toolBarHeight)).				window	addMorph: blueMorph	fullFrame: (LayoutFrame				fractions: (0@0.4 corner: 1@1) "proportional part"				offsets: (0@toolBarHeight corner: 0@0)). "fix part"redMorph color: Color red.blueMorph color: Color blue.greenMorph color: Color green.
+window
+	addMorph: redMorph
+	fullFrame: (LayoutFrame
+				fractions: (0@0 corner: 1@0.4) "proportional part"
+				offsets: (0@0 corner: 0@0)). "fix part"
+				
+window
+	addMorph: greenMorph
+	fullFrame: (LayoutFrame
+				fractions: (0@0.4 corner: 1@0.4)
+				offsets: (0@0 corner: 0@toolBarHeight)).				
+
+window
+	addMorph: blueMorph
+	fullFrame: (LayoutFrame
+				fractions: (0@0.4 corner: 1@1) "proportional part"
+				offsets: (0@toolBarHeight corner: 0@0)). "fix part"
+
+redMorph color: Color red.
+blueMorph color: Color blue.
+greenMorph color: Color green.
 	
 window openInWorld.
 \end{code}
@@ -441,7 +435,27 @@ Of course, you can do the same vertically:
 \begin{code}{}
 toolBarWidth := 50.
 
-window	addMorph: redMorph	fullFrame: (LayoutFrame				fractions: (0@0 corner: 0.4@1) "proportional part"				offsets: (0@0 corner: 0@0)). "fix part"				window	addMorph: greenMorph	fullFrame: (LayoutFrame				fractions: (0.4@0 corner: 0.4@1)				offsets: (0@0 corner: toolBarWidth@0)).				window	addMorph: blueMorph	fullFrame: (LayoutFrame				fractions: (0.4@0 corner: 1@1) "proportional part"				offsets: (toolBarWidth@0 corner: 0@0)). "fix part"redMorph color: Color red.blueMorph color: Color blue.greenMorph color: Color green.
+window
+	addMorph: redMorph
+	fullFrame: (LayoutFrame
+				fractions: (0@0 corner: 0.4@1) "proportional part"
+				offsets: (0@0 corner: 0@0)). "fix part"
+				
+window
+	addMorph: greenMorph
+	fullFrame: (LayoutFrame
+				fractions: (0.4@0 corner: 0.4@1)
+				offsets: (0@0 corner: toolBarWidth@0)).				
+
+window
+	addMorph: blueMorph
+	fullFrame: (LayoutFrame
+				fractions: (0.4@0 corner: 1@1) "proportional part"
+				offsets: (toolBarWidth@0 corner: 0@0)). "fix part"
+
+redMorph color: Color red.
+blueMorph color: Color blue.
+greenMorph color: Color green.
 	
 window openInWorld.
 \end{code}
@@ -460,7 +474,14 @@ RowLayout is used to add submorphs in a single row where each submorph will be e
 
 So let's try to use it: 
 \begin{code}{}
-window layoutPolicy: RowLayout new.window 	addMorph: redMorph;	addMorph: blueMorph;	addMorph: greenMorph.window openInWorld.
+window layoutPolicy: RowLayout new.
+
+window 
+	addMorph: redMorph;
+	addMorph: blueMorph;
+	addMorph: greenMorph.
+
+window openInWorld.
 \end{code}
 
 As you can see, the window title bar is misplaced\footnote{because it's added using the same method once the layout has been changed} (see FIG~\ref{fig:rowLayout1}).
@@ -477,11 +498,16 @@ container := PanelMorph new.
 
 container layoutPolicy: RowLayout new.
 
-container 	addMorph: redMorph;	addMorph: blueMorph;	addMorph: greenMorph.
+container 
+	addMorph: redMorph;
+	addMorph: blueMorph;
+	addMorph: greenMorph.
 
 window
 	addMorph: container
-	frame: (0@0 corner: 1@1).window openInWorld.
+	frame: (0@0 corner: 1@1).
+
+window openInWorld.
 \end{code}
 
 As you can see, it's a bit better, but the morphs do not fill the whole space (see FIG~\ref{fig:rowLayout2}).
@@ -494,7 +520,32 @@ As you can see, it's a bit better, but the morphs do not fill the whole space (s
 
 So let's fix that:
 \begin{code}{}
-container := PanelMorph new.container layoutPolicy: RowLayout new.redMorph	hResizing: #spaceFill;	vResizing: #spaceFill.blueMorph	hResizing: #spaceFill;	vResizing: #spaceFill.	greenMorph	hResizing: #spaceFill;	vResizing: #spaceFill.container 	addMorph: redMorph;	addMorph: blueMorph;	addMorph: greenMorph.window	addMorph: container	frame: (0@0 corner: 1@1).window openInWorld.
+container := PanelMorph new.
+
+container layoutPolicy: RowLayout new.
+
+redMorph
+	hResizing: #spaceFill;
+	vResizing: #spaceFill.
+
+blueMorph
+	hResizing: #spaceFill;
+	vResizing: #spaceFill.
+	
+greenMorph
+	hResizing: #spaceFill;
+	vResizing: #spaceFill.
+
+container 
+	addMorph: redMorph;
+	addMorph: blueMorph;
+	addMorph: greenMorph.
+
+window
+	addMorph: container
+	frame: (0@0 corner: 1@1).
+
+window openInWorld.
 \end{code}
 
 So for each submorph we have specified that both vertically and horizontally it should fill the space.
@@ -518,7 +569,27 @@ This layout is used to align submorphs following a row or a column and taking in
 
 So by default, the layout construct a column directed from top to bottom
 \begin{code}{}
-container := PanelMorph new.container 	layoutPolicy: TableLayout new;	listDirection: #topToBottom.{ redMorph. blueMorph. greenMorph } do: [:each |	each 		hResizing: #spaceFill;		vResizing: #spaceFill ].	container 	addMorph: redMorph;	addMorph: blueMorph;	addMorph: greenMorph.window	addMorph: container	frame: (0@0 corner: 1@1).window openInWorld.
+container := PanelMorph new.
+
+container 
+	layoutPolicy: TableLayout new;
+	listDirection: #topToBottom.
+
+{ redMorph. blueMorph. greenMorph } do: [:each |
+	each 
+		hResizing: #spaceFill;
+		vResizing: #spaceFill ].
+	
+container 
+	addMorph: redMorph;
+	addMorph: blueMorph;
+	addMorph: greenMorph.
+
+window
+	addMorph: container
+	frame: (0@0 corner: 1@1).
+
+window openInWorld.
 \end{code}
 
 So you can see the column where any morph is dispatched equally (see FIG~\ref{fig:tableLayout1}).
@@ -546,7 +617,26 @@ The explanation is that when you add a morph following the direction, it's done 
 
 Let's see an example where we do not force each morph to expanse vertically
 \begin{code}{}
-container := PanelMorph new.container 	layoutPolicy: TableLayout new;	listDirection: #topToBottom.{ redMorph. blueMorph. greenMorph } do: [:each |	each 		hResizing: #spaceFill ].	container 	addMorph: redMorph;	addMorph: blueMorph;	addMorph: greenMorph.window	addMorph: container	frame: (0@0 corner: 1@1).window openInWorld.
+container := PanelMorph new.
+
+container 
+	layoutPolicy: TableLayout new;
+	listDirection: #topToBottom.
+
+{ redMorph. blueMorph. greenMorph } do: [:each |
+	each 
+		hResizing: #spaceFill ].
+	
+container 
+	addMorph: redMorph;
+	addMorph: blueMorph;
+	addMorph: greenMorph.
+
+window
+	addMorph: container
+	frame: (0@0 corner: 1@1).
+
+window openInWorld.
 \end{code}
 
 Here you see that the space is kept below submorphs (see FIG~\ref{fig:tableLayout2}).
