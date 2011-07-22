@@ -235,17 +235,156 @@ You should observe that the size and the position are not set with your values. 
 \section{Tree widgets}
 
 \section{Layout or how positioning submorphs}
+\index{Morphic!Layout management}
+
+\apl{"Layout management" serait mieux comme titre car il ne s'agit pas seulement de gerer les positions mais aussi les dimensions et la reaction aux changements de dimension}
 
 \ben{Maybe we should write a section about layouts to describe their API ?}
 \sd{yes excellent idea. Do you know that luarent and hilaire wrote some text }
 
-Adding a morph to another one is simple using the \ct{addMorph:} message. Now we often want to place a morph at a given place and in particular that the morph occupies space even if its container morph is resized. For that we use layout. Layout are objects that control how to morphs occupy space. Several layouts exist: proportional, 
+A morph is basically a composite. As such it can be composed of sub-morphs. As it is explained below, adding a morph into a parent is very simple: just use the \mthind{Morph}{addMorph:} message which is sent to a parent morph with a sub-morph passed as argument. The problem is to understand how a morph can manage its own layout according to its size and the morphs that it contains. There are two main possibilities: (1) a morph can be added to another morph with a fixed position or (2) the placement of a morph is automatically managed with regards to its parent morph.
+
+Of course, the second solution is predominantly chosen. In this case, a layout manager is to be used to manage the space of a morph. But one have to decide if the placement is managed from the parent-morph or from the sub-morph point of view:
+\begin{description}
+\item[top-down placement:] the placement is managed from the point of view of the parent morph which makes use of a layout manager that decides how to place the sub-morphs;
+\item[bottom-up placement:] the placement is managed locally from the point of view of each sub-morph, the layout manager decides how to place a sub-morph according the parent extent.
+\end{description}
+Historically, these two possibilities are respectively provided by the \clsind{TableLayout} and by the \clsind{ProportionalLayout} classes. As it is explained in this chapter, each of these layout manager has its own variants and now a lot of possibilities are offered by the morphic framework.
+
+%Adding a morph to another one is simple using the \ct{addMorph:} message. Now we often want to place a morph at a given place and in particular that the morph occupies space even if its container morph is resized. For that we use layout. Layout are objects that control how to morphs occupy space. Several layouts exist: proportional, 
+\subsection{Composing a morph}
+To add a morph into a parent morph, just make use of the \mthind{Morph}{addMorph:} message. Together with the use of the \ct{extent:} and of the \ct{position:} messages, it is straightforward to compose a morph.
+
+\dothis{Declare a morph with a small extent and its parent with a bigger extent, then assign a color to the parent (different from blue), set the position of the parent, add the first morph to the parent and open the parent morph}
+
+As an example, you can try with the following code:
+
+\begin{code}
+| sub parent |
+sub := Morph new extent: 30 @ 30. "the sub-morph with a small extent"
+parent := Morph new extent: 100 @ 80. "the parent morph with a bigger extent"
+parent position: 10 @ 10; color: Color orange. "set the parent position and color"
+parent addMorph: sub. "add the sub-morph"
+parent openInWorld "open the parent morph"
+\end{code}
+
+\begin{figure}[htbp]
+\begin{center}
+	\includegraphics[width=7cm]{composingMorph1}
+	\caption{Composing a morph: a first try}
+	\figlabel{fig:composingMorph1}
+\end{center}
+\end{figure}
+
+The result is shown in \figref{fig:composingMorph1}. You may be surprised because the sub-morph is drawn outside it's parent. There are two reasons for this:
+\begin{itemize}
+\item first, you must recall that a particularity of the morph system is to consider a morph's position as an absolute one. Here, the sub-morph position is \ct{0@0} because it has not been explicitly changed. It implies that the sub-morph is drawn starting at the top left of the world.
+\item second, the parent position has been set \textbf{before} the sub-morph has been added to it.
+\end{itemize}
+
+\dothis{To be convinced, try the same experiment but this time, set the parent morph before adding the sub-morph}
+
+\begin{code}
+| sub parent |
+sub := Morph new extent: 30 @ 30. 
+parent := Morph new extent: 100 @ 80. 
+parent addMorph: sub. !\textbf{"add the sub-morph"}!
+parent position: 10 @ 10; color: Color orange. !\textbf{"set the parent position after"}!
+parent openInWorld 
+\end{code}
+The result of this second try is shown in \figref{fig:composingMorph2}.
+\begin{figure}[htbp]
+\begin{center}
+	\includegraphics[width=7cm]{composingMorph2}
+	\caption{Composing a morph: a second try}
+	\figlabel{fig:composingMorph2}
+\end{center}
+\end{figure}
+
+For this second solution, the sub-morph is well physically inside its parent.
+
+\dothis{Move the parent morph with the mouse or by sending to it the message \ct{position:} with a point as argument. Do this for the two solutions}
+
+You can observe that the sub-morph is also moved whatever the solution you consider. If you inspect the sub-morph after having moved its parent you can see that its position has changed accordingly. So we can say that the sub-morph is logically in its parent but this doesn't mean that it is physically inside its parent. The reason why the second solution sub-morph is drawn inside its parent is only because the parent position has been changed after the sub-morph adding. 
+
+The consequence is that if you want a submorph to be placed inside the area occupied by its parent then you have to explicitly calculate its position according to the parent position.
+
+\dothis{Open the morph halo on the parent morph, then change the parent extent by clicking on the bottom right yellow button and moving the mouse around with the mouse button down. Do the same but with the sub-morph}
+
+You observe that, if you change the parent morph extent, then the sub-morph extent stays unchanged and that you can make the parent morph smaller that its sub-morph. The same thing occurs if you change the sub-morph extent. It means that sub-morph and parent morph extents are managed independently.
+
+So, if you want a morph extent to be changed according to a particular rule, for example according to a parent or a sub-morph extent change, then you have to implement it.
+
+\dothis{To exercise yourself, try to implement the following: a red morph containing one row with three adjacent white sub-morphs, each containing itself a \ct{StringMorph} showing its position. see \figref{fig:composingMorph3}}.
+
+\begin{figure}[htbp]
+\begin{center}
+	\includegraphics[width=7cm]{composingMorph3}
+	\caption{Composing a morph with a row of sub-morphs}
+	\figlabel{fig:composingMorph3}
+\end{center}
+\end{figure}
+Here is a solution:
+\begin{code}
+| parent |
+parent := Morph new color: Color red.
+1 to: 3
+ do: [:i | 	| sub |
+	sub := Morph new color: Color white; borderWidth: 1; extent: 20 @ 20; yourself.
+	sub addMorphCentered: (StringMorph contents: i asString).
+	parent addMorph: sub.
+	sub position: (Point x: i - 1 * sub width y: 0)].
+parent openInWorld
+\end{code}
+
+
+Now, imagine that you want the parent morph extent to exactly fit its row extent, that you want to be able to add a sub-morph and have the parent morph extent updated accordingly. It is clear that one can't implement it like that. But don't be despaired of this, don't give up!.  Of course, there are many way do automatically manage morph positions and area extents as it is explained in next sections.
+
+
+%On remarque que, bien que le morph bleu soit ajouté dans le morph orange, le morph bleu est visuellement à l'extérieur de l'orange. Par contre, si on déplace le morph orange, on déplace bien son contenu, le morph bleu, aussi. L'envoi du message #position: à un morph provoque le déplacement du morph et des morphs contenus. Le décalage observé entre nos deux morphs existe parce-que le message #position: a été envoyé au morph orange avant l'ajout du morph bleu.
+%
+%Quand on ajoute un morph dans un autre sans indiquer de position avec le message #position:, le morph est ajouté en position absolue 0@0. Si on ajoute un second morph, alors il recouvre le premier, toujours en position 0@0.
+%
+%La taille du morph orange peut être changée (à l'aide du halo par exemple) sans conséquence vis à vis du bleu. De même, la taille du bleu peut être changée sans conséquence vis à vis de l'orange.
+%
+%Dans Squeak, certaines IHM sont construites de cette façon (voir le panneau compilation de l'éditeur de Smacc) mais ce n'est pas à conseiller, l'utilisation de positions fixes rend difficile la maintenance et l'adaptabilité d'un tel code.
+%
+%Voici par exemple le code d'un morph contenant d'autres morphs dont la position est calculée de façon à constituer une ligne régulière :
+%
+%alig0
+%	"MUIDAlignmentTest new alig0"
+%	| alig sm |
+%	alig := Morph new.
+%	alig color: Color orange.
+%	1
+%		to: 3
+%		do: [:i | 
+%			alig addMorphBack: (sm := self cellMorphNamed: i printString).
+%			sm
+%				position: (Point x: i - 1 * sm width y: 0)].
+%	alig openInWorld
+%
+%Les sous-morphs sont créés par la méthode suivante :
+%
+%cellMorphNamed: aString 
+%	| m |
+%	m := Morph new color: Color lightBlue;
+%				 borderColor: Color black;
+%				 borderWidth: 1;
+%				 extent: 20 @ 20;
+%				 yourself.
+%	m
+%		addMorphCentered: (StringMorph contents: aString font: Preferences windowTitleFont).
+%	^ m
+%
+%Le résultat ci-contre montre que la largeur du morph orange contenant est inférieure à celle des morphs contenus ce qui n'est généralement pas souhaité. De plus, on ne peux pas facilement changer les positions des morphs contenus ou changer leur taille sans intervenir dans le code. La réactivité du morph est très limité et son amélioration nécessite beaucoup de codage lourd et non maintenable. Par exemple, pensez au modifications nécessaires pour que les morphs contenus soient tous séparés par un espace élastique qui augmente ou diminue suivant la taille du contenant orange. Ou encore, si on veut que la taille du contenant soient toujours en cohérence vis à vis des morphs contenus.
+
 
 
 \subsection{With the default layout into a window}
 
 This section  explains how to add morph into a window with the default layout.
-
+\apl{Se serait mieux d'utiliser un parent Morph plutot qu'un Window}
 The default layout is ProportionalLayout. To use it, you have to use the method \mthind{addMorph:frame:}{addMorph: aMorph frame: aFrame}
 \begin{code}{}
 aWindow
