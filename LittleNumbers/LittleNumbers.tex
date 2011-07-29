@@ -242,9 +242,88 @@ and with a \ct{bitAnd:} we know whether there is a one or zero in the location.
 
 \section{More here}
 
-\section{Two's complement of a number}
-The two's complement is a common method to represent signed integers. Addition and subtraction are implemented without checking the sign of the operands and two's complement has only one representation for zero (avoiding negative zero).
 
+\section{Two's complement of a number}
+The two's complement is a common method to represent signed integers. The advantags is that addition and subtraction are implemented without having to  check the sign of the operands and two's complement has only one representation for zero (avoiding negative zero). Now before looking at 2's complement we will look at 10's complement to present the idea. 
+
+\subsection{Ten's complement of a number}
+
+To fully understand 2's complement it is interesting to see how it works with decimal numbers. There is no obvious usage for 10's complement but here the point we want to show is that a complement is the replacement of addition with subtraction (\ie adding the complement of A to B is equivalent to subtracting A from B).
+
+
+The 10's complement of a positive decimal integer \ct{n} is 10 to the power of k, minus n, where k is the number of digits in the decimal representation of \ct{n}. It can be calculated in the following way: 
+
+\begin{enumerate}
+\item replace each digit \ct{d} of the number by \ct{9-d} and  
+\item add one to the resulting number.
+\end{enumerate}
+
+This two steps rule is equivalent to the following one which looks more complex. Computer scientists will probably prefer the first way since it is more regular and adding 1 is cheaper than making more tests.
+
+\begin{enumerate}
+\item All the zeros at the right-hand end of the number remain as zeros. 
+\item The rightmost non-zero digit \ct{d} of the number is replaced by \ct{10 - d}. 
+\item Each other digit \ct{d} is replaced by \ct{9 - d}. 
+\end{enumerate}
+
+\paragraph{Examples.}
+The 10's complement of \ct{1968} is \ct{9-1}, \ct{9-9}, \ct{9-6}, \ct{9-8} + 1 \ie \ct{8031 + 1} \ie \ct{8032}. 
+Using the rule two we compute \ct{9-1}, \ct{9-9}, \ct{9-6}, \ct{10-8} \ie \ct{8032}. So our 10's complement is \ct{8032}. Indeed \ct{1968 + 8032 = 10000 =} $10^{5}$. Therefore it follows well the definition above: \ct{8032} is the result of \ct{10000 - 1968}.
+
+The 10's complement of \ct{190680} is then \ct{9-1}, \ct{9-9}, \ct{9-0}, \ct{9-6}, \ct{9-8}, \ct{9-0} + 1 \ie \ct{809319 + 1} \ie \ct{809320}. Let's verify: \ct{190680 + 809320 = 1000000}.
+
+Here we see the equivalence between the different ways to express how to compute the complement.  the first rule just avoid to perform \ct{9-d + 1 with d = 0}, \ie \ct{9-0+1 = 10} so nothing changes. 
+So to compute the 10's complement of a number, it is enough to perform \ct{9-d} for each digit and add one to the result.
+
+
+\subsection{Subtraction at work}
+
+\paragraph{Examples.}
+\ct{8 - 3 = 5}. Now using the 10's complement we add 8 to the 10's complement of 3 which is 9 - 3 = 6. 8 + 6 + 1 = 15 
+and we drop the carry. 
+
+Perform the following operation using 10's complement \ct{8-3=5}
+Ten's complement of 3 is 7. Adding 8 and 7 results in 15. Discarding the final carry makes the result equal to 5, that is the right answer for the given subtraction.
+
+
+
+Note that to get 10's complement of 3 one may perform 10-3=7. Alternatively, getting 9's complement of each digit and then adding 1.:
+9-3=6      10's complement of 3=6+1=7
+
+
+Find 10's complement of 54, and then perform the following subtraction:   98-54
+To obtain 10's complement of 54 one should get 9's complement of each digit and then adding 1 to the result:
+9-5=4 and 9-4=5, therefore, 9's complement of 54 is equal to 45. Adding 1 to 45 makes it 46. Hence:
+10's complement of 54 is 46.
+
+Subtracting 54 from 98 is equal to adding 98 and 46 (note that 46 is the 10's complement of 54). This addition gives: 
+98+46=144 (discarding the carry give 44 that is the correct answer).
+
+
+
+
+
+
+\paragraph{Another look at it.} 
+Imagine that we want to perform the following expression \ct{5006002 Ð 209137} which is equals to \ct{865}.
+The 10's complement takes advantage of the fact that \ct{209137} is also \ct{999999 Ð 790862}.
+
+\begin{code}{}
+209137 = 999999 Ð 790862
+209137 = 999999 Ð 790862 + 1 Ð 1
+209137 = 1000000 Ð 790862 Ð 1
+\end{code}
+
+Now the first substraction is expressed as:
+
+\begin{code}{}
+5006002 - 209137 = 5006002 - (1000000 Ð 790862 Ð 1)
+= 5006002 - 1000000 + 790862 + 1
+= 5006002  + 790862 + 1 - 1000000
+\end{code}
+
+
+\subsection{Two's complement}
 The two's complement of a positive number represents a negative number of the number or other said a number is negated by computing its two's complement. 
 
 
