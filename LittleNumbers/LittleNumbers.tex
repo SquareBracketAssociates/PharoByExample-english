@@ -34,10 +34,8 @@
 
 \chapter{Little Numbers}
 
-
-
-
-Let's be dummy for a while.
+We manipulate numbers all the time and in this Chapter we propose you a little journey into the way 
+integers are mapped to their binary representations. We will start with some simple reminders on math that are the basics of our digital world. Then we will have a look at how integers and in particular small integers are encoded.
 
 \section{Power of 2}
 
@@ -85,6 +83,8 @@ How to encode 13? It cannot be higher than $2^{4}$ because $2^{4}$ = 16. So it s
 \end{code}
 
 \subsection*{Binary notation}
+Smalltalk has a format for representing number in different basis
+
 \begin{code}{}
 2r01101
 	returns 13
@@ -100,6 +100,9 @@ Integer readFrom: '01101' base: 2
 
 \section{Bit shifting is multiplying by 2}
 
+Integers are represented as sequences of bits. Therefore it is possible to shift all the bits from a given amount to obtain another integers. Shifting bit is equivalent to perform a multiplication by two. Figure~\ref{bitshiftmult} illustrates this point. Smalltalk offers three messages to shift bits: \ct{>> aPositiveInteger}, \ct{<< aPositiveInteger} and \ct{bitShift: anInteger}. The following examples show how to use them.
+
+
 \begin{code}{Using \ct{>>} and \ct{<<}}
 2r000001000 
 	returns 8
@@ -114,7 +117,7 @@ Integer readFrom: '01101' base: 2
 \begin{figure}[h]
 \begin{center}
 \includegraphics[width=0.65\textwidth]{16bits-numberMultiplication}
-\caption{Multiply by 2 or dividing by 2.}
+\caption{Multiply by 2 or dividing by 2.\label{bitshiftmult}}
 \end{center}
 \end{figure}
 
@@ -128,6 +131,10 @@ Integer readFrom: '01101' base: 2
 2r000001000 bitShift: 1
 	returns 16
 \end{code}
+
+The previous examples show only bit shifting for number with a single 1 bit but there is no constraint at this level.
+The complete sequence of bits can be shifted as shown with \ct{2r000001100} below.
+
 
 \begin{code}{}
 2r000001100 
@@ -341,6 +348,20 @@ Smalltalk small integers uses a two's complement arithmetic on 31 bits.
 An N-bit two's-complement numeral system can represent every integer in the range $-1 * 2^{N-1}\ to\ 2^{N-1}-1$. So for 32 bits Smalltalk systems, small integers values are the range -1073741824 to  1073741823. Let's check that a bit (this is the occasion to say it). 
 
 
+
+If you want to know the number of bits used to represent a
+SmallInteger, just evaluate:
+
+\begin{code}
+SmallInteger maxVal highBit + 1.
+\end{code}
+
+\ct{SmallInteger maxVal highBit} tells the highest bit which can be used to
+represent a positive SmallInteger, and + 1 accounts for the sign bit
+of the SmallInteger (0 for positive, 1 for negative).
+
+
+
 \begin{code}{}
 2 raisedTo: 29 
 	returns 536870912 
@@ -366,6 +387,12 @@ An N-bit two's-complement numeral system can represent every integer in the rang
 (2 raisedTo: 30) - 1
 	returns 1073741823
 \end{code}
+
+
+
+
+
+
 
 
 \section{Conclusion}
