@@ -35,12 +35,13 @@
 \chapter{Little Numbers}
 
 We manipulate numbers all the time and in this Chapter we propose you a little journey into the way 
-integers are mapped to their binary representations. We will start with some simple reminders on math that are the basics of our digital world. Then we will have a look at how integers and in particular small integers are encoded.
+integers are mapped to their binary representations. We will open the box and take a language implementor perspective and explore happily how small integers are represented. 
+
+We will start with some simple reminders on math that are the basics of our digital world. Then we will have a look at how integers and in particular small integers are encoded.
 
 \section{Power of 2}
 
 Let's start with some simple maths. 
-
 
 \begin{code}{}
 2 raisedTo: 0
@@ -245,10 +246,10 @@ and with a \ct{bitAnd:} we know whether there is a one or zero in the location.
 To fully understand 2's complement it is interesting to see how it works with decimal numbers. There is no obvious usage for 10's complement but here the point we want to show is that a complement is the replacement of addition with subtraction (\ie adding the complement of A to B is equivalent to subtracting A from B).
 
 
-The 10's complement of a positive decimal integer \ct{n} is 10 to the power of k, minus n, where k is the number of digits in the decimal representation of \ct{n}. It can be calculated in the following way: 
+The 10's complement of a positive decimal integer $n$ is 10 to the power of $k$, minus $n$, where $k$ is the number of digits in the decimal representation of $n$. It can be calculated in the following way: 
 
 \begin{enumerate}
-\item replace each digit \ct{d} of the number by \ct{9-d} and  
+\item replace each digit $d$ of the number by \ct{9-d} and  
 \item add one to the resulting number.
 \end{enumerate}
 
@@ -256,15 +257,15 @@ This two steps rule is equivalent to the following one which looks more complex.
 
 \begin{enumerate}
 \item All the zeros at the right-hand end of the number remain as zeros. 
-\item The rightmost non-zero digit \ct{d} of the number is replaced by \ct{10 - d}. 
-\item Each other digit \ct{d} is replaced by \ct{9 - d}. 
+\item The rightmost non-zero digit $d$ of the number is replaced by $10 - d$. 
+\item Each other digit $d$ is replaced by $9 - d$. 
 \end{enumerate}
 
 \paragraph{Examples.}
-The 10's complement of \ct{1968} is \ct{9-1}, \ct{9-9}, \ct{9-6}, \ct{9-8} + 1 \ie \ct{8031 + 1} \ie \ct{8032}. 
-Using the rule two we compute \ct{9-1}, \ct{9-9}, \ct{9-6}, \ct{10-8} \ie \ct{8032}. So our 10's complement is \ct{8032}. Indeed \ct{1968 + 8032 = 10000 =} $10^{5}$. Therefore it follows well the definition above: \ct{8032} is the result of \ct{10000 - 1968}.
+The 10's complement of 1968 is $9-1$, $9-9$, $9-6$, $9-8$ + 1 \ie $8031 + 1$ \ie 8032. 
+Using the rule two we compute $9-1$, $9-9$, $9-6$, $10-8$ \ie 8032. So our 10's complement is 8032. Indeed $1968 + 8032 = 10000 = 10^{5}$. Therefore it follows well the definition above: 8032 is the result of $10000 - 1968$.
 
-The 10's complement of \ct{190680} is then \ct{9-1}, \ct{9-9}, \ct{9-0}, \ct{9-6}, \ct{9-8}, \ct{9-0} + 1 \ie \ct{809319 + 1} \ie \ct{809320}. Let's verify: \ct{190680 + 809320 = 1000000}.
+The 10's complement of 190680 is then $9-1$, $9-9$, $9-0$, $9-6$, $9-8$, $9-0$ + 1 \ie $809319 + 1$ \ie 809320. Let's verify: $190680 + 809320 = 1000000$.
  
 So to compute the 10's complement of a number, it is enough to perform \ct{9-d} for each digit and add one to the result.
 
@@ -273,21 +274,21 @@ So to compute the 10's complement of a number, it is enough to perform \ct{9-d} 
 The key point of complement techniques is to convert subtraction into addition. So let us check that.
 
 \paragraph{Examples.}
-\ct{8 - 3 = 5}. The 10's complement of \ct{3} is \ct{9 - 3 + 1 = 7}. We add 8 to 7 and get 15. 
-We drop the carry. So we obtain \ct{5}.
+$8 - 3 = 5$. The 10's complement of 3 is $9 - 3 + 1 = 7$. We add 8 to 7 and get 15. 
+We drop the carry. So we obtain 5.
 
 
-Now \ct{98-60}. The 10's complement of \ct{60} is \ct{9-6}, \ct{9-0} \ie \ct{39 + 1} \ie \ct{40}. 
-\ct{98-60 = 98 + 40 - 100 = 138 - 100 - 38}.
+Now $98-60$. The 10's complement of 60 is $9-6$, $9-0$ \ie $39 + 1$ \ie 40. 
+$98-60 = 98 + 40 - 100 = 138 - 100 - 38$.
 
-\sd{should check the other subtraction because this is not clear yet to me.} 
-Now performing \ct{60-98}. \ct{98} 10's complement is \ct{9-9}, \ct{9-8}, so \ct{2}.
-\ct{60 - 98 = 60 + 2 - 100 = 62 - 100 = -38.}
+
+Now performing $60-80$ works too. 80 10's complement is $9-8$, $9-0$, so 19 + 1, so 20.
+$60 - 80 = 60 - (100 - 20) = 80 - 100 = -20$.
 
 
 \paragraph{Another look at it.} 
-Imagine that we want to perform the following expression \ct{190680 - 109237} which is equals to \ct{81443}.
-The 10's complement takes advantage of the fact that \ct{109237} is also \ct{999999 - 890762}.
+Imagine that we want to perform the following expression $190680 - 109237$ which is equals to 81443.
+The 10's complement takes advantage of the fact that 109237 is also $999999 - 890762$.
 
 \begin{code}{}
 109237 = 999999 - 890762
@@ -309,7 +310,7 @@ Now the first subtraction is expressed as:
 The two's complement is a common method to represent signed integers. The advantages are that addition and subtraction are implemented without having to  check the sign of the operands and two's complement has only one representation for zero (avoiding negative zero). 
 
 What the 10's complement shows us  that it is achieved by taking the difference of each digit with the largest number available in the base system, 9 in decimal base and adding one. Now in the case of binary, the base is one.
-Due to the fact that \ct{1 - 0 = 1} and \ct{1 - 1 = 0}, taking the complement of each digit is exactly the same as flipping 1's to 0's and vice versa and adding 1.
+Due to the fact that $1 - 0 = 1$ and $1 - 1 = 0$, taking the complement of each digit is exactly the same as flipping 1's to 0's and vice versa and adding 1.
 
 
 Try the following expressions in Pharo and experiment with it. We compute the direct inversion (bitwise NOT) and add one. 
@@ -329,14 +330,14 @@ Note that the two's complement of a negative number is the corresponding positiv
 To know the value of a positive number it is simple: we just sum all the powers of 2 given by the binary representation as explained at the beginning of this book. Now getting the value of a negative number (in two's complement) is quite simple: we do the same except that we count the sign bit as negative, all the other ones as positive. 
 
 Let us illustrate that: 
-\ct{-69} is represented on 8 a bit encoding as: \ct{1011 1011}. So get the value out of the bit representation is simple we sum: $-2^7 + 0*2^6 + 2^5 + 2^4 + 2^3 + 0*2^2 + 2^1 + 2^0$, \ie \ct{-128 + 32 + 16 + 8 + 2 + 1} and we get -69. 
+$-69$ is represented on 8 a bit encoding as: 1011 1011. So get the value out of the bit representation is simple we sum: $-2^7 + 0*2^6 + 2^5 + 2^4 + 2^3 + 0*2^2 + 2^1 + 2^0$, \ie $-128 + 32 + 16 + 8 + 2 + 1$ and we get -69. 
 
 
 
 
 \paragraph{Subtracting.}
-When we want to compute \ct{110110 - 101}, we will compute the 2's completement and add it. 
-So we will add 0000000000000000000000000110110 and 1111111111111111111111111111011, and get 0000000000000000000000000110001. And we get well \ct{54-5 = 49}.
+When we want to compute $110110 - 101$, we will compute the 2's completement and add it. 
+So we will add 0000000000000000000000000110110 and 1111111111111111111111111111011, and get 0000000000000000000000000110001. And we get well $54-5 = 49$.
 
 \begin{code}{}
 (2r110110 - 2r101) bitString	
@@ -344,15 +345,21 @@ So we will add 0000000000000000000000000110110 and 11111111111111111111111111110
 	returns '0000000000000000000000000110110'2r101 bitString
 	returns '0000000000000000000000000000101'									(2r101 bitInvert + 1) bitString
 	returns '1111111111111111111111111111011'	2r101 negated bitString
-	returns '1111111111111111111111111111011'			'0000000000000000000000000110110' + 	'1111111111111111111111111111011'		----------------------------------	0000000000000000000000000110001	
+	returns '1111111111111111111111111111011'	\end{code}
+	
+Posing the addition:
+
+\begin{code}{}
+carry	               11111... 11111 
+		0000000000000000000000000110110+		1111111111111111111111111111011		----------------------------------		0000000000000000000000000110001	
 \end{code}
 
 \paragraph{Representing negative numbers.}
 What is nice with the 2's complement is that we can use it to represent a negative number. Indeed, we can negate a number by computing its two complement. The two's complement of a positive number represents a negative number of the number.
 
-Let's look at 2. 2 is encoded on 8 bits as \ct{000000010} and \ct{-2} as \ct{11111110} as shown in Figure~\ref{negativePositive}.
-\ct{000000010} flipped is: \ct{11111101} and we add one: so we get \ct{11111110}.
-Now the difference between  -2 \ct{(11111110)} and 126 \ct{(01111110)} is given by the most significant bit. 
+Let's look at 2. 2 is encoded on 8 bits as 000000010 and -2 as 11111110 as shown in Figure~\ref{negativePositive}.
+000000010 flipped is: 11111101 and we add one: so we get 11111110.
+Now the difference between  -2 (11111110) and 126 (01111110) is given by the most significant bit. 
 
 \begin{figure}[h]
 \begin{center}
@@ -362,7 +369,8 @@ Now the difference between  -2 \ct{(11111110)} and 126 \ct{(01111110)} is given 
 \end{figure}
 
 There is one exception. One a given number of bits, let's 8 bits as in Figure~\ref{negativePositive},
-we obtained the negative of a number but computing its two's complement (flipping all the bits and adding 1), except for the most negative number. On a 8 bits representation, the most negative number is -128 (1000 0000), inverting it is (0111 1111), and adding one results in (1000 0000). Why because we cannot encode 128 on 8 bits signed convention. Here the carry is "eaten" by the sign bit. 
+we obtained the negative of a number but computing its two's complement (flipping all the bits and adding 1), except for the most negative number. On a 8 bits representation, the most negative number is -128 (1000 0000), inverting it is (0111 1111), and adding one results in itself (1000 0000). Why because we cannot encode 128 on 8 bits signed convention. Here the carry is "eaten" by the sign bit. 
+
 
 \paragraph{In Pharo.}
 Let's try with Pharo to check a bit our understanding. 
@@ -425,7 +433,16 @@ Creating a two complement version of a number equals negating the number bits an
 -3 bitString '1111111111111111111111111111101'
 \end{code}
 
-\paragraph{Understanding more.}
+
+Now the case where the result is a negative number is also well handled. For example, if we want to compute $-15 + 5$, we should get 10 and this is what we get.
+
+\begin{code}
+-15 bitString 	'1111111111111111111111111110001'5 bitString 	'0000000000000000000000000000101'	-10 bitString 	'1111111111111111111111111110110'
+\end{code}
+
+
+
+\paragraph{Understanding some methods.}
 Now you should be able to understand the implementation of \ct{SmallInteger>>bitInvert} method.
 
 \begin{code}{}
@@ -455,8 +472,8 @@ SmallInteger>>bitInvert
 
 \section{SmallIntegers in Pharo}
 
-Smalltalk small integers uses a two's complement arithmetic on 31 bits.  
-An N-bit two's-complement numeral system can represent every integer in the range $-1 * 2^{N-1}\ to\ 2^{N-1}-1$. So for 32 bits Smalltalk systems, small integers values are the range -1073741824 to  1073741823. Let's check that a bit (this is the occasion to say it). 
+Smalltalk small integers use a two's complement arithmetic on 31 bits.  An N-bit two's-complement numeral system can represent every integer in the range $-1 * 2^{N-1}\ to\ 2^{N-1}-1$. So for 31 bits Smalltalk systems small integers values are the range -1073741824 to  1073741823.  Remember in Smalltalk integers are special objects and this marking requires one bit, therefore on 32 bits we are 31 bits for small signed integers. Of course since we also have automatic coercion this is not really a concern for the end programmer. Here we take a language implementation perspective.
+ Let's check that a bit (this is the occasion to say it). 
 
 
 
@@ -465,6 +482,7 @@ SmallInteger, just evaluate:
 
 \begin{code}
 SmallInteger maxVal highBit + 1.
+	returns 31
 \end{code}
 
 \ct{SmallInteger maxVal highBit} tells the highest bit which can be used to
@@ -472,6 +490,7 @@ represent a positive SmallInteger, and + 1 accounts for the sign bit
 of the SmallInteger (0 for positive, 1 for negative).
 
 
+Let us explore a bit. 
 
 \begin{code}{}
 2 raisedTo: 29 
@@ -497,6 +516,9 @@ of the SmallInteger (0 for positive, 1 for negative).
 	
 (2 raisedTo: 30) - 1
 	returns 1073741823
+	
+(2 raisedTo: 30) - 1 = SmallInteger maxVal	
+	returns true
 \end{code}
 
 \section{Hexadecimal}
