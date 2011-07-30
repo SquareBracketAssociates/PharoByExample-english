@@ -32,7 +32,7 @@
 \sloppy
 %=================================================================
 
-\chapter{Little Numbers}
+\chapter{Exploring Little Numbers}
 
 We manipulate numbers all the time and in this Chapter we propose you a little journey into the way 
 integers are mapped to their binary representations. We will open the box and take a language implementor perspective and explore happily how small integers are represented. 
@@ -41,50 +41,36 @@ We will start with some simple reminders on math that are the basics of our digi
 
 \section{Power of 2}
 
-Let's start with some simple maths. 
+Let's start with some simple maths. In digital world, information is encoded as powers of 2. Nothing really new. 
 
-\begin{code}{}
+\begin{code}{Basics}
 2 raisedTo: 0
 	returns 1
-
 2 raisedTo: 2
 	returns 4
-	
 2 raisedTo: 8
 	returns 256
 \end{code}
 
-Figure~\ref{power} shows the power of 2. 
+Figure~\ref{power} shows the powers of 2. 
 \begin{figure}[h]
 \begin{center}
 \includegraphics[width=0.65\textwidth]{16bits-number}
-\caption{Power of 2 and their numerical equivalence.\label{power}}
+\caption{Powers of 2 and their numerical equivalence.\label{power}}
 \end{center}
 \end{figure}
 
-How to encode 13? It cannot be higher than $2^{4}$ because $2^{4}$ = 16. So it should be 8 + 4 + 1, $2^{3} + 2^{2} + 2^{0}$.
+Using a sequence of bits we can encode numbers. How to encode 13? It cannot be higher than $2^{4}$ because $2^{4}$ = 16. So it should be $8 + 4 + 1$, $2^{3} + 2^{2} + 2^{0}$. So 13 is encoded as 1101.  Figure~\ref{16bits-number13} illustrates it.
 
 \begin{figure}[h]
 \begin{center}
 \includegraphics[width=0.65\textwidth]{16bits-number13}
-\caption{13 = $2^{3} + 2^{2} + 2^{0}$.}
+\caption{13 = $2^{3} + 2^{2} + 2^{0}$.\label{16bits-number13}}
 \end{center}
 \end{figure}
 
-
-\begin{code}{}
-(2 raisedTo: 0)
-	returns 1
-
-2 raisedTo: 2
-	returns 4
-	
-2 raisedTo: 8
-	returns 256
-\end{code}
-
 \subsection*{Binary notation}
-Smalltalk has a format for representing number in different basis
+Smalltalk has a format for representing number in different bases. We write \ct{2r1101} where 2 indicates the base or radix, here 2, and the rest the number expressed in this base.
 
 \begin{code}{}
 2r01101
@@ -97,23 +83,29 @@ Integer readFrom: '01101' base: 2
 	returns 13
 \end{code}
 
+Note that the last two messages \ct{printStringBase:} and \ct{readFrom:base:} do not handle well the internal encoding of negative numbers as we will see later. \ct{-2 printStringBase: 2} returns -10 but this is not the internal number representation known as two's complement. These messages just print/read the number in a given base. 
 
 
-\section{Bit shifting is multiplying by 2}
 
-Integers are represented as sequences of bits. Therefore it is possible to shift all the bits from a given amount to obtain another integers. Shifting bit is equivalent to perform a multiplication by two. Figure~\ref{bitshiftmult} illustrates this point. Smalltalk offers three messages to shift bits: \ct{>> aPositiveInteger}, \ct{<< aPositiveInteger} and \ct{bitShift: anInteger}. The following examples show how to use them.
+\section{Bit shifting is multiplying by 2 powers}
+
+Since integers are represented as sequences of bits, if we shift all the bits from a given amount we obtain another integer. Shifting bit is equivalent to perform a multiplication/division by two. Figure~\ref{bitshiftmult} illustrates this point. Smalltalk offers three messages to shift bits: \ct{>> aPositiveInteger}, \ct{<< aPositiveInteger} and \ct{bitShift: anInteger}. \ct{>>} divides the receiver, while \ct{<<} multiply it by a power of two.
+
+The following examples show how to use them.
 
 
 \begin{code}{Using \ct{>>} and \ct{<<}}
 2r000001000 
 	returns 8
-
-2r000001000 >> 1
+2r000001000 >> 1					"we divide by two"
 	returns 4
-	
-2r000001000 << 1
+(2r000001000 >> 1) printStringBase: 2 	
+	returns '100'
+2r000001000 << 1					"we multiply by two"
 	returns 16
 \end{code}
+
+The message \ct{bitShift:} is equivalent to \ct{>>} and \ct{<<}. It just use negative and positive integers to indicate the shift direction. A positive argument offers the same behavior than \ct{<<}, multiplying the receiver by a power of 2. A negative is similar to \ct{>>}. 
 
 \begin{figure}[h]
 \begin{center}
@@ -125,86 +117,70 @@ Integers are represented as sequences of bits. Therefore it is possible to shift
 \begin{code}{Using \ct{bitShift:}}
 2r000001000 
 	returns 8
-
 2r000001000 bitShift: -1
 	returns 4
-	
 2r000001000 bitShift: 1
 	returns 16
 \end{code}
 
-The previous examples show only bit shifting for number with a single 1 bit but there is no constraint at this level.
-The complete sequence of bits can be shifted as shown with \ct{2r000001100} below.
+Of course we can shift by more than one bit at a time. 
 
-
-\begin{code}{}
-2r000001100 
-	returns 12
-
-2r000001100 bitShift: -1
-	returns 2r00000110
-	returns 6 
-	
-2r000001100 bitShift: 1
-	returns 2r000011000
-	returns 24
+\begin{code}{Using \ct{>>} and \ct{<<}}
+2r000001000 
+	returns 8
+2r000001000 >> 2					"we divide by four"
+	returns 2
+(2r000001000 >> 2) printStringBase: 2 
+	returns '10'	
+2r000001000 << 1					"we multiply by two"
+	returns 16
 \end{code}
 
-\begin{figure}[h]
-\begin{center}
-\includegraphics[width=0.65\textwidth]{16bits-numberMultiplication2}
-\caption{Mutiply by 2 or dividing by 2. We can move several bits in one direction.}
-\end{center}
-\end{figure}
-
-\subsection*{Shifting bits}
 
 
-\begin{code}{}
-2 raisedTo: 8
-	returns 256
-	
-1 << 8
-	returns 256
-	
-2r100000000
-	returns 256
-		
-\end{code}
 
-\begin{figure}[h]
-\begin{center}
-\includegraphics[width=0.65\textwidth]{16bits-1shifted8}
-\caption{We move 8 times 1 to the left. So from $2^{0}$ we get $2^{8}$.}
-\end{center}
-\end{figure}
+The previous examples show only bit shifting numbers with a single 1 bit but there is no constraint at this level.
+The complete sequence of bits can be shifted as shown with \ct{2r000001100} below and Figure~\ref{16bits-1280shifted8}.
 
 \begin{code}{}
 (2 raisedTo: 8) + (2 raisedTo: 10) 
 	returns 1280
-	
 2r010100000000
 	returns 1280
-	
 2r010100000000 >> 8
 	returns	2r0101
 	returns 5
 \end{code}
 
+%\begin{figure}[h]
+%\begin{center}
+%\includegraphics[width=0.65\textwidth]{16bits-numberMultiplication2}
+%\caption{Multiply by 2 or dividing by 2. We can move several bits in one direction.}
+%\end{center}
+%\end{figure}
+
+%\begin{figure}[h]
+%\begin{center}
+%%\includegraphics[width=0.45\textwidth]{16bits-1shifted8}
+%\caption{We move 8 times 1 to the left. So from $2^{0}$ we get $2^{8}$. \label{16bits-1shifted8}}
+%\end{center}
+%\end{figure}
+
 \begin{figure}[h]
 \begin{center}
-\includegraphics[width=0.65\textwidth]{16bits-1280shifted8}
-\caption{We move 8 times to the right. So from 1280 gets 5.}
+\includegraphics[width=0.45\textwidth]{16bits-1280shifted8}
+\caption{We move 8 times to the right. So from 1280 we get 5.\label{16bits-1280shifted8}}
 \end{center}
 \end{figure}
 
+So far nothing really special. You should have learned that in any basic math lecture, but this is always good 
+to walk on a hill before climbing a mountain.  
 
 
 
+\section{Bit Access and Manipulation}
+Smalltalk offers way to access bit information. The message \ct{bitAt:} returns the value of the bit at a given position. It follows the Smalltalk convention that collection starts one. 
 
-
-
-\section{Bit Access}
 
 \begin{code}{}
 2r000001101 bitAt: 0
@@ -223,6 +199,7 @@ The complete sequence of bits can be shifted as shown with \ct{2r000001100} belo
 	returns 0 	 
 \end{code}
 
+Here is the implementation of \ct{bitAt:}. 
 
 \begin{code}{}
 Integer>>bitAt: anInteger
@@ -239,7 +216,14 @@ Integer>>bitAt: anInteger
 We shift to the right from an integer minus one (hence \ct{1 - anInteger})
 and with a \ct{bitAnd:} we know whether there is a one or zero in the location.
 
-%
+Pharo offers the traditional Boolean operations for bit sequence. Hence the messages \ct{bitAnd:}, \ct{bitOr:}, and \ct{bitXor:} can be send to numbers. 
+
+\begin{code}{bitAnd:}
+2r000001101 bitAnd: 2r11
+	returns 1 
+\end{code}
+
+Again nothing really special but this was to refresh our memories. Now we will see how numbers are internally encoded in Pharo using two's complement. 
 
 \section{Ten's complement of a number}
 
@@ -249,7 +233,7 @@ To fully understand 2's complement it is interesting to see how it works with de
 The 10's complement of a positive decimal integer $n$ is 10 to the power of $k$, minus $n$, where $k$ is the number of digits in the decimal representation of $n$. It can be calculated in the following way: 
 
 \begin{enumerate}
-\item replace each digit $d$ of the number by \ct{9-d} and  
+\item replace each digit $d$ of the number by $9-d$ and  
 \item add one to the resulting number.
 \end{enumerate}
 
@@ -307,7 +291,7 @@ Now the first subtraction is expressed as:
 
 \section{Two's complement of a number}
 
-The two's complement is a common method to represent signed integers. The advantages are that addition and subtraction are implemented without having to  check the sign of the operands and two's complement has only one representation for zero (avoiding negative zero). 
+The two's complement is a common method to represent signed integers. The advantages are that addition and subtraction are implemented without having to  check the sign of the operands and two's complement has only one representation for zero (avoiding negative zero). Adding numbers of different sign encoded using two's complement does not  require any special processing: the sign of the result is determined automatically. 
 
 What the 10's complement shows us  that it is achieved by taking the difference of each digit with the largest number available in the base system, 9 in decimal base and adding one. Now in the case of binary, the base is one.
 Due to the fact that $1 - 0 = 1$ and $1 - 1 = 0$, taking the complement of each digit is exactly the same as flipping 1's to 0's and vice versa and adding 1.
@@ -315,44 +299,70 @@ Due to the fact that $1 - 0 = 1$ and $1 - 1 = 0$, taking the complement of each 
 
 Try the following expressions in Pharo and experiment with it. We compute the direct inversion (bitwise NOT) and add one. 
 \begin{code}{}
-2 bitString 			'0000000000000000000000000000010'2 bitInvert bitString 			'1111111111111111111111111111101'
+2 bitString 
+			'0000000000000000000000000000010'
+2 bitInvert bitString 
+			'1111111111111111111111111111101'
 (2 bitInvert + 1) bitString 
-			'1111111111111111111111111111110'-2 bitString 			'1111111111111111111111111111110'		 
+			'1111111111111111111111111111110'
+-2 bitString 
+			'1111111111111111111111111111110'		 
 \end{code}
 
 Note that the two's complement of a negative number is the corresponding positive value as shown by the following expressions: -2 two complement is 2. First we compute the direct inversion (bitwise NOT) and add one. 
 
 \begin{code}{}
--2 bitString 	'1111111111111111111111111111110'	-2 bitInvert bitString  	'0000000000000000000000000000001'	(-2 bitInvert + 1) bitString   	'0000000000000000000000000000010'2 bitString 	'0000000000000000000000000000010'
+-2 bitString 
+	'1111111111111111111111111111110'
+	
+-2 bitInvert bitString  
+	'0000000000000000000000000000001'
+	
+(-2 bitInvert + 1) bitString   
+	'0000000000000000000000000000010'
+
+2 bitString 
+	'0000000000000000000000000000010'
 \end{code}
 
 \paragraph{Negative number value.}
-To know the value of a positive number it is simple: we just sum all the powers of 2 given by the binary representation as explained at the beginning of this book. Now getting the value of a negative number (in two's complement) is quite simple: we do the same except that we count the sign bit as negative, all the other ones as positive. 
+To know the value of a positive number it is simple: we just sum all the powers of 2 given by the binary representation as explained at the beginning of this Chapter. Now getting the value of a negative number (in two's complement) is quite simple: we do the same except that we count the sign bit as negative, all the other ones as positive. 
 
 Let us illustrate that: 
-$-69$ is represented on 8 a bit encoding as: 1011 1011. So get the value out of the bit representation is simple we sum: $-2^7 + 0*2^6 + 2^5 + 2^4 + 2^3 + 0*2^2 + 2^1 + 2^0$, \ie $-128 + 32 + 16 + 8 + 2 + 1$ and we get -69. 
-
-
+$-69$ is represented on 8 a bit encoding as: 1011 1011. So get the value out of the bit representation is simple we sum: $-2^7 + 0*2^6 + 2^5 + 2^4 + 2^3 + 0*2^2 + 2^1 + 2^0$, \ie $-128 + 32 + 16 + 8 + 2 + 1$ and we get $-69$. 
 
 
 \paragraph{Subtracting.}
+To subtract a number to another one, we will add the second number's two complement to the first one.
+
 When we want to compute $110110 - 101$, we will compute the 2's completement and add it. 
-So we will add 0000000000000000000000000110110 and 1111111111111111111111111111011, and get 0000000000000000000000000110001. And we get well $54-5 = 49$.
+So we will add 110110 and 111011, and get 110001. This is correct: $54 - 5 = 49$.
 
 \begin{code}{}
 (2r110110 - 2r101) bitString	
-	returns '0000000000000000000000000110001'(2r110110 bitString) 	
-	returns '0000000000000000000000000110110'2r101 bitString
-	returns '0000000000000000000000000000101'									(2r101 bitInvert + 1) bitString
-	returns '1111111111111111111111111111011'	2r101 negated bitString
-	returns '1111111111111111111111111111011'	\end{code}
+	returns '0000000000000000000000000110001'
+(2r110110 bitString) 	
+	returns '0000000000000000000000000110110'
+2r101 bitString
+	returns '0000000000000000000000000000101'		
+							
+(2r101 bitInvert + 1) bitString
+	returns '1111111111111111111111111111011'	
+2r101 negated bitString
+	returns '1111111111111111111111111111011'	
+\end{code}
 	
-Posing the addition:
+Posing the addition using only 8 bits we see the following:
 
 \begin{code}{}
-carry	               11111... 11111 
-		0000000000000000000000000110110+		1111111111111111111111111111011		----------------------------------		0000000000000000000000000110001	
+carry	1111111 
+		 00110110
++		 11111011	
+	----------------------------------
+		 00110001	
 \end{code}
+
+Note that the overflowing carry is dropped.
 
 \paragraph{Representing negative numbers.}
 What is nice with the 2's complement is that we can use it to represent a negative number. Indeed, we can negate a number by computing its two complement. The two's complement of a positive number represents a negative number of the number.
@@ -385,7 +395,7 @@ Let's try with Pharo to check a bit our understanding.
 %		30 to: 1 by: -1 do: [:i | s nextPut: ((self bitAt: i) + 48) asCharacter ] .
 %		s contents ]
 %\end{code}
-
+\sd{should use bitString}
 \begin{code}{}
 | v |
 v := 10. 
@@ -427,17 +437,28 @@ SmallInteger maxVal negated class
 
 Creating a two complement version of a number equals negating the number bits and adding one.
 \begin{code}{Calculating two complement of 3}
-3 bitString '0000000000000000000000000000011'
-3 bitInvert bitString '1111111111111111111111111111100'
-(3 bitInvert + 1) bitString '1111111111111111111111111111101'
--3 bitString '1111111111111111111111111111101'
+3 bitString 
+	returns '0000000000000000000000000000011'
+3 bitInvert bitString 
+	returns '1111111111111111111111111111100'
+(3 bitInvert + 1) bitString 
+	returns '1111111111111111111111111111101'
+-3 bitString 
+	returns '1111111111111111111111111111101'
 \end{code}
 
 
 Now the case where the result is a negative number is also well handled. For example, if we want to compute $-15 + 5$, we should get 10 and this is what we get.
 
 \begin{code}
--15 bitString 	'1111111111111111111111111110001'5 bitString 	'0000000000000000000000000000101'	-10 bitString 	'1111111111111111111111111110110'
+-15 bitString 
+	returns '1111111111111111111111111110001'
+
+5 bitString 
+	returns '0000000000000000000000000000101'
+	
+-10 bitString 
+	returns '1111111111111111111111111110110'
 \end{code}
 
 
@@ -455,14 +476,14 @@ SmallInteger>>bitInvert
 
 \begin{code}{}
 2 bitString
-	'0000000000000000000000000000010'
+	returns '0000000000000000000000000000010'
 2 bitInvert.
-	'1111111111111111111111111111101'
+	returns '1111111111111111111111111111101'
 	
 -1 
-	'1111111111111111111111111111111'
+	returns '1111111111111111111111111111111'
 2 negated (two complement)
-	'1111111111111111111111111111110'
+	returns '1111111111111111111111111111110'
 \end{code}
 
 
