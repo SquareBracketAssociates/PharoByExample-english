@@ -243,8 +243,7 @@ and with a \ct{bitAnd:} we know whether there is a one or zero in the location.
 \section{More here}
 
 
-\section{Two's complement of a number}
-The two's complement is a common method to represent signed integers. The advantags is that addition and subtraction are implemented without having to  check the sign of the operands and two's complement has only one representation for zero (avoiding negative zero). Now before looking at 2's complement we will look at 10's complement to present the idea. 
+
 
 \subsection{Ten's complement of a number}
 
@@ -271,76 +270,92 @@ The 10's complement of \ct{1968} is \ct{9-1}, \ct{9-9}, \ct{9-6}, \ct{9-8} + 1 \
 Using the rule two we compute \ct{9-1}, \ct{9-9}, \ct{9-6}, \ct{10-8} \ie \ct{8032}. So our 10's complement is \ct{8032}. Indeed \ct{1968 + 8032 = 10000 =} $10^{5}$. Therefore it follows well the definition above: \ct{8032} is the result of \ct{10000 - 1968}.
 
 The 10's complement of \ct{190680} is then \ct{9-1}, \ct{9-9}, \ct{9-0}, \ct{9-6}, \ct{9-8}, \ct{9-0} + 1 \ie \ct{809319 + 1} \ie \ct{809320}. Let's verify: \ct{190680 + 809320 = 1000000}.
-
-Here we see the equivalence between the different ways to express how to compute the complement.  the first rule just avoid to perform \ct{9-d + 1 with d = 0}, \ie \ct{9-0+1 = 10} so nothing changes. 
+ 
 So to compute the 10's complement of a number, it is enough to perform \ct{9-d} for each digit and add one to the result.
 
 
 \subsection{Subtraction at work}
+The key point of complement techniques is to convert subtraction into addition. So let us check that.
 
 \paragraph{Examples.}
-\ct{8 - 3 = 5}. Now using the 10's complement we add 8 to the 10's complement of 3 which is 9 - 3 = 6. 8 + 6 + 1 = 15 
-and we drop the carry. 
-
-Perform the following operation using 10's complement \ct{8-3=5}
-Ten's complement of 3 is 7. Adding 8 and 7 results in 15. Discarding the final carry makes the result equal to 5, that is the right answer for the given subtraction.
+\ct{8 - 3 = 5}. The 10's complement of \ct{3} is \ct{9 - 3 + 1 = 7}. We add 8 to 7 and get 15. 
+We drop the carry. So we obtain \ct{5}.
 
 
+Now \ct{98-60}. The 10's complement of \ct{60} is \ct{9-6}, \ct{9-0} \ie \ct{39 + 1} \ie \ct{40}. 
+\ct{98-60 = 98 + 40 - 100 = 138 - 100 - 38}.
 
-Note that to get 10's complement of 3 one may perform 10-3=7. Alternatively, getting 9's complement of each digit and then adding 1.:
-9-3=6      10's complement of 3=6+1=7
-
-
-Find 10's complement of 54, and then perform the following subtraction:   98-54
-To obtain 10's complement of 54 one should get 9's complement of each digit and then adding 1 to the result:
-9-5=4 and 9-4=5, therefore, 9's complement of 54 is equal to 45. Adding 1 to 45 makes it 46. Hence:
-10's complement of 54 is 46.
-
-Subtracting 54 from 98 is equal to adding 98 and 46 (note that 46 is the 10's complement of 54). This addition gives: 
-98+46=144 (discarding the carry give 44 that is the correct answer).
-
-
-
-
+\sd{should check the other subtraction because this is not clear yet to me.} 
+Now performing \ct{60-98}. \ct{98} 10's complement is \ct{9-9}, \ct{9-8}, so \ct{2}.
+\ct{60 - 98 = 60 + 2 - 100 = 62 - 100 = -38.}
 
 
 \paragraph{Another look at it.} 
-Imagine that we want to perform the following expression \ct{5006002 Ð 209137} which is equals to \ct{865}.
-The 10's complement takes advantage of the fact that \ct{209137} is also \ct{999999 Ð 790862}.
+Imagine that we want to perform the following expression \ct{190680 - 109237} which is equals to \ct{81443}.
+The 10's complement takes advantage of the fact that \ct{109237} is also \ct{999999 - 890762}.
 
 \begin{code}{}
-209137 = 999999 Ð 790862
-209137 = 999999 Ð 790862 + 1 Ð 1
-209137 = 1000000 Ð 790862 Ð 1
+109237 = 999999 - 890762
+109237 = 999999 - 890762 + 1 - 1
+109237 = 1000000 - 890762 - 1
 \end{code}
 
-Now the first substraction is expressed as:
+Now the first subtraction is expressed as:
 
 \begin{code}{}
-5006002 - 209137 = 5006002 - (1000000 Ð 790862 Ð 1)
-= 5006002 - 1000000 + 790862 + 1
-= 5006002  + 790862 + 1 - 1000000
+5006002 - 109237 = 5006002 - (1000000 - 890762 - 1)
+= 5006002 - 1000000 + 890762 + 1
+= 5006002  + 890762 + 1 - 1000000
 \end{code}
 
 
-\subsection{Two's complement}
-The two's complement of a positive number represents a negative number of the number or other said a number is negated by computing its two's complement. 
+\section{Two's complement of a number}
 
 
-\begin{code}{}
-| v |
-v := 10. 
-String streamContents: [:s | 
-	31 to: 1 by: -1 do: [:i | s nextPut: ((v bitAt: i) + 48) asCharacter   ] .
-	s contents] 
 
-| v |
-v := -3.  "1111111111101"
-String streamContents: [:s | 
-	31 to: 1 by: -1 do: [:i | s nextPut: ((v bitAt: i) + 48) asCharacter   ] .
-	s contents
-	] 
-\end{code}
+The two's complement is a common method to represent signed integers. The advantages are that addition and subtraction are implemented without having to  check the sign of the operands and two's complement has only one representation for zero (avoiding negative zero). 
+
+What the 10's complement shows us  that it is achieved by taking the difference of each digit with the largest number available in the base system, 9 in decimal base and summing one. Now in the case of binary, it will be one.
+Due to the fact that \ct{1 - 0 = 1} and \ct{1 - 1 = 0}, taking the complement of each digit is exactly the same as flipping 1's to 0's and vice versa.
+
+
+
+\paragraph{Examples.}
+The 2's complement of \ct{101} is \ct{111010}. Note here that the resulting number depends on the number of bits we have at hand.  
+
+Now if we want to compute \ct{110110 - 101}. We will add 
+
+
+110110 Ð 101
+
+111111 Ð 000101 = 111010 (bit flipping of the subtrahend, 101)
+
+110110 + 111010 + 1 = 1110001
+1110001 Ð 1000000 = 110001
+
+Therefore, 110110 Ð 101 = 110001
+
+
+\paragraph{Representing negative numbers.}
+What is nice with the 2's complement is that we can use it to represent a negative number. Indeed, we can negate a number by computing its two complement. The two's complement of a positive number represents a negative number of the number.
+
+Let's look at 2. 2 is encoded on 8 bits as \ct{000000010} and \ct{-2} as \ct{11111110} as shown in Figure~\ref{negativePositive}.
+\ct{000000010} flipped is: \ct{11111101} and we add one: so we get \ct{11111110}.
+Now the difference between  -2 \ct{(11111110)} and 126 \ct{(01111110)} is given by the most significant bit. 
+
+\begin{figure}[h]
+\begin{center}
+\includegraphics[width=0.55\textwidth]{toRedo}
+\caption{Please redo this picture. \label{negativePositive}}
+\end{center}
+\end{figure}
+
+There is one exception. One a given number of bits, let's 8 bits as in Figure~\ref{negativePositive},
+we obtained the negative of a number but computing its two's complement (flipping all the bits and adding 1), except for the most negative number. On a bits representation, the most negative number is -128 (1000 0000), inverting it is (0111 1111), and adding one results in (1000 0000). Why because we cannot encode 128 on 8 bits signed convention. 
+
+
+\paragraph{In Pharo.}
+Let's try with Pharo to check a bit our understanding. 
 
 You can add the following method \ct{bitString} to the SmallInteger class. It returns a string of bit representing the bit representation of the receiver.
 
@@ -353,8 +368,42 @@ SmallInteger>>bitString
 		s contents ]
 \end{code}
 
+\begin{code}{}
+| v |
+v := 10. 
+String streamContents: [:s | 
+	31 to: 1 by: -1 do: [:i | s nextPut: ((v bitAt: i) + 48) asCharacter   ] .
+	s contents] 
+	 '0000000000000000000000000001010'
+
+| v |
+v := -3.  "1111111111101"
+String streamContents: [:s | 
+	31 to: 1 by: -1 do: [:i | s nextPut: ((v bitAt: i) + 48) asCharacter   ] .
+	s contents ]
+	 '1111111111111111111111111111101' 
+\end{code}
+	
+As we will below, Pharo small integers are encoded on 31 bits and the smallest (small integer) negative
+integer is SmallInteger maxVal negated - 1. Here we see the exception of the most negative integer.
+
+\begin{code}{} 
+SmallInteger maxVal negated	 
+	  	-1073741823
+		
+SmallInteger maxVal negated class
+		SmallInteger
+
+(SmallInteger maxVal + 1) class
+		LargePositiveInteger		
+		
+(SmallInteger maxVal negated - 1) 
+		-1073741824 (SmallInteger maxVal negated - 1)	class 
+		SmallInteger 		 
+\end{code}
 
 
+\paragraph{A two's complement.}
 
 Creating a two complement version of a number equals negating the number bits and adding one.
 \begin{code}{Calculating two complement of 3}
@@ -364,8 +413,24 @@ Creating a two complement version of a number equals negating the number bits an
 -3 bitString '1111111111111111111111111111101'
 \end{code}
 
+\paragraph{Understanding more.}
+Now you should be able to understand the implementation of \ct{SmallInteger>>bitInvert}
 
+\begin{code}{}
+SmallInteger>>bitInvert    "Answer an Integer whose bits are the logical negation of the receiver's bits.    Numbers are interpreted as having 2's-complement representation."	^ -1 - self.
+\end{code}
 
+\begin{code}{}
+2 bitString
+	'0000000000000000000000000000010'
+2 bitInvert.
+	'1111111111111111111111111111101'
+	
+-1 
+	'1111111111111111111111111111111'
+2 negated (two complement)
+	'1111111111111111111111111111110'
+\end{code}
 
 
 
