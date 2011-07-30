@@ -240,12 +240,7 @@ and with a \ct{bitAnd:} we know whether there is a one or zero in the location.
 
 %
 
-\section{More here}
-
-
-
-
-\subsection{Ten's complement of a number}
+\section{Ten's complement of a number}
 
 To fully understand 2's complement it is interesting to see how it works with decimal numbers. There is no obvious usage for 10's complement but here the point we want to show is that a complement is the replacement of addition with subtraction (\ie adding the complement of A to B is equivalent to subtracting A from B).
 
@@ -311,30 +306,46 @@ Now the first subtraction is expressed as:
 
 \section{Two's complement of a number}
 
-
-
 The two's complement is a common method to represent signed integers. The advantages are that addition and subtraction are implemented without having to  check the sign of the operands and two's complement has only one representation for zero (avoiding negative zero). 
 
-What the 10's complement shows us  that it is achieved by taking the difference of each digit with the largest number available in the base system, 9 in decimal base and summing one. Now in the case of binary, it will be one.
-Due to the fact that \ct{1 - 0 = 1} and \ct{1 - 1 = 0}, taking the complement of each digit is exactly the same as flipping 1's to 0's and vice versa.
+What the 10's complement shows us  that it is achieved by taking the difference of each digit with the largest number available in the base system, 9 in decimal base and adding one. Now in the case of binary, the base is one.
+Due to the fact that \ct{1 - 0 = 1} and \ct{1 - 1 = 0}, taking the complement of each digit is exactly the same as flipping 1's to 0's and vice versa and adding 1.
+
+
+Try the following expressions in Pharo and experiment with it. We compute the direct inversion (bitwise NOT) and add one. 
+\begin{code}{}
+2 bitString 			'0000000000000000000000000000010'2 bitInvert bitString 			'1111111111111111111111111111101'
+(2 bitInvert + 1) bitString 
+			'1111111111111111111111111111110'-2 bitString 			'1111111111111111111111111111110'		 
+\end{code}
+
+Note that the two's complement of a negative number is the corresponding positive value as shown by the following expressions: -2 two complement is 2. First we compute the direct inversion (bitwise NOT) and add one. 
+
+\begin{code}{}
+-2 bitString 	'1111111111111111111111111111110'	-2 bitInvert bitString  	'0000000000000000000000000000001'	(-2 bitInvert + 1) bitString   	'0000000000000000000000000000010'2 bitString 	'0000000000000000000000000000010'
+\end{code}
+
+\paragraph{Negative number value.}
+To know the value of a positive number it is simple: we just sum all the powers of 2 given by the binary representation as explained at the beginning of this book. Now getting the value of a negative number (in two's complement) is quite simple: we do the same except that we count the sign bit as negative, all the other ones as positive. 
+
+Let us illustrate that: 
+\ct{-69} is represented on 8 a bit encoding as: \ct{1011 1011}. So get the value out of the bit representation is simple we sum: $-2^7 + 0*2^6 + 2^5 + 2^4 + 2^3 + 0*2^2 + 2^1 + 2^0$, \ie \ct{-128 + 32 + 16 + 8 + 2 + 1} and we get -69. 
 
 
 
-\paragraph{Examples.}
-The 2's complement of \ct{101} is \ct{111010}. Note here that the resulting number depends on the number of bits we have at hand.  
 
-Now if we want to compute \ct{110110 - 101}. We will add 
+\paragraph{Subtracting.}
+When we want to compute \ct{110110 - 101}, we will compute the 2's completement and add it. 
+So we will add 0000000000000000000000000110110 and 1111111111111111111111111111011, and get 0000000000000000000000000110001. And we get well \ct{54-5 = 49}.
 
-
-110110 Ð 101
-
-111111 Ð 000101 = 111010 (bit flipping of the subtrahend, 101)
-
-110110 + 111010 + 1 = 1110001
-1110001 Ð 1000000 = 110001
-
-Therefore, 110110 Ð 101 = 110001
-
+\begin{code}{}
+(2r110110 - 2r101) bitString	
+	returns '0000000000000000000000000110001'(2r110110 bitString) 	
+	returns '0000000000000000000000000110110'2r101 bitString
+	returns '0000000000000000000000000000101'									(2r101 bitInvert + 1) bitString
+	returns '1111111111111111111111111111011'	2r101 negated bitString
+	returns '1111111111111111111111111111011'			'0000000000000000000000000110110' + 	'1111111111111111111111111111011'		----------------------------------	0000000000000000000000000110001	
+\end{code}
 
 \paragraph{Representing negative numbers.}
 What is nice with the 2's complement is that we can use it to represent a negative number. Indeed, we can negate a number by computing its two complement. The two's complement of a positive number represents a negative number of the number.
@@ -351,22 +362,21 @@ Now the difference between  -2 \ct{(11111110)} and 126 \ct{(01111110)} is given 
 \end{figure}
 
 There is one exception. One a given number of bits, let's 8 bits as in Figure~\ref{negativePositive},
-we obtained the negative of a number but computing its two's complement (flipping all the bits and adding 1), except for the most negative number. On a bits representation, the most negative number is -128 (1000 0000), inverting it is (0111 1111), and adding one results in (1000 0000). Why because we cannot encode 128 on 8 bits signed convention. 
-
+we obtained the negative of a number but computing its two's complement (flipping all the bits and adding 1), except for the most negative number. On a 8 bits representation, the most negative number is -128 (1000 0000), inverting it is (0111 1111), and adding one results in (1000 0000). Why because we cannot encode 128 on 8 bits signed convention. Here the carry is "eaten" by the sign bit. 
 
 \paragraph{In Pharo.}
 Let's try with Pharo to check a bit our understanding. 
 
-You can add the following method \ct{bitString} to the SmallInteger class. It returns a string of bit representing the bit representation of the receiver.
-
-\begin{code}{}
-SmallInteger>>bitString
-	"Returns the bit representation of the receiver."
-	""
-	^ String streamContents: [:s | 
-		30 to: 1 by: -1 do: [:i | s nextPut: ((self bitAt: i) + 48) asCharacter ] .
-		s contents ]
-\end{code}
+%You can add the following method \ct{bitString} to the SmallInteger class. It returns a string of bit representing the bit representation of the receiver.
+%
+%\begin{code}{}
+%SmallInteger>>bitString
+%	"Returns the bit representation of the receiver."
+%	""
+%	^ String streamContents: [:s | 
+%		30 to: 1 by: -1 do: [:i | s nextPut: ((self bitAt: i) + 48) asCharacter ] .
+%		s contents ]
+%\end{code}
 
 \begin{code}{}
 | v |
@@ -384,22 +394,24 @@ String streamContents: [:s |
 	 '1111111111111111111111111111101' 
 \end{code}
 	
-As we will below, Pharo small integers are encoded on 31 bits and the smallest (small integer) negative
-integer is SmallInteger maxVal negated - 1. Here we see the exception of the most negative integer.
+As we will show in a subsequent section, Pharo's small integers are encoded on 31 bits and the smallest (small integer) negative
+integer is \ct{SmallInteger maxVal negated - 1}. Here we see the exception of the most negative integer.
 
 \begin{code}{} 
+"we negate the maximum number encoded on a small integer"
 SmallInteger maxVal negated	 
-	  	-1073741823
-		
+	  	returns -1073741823
+"we still obtain a small integer"		
 SmallInteger maxVal negated class
-		SmallInteger
-
+		returns SmallInteger
+"adding one to the maximum number encoded on a small integer gets a large positive integer"
 (SmallInteger maxVal + 1) class
-		LargePositiveInteger		
-		
+		returns LargePositiveInteger		
+"But the smallest negative is one less than the negated largest positive small integer"		
 (SmallInteger maxVal negated - 1) 
-		-1073741824 (SmallInteger maxVal negated - 1)	class 
-		SmallInteger 		 
+		returns -1073741824 
+(SmallInteger maxVal negated - 1) class 
+		returns SmallInteger 		 
 \end{code}
 
 
@@ -414,10 +426,14 @@ Creating a two complement version of a number equals negating the number bits an
 \end{code}
 
 \paragraph{Understanding more.}
-Now you should be able to understand the implementation of \ct{SmallInteger>>bitInvert}
+Now you should be able to understand the implementation of \ct{SmallInteger>>bitInvert} method.
 
 \begin{code}{}
-SmallInteger>>bitInvert    "Answer an Integer whose bits are the logical negation of the receiver's bits.    Numbers are interpreted as having 2's-complement representation."	^ -1 - self.
+SmallInteger>>bitInvert
+    "Answer an Integer whose bits are the logical negation of the receiver's bits.
+    Numbers are interpreted as having 2's-complement representation."
+
+	^ -1 - self.
 \end{code}
 
 \begin{code}{}
@@ -434,8 +450,57 @@ SmallInteger>>bitInvert    "Answer an Integer whose bits are the logical negati
 
 
 
-\section{Hexadecimal}
 
+
+
+\section{SmallIntegers in Pharo}
+
+Smalltalk small integers uses a two's complement arithmetic on 31 bits.  
+An N-bit two's-complement numeral system can represent every integer in the range $-1 * 2^{N-1}\ to\ 2^{N-1}-1$. So for 32 bits Smalltalk systems, small integers values are the range -1073741824 to  1073741823. Let's check that a bit (this is the occasion to say it). 
+
+
+
+If you want to know the number of bits used to represent a
+SmallInteger, just evaluate:
+
+\begin{code}
+SmallInteger maxVal highBit + 1.
+\end{code}
+
+\ct{SmallInteger maxVal highBit} tells the highest bit which can be used to
+represent a positive SmallInteger, and + 1 accounts for the sign bit
+of the SmallInteger (0 for positive, 1 for negative).
+
+
+
+\begin{code}{}
+2 raisedTo: 29 
+	returns 536870912 
+
+536870912 class
+	returns SmallInteger
+
+2 raisedTo: 30 
+	returns 1073741824
+
+1073741824 class
+	returns LargePositiveInteger
+
+-1073741824 class 
+	returns SmallInteger
+
+2 class maxVal 
+	returns 1073741823
+
+-1 * (2 raisedTo: (31-1)) 
+	returns -1073741824
+	
+(2 raisedTo: 30) - 1
+	returns 1073741823
+\end{code}
+
+\section{Hexadecimal}
+We cannot finish this Chapter without talking about hexadecimal.
 
 \begin{code}
 15 hex
@@ -484,55 +549,6 @@ We shift out the 8 first and clear all the others after the next 4.
 	returns 0101	
 	returns 5
 \end{code}
-
-
-\section{SmallIntegers in Smalltalk}
-
-Smalltalk small integers uses a two's complement arithmetic on 31 bits.  
-An N-bit two's-complement numeral system can represent every integer in the range $-1 * 2^{N-1}\ to\ 2^{N-1}-1$. So for 32 bits Smalltalk systems, small integers values are the range -1073741824 to  1073741823. Let's check that a bit (this is the occasion to say it). 
-
-
-
-If you want to know the number of bits used to represent a
-SmallInteger, just evaluate:
-
-\begin{code}
-SmallInteger maxVal highBit + 1.
-\end{code}
-
-\ct{SmallInteger maxVal highBit} tells the highest bit which can be used to
-represent a positive SmallInteger, and + 1 accounts for the sign bit
-of the SmallInteger (0 for positive, 1 for negative).
-
-
-
-\begin{code}{}
-2 raisedTo: 29 
-	returns 536870912 
-
-536870912 class
-	returns SmallInteger
-
-2 raisedTo: 30 
-	returns 1073741824
-
-1073741824 class
-	returns LargePositiveInteger
-
--1073741824 class 
-	returns SmallInteger
-
-2 class maxVal 
-	returns 1073741823
-
--1 * (2 raisedTo: (31-1)) 
-	returns -1073741824
-	
-(2 raisedTo: 30) - 1
-	returns 1073741823
-\end{code}
-
-
 
 
 
