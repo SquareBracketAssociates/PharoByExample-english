@@ -487,16 +487,10 @@ SmallInteger>>bitInvert
 \end{code}
 
 
-
-
-
-
 \section{SmallIntegers in Pharo}
 
 Smalltalk small integers use a two's complement arithmetic on 31 bits.  An N-bit two's-complement numeral system can represent every integer in the range $-1 * 2^{N-1}\ to\ 2^{N-1}-1$. So for 31 bits Smalltalk systems small integers values are the range -1073741824 to  1073741823.  Remember in Smalltalk integers are special objects and this marking requires one bit, therefore on 32 bits we are 31 bits for small signed integers. Of course since we also have automatic coercion this is not really a concern for the end programmer. Here we take a language implementation perspective.
  Let's check that a bit (this is the occasion to say it). 
-
-
 
 If you want to know the number of bits used to represent a
 SmallInteger, just evaluate:
@@ -543,7 +537,10 @@ Let us explore a bit.
 \end{code}
 
 \section{Hexadecimal}
-We cannot finish this Chapter without talking about hexadecimal.
+We cannot finish this Chapter without talking about hexadecimal. In Smalltalk, the same syntax than for binary is used for hexadecimal. 16rF indicates that F is encoded in 16 base. 
+
+We can get the hexadecimal equivalent of a number using the message \ct{hex}. 
+Using the message \ct{printStringHex} we get the number printed in hexadecimal without the radix notation. 
 
 \begin{code}
 15 hex
@@ -555,29 +552,35 @@ We cannot finish this Chapter without talking about hexadecimal.
 	returns 15
 \end{code}
 
-
+The following snippet lists some equivalence between a number and its hexadecimal equivalent.
 \begin{code}
 (1 to: 15) collect: [:each | each -> each hex] 
 
 {(1->'16r1'). (2->'16r2'). (3->'16r3'). (4->'16r4'). (5->'16r5'). (6->'16r6'). (7->'16r7'). (8->'16r8'). (9->'16r9'). (10->'16rA'). (11->'16rB'). (12->'16rC'). (13->'16rD'). (14->'16rE'). (15->'16rF')}
 \end{code}
 
-
+When doing bit manipulation it is often shorter to use an hexadecimal notation over a binary one. Even if for bitAnd: the binary notation may be more readable
 \begin{code}{}
 16rF printStringBase: 2
 	returns '1111'
+2r00101001101 bitAnd: 2r1111	
+	returns 2r1101
+2r00101001101 bitAnd: 16rF
+	returns 2r1101
 \end{code}
 
 
-\subsection*{Selecting a subpart}
+\subsection*{Information subpart extraction}
+Often numbers are used to encode in a compact manner multiple information: we could imagine to use 1 bit for gender, 6 bits for age.... The resulting number would be meaningless but information extracted from it is meaningful.
+Now we are armed to select subpart of number to get such information. 
 
 \begin{code}{}
 2r1100010100000000 
 	returns 50432
 \end{code}
 
-Imagine that only 4 bits interest us starting at the 9th one.
-We shift out the 8 first and clear all the others after the next 4.  
+Imagine that only 4 bits interest us starting at the 8th bit.
+To get the encoded value, we shift out the 8 first ones and clear all the others after the next 4: so we bit shift and bit and as follows:
 
 \begin{code}{}
 (2r1100010100000000 >> 8)
@@ -585,20 +588,18 @@ We shift out the 8 first and clear all the others after the next 4.
 	returns 197
 
 (2r1100010100000000 >> 8) bitAnd: 16rF	
-	returns 0101	
+	returns 2r0101	
 	returns 5
 	
-2r11000101 bitAnd: 1111
-	returns 0101	
+2r11000101 bitAnd: 2r1111
+	returns 2r0101	
 	returns 5
 \end{code}
 
-
-
-
-
-
 \section{Conclusion}
+
+Smalltalk uses two's complement encoding for its internal number representation and support  bit manipulation of their internal representation. This is useful when we want to speed up algorithms using simple encoding.
+
 
 %=========================================================
 \ifx\wholebook\relax\else
