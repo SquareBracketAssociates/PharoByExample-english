@@ -73,7 +73,7 @@ The OpenDBXDriver written in Smalltalk is also needed in order to use the DBXTal
 is using it's metacello configuration, ensuring all it's dependencies to be loaded, such as FFI.  This can be performed executing
 in a workspace the following script:
 
-\begin{code}
+\begin{code}{}
 Gofer it
 	squeaksource: 'DBXTalk';
 	package: 'ConfigurationOfOpenDBXDriver';
@@ -91,7 +91,7 @@ createConnection method to suite your needs.
 
 For example, if I want to configure the tests to run in my MySql database, I should go to DBXMySQLFacility>>createConnection, to see the following:
 
-\begin{code}
+\begin{code}{}
 createConnection
     self connectionSettings: (DBXConnectionSettings
 			    host: 'localhost'
@@ -104,9 +104,71 @@ createConnection
 
 There I can change the host, port, database, username and password to connecto to my own database.
 
-\section{Getting down to business}
+\section{Getting down to business with DBXTalk OpenDBXDriver}
 
 Now you have already installed your database driver, you are ready to use it and build applications with it!  But you need to know the basics in order to get the mayor leagues.  In the following section you will be introduced in creating connections, execute SQL statements and handle transactions.
+
+\section{Creating a connection}
+
+The first step in order to execute a SQL statement in a database engine is to create a connection to that database.  The DBXTalk OpenDBXDriver uses 3 objects to fulfill this objective: a connection object, which uses a platform/backend object and a connection settings object.
+
+For example, to open a connection to a MySQL database called sodbxtest, located in localhost you can use the following code:
+
+\begin{code}{}
+settings := DBXConnectionSettings
+			host: 'localhost'
+			port: '3306'
+			database: 'sodbxtest'
+			userName: 'sodbxtest'
+			userPassword: 'sodbxtest'.
+platform := DBXMySQLBackend new.
+connection := DBXConnection platform: platform settings: settings.
+
+connection connect.
+connection open.
+\end{code}
+
+As you can see, after creating the connection object, you have to send it first the \#connect message to let OpenDBX create all the needded internal structure.  After that, you can send it the \#open message to associate the connection to the desired database, verify the credentials and enable us to start sending querys.
+
+The main reason to separate these two operations is to configure some extra options before the connection is open.  If you do not want to specify any of these options, you can send the \#connectAndOpen message to the connection instead:
+
+\begin{code}{}
+connection connectAndOpen.
+\end{code}
+
+\subsection{Connection special options}
+
+As we told you in the last section, you can specify some special options to the connection before it is opened.  All of these options can be enabled through the following helper methods of the connection.  What they do is to try to enable the desired option, and return a boolean indicating if the option succeded or not.
+
+Each option may or not succeed because it depends on your database engine support for it.
+
+\begin{itemize}
+\item \#enableCompression
+
+It tries to enable the Compression option.
+
+\item \#enableEncryption: aEncryptionOption
+
+It tries to enable the Encryption option.  The possible encryption option values are:
+\begin{itemize}
+    \item DBXEncryptionValues never
+    \item DBXEncryptionValues try
+    \item DBXEncryptionValues always
+\end{itemize}
+
+\item \#enableMultipleStatements
+
+It tries to enable Multiple Statements option.
+
+\item \#enablePagedResults
+
+It tries to enable paged results.
+
+\item \#enableSpecialModes: modes 
+
+	It tries to enable specific modes. For example MySQL special modes (\url{http://dev.mysql.com/doc/refman/5.0/en/server-sql-mode.html}).
+
+\end{itemize}
 
 %=========================================================
 \ifx\wholebook\relax\else
