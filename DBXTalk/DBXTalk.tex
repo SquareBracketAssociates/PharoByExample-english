@@ -1,4 +1,4 @@
-% $Author: polito $
+% $Author: gpolito $
 % $Date: 2011-07-09 17:14:33 -0300 (Sat, 09 Jul 2011) $
 % $Revision: 1 $
 
@@ -32,6 +32,8 @@
 %\renewcommand{\nnbb}[2]{#2} % Disable editorial comments
 
 \chapter{DBXTalk}
+\chapterauthor{\authorguille{}}
+
 DBXTalk is a database driver that allows interaction with major relational database engines such as
 Oracle and MSSQL, apart from those which are open source, like PostgreSQL and MySQL.
 
@@ -46,10 +48,65 @@ and our Pharo image, and provides a common interface to interact with through FF
 \item We will need the corresponding client database library that OpenDBX will talk to.
 \end{itemize}
 \includegraphics[width=\linewidth]{dbx_architecture.png}
-\section{Installing DBXTalk}
 
-This section will introduce the installation of the components needed to run DBXTalk in MS Windows, Unix and MacOS.
 
+\section{Installing DBXTalk OpenDBX Driver}
+
+In Order to install DBXTalk library, we need to install the previously detailed components.
+
+\subsection*{Install OpenDBX Driver}
+
+As we already introduced, an important part of DBXTalk architecture is the OpenDBX Driver, which allows us
+to communicate with different relational database engines with a common approach.  OpenDBX is an open source library,
+licensed as LGPL.
+
+It's installation instructions for different engines and operative systems can be found on \url{http://www.linuxnetworks.de/doc/index.php/OpenDBX}.
+
+You can also participate in the Issue Tracker and mailing list of this proyect to ask questions and contribute.
+
+Issue Tracker: \url{http://bugs.linuxnetworks.de/index.php?project=3}
+Mailing List: \url{https://lists.sourceforge.net/lists/listinfo/libopendbx-devel}
+
+\subsection*{Install Smalltalk OpenDBXDriver}
+
+The OpenDBXDriver written in Smalltalk is also needed in order to use the DBXTalk suite.  The easiest way to download it
+is using it's metacello configuration, ensuring all it's dependencies to be loaded, such as FFI.  This can be performed executing
+in a workspace the following script:
+
+\begin{code}
+Gofer it
+	squeaksource: 'DBXTalk';
+	package: 'ConfigurationOfOpenDBXDriver';
+	load.
+	
+(((Smalltalk at: #ConfigurationOfOpenDBXDriver) perform: #project) perform: #version: with: #stable) load
+\end{code}
+
+\subsection*{Ensuring everything was ok}
+
+The OpenDBXDriver package comes along with lots of tests cases you can use to test the your installation.  But before running
+ the tests, you may want to configure the database connection settings in order to match your actual configuration.
+To do that, just go to the corresponsing DBX*Engine*Facility class in the OpenDBXDriverTests package, and modify the
+createConnection method to suite your needs.
+
+For example, if I want to configure the tests to run in my MySql database, I should go to DBXMySQLFacility>>createConnection, to see the following:
+
+\begin{code}
+createConnection
+    self connectionSettings: (DBXConnectionSettings
+			    host: 'localhost'
+			    port: '3306'
+			    database: 'sodbxtest'
+			    userName: 'sodbxtest'
+			    userPassword: 'sodbxtest').
+    self platform: DBXMySQLBackend new.
+\end{code}
+
+There I can change the host, port, database, username and password to connecto to my own database.
+
+\section{Getting down to business}
+
+Now you have already installed your database driver, you are ready to use it and build applications with it!  But you need to know the basics in order to get the mayor leagues.  In the following section you will be introduced in creating connections, execute SQL statements and handle transactions.
 
 %=========================================================
 \ifx\wholebook\relax\else
