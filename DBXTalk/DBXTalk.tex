@@ -170,6 +170,28 @@ It tries to enable paged results.
 
 \end{itemize}
 
+\subsection{Executing SQL statements}
+
+The execution of a SQL statement in the database of your desire is performed sending the \#execute: message -or \#executeMultiStatement: if enabled- to the connection object.  So, once you have your connection established and open, you can try evaluating in a workspace code like:
+
+\begin{code}{}
+"we create a table to store our trading card game cards in our MySQL database"
+connection execute: 'CREATE TABLE CARD(ID INT AUTO_INCREMENT PRIMARY KEY, NAME VARCHAR(100))'
+
+"we insert some cards into our database"
+connection execute: 'INSERT INTO CARDS (NAME) VALUES(''Giant Growth'')'.
+connection execute: 'INSERT INTO CARDS (NAME) VALUES(''Llanowar Elves'')'.
+
+"If we did enable multistatements before opening the connection we can do some inserts at the same time!"
+connection executeMultiStatement: 'INSERT INTO CARDS (NAME) VALUES(''Rancor'');
+						            INSERT INTO CARDS (NAME) VALUES(''Counterspell'')'.
+
+"we execute an invalid SQL statement to see how it raises a DBXRecoverableError"
+conn execute: 'some invalid sql statement'.
+\end{code}
+
+
+
 %=========================================================
 \ifx\wholebook\relax\else
    \bibliographystyle{jurabib}
