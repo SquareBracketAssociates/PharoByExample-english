@@ -1002,6 +1002,8 @@ Here is an example, the pharo 1.2.2-baseline would include specs that look like 
          versionString: #stable;
          ...];
     ....].
+    
+ \end{code}
 
 Loading Pharo 1.2.2-baseline would cause the \ct{#stable} version for each of those projects to be loaded ... 
 but remember over time the \ct{#stable} version will change and incompatibilities between packages can creep in. 
@@ -1015,7 +1017,7 @@ Pharo 1.2.2 (literal version) will have corresponding specs that look like this:
     project: 'ScriptManager' with: '1.2';
     project: 'Shout' with: '1.2.2';
     ....].
-\edn{code}
+\end{code}
 
 So that you have driven a stake into the ground stating that these versions are known to work together (have passed tests as a unit). 5 years in the future, you will be able to load Pharo 1.2.2 and get exactly the same packages every time, whereas the \ct{#stable} versions may have drifted over time.
 
