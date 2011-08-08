@@ -48,8 +48,11 @@ Let's take a simple case: the result of adding two floats may not be equal to th
 	returns false
 \end{code}
 
-Hey, this is unexpected, you did not learn that in school, did you? This behavior is surprising indeed, but it's normal since floats are inexact numbers. An important point is that the way floats are printed, also impacts our understanding of what floats are. Some approaches prints a simpler representation of reality than others. In early versions of Pharo printing \ct{0.1 + 0.2} were printing \ct{0.3}, now  printing it returns \ct{0.30000000000000004}.
-This change was guided by the idea that it is better not to lie to the user. Showing the inexactness of float is better than hiding because one day or another we can be deeply bitten by them. 
+Hey, this is unexpected, you did not learn that in school, did you? This behavior is surprising indeed, but it's normal since floats are inexact numbers. 
+An important point is that the way floats are printed, also impacts our understanding of what floats are. Some approaches will present a simplified version of the float when printed. In fact, in earlier versions Pharo would also print \ct{0.1 + 0.2} as \ct{0.3}. In newer versions this has changed, it now prints as \ct{0.30000000000000004}.
+This modification was guided by the idea that it is better not to lie to the user. 
+Sooner or later, programmers oblivious to the inexactness of floats will be bitten by it.
+Showing, rather than hiding this inexactness when printing hopefully makes it easier to grasp what is really going on.
 
 \begin{code}{}
 (0.2 + 0.1) printString
