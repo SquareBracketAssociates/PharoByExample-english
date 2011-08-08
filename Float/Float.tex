@@ -41,8 +41,7 @@ The basic message is that Floats should be used as, and appreciated for what the
 
 \section{Never test equality on floats}
 The first basic principle is to never compare float equality. 
-Let's take a simple case: the addition of two floats may not be equal to the float representing their
-sum. For example \ct{0.1 + 0.2} is not equal to \ct{0.3}.
+Let's take a simple case: the result of adding two floats may not be equal to the float you would write to represent their sum.  For example \ct{0.1 + 0.2} is not equal to \ct{0.3}.
 
 \begin{code}{}
 (0.1 + 0.2) = 0.3
