@@ -3,8 +3,6 @@
 % $Revision$
 
 % HISTORY:
-% 2008-02-04 - new umbrella
-% 2009-04-23 - pharo -> squeak
 
 %=================================================================
 % This is the main file for the Pharo By Example book.
@@ -65,7 +63,7 @@
 	Jannik Laval\quad}
 % (to be updated at the end)
 \title{\Huge\bf More Pharo by Example\\[1ex]
-with the participation of O. Nierstrasz, Dale, Mariano, Sven }
+\small with the participation of O. Nierstrasz, D. Henrichs, ... }
 \isodate
 \date{\emph{Version of \today}}
 \maketitle
@@ -79,11 +77,6 @@ with the participation of O. Nierstrasz, Dale, Mariano, Sven }
 %=================================================================
 \input{Preface/Preface2.tex}
 %=================================================================
-%\part{Software Development}
-%\input{Monticello/Monticello.tex}
-
-% \input{Profiling/Profiling.tex}
-
 
 \part{Frameworks}
 
@@ -93,15 +86,6 @@ with the participation of O. Nierstrasz, Dale, Mariano, Sven }
 % use pdf for graffle
 
 \input{Glamour/Glamour.tex}
-
-% Gofer
-
-\input{LDAP/LDAP.tex}
-% 60
-% Gofer
-% manque description 
-% fr -> english
-
 
 \input{Mondrian/Mondrian.tex}
 % 80
@@ -116,24 +100,21 @@ with the participation of O. Nierstrasz, Dale, Mariano, Sven }
 \part{Language}
 \input{Exceptions/Exceptions.tex} %% stef
 %% 100
+%% should be luluified
+%% should integrate hernan feedback
 
 \input{Block/Block.tex} %stef 
 %% 50 
 
 \input{Float/Float.tex} %% stef
-% 60 
+% 60
+%% may be should be merged with little number
+
 
 %\input{Compiler/Compiler.tex} %% marcus
 %0
+% jb wrote something
 
-%\input{Traits/Traits.tex} %%% stef alex
-% stef and alexandre
-% 20 (first add picture of the esug presentations)
-
-\part{Web}
-
-% Crude
-% Iliad
 
 \part{Libraries}
 \input{FileSystem/FileSystem.tex} 
@@ -169,10 +150,11 @@ with the participation of O. Nierstrasz, Dale, Mariano, Sven }
 
 \input{Metacello/Metacello.tex}
 % 85 
+%% need a two pages summary
 
 \part{Tools}
 \input{Profiling/Profiling.tex}
-% 80
+% should be luluified
 
 %Network
 %Rewriting Rules
@@ -187,20 +169,6 @@ with the participation of O. Nierstrasz, Dale, Mariano, Sven }
 \printindex
 
 \end{document}
-
-
-\section{How make an image self executable with Pharo}
-We save an image with our main application window already opened, and unwanted things disabled (halos, alt-., menus, etc). Additionally, we have a class-side \#startUp: method to initialize what's necessary on startup, like re-reading config files etc.
-
-The image is started automatically when double-clicking  "plopp.exe", or rather a short-cut in the program menu placed there by the installer. This exe is nothing more than a renamed Pharo.exe, with a different icon patched in using a resource editor. There is a VM config file "plopp.ini", which most importantly contains the path to the image to load (see http://minnow.cc.gatech.edu/squeak/3274).
-
-The exe along with the needed plugins, the image and other data files is installed in the "programs" directory by a regular Windows installer (InstallShield).
-
-It's really not too different from other applications, which nowadays also consist of an executable and several additional files. That the actual application logic in Squeak's case is not contained in the executable but in a "data file" is of no concern to the end user.
-
-Note that this is an FAQ item (http://minnow.cc.gatech.edu/squeak/3563). Feel free to put my explanation on the Swiki, I haven't checked carefully if a similar answer is already there.
-
-- Bert -
 %=================================================================
 
 % \printglossary
