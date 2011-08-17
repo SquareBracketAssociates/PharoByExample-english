@@ -34,53 +34,105 @@
 \sloppy
 %=================================================================
 \chapter{Block and Dynamic Behavior of Smalltalk-Runtime}\chalabel{blocks}
-\chapterauthor{\authorsteph{}}
 
-Blocks are a powerful and essentail feature of Smalltalk. Without them it
+Blocks (lexical closures) are a powerful and essential feature of Smalltalk. Without them it
 would be difficult to have a so small and compact syntax. The use of blocks in Smalltalk
 is the key to get conditional and loops not hardcoded in the language syntax but just 
-simple messages. 
+simple messages -- Simple messages having blocks as arguments. Blocks work extremely well with message passing and the Smalltalk syntax. 
 
-In addition block are  effective to improve the readability, reusability and efficiency of code. 
-However, the dynamic runtime semantics of Smalltalk is often not well documented. Blocks in presence of
-return statements behave like an excepting mechanism. 
+In addition blocks are  effective to improve the readability, reusability and efficiency of code. 
+However the dynamic runtime semantics of Smalltalk is often not well documented. Blocks in presence of
+return statements behave like an escaping mechanism and while this can lead to ugly code when use to its extreme, it is important to understand it. 
 
 In this chapter we will discuss some basic block behavior such as the notion of a static environment 
-defined at block compiled time. But let us first recall some basics
+defined at block compiled time. Then we will present some deeper issues. But let us first recall some basics
+
+\sd{Talk about cull:}
+
+We presented blocks in Pharo by Example. Here we just mention other aspects. 
 
 \section{Basics}
+What is a block? Historically, it's a Lambda expression, or a anonymous function. A block is a piece of code whose execution is frozen and kicked in using a specific protocol.  Blocks are defined by square brackets.
 
-What are a Block? A block is sustain piece of code. Historically, it's a Lambda expression, or a anonymous function. We can define a piece of code that is prepare to be call later. In Pharo the Block is define by square bracket. That block can be evaluate by sending the \emph{\#value} message to it.
+If you execute and print the result of the following block you will not get 3 but a block. 
+\begin{code}[Block definition]{Block Definition}
+[1 + 2]
+\end{code}
 
+ A block is evaluated by sending the \ct{value} message to it. More precisely blocks can be executed using \ct{value} (when no argument is mandatory), \ct{value:} (when one argument), \ct{value:value:}, \ct{value:value:value:} and \ct{valueWithArguments: anArray}...)
+
+\begin{code}[Block definition]{Block Execution}
+[1 + 2] value  
+    returns 3
+\end{code}
+
+
+Pharo includes some handy messages such as \ct{cull:} and friends to support the execution of blocks even in presence of more values than necessary. This allows us to write blocks more concisely when we are not necessarily interested in all the available arguments.
+\ct{cull} fills the same need as  \ct{valueWith[Possible/Enough]Args:}, but does not require creating an Array with the arguments, and will raise an error if the receiver has more arguments than provided rather than pass nil in the extraneous ones.
+Hence, from where the block is provided, they look almost the same, but where the block is executed, the code is usually cleaner.
+
+
+\begin{code}{Cull: examples}
+[ 1 + 2 ] cull: 5	returns 3[ :x | 1+ 2 + x] cull: 5 	returns 8
+[ 1 + 2 ] cull: 5 cull: 6	returns 3[ :x | 1+ 2 + x] cull: 5 	returns 8[ :x | 1+ 2 + x] cull: 5 cull: 3		returns 8 [ :x : y | 1+ y + x] cull: 5 cull: 2 	returns 8
+[ :x : y | 1+ y + x] cull: 5 
+	raises error
+\end{code}
+
+\ct{once} is another extension that caches the results and interned it until the receiver is uncached.
+A typical usage is the following one:
+
+\begin{method}{Example for resources caching using once}
+myResourceMethod	^[expression] once.
+\end{method}
+
+The table below lists some of the messages available on the class \ct{BlockClosure} whose blocks are instance of. 
  
+\begin{tabular}{p{2cm}|p{8cm}}
+\textsf{silentlyValue}&Execute the receiver but avoiding progress bar notifications to show up.\\
+\textsf{once}&Answer and remember the receiver value, answering exactly the same object in any further sends	 of once or value. The expression will be evaluated once and its result returned for any subsequent evaluations.\\
+\end{tabular}
+
+Some messages are useful to profile execution: 
+
+\begin{tabular}{p{2cm}|p{8cm}}
+\textsf{bench}&Returns how many times the receiver can get executed in 5 seconds. \\
+\textsf{durationToRun}& Answer the duration taken to execute the receiver block.\\
+\textsf{timeToRun}&Answer the number of milliseconds taken to execute this block.\\
+\end{tabular}
+
+Some messages are related to error handling as explain in the exception Chapter~\ref{cha:exception}.
+
+\begin{tabular}{p{2cm}|p{8cm}}
+\textsf{ensure: aBlock}&Execute a termination block after evaluating the receiver, regardless of whether the receiver's evaluation completes.  \\
+\textsf{ifCurtailed: aBlock}& Evaluate the receiver with an abnormal termination action. Evaluate aBlock only if execution is unwound during execution of the receiver. If execution of the receiver finishes normally do not evaluate aBlock. \\
+\textsf{on: exception do: handlerAction}&Evaluate the receiver in the scope of an exception handler.\\
+\textsf{on: exception fork: handlerAction}&Activate the receiver. In case of exception, fork a new process, which will handle an error.An original process will continue running as if receiver evaluation finished and answered nil,	\ie  an expression like: \textsf{[ self error: 'some error'] on: Error fork: [:ex |  123 ]} will always answer nil for original process, not 123. The context stack, starting from context which sent this message to receiver and up to the top of the stack will be transferred to forked process, with handlerAction on top. When the forked process is resuming, it will enter the handlerAction).\\
+\end{tabular}
 
 
+Some messages are related to process scheduling and should be detailed in a specific Chapter. 
 
-
-
-
-
-
-value
-value:
-....
-
-ifTrue:ifFalse: 
-
-
+\begin{tabular}{p{2cm}|p{8cm}}
+\textsf{fork}&ECreate and schedule a Process running the code in the receiver.\\
+\textsf{forkAt: aPriority}& Create and schedule a Process running the code in the receiver at the given priority. Answer the newly created process. \\
+\textsf{newProcess}&Answer a Process running the code in the receiver. The process is not scheduled.\\
+\end{tabular}
 
 
 \section{Variables and Blocks}
 In Smalltalk, private variables (such as self, instance variables, temporaries and arguments) are 
-lexically scoped. These variables are bound in the context in which the block that contains them is defined, rather than the context in which the block is evaluated.  We call the context (set of bindings) in which a block is defined, the block home context,
+lexically scoped. These variables are bound in the context in which the block that contains them is defined, rather than the context in which the block is executed.  We call the context (set of bindings) in which a block is defined, the \emph{block home context}.
 
-Define a class name BExp (for BlockExperience) and the following methods
+
+Let's have fun and experiment a bit to understand. 
+Define a class named \ct{BExp} (for BlockExperience) and the following methods:
 
 \begin{code}{}
 BExp>>testScope 
 	| t | 
 	t := 42. 
-	self testBlock: [Transcript show: t printString] 
+	self testBlock: [self crLog: t printString] 
 	
 BExp>>testBlock: aBlock 
 	| t | 
@@ -88,19 +140,14 @@ BExp>>testBlock: aBlock
 	aBlock value 
 \end{code}
 
-Execute \ct{BExp new testScope}
-
-Evaluating the \ct{testScope} message will print 42 in the Transcript. What you see is that the value of the temporary variable \ct{t} defined in method testScope is the one used.
-
-More blablablab here.
-
+Execute \ct{BExp new testScope}. Executing the \ct{testScope} message will print 42 in the Transcript. What you see is that the value of the temporary variable \ct{t} defined in method testScope is the one used and that t inside \ct{[self crLog: t printString]} is not looked up in the context of the executing method \ct{testBlock:} but in the context of the testScope the method defining the block.
 
 \begin{code}{}
 BExp>>testScope2 
 	| t | 
 	t := 42. 
 	self testBlock: [t := 33.
-					Transcript show: t printString] 	
+					self crLog: t printString] 	
 	
 BExp>>testBlock: aBlock
 	| t | 
@@ -111,13 +158,14 @@ BExp>>testBlock: aBlock
 This experience shows that a block is not only an anonymous method but one with an execution context or environment. In this environment temporary variables are bound with the values they hold when the block 
 is defined. Naturally we can expect that method arguments are also bound and also self and instance variables of the class in which the method defining a block is. Let's illustrate these points now. 
 
-For method arguments
+
+\paragraph{For method arguments.}
 
 \begin{code}{}
 BExp>>testScopeArg: arg
 	"self new testScopeArg: 'foo'"
 	
-	self testScopeArgValue: [Transcript show: arg ; cr]
+	self testScopeArgValue: [self crLog: arg ; cr]
 
 BExp>>testScopeArgValue: aBlock
 	| arg | 
@@ -125,13 +173,12 @@ BExp>>testScopeArgValue: aBlock
 	aBlock value
 \end{code}
 
-Now executing \ct{self new testScopeArg: 'foo'} prints foo even if in the method testScopeArgValue: the temporary arg is redefined. 
+Now executing \ct{self new testScopeArg: 'foo'} prints foo even if in the method \ct{testScopeArgValue:} the temporary arg is redefined.
+ 
 
-
-For binding of self, we can simply define a new class and a couple of method
-
-Add the instance variable x to the class BExp and define the initialize method
-as follows:
+\paragraph{self binding.}
+For binding of self, we can simply define a new class and a couple of methods. 
+Add the instance variable x to the class BExp and define the initialize method as follows:
 
 \begin{code}{}
 BExp>>initialize
@@ -140,7 +187,7 @@ BExp>>initialize
 
 Define another class 
 \begin{code}{}
-Object subclass: #BEXp2
+Object subclass: #BExp
 	instanceVariableNames: 'x'
 	classVariableNames: ''
 	poolDictionaries: ''
@@ -150,25 +197,24 @@ Object subclass: #BEXp2
 
 \begin{code}{}
 BExp2>>initialize
+	super initialize.
 	x := 69.
 
-BExp2>>estScopeSelf: aBlock
+BExp2>>testScopeSelf: aBlock
 	aBlock value
 \end{code}
 
-Then define the emthods that will invoke the methods defined in BExp2.
+Then define the methods that will invoke  methods defined in \ct{BExp2}.
 \begin{code}{}	
 BExp>>testScopeSelf
 	"self new testScopeSelf"
-	self testScopeSelf: [Transcript show: self printString ; show: x; cr]
+	self testScopeSelf: [self crLog: self printString ; logCr: x]
 
 BExp>>testScopeSelf: aBlock
 	BEXp2 new testScopeSelf: aBlock
 \end{code}	
-	
-	
 
-Now when we execute \ct{BExp new testScopeSelf} and we see that a BExp gets printed, showing that a block captures self. 
+Now when we execute \ct{BExp new testScopeSelf} and we see that \ct{a BExp666} gets printed, showing that a block captures self too. 
 
 
 \section{Basics on Return}
