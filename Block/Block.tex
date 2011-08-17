@@ -178,14 +178,8 @@ Now executing \ct{self new testScopeArg: 'foo'} prints foo even if in the method
 
 \paragraph{self binding.}
 For binding of self, we can simply define a new class and a couple of methods. 
-Add the instance variable x to the class BExp and define the initialize method as follows:
+Add the instance variable x to the class \ct{BExp} and define the initialize method as follows:
 
-\begin{code}{}
-BExp>>initialize
-	x := 666.
-\end{code}	
-
-Define another class 
 \begin{code}{}
 Object subclass: #BExp
 	instanceVariableNames: 'x'
@@ -193,6 +187,14 @@ Object subclass: #BExp
 	poolDictionaries: ''
 	category: 'BlockExperiment'
 \end{code}
+
+
+\begin{code}{}
+BExp>>initialize
+	x := 666.
+\end{code}	
+
+Define another class named \ct{BExp2} (subclass of \ct{BExp} but inheritance is orthogonal to what we want to show).
 
 
 \begin{code}{}
@@ -217,42 +219,46 @@ BExp>>testScopeSelf: aBlock
 Now when we execute \ct{BExp new testScopeSelf} and we see that \ct{a BExp666} gets printed, showing that a block captures self too. 
 
 
-\section{Basics on Return}
-
-A return statement allows one to return a different value than the receiver of the message.
-Return expressions behave 
-
-\begin{code}{}
-foo
-	
-	#(1 2 3 4) do: [:each | Transcript show: each printString. 
-						each = 3 
-							ifTrue: [^ 3]]
-\end{code}
-
-
 
 \section{Returning from inside a block}
-It is not a really good idea to have return statement in a block that you pass or store into instance variables and we will explain why in this section. 
+It is not a really good idea to have return statement in a block that you pass or or that store into instance variables and we will explain why in this section.
 
-In certain Smalltalk dialects, you can have expressions after a return statement in a block, in Pharo \ct{^} should be the last statement of a block body. You should get a compile error if you type and compile the following expression. 
+\subsection{Basics on Return}
+A return statement allows one to return a different value than the receiver of the message.
+Now a return expression behaves also like an escape mechanism since the execution flow will jump out to the current caller and not just one level up. For example, the following code will return 3 and 42 will never be reached. The expression \ct{[^3]} could be deeply nested, its execution jumps out all the levels.
 
 \begin{code}{}
-[ Transcript show: 'two'.
-  ^ self.  
-  Transcript show: 'not printed' ]
+BExp>>foo
+	
+	#(1 2 3 4) do: [:each | self crLog: each printString. 
+						each = 3 
+							ifTrue: [^ 3]].						
+	^ 42
 \end{code}
 
-Now to see that a return is really escaping the current execution you 
+Now to see that a return is really escaping the current execution you can try the following expression. 
+
 \begin{code}{}
 testExplicitReturn
-	"self new testExplicitReturn a BEXp"
+	"self new testExplicitReturn"
 	
-	Transcript show: 'one'.
-	0 isZero ifTrue: [ Transcript show: 'two'. ^ self].
-	Transcript show: ' not printed'
+	self crLog: 'one'.
+	0 isZero ifTrue: [ self crLog: 'two'. ^ self].
+	self crLog: ' not printed'
 -> one two
 \end{code}
+
+
+
+In certain Smalltalk dialects \sd{really?}, you can have expressions after a return statement in a block, in Pharo \ct{^} should be the last statement of a block body. You should get a compile error if you type and compile the following expression. 
+
+\begin{code}{}
+[ self crLog: 'two'.
+  ^ self.  
+  self crLog: 'not printed' ]
+\end{code}
+
+\sd{HERE}
 
 Simple block \ct{[:x :y| x*x. x+y]} returns the value of the last statement to the method that sends it the message value
 
