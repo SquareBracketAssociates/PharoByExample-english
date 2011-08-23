@@ -852,13 +852,13 @@ The latest version of Metacello introduces \emph{symbolic versions} whose purpos
 
 \begin{code}{}
 OmniBrowser>>stable: spec
-     <symbolicVersion: #'stable'>
+     <symbolicVersion: #stable>
      spec for: #'pharo1.0.x' version: '1.1.3'.
      spec for: #'pharo1.1.x' version: '1.1.5'.
      spec for: #'pharo1.2.x' version: '1.2.3'.
 \end{code}
 
-Symbolic versions can be used anywhere that a literal version can be used. From a load expressions such as \ct{(ConfigurationOfOmniBrowser project version: #'stable') load}
+Symbolic versions can be used anywhere that a literal version can be used. From a load expressions such as \ct{(ConfigurationOfOmniBrowser project version: #stable) load}
 to a project reference in a baseline version:
 
 \begin{code}{}
@@ -871,7 +871,7 @@ baseline10: spec
         project: 'OmniBrowser' with: [
           spec
              className: 'OmniBrowser';
-             !\textbf{versionString: \#'stable';}!
+             !\textbf{versionString: \#stable;}!
              repository: 'http://www.squeaksource.com/MetacelloRepository' ].
      spec
          package: 'OB-SUnitGUI' with: [
@@ -947,9 +947,9 @@ When specifying a symbolic version with a \ct{symbolicVersion:} pragma it is leg
 
 \begin{code}{}
 stable: spec
-       <symbolicVersion: #'stable'>
+       <symbolicVersion: #stable>
 
-       spec for: #'gemstone' version: '1.5'.
+       spec for: #gemstone version: '1.5'.
        spec for: #'squeak' version: '1.4'.
        spec for: #'pharo1.0.x' version: '1.5'.
        spec for: #'pharo1.1.x' version: '1.5'.
@@ -960,9 +960,9 @@ Or to use the special symbolic version \ct{notDefined}: as in the following defi
 
 \begin{code}{}
 development: spec
-       <symbolicVersion: #'development'>
+       <symbolicVersion: #development>
 
-       spec for: #'common' version: #notDefined.
+       spec for: #common version: #notDefined.
        spec for: #'pharo1.1.x' version: '1.6'.
        spec for: #'pharo1.2.x' version: '1.6'.
 \end{code}
@@ -1118,29 +1118,29 @@ The \ct{createBaseline:...} message copies the class \ct{MetacelloConfigTemplate
 \begin{code}{}
 ConfigurationOfGemToolsExample>>baseline10: spec
   <version: '1.0-baseline'>
-  spec for: #'common' do: [
+  spec for: #common do: [
      spec blessing: #'baseline'.
      spec repository: 'http://seaside.gemstone.com/ss/GLASSClient'.
      spec
         project: 'FFI' with: [
           spec
              className: 'ConfigurationOfFFI';
-             versionString: #'bleedingEdge';
+             versionString: #bleedingEdge;
              repository: 'http://www.squeaksource.com/MetacelloRepository' ];
         project: 'OmniBrowser' with: [
           spec
              className: 'ConfigurationOfOmniBrowser';
-             versionString: #'stable';
+             versionString: #stable;
              repository: 'http://www.squeaksource.com/MetacelloRepository' ];
         project: 'Shout' with: [
           spec
              className: 'ConfigurationOfShout';
-             versionString: #'stable';
+             versionString: #stable;
              repository: 'http://www.squeaksource.com/MetacelloRepository' ];
         project: 'HelpSystem' with: [
           spec
              className: 'ConfigurationOfHelpSystem';
-             versionString: #'stable';
+             versionString: #stable;
              repository: 'http://www.squeaksource.com/MetacelloRepository' ].
      spec
         package: 'OB-SUnitGUI' with: [
@@ -1157,7 +1157,7 @@ ConfigurationOfGemToolsExample>>baseline10: spec
 
 
 
-Note that for the 'FFI' project the versionString is \ct{#bleedingEdge}, while the versionString for the other projects is \ct{#'stable'}. At the time of this writing the FFI project did not have a \ct{#stable} symbolic version defined, so the default versionString is set to \ct{#bleedingEdge}. If a \ct{#stable} symbolic version is defined for the project, the the default versionString is \ct{#stable}. There are no special version dependencies for the GemTools project so the defaults will work just fine.
+Note that for the 'FFI' project the versionString is \ct{#bleedingEdge}, while the versionString for the other projects is \ct{#stable}. At the time of this writing the FFI project did not have a \ct{#stable} symbolic version defined, so the default versionString is set to \ct{#bleedingEdge}. If a \ct{#stable} symbolic version is defined for the project, the the default versionString is \ct{#stable}. There are no special version dependencies for the GemTools project so the defaults will work just fine.
 
 
 
@@ -1178,16 +1178,16 @@ The \ct{createDevelopment:...} method creates a \ct{#version10:} method in your 
 \begin{code}{}
 ConfigurationOfGemToolsExample>>version10: spec
   <version: '1.0' imports: #('1.0-baseline' )>
-  spec for: #'common' do: [
-     spec blessing: #'development'.
+  spec for: #common do: [
+     spec blessing: #development.
      spec description: 'initial development version'.
      spec author: 'dkh'.
      spec timestamp: '1/12/2011 12:29'.
      spec 
         project: 'FFI' with: '1.2';
-        project: 'OmniBrowser' with: #'stable';
-        project: 'Shout' with: #'stable';
-        project: 'HelpSystem' with: #'stable'.
+        project: 'OmniBrowser' with: #stable;
+        project: 'Shout' with: #stable;
+        project: 'HelpSystem' with: #stable.
      spec
         package: 'OB-SUnitGUI' with: 'OB-SUnitGUI-dkh.52';
         package: 'GemTools-Client' with: 'GemTools-Client-NorbertHartl.544';
@@ -1199,8 +1199,8 @@ Note how the \ct{#stable} symbolic version specifications were carried through i
 
 \begin{code}{}
 ConfigurationOfGemToolsExample>>development: spec
-  <symbolicVersion: #'development'>
-  spec for: #'common' version: '1.0'.
+  <symbolicVersion: #development>
+  spec for: #common version: '1.0'.
 \end{code}
 
 
@@ -1282,16 +1282,16 @@ The \ct{development:} method ends up looking like this:
 
 \begin{code}{}
 ConfigurationOfGemToolsExample>>development: spec
-  <symbolicVersion: #'development'>
-  spec for: #'common' version: #'notDefined'.
+  <symbolicVersion: #development>
+  spec for: #common version: #'notDefined'.
 \end{code}  
   
 The \ct{stable:} method ends up looking like this:
 
 \begin{code}{}
 ConfigurationOfGemToolsExample>>stable: spec
-  <symbolicVersion: #'stable'>
-  spec for: #'common' version: '1.0'.
+  <symbolicVersion: #stable>
+  spec for: #common version: '1.0'.
 \end{code}  
   
 Finally you can copy the configuration to the MetacelloRepository using the following expression:
@@ -1541,45 +1541,51 @@ Metacello is an important part of Pharo. It will allow your project to scale. It
 
 \newpage
 
-\section{Metacello in a Nutshell}
+\section{Metacello Memento}
 
 \begin{footnotesize}
 \begin{code}{}
-ConfigurationOfCoolToolSet>>baseline02: spec 
-       <version: '0.2-baseline'>     
+ConfigurationOfCoolToolSet>>baseline02: spec 						!\emph{"could be called differently just a convention"}!
+       <version: '0.2-baseline'> 						                        !\emph{"pragma and -baseline are important"}!
        
-       spec for: #common do: [                            !\emph{\#common/\#pharo/\#gemstone/\#pharo'1.4'}!     
-              spec blessing: #baseline.					!\emph{optional?}!  
+       spec for: !\textbf{\#common}! do: [                                    !\emph{"\#common/\#pharo/\#gemstone/\#pharo'1.4'"}!     
+              spec blessing: #baseline.				                       !\emph{"optional?"}!  
               spec repository: 'http://www.example.com/CoolToolSet'.
-              spec project: 'CoolBrowser default' with: [
+              
+              !\emph{"When we depend on other projects"}!
+              spec !\textbf{project:}! 'CoolBrowser default' !\textbf{with:}! [
                             spec
                                    className: 'ConfigurationOfCoolBrowser';
-                                   versionString: '1.0';
-                                   loads: #('default' );
+                                   versionString: '1.0';			   !\emph{'1.0' ?? because baseline so ?}!
+                                   loads: #('default');				!\emph{which group to load}!
                                    file: 'CoolBrowser-Metacello';
                                    repository: 'http://www.example.com/CoolBrowser' ];
-                     project: 'CoolBrowser Tests' 
-                            copyFrom: 'CoolBrowser default' 
-                            with: [ spec loads: #('Tests').].
+                     !\textbf{project:}! 'CoolBrowser Tests' 
+                            !\textbf{copyFrom:}! 'CoolBrowser default' 
+                            !\textbf{with:}! [ spec loads: #('Tests').].
+             
+             !\emph{"Our internal package dependencies"}!
               spec 
-                     package: 'CoolToolSet-Core';
-                     package: 'CoolToolSet-Tests' with: [ 
-                            spec requires: #('CoolToolSet-Core') ];
-                     package: 'CoolToolSet-CB';                     
-              spec for: #CBPresent do: [
-                     spec group: 'default' with: #('CoolToolSet-CB')].
-              spec for: #CBNotPresent do: [
-                     spec package: 'CoolToolSet-CB' with: [ spec requires: 'CoolBrowser default']].
+                     !\textbf{package:}! 'CoolToolSet-Core';
+                     !\textbf{package:}! 'CoolToolSet-Tests' !\textbf{with:}! [ spec requires: #('CoolToolSet-Core') ];
+                     package: 'CoolToolSet-CB';
+                     
+              !\emph{"No idea :)"}!                             
+              spec for: #CBPresent do: [ spec group: 'default' with: #('CoolToolSet-CB')].  
+              	!\emph{what is CBPresent a class?}!
+              spec for: #CBNotPresent do: [  
+              	spec package: 'CoolToolSet-CB' with: [ spec requires: 'CoolBrowser default']].
           ].  
 \end{code}\end{footnotesize} 
 
 \begin{footnotesize}
 \begin{code}{}
-ConfigurationOfCoolBrowser>>version07: spec 
-       <version: '0.7' imports: #('0.7-baseline')>
-       
-       spec for: #common do: [
-              spec blessing: #release.			!\emph{\#stable?/\#bleedingEdge}!
+ConfigurationOfCoolBrowser>>version07: spec 					!\emph{"could be called differently just a convention"}!
+       <version: '0.7' imports: #('0.7-baseline')>				!\emph{"pragma: no baseline so this is version"}!
+															!\emph{"do not import baseline from other baselines"}!
+    
+       spec for: !\textbf{\#common}! do: [                            !\emph{"\#common/\#pharo/\#gemstone/\#pharo'1.4'"}! 
+              spec blessing: #release.								!\emph{"WHAT IS THAT? \#stable?/\#bleedingEdge"}!
               spec description: 'In this release .....'.
               spec author: 'JohnLewis'.
               spec timestamp: '10/12/2009 09:26'.
@@ -1593,10 +1599,10 @@ ConfigurationOfCoolBrowser>>version07: spec
 
 \begin{footnotesize}
 \begin{code}{}
-ConfigurationOfGemToolsExample>>development: spec        !\emph{note that the selector can be anything}!
-       <symbolicVersion: #'development'>    				!\emph{\#stable/\#development/\#bleedingEdge}!
-       spec for: #'common' version: '1.0'.	                   !\emph{'1.0' is the version of your development version}!
-       !\emph{\#'common' or your platform attributes: \#'gemstone', \#'pharo', or \#'pharo1.4'}!
+ConfigurationOfGemToolsExample>>development: spec        !\emph{"note that the selector can be anything"}!
+       <symbolicVersion: #development>    				!\emph{"\#stable/\#development/\#bleedingEdge"}!
+       spec for: #common version: '1.0'.	                   !\emph{"'1.0' is the version of your development version"}!
+       !\emph{"\#common or your platform attributes: \#gemstone, \#pharo, or \#'pharo1.4'"}!
 \end{code}
 \end{footnotesize} 
 
@@ -1605,58 +1611,60 @@ ConfigurationOfGemToolsExample>>development: spec        !\emph{note that the se
 \begin{code}{}
 ConfigurationOfGemToolsExample>>baseline10: spec
   <version: '1.0-baseline'>
-  spec for: #'common' do: [
-     spec blessing: #'baseline'.
+  spec for: #common do: [
+     spec blessing: #'baseline'.                 !\emph{optional?}!
      spec repository: 'http://seaside.gemstone.com/ss/GLASSClient'.
      spec
-        project: 'FFI' with: [
+        !\textbf{project:}! 'FFI' !\textbf{with:}! [
           spec
              className: 'ConfigurationOfFFI';
-             versionString: #'bleedingEdge';
+             !\textbf{versionString:}! #bleedingEdge;					!\emph{\#stable/\#development/\#bleedingEdge}!
              repository: 'http://www.squeaksource.com/MetacelloRepository' ];
         project: 'OmniBrowser' with: [
           spec
              className: 'ConfigurationOfOmniBrowser';
-             versionString: #'stable';
+             versionString: #stable;									!\emph{\#stable/\#development/\#bleedingEdge}!
              repository: 'http://www.squeaksource.com/MetacelloRepository' ];
         project: 'Shout' with: [
           spec
              className: 'ConfigurationOfShout';
-             versionString: #'stable';
+             versionString: #stable;
              repository: 'http://www.squeaksource.com/MetacelloRepository' ];
         project: 'HelpSystem' with: [
           spec
              className: 'ConfigurationOfHelpSystem';
-             versionString: #'stable';
+             versionString: #stable;
              repository: 'http://www.squeaksource.com/MetacelloRepository'].
      spec
-        package: 'OB-SUnitGUI' with: [
-          spec requires: #('OmniBrowser' ). ];
-        package: 'GemTools-Client' with: [
-          spec requires: #('OmniBrowser' 'FFI' 'Shout' 'OB-SUnitGUI' ).];
-        package: 'GemTools-Platform' with: [
-          spec requires: #('GemTools-Client' ). ];
+        !\textbf{package:}! 'OB-SUnitGUI' !\textbf{with:}! [spec requires: #('OmniBrowser')];
+        package: 'GemTools-Client' with: [ spec requires: #('OmniBrowser' 'FFI' 'Shout' 'OB-SUnitGUI' ).];
+        package: 'GemTools-Platform' with: [ spec requires: #('GemTools-Client' ). ];
         package: 'GemTools-Help' with: [
           spec requires: #('HelpSystem' 'GemTools-Client' ). ].
-     spec group: 'default' with: #('OB-SUnitGUI' 'GemTools-Client'
-             'GemTools-Platform' 'GemTools-Help' ). ].
+     spec !\textbf{group:}! 'default' !\textbf{with:}! #('OB-SUnitGUI' 'GemTools-Client' 'GemTools-Platform' 'GemTools-Help')].
 \end{code}         
 \end{footnotesize} 
+
+
+
+
+
+
 
 \begin{footnotesize}
 \begin{code}{}
 ConfigurationOfGemToolsExample>>version10: spec
      <version: '1.0' imports: #('1.0-baseline' )>
-     spec for: #'common' do: [
-          spec blessing: #'development'.
+     spec for: #common do: [
+          spec blessing: #development.
           spec description: 'initial development version'.
           spec author: 'dkh'.
           spec timestamp: '1/12/2011 12:29'.
      spec 
           project: 'FFI' with: '1.2';
-          project: 'OmniBrowser' with: #'stable';
-          project: 'Shout' with: #'stable';
-          project: 'HelpSystem' with: #'stable'.
+          project: 'OmniBrowser' with: #stable;
+          project: 'Shout' with: #stable;
+          project: 'HelpSystem' with: #stable.
      spec
           package: 'OB-SUnitGUI' with: 'OB-SUnitGUI-dkh.52';
           package: 'GemTools-Client' with: 'GemTools-Client-NorbertHartl.544';
@@ -1664,6 +1672,13 @@ ConfigurationOfGemToolsExample>>version10: spec
           package: 'GemTools-Help' with: 'GemTools-Help-DaleHenrichs.24'. ].
 \end{code}
 \end{footnotesize} 
+
+
+
+
+
+
+
 %=========================================================
 \ifx\wholebook\relax\else
     \bibliographystyle{jurabib}
