@@ -6,23 +6,23 @@
 \ifx\wholebook\relax\else
 % --------------------------------------------
 % Lulu:
-	\documentclass[a4paper,10pt,twoside]{book}
-	\usepackage[
-		papersize={6.13in,9.21in},
-		hmargin={.75in,.75in},
-		vmargin={.75in,1in},
-		ignoreheadfoot
-	]{geometry}
-	\input{../common.tex}
-	\setboolean{lulu}{true}
+       \documentclass[a4paper,10pt,twoside]{book}
+       \usepackage[
+              papersize={6.13in,9.21in},
+              hmargin={.75in,.75in},
+              vmargin={.75in,1in},
+              ignoreheadfoot
+       ]{geometry}
+       \input{../common.tex}
+       \setboolean{lulu}{true}
 % --------------------------------------------
 % A4:
-%	\documentclass[a4paper,11pt,twoside]{book}
-%	\input{../common.tex}
-%	\usepackage{a4wide}
+%       \documentclass[a4paper,11pt,twoside]{book}
+%       \input{../common.tex}
+%       \usepackage{a4wide}
 % --------------------------------------------
      \graphicspath{{figures/} {../figures/}}
-	\begin{document}
+       \begin{document}
 \fi
 %=================================================================
 %\renewmessage{\nnbb}[2]{} % Disable editorial comments
@@ -102,10 +102,10 @@ Let's start using Metacello for managing a software project called CoolBrowser. 
 This is the class definition:
 \begin{code}{}
 Object subclass: #ConfigurationOfCoolBrowser
-	instanceVariableNames: 'project'
-	classVariableNames: 'LastVersionLoad'
-	poolDictionaries: "
-	category: 'Metacello-MC-Model'
+       instanceVariableNames: 'project'
+       classVariableNames: 'LastVersionLoad'
+       poolDictionaries: "
+       category: 'Metacello-MC-Model'
 \end{code}
 
 You will notice that the \ct{ConfigurationOfCoolBrowser} has some instance and class side methods. We will explain later how they are used. Notice that this class inherits from \ct{Object}.  Metacello configurations should be written such that they can be loaded without any prerequisites, including Metacello itself. So (at least for the time being) Metacello configurations cannot rely on a common superclass.
@@ -119,13 +119,13 @@ Suppose for the moment that our project ``Cool Browser" has two packages: \ct{Co
 
 \begin{code}{}
 ConfigurationOfCoolBrowser>>version01: spec 
-	<version: '0.1'>
-	
-	spec for: #common do: [
-		spec repository: 'http://www.example.com/CoolBrowser'.
-		spec 
-			package: 'CoolBrowser-Core' with: 'CoolBrowser-Core-MichaelJones.10';
-			package: 'CoolBrowser-Tests' with: 'CoolBrowser-Tests-JohnLewis.3' ].
+       <version: '0.1'>
+       
+       spec for: #common do: [
+              spec repository: 'http://www.example.com/CoolBrowser'.
+              spec 
+                     package: 'CoolBrowser-Core' with: 'CoolBrowser-Core-MichaelJones.10';
+                     package: 'CoolBrowser-Tests' with: 'CoolBrowser-Tests-JohnLewis.3' ].
 \end{code}
 
 
@@ -165,14 +165,14 @@ Let us assume that the version 0.2 consists of the files 'CoolBrowser-Core-Micha
 
 \begin{code}{}
 ConfigurationOfCoolBrowser>>version02: spec 
-	<version: '0.2'>
-	
-	spec for: #common do: [
-		spec repository: 'http://www.example.com/CoolBrowser'.
-		spec 
-			package: 'CoolBrowser-Core' with: 'CoolBrowser-Core-MichaelJones.15';
-			package: 'CoolBrowser-Tests' with: 'CoolBrowser-Tests-JohnLewis.8' ;
-			package: 'CoolBrowser-Addons' with: 'CoolBrowser-Addons-JohnLewis.3']
+       <version: '0.2'>
+       
+       spec for: #common do: [
+              spec repository: 'http://www.example.com/CoolBrowser'.
+              spec 
+                     package: 'CoolBrowser-Core' with: 'CoolBrowser-Core-MichaelJones.15';
+                     package: 'CoolBrowser-Tests' with: 'CoolBrowser-Tests-JohnLewis.8' ;
+                     package: 'CoolBrowser-Addons' with: 'CoolBrowser-Addons-JohnLewis.3']
 \end{code}
  
 \begin{figure}
@@ -249,20 +249,20 @@ For now we will focus on the first case. In our example, imagine that the packag
 
 \begin{code}{}
 ConfigurationOfCoolBrowser>>version03: spec 
-	<version: '0.3'>
-	
-	spec for: #common do: [
-		spec repository: 'http://www.example.com/CoolBrowser'.
-		spec 
-			package: 'CoolBrowser-Core' with: 'CoolBrowser-Core-MichaelJones.15';
-			package: 'CoolBrowser-Tests' with: [
-				spec 
-					file: 'CoolBrowser-Tests-JohnLewis.8';
-					!\textbf{requires:}! 'CoolBrowser-Core' ];
-			package: 'CoolBrowser-Addons' with: [
-				spec 
-					file: 'CoolBrowser-Addons-JohnLewis.3';
-					!\textbf{requires:}! 'CoolBrowser-Core' ]].
+       <version: '0.3'>
+       
+       spec for: #common do: [
+              spec repository: 'http://www.example.com/CoolBrowser'.
+              spec 
+                     package: 'CoolBrowser-Core' with: 'CoolBrowser-Core-MichaelJones.15';
+                     package: 'CoolBrowser-Tests' with: [
+                            spec 
+                                   file: 'CoolBrowser-Tests-JohnLewis.8';
+                                   !\textbf{requires:}! 'CoolBrowser-Core' ];
+                     package: 'CoolBrowser-Addons' with: [
+                            spec 
+                                   file: 'CoolBrowser-Addons-JohnLewis.3';
+                                   !\textbf{requires:}! 'CoolBrowser-Core' ]].
 \end{code}
 
 In \ct{version03:} we've added dependency information using the \ct{requires:} directive.
@@ -289,16 +289,16 @@ Now, let's continue with our example. First we modify it to use baselines: we cr
 
 \begin{code}{}
 ConfigurationOfCoolBrowser>>baseline04: spec 
-	<version: '0.4-baseline'>
-	
-	spec for: #common do: [
-		spec blessing: #baseline.
-		spec repository: 'http://www.example.com/CoolBrowser'.
-		
-		spec 
-			package: 'CoolBrowser-Core';
-			package: 'CoolBrowser-Tests' with: [ spec requires: 'CoolBrowser-Core' ];
-			package: 'CoolBrowser-Addons' with: [ spec requires: 'CoolBrowser-Core' ] ].
+       <version: '0.4-baseline'>
+       
+       spec for: #common do: [
+              spec blessing: #baseline.
+              spec repository: 'http://www.example.com/CoolBrowser'.
+              
+              spec 
+                     package: 'CoolBrowser-Core';
+                     package: 'CoolBrowser-Tests' with: [ spec requires: 'CoolBrowser-Core' ];
+                     package: 'CoolBrowser-Addons' with: [ spec requires: 'CoolBrowser-Core' ] ].
 
 \end{code}
 
@@ -315,13 +315,13 @@ To define the version, we use another pragma \ct{<version:imports:>} as follows:
 
 \begin{code}{}
 ConfigurationOfCoolBrowser>>version04: spec 
-	<version: '0.4' imports: #('0.4-baseline')>
-	
-	spec for: #common do: [
-		spec 
-			package: 'CoolBrowser-Core' with: 'CoolBrowser-Core-MichaelJones.15';
-			package: 'CoolBrowser-Tests' with: 'CoolBrowser-Tests-JohnLewis.8';
-			package: 'CoolBrowser-Addons' with: 'CoolBrowser-Addons-JohnLewis.3' ].
+       <version: '0.4' imports: #('0.4-baseline')>
+       
+       spec for: #common do: [
+              spec 
+                     package: 'CoolBrowser-Core' with: 'CoolBrowser-Core-MichaelJones.15';
+                     package: 'CoolBrowser-Tests' with: 'CoolBrowser-Tests-JohnLewis.8';
+                     package: 'CoolBrowser-Addons' with: 'CoolBrowser-Addons-JohnLewis.3' ].
 \end{code}
 
 
@@ -348,13 +348,13 @@ Now for example, we can have a new version \ct{'0.5'} that has the same baseline
 
 \begin{code}{} 
 ConfigurationOfCoolBrowser>>version05: spec 
-	<!\textbf{version: '0.5' imports: \#('0.4-baseline')}>!
-	
-	spec for: #common do: [
-		spec 
-			package: 'CoolBrowser-Core' with: 'CoolBrowser-Core-MichaelJones.20';
-			package: 'CoolBrowser-Tests' with: 'CoolBrowser-Tests-JohnLewis.8';
-			package: 'CoolBrowser-Addons' with: 'CoolBrowser-Addons-JohnLewis.6' ].
+       <!\textbf{version: '0.5' imports: \#('0.4-baseline')}>!
+       
+       spec for: #common do: [
+              spec 
+                     package: 'CoolBrowser-Core' with: 'CoolBrowser-Core-MichaelJones.20';
+                     package: 'CoolBrowser-Tests' with: 'CoolBrowser-Tests-JohnLewis.8';
+                     package: 'CoolBrowser-Addons' with: 'CoolBrowser-Addons-JohnLewis.6' ].
 \end{code}
 
 Note that version \ct{'0.5'} uses the same baseline as version \ct{'0.4'}: \ct{'0.4-baseline'} (see Figure~\ref{fig:version05}).
@@ -381,7 +381,7 @@ instead of having to explicitly list all of the test projects like this:
  
 \begin{code}{} 
 (ConfigurationOfCoolBrowser project version: '1.0') 
-	load: #('CoolBrowser-Tests' 'CoolBrowser-AddonsTests').
+       load: #('CoolBrowser-Tests' 'CoolBrowser-AddonsTests').
 \end{code}
  
 To solve this problem, Metacello offers the notion of group. A group is a list of items: packages, projects, or even other groups. 
@@ -400,26 +400,26 @@ To define a group we use the method \ct{group: groupName with: group elements}. 
  
 \begin{code}{}
 ConfigurationOfCoolBrowser>>baseline06: spec 
-	<version: '0.6-baseline'>
-	
-	spec for: #common do: [
-		spec blessing: #baseline.
-		spec repository: 'http://www.example.com/CoolBrowser'.
-		
-		spec 
-			package: 'CoolBrowser-Core';
-			package: 'CoolBrowser-Tests' with: [ spec requires: 'CoolBrowser-Core' ];
-			package: 'CoolBrowser-Addons' with: [ spec requires: 'CoolBrowser-Core' ] ;
-			package: 'CoolBrowser-AddonsTests' with: [ 
-				spec requires: #('CoolBrowser-Addons' 'CoolBrowser-Tests' ) ].
-		spec 
-			!\textbf{group: 'default' with: \#('CoolBrowser-Core' 'CoolBrowser-Addons' )}!;
-			group: 'Core' with: #('CoolBrowser-Core');
-			group: 'Extras' with: #('CoolBrowser-Addon');
-			group: 'Tests' with: #('CoolBrowser-Tests' 'CoolBrowser-AddonsTests' );
-			group: 'CompleteWithoutTests' with: #('Core' 'Extras' );
-			group: 'CompleteWithTests' with: #('CompleteWithoutTests' 'Tests' )
-		 ].
+       <version: '0.6-baseline'>
+       
+       spec for: #common do: [
+              spec blessing: #baseline.
+              spec repository: 'http://www.example.com/CoolBrowser'.
+              
+              spec 
+                     package: 'CoolBrowser-Core';
+                     package: 'CoolBrowser-Tests' with: [ spec requires: 'CoolBrowser-Core' ];
+                     package: 'CoolBrowser-Addons' with: [ spec requires: 'CoolBrowser-Core' ] ;
+                     package: 'CoolBrowser-AddonsTests' with: [ 
+                            spec requires: #('CoolBrowser-Addons' 'CoolBrowser-Tests' ) ].
+              spec 
+                     !\textbf{group: 'default' with: \#('CoolBrowser-Core' 'CoolBrowser-Addons' )}!;
+                     group: 'Core' with: #('CoolBrowser-Core');
+                     group: 'Extras' with: #('CoolBrowser-Addon');
+                     group: 'Tests' with: #('CoolBrowser-Tests' 'CoolBrowser-AddonsTests' );
+                     group: 'CompleteWithoutTests' with: #('Core' 'Extras' );
+                     group: 'CompleteWithTests' with: #('CompleteWithoutTests' 'Tests' )
+               ].
 \end{code}
 
 
@@ -432,15 +432,15 @@ Note that we are defining the groups in the baseline version, since a group is a
  
 \begin{code}{}
 ConfigurationOfCoolBrowser>>version06: spec 
-	<!\textbf{version: '0.6' imports: \#('0.6-baseline')}!>
-	
-	spec for: #common do: [
-		spec blessing: #development.
-		spec 
-			package: 'CoolBrowser-Core' with: 'CoolBrowser-Core-MichaelJones.20';
-			package: 'CoolBrowser-Tests' with: 'CoolBrowser-Tests-JohnLewis.8';
-			package: 'CoolBrowser-Addons' with: 'CoolBrowser-Addons-JohnLewis.6' ;
-			package: 'CoolBrowser-AddonsTests' with: 'CoolBrowser-AddonsTests-JohnLewis.1' ].
+       <!\textbf{version: '0.6' imports: \#('0.6-baseline')}!>
+       
+       spec for: #common do: [
+              spec blessing: #development.
+              spec 
+                     package: 'CoolBrowser-Core' with: 'CoolBrowser-Core-MichaelJones.20';
+                     package: 'CoolBrowser-Tests' with: 'CoolBrowser-Tests-JohnLewis.8';
+                     package: 'CoolBrowser-Addons' with: 'CoolBrowser-Addons-JohnLewis.6' ;
+                     package: 'CoolBrowser-AddonsTests' with: 'CoolBrowser-AddonsTests-JohnLewis.1' ].
 \end{code}
  
 
@@ -449,26 +449,26 @@ ConfigurationOfCoolBrowser>>version06: spec
  
 \begin{code}{}
 (ConfigurationOfCoolBrowser project version: '1.0') load: 'CoolBrowser-Core'. 
-	"Load a single package"
+       "Load a single package"
 
 (ConfigurationOfCoolBrowser project version: '1.0') load: 'Core'. 
-	"Load a single group"
+       "Load a single group"
 
 (ConfigurationOfCoolBrowser project version: '1.0') load: 'CompleteWithTests'.  
-	"Load a single group"
+       "Load a single group"
  
 (ConfigurationOfCoolBrowser project version: '1.0') 
-	load: #('CoolBrowser-Core' 'Tests').    
-	"Loads a package and a group"
+       load: #('CoolBrowser-Core' 'Tests').    
+       "Loads a package and a group"
 
 (ConfigurationOfCoolBrowser project version: '1.0') load: #('CoolBrowser-Core' 'CoolBrowser-Addons' 'Tests'). 
-	"Loads two packages and a group" 
+       "Loads two packages and a group" 
 
  (ConfigurationOfCoolBrowser project version: '1.0') load: #('CoolBrowser-Core' 'CoolBrowser-Tests').
-	"Loads two packages"
+       "Loads two packages"
   
 (ConfigurationOfCoolBrowser project version: '1.0') load: #('Core' 'Tests'). 
-	"Loads two groups"
+       "Loads two groups"
 \end{code}
 
 
@@ -494,15 +494,15 @@ In the same way a package can depend on other packages, a project can depend on 
 A package A from a Project X depends on a package B from project Y and project Y does not have any Metacello configuration (typically when there is only one package in the project). In this case do the following:
 \sd{we should use the same example A and B sucks}
 \begin{code}{}
-		``In the baseline method"
-		spec 
-			package: 'PackageA' with: [  spec requires: #('PackageB')];
-			package: 'PackageB' with: [  spec repository: 'http://www.squeaksource.com/ProjectB' ].	
+              ``In the baseline method"
+              spec 
+                     package: 'PackageA' with: [  spec requires: #('PackageB')];
+                     package: 'PackageB' with: [  spec repository: 'http://www.squeaksource.com/ProjectB' ].       
 \end{code}
 
 \begin{code}{}
-		``In the version method"
-		package: 'PackageB' with: 'PackageB-JuanCarlos.80'.
+              ``In the version method"
+              package: 'PackageB' with: 'PackageB-JuanCarlos.80'.
 \end{code}
 
 The problem here is that as the project B does not have a Metacello configuration, the dependencies of B are not managed. Thus, package B can have dependencies, but they will not be loaded. So, our recommendation is that in this case, you take the time to create a configuration for the project B.
@@ -515,31 +515,31 @@ Let us introduce a new project called \ct{CoolToolSet} which uses the packages f
 The version is just a normal version. It imports a baseline. 
 \begin{code}{}
 ConfigurationOfCoolToolSet>>version01: spec 
-	<version: '0.1' imports: #('0.1-baseline')>
-	spec for: #common do: [
-		spec 
-			package: 'CoolToolSet-Core' with: 'CoolToolSet-Core-anon.1';
-			package: 'CoolToolSet-Tests' with: 'CoolToolSet-Tests-anon.1'.].	
-\end{code}	
+       <version: '0.1' imports: #('0.1-baseline')>
+       spec for: #common do: [
+              spec 
+                     package: 'CoolToolSet-Core' with: 'CoolToolSet-Core-anon.1';
+                     package: 'CoolToolSet-Tests' with: 'CoolToolSet-Tests-anon.1'.].       
+\end{code}       
 
 
 
 \begin{code}{}
 ConfigurationOfCoolToolSet >>baseline01: spec 
-	<version: '0.1-baseline'>
-	spec for: #common do: [
-		spec repository: 'http://www.example.com/CoolToolSet'.
-		spec project: 'CoolBrowser ALL' with: [
-				spec 
-				     !\textbf{className:}! 'ConfigurationOfCoolBrowser';
-					versionString: '1.0';
-					loads: #('ALL' );
-					!\textbf{file:}! 'CoolBrowser-Metacello';
-					!\textbf{repository:}! 'http://www.example.com/CoolBrowser' ].
-		spec 
-			package: 'CoolToolSet-Core' with: [ spec requires: 'CoolBrowser ALL' ];
-			package: 'CoolToolSet-Tests' with: [ spec requires: 'CoolToolSet-Core' ]].
-\end{code}	
+       <version: '0.1-baseline'>
+       spec for: #common do: [
+              spec repository: 'http://www.example.com/CoolToolSet'.
+              spec project: 'CoolBrowser ALL' with: [
+                            spec 
+                                 !\textbf{className:}! 'ConfigurationOfCoolBrowser';
+                                   versionString: '1.0';
+                                   loads: #('ALL' );
+                                   !\textbf{file:}! 'CoolBrowser-Metacello';
+                                   !\textbf{repository:}! 'http://www.example.com/CoolBrowser' ].
+              spec 
+                     package: 'CoolToolSet-Core' with: [ spec requires: 'CoolBrowser ALL' ];
+                     package: 'CoolToolSet-Tests' with: [ spec requires: 'CoolToolSet-Core' ]].
+\end{code}       
 
 
 
@@ -581,29 +581,29 @@ Note that the entire \ct{CoolBrowser} project is loaded before \ct{'CoolToolSet-
 
 \begin{code}{}
 ConfigurationOfCoolToolSet >>baseline02: spec 
-	<version: '0.2-baseline'>
-	spec for: #common do: [
-		spec blessing: #baseline.
-		spec repository: 'http://www.example.com/CoolToolSet'.
-		spec
-			project: 'CoolBrowser default' with: [
-				spec
-					className: 'ConfigurationOfCoolBrowser';
-					versionString: '1.0';
-					loads: #('default' );
-					file: 'CoolBrowser-Metacello';
-					repository: 'http://www.example.com/CoolBrowser' ];
-			project: 'CoolBrowser Tests' with: [
-				spec
-					className: 'ConfigurationOfCoolBrowser';
-					versionString: '1.0';
-					loads: #('Tests' );
-					file: 'CoolBrowser-Metacello';
-					repository: 'http://www.example.com/CoolBrowser' ].
-		spec 
-			package: 'CoolToolSet-Core' with: [ spec requires: 'CoolBrowser default' ];
-			package: 'CoolToolSet-Tests' with: [ 
-				spec requires: #('CoolToolSet-Core'  'CoolBrowser Tests'  ) ].].			
+       <version: '0.2-baseline'>
+       spec for: #common do: [
+              spec blessing: #baseline.
+              spec repository: 'http://www.example.com/CoolToolSet'.
+              spec
+                     project: 'CoolBrowser default' with: [
+                            spec
+                                   className: 'ConfigurationOfCoolBrowser';
+                                   versionString: '1.0';
+                                   loads: #('default' );
+                                   file: 'CoolBrowser-Metacello';
+                                   repository: 'http://www.example.com/CoolBrowser' ];
+                     project: 'CoolBrowser Tests' with: [
+                            spec
+                                   className: 'ConfigurationOfCoolBrowser';
+                                   versionString: '1.0';
+                                   loads: #('Tests' );
+                                   file: 'CoolBrowser-Metacello';
+                                   repository: 'http://www.example.com/CoolBrowser' ].
+              spec 
+                     package: 'CoolToolSet-Core' with: [ spec requires: 'CoolBrowser default' ];
+                     package: 'CoolToolSet-Tests' with: [ 
+                            spec requires: #('CoolToolSet-Core'  'CoolBrowser Tests'  ) ].].                     
 \end{code}
 
 Here we created two project references. The reference named \ct{'CoolBrowser default'} loads the 'default' group and the reference named 'CoolBrowser Tests'  loads the 'Tests' group of the configuration of Cool Browser. We then made \ct{'CoolToolSet-Core'} require \ct{'CoolBrowser default'} and \ct{'CoolToolSet-Tests'} requires \ct{'CoolToolSet-Core'} and \ct{'CoolBrowser Tests'}.
@@ -623,38 +623,38 @@ As you can see, in \ct{baseline02:} there is redundant information for each of t
 
 \begin{code}{}
 ConfigurationOfCoolToolSet >>baseline02: spec 
-	<version: '0.2-baseline'>
-	spec for: #common do: [
-		spec blessing: #baseline.
-		spec repository: 'http://www.example.com/CoolToolSet'.
-		spec project: 'CoolBrowser default' with: [
-				spec
-					className: 'ConfigurationOfCoolBrowser';
-					versionString: '1.0';
-					loads: #('default');
-					file: 'CoolBrowser-Metacello';
-					repository: 'http://www.example.com/CoolBrowser' ];
-			project: 'CoolBrowser Tests' 
-				!\textbf{copyFrom:}! 'CoolBrowser default' 
-				!\textbf{with:}! [ spec loads: #('Tests').].
-		spec 
-			package: 'CoolToolSet-Core' with: [ spec requires: 'CoolBrowser default' ];
-			package: 'CoolToolSet-Tests' with: [ 
-				spec requires: #('CoolToolSet-Core' 'CoolBrowser Tests') ].].					
+       <version: '0.2-baseline'>
+       spec for: #common do: [
+              spec blessing: #baseline.
+              spec repository: 'http://www.example.com/CoolToolSet'.
+              spec project: 'CoolBrowser default' with: [
+                            spec
+                                   className: 'ConfigurationOfCoolBrowser';
+                                   versionString: '1.0';
+                                   loads: #('default');
+                                   file: 'CoolBrowser-Metacello';
+                                   repository: 'http://www.example.com/CoolBrowser' ];
+                     project: 'CoolBrowser Tests' 
+                            !\textbf{copyFrom:}! 'CoolBrowser default' 
+                            !\textbf{with:}! [ spec loads: #('Tests').].
+              spec 
+                     package: 'CoolToolSet-Core' with: [ spec requires: 'CoolBrowser default' ];
+                     package: 'CoolToolSet-Tests' with: [ 
+                            spec requires: #('CoolToolSet-Core' 'CoolBrowser Tests') ].].                                   
 \end{code}
 
 Not only in this baseline but also in \ct{baseline01} we did something that is not always useful: we put the version of the referenced projects in the baseline instead of in the version method. If you look at \ct{baseline01} you can see that we used \ct{versionString: '1.0'}. if the project changes often and you want to follow the changes, you may be forced to update often your baseline and this is not really adequate. Depending of your context you can specify the \ct{#versionString:} in the version method instead of in the baseline method as follows: 
 
 \begin{code}{}
 ConfigurationOfCoolToolSet>>version02: spec 
-	<version: '0.2' imports: #('0.2-baseline' )>
-	spec for: #common do: [
-		spec blessing: #beta.
-		spec 
-			package: 'CoolToolSet-Core' with: 'CoolToolSet-Core-anon.1';
-			package: 'CoolToolSet-Tests' with: 'CoolToolSet-Tests-anon.1';
-			!\textbf{project:}! 'CoolBrowser default' !\textbf{with:}! '1.3';
-			!\textbf{project:}! 'CoolBrowser Tests' !\textbf{with:}! '1.3'].
+       <version: '0.2' imports: #('0.2-baseline' )>
+       spec for: #common do: [
+              spec blessing: #beta.
+              spec 
+                     package: 'CoolToolSet-Core' with: 'CoolToolSet-Core-anon.1';
+                     package: 'CoolToolSet-Tests' with: 'CoolToolSet-Tests-anon.1';
+                     !\textbf{project:}! 'CoolBrowser default' !\textbf{with:}! '1.3';
+                     !\textbf{project:}! 'CoolBrowser Tests' !\textbf{with:}! '1.3'].
 \end{code}
 
 If we don't define a version at all for the references \ct{'CoolBrowser default'}  and \ct{'CoolBrowser Tests'} in the version method, then the version specified in the baseline is used. If there is no version specified in the baseline method, then Metacello loads the latest version of the project.
@@ -670,31 +670,31 @@ Continuing with our example:
 
 \begin{code}{}
 ConfigurationOfCoolBrowser>>version08: spec 
-	<version: '0.8' imports: #('0.7-baseline')>
-	
-	spec for: #common do: [
-		spec 
-			package: 'CoolBrowser-Core' with: [
-				spec 
-					file: 'CoolBrowser-Core-MichaelJones.20';
-					!\textbf{preLoadDoIt:}! #preloadForCore;
-					!\textbf{postLoadDoIt:}! #postloadForCore:package: ];
-			....
-			package: 'CoolBrowser-AddonsTests' with: 'CoolBrowser-AddonsTests-JohnLewis.1' ].
+       <version: '0.8' imports: #('0.7-baseline')>
+       
+       spec for: #common do: [
+              spec 
+                     package: 'CoolBrowser-Core' with: [
+                            spec 
+                                   file: 'CoolBrowser-Core-MichaelJones.20';
+                                   !\textbf{preLoadDoIt:}! #preloadForCore;
+                                   !\textbf{postLoadDoIt:}! #postloadForCore:package: ];
+                     ....
+                     package: 'CoolBrowser-AddonsTests' with: 'CoolBrowser-AddonsTests-JohnLewis.1' ].
 \end{code}
 
 \begin{code}{}
 ConfigurationOfCoolBrowser>>preloadForCore
-  	Transcript show: 'This is the preload script. Sorry I had no better idea'. 
+         Transcript show: 'This is the preload script. Sorry I had no better idea'. 
 \end{code}
 
 \begin{code}{}
 ConfigurationOfCoolBrowser>>postloadForCore: loader package: packageSpec
-	Transcript cr; 
-		show: '#postloadForCore executed, Loader: ', loader printString, 
-			' spec: ', packageSpec printString.
-	
-	Smalltalk at: #SystemBrowser ifPresent: [:cl | cl default: (Smalltalk classNamed: #CoolBrowser)].
+       Transcript cr; 
+              show: '#postloadForCore executed, Loader: ', loader printString, 
+                     ' spec: ', packageSpec printString.
+       
+       Smalltalk at: #SystemBrowser ifPresent: [:cl | cl default: (Smalltalk classNamed: #CoolBrowser)].
 \end{code}
 
 As you can notice there, both methods, \ct{preLoadDoIt:} and \ct{postLoadDoIt:} receive a selector that will be performed before or after the load. You can also note that the method  \ct{postloadForCore:package:} takes two parameters. The pre/post load methods may take 0, 1 or 2 arguments. The {\em loader} \sd{should explain that} is the first optional argument and the loaded packageSpec is the second optional argument. Depending on your needs you can choose which of those arguments do you want.
@@ -705,23 +705,23 @@ As we said before, these pre and post it can be at package level, but also at pr
 
 \begin{code}{} 
 ConfigurationOfCoolBrowser>>version08: spec 
-	<version: '0.8' imports: #('0.7-baseline')>
-	
-	spec for: #common do: [
-		spec blessing: #release.
-		
-		spec !\textbf{preLoadDoIt:}! #preLoadForCoolBrowser.
-		spec !\textbf{postLoadDoIt:}! #postLoadForCoolBrowser.
-	
-		spec 
-			package: 'CoolBrowser-Core' with: [
-				spec 
-					file: 'CoolBrowser-Core-MichaelJones.20';
-					preLoadDoIt: #preloadForCore;
-					postLoadDoIt: #postloadForCore:package: ];
-			package: 'CoolBrowser-Tests' with: 'CoolBrowser-Tests-JohnLewis.8';
-			package: 'CoolBrowser-Addons' with: 'CoolBrowser-Addons-JohnLewis.6' ;
-			package: 'CoolBrowser-AddonsTests' with: 'CoolBrowser-AddonsTests-JohnLewis.1' ].
+       <version: '0.8' imports: #('0.7-baseline')>
+       
+       spec for: #common do: [
+              spec blessing: #release.
+              
+              spec !\textbf{preLoadDoIt:}! #preLoadForCoolBrowser.
+              spec !\textbf{postLoadDoIt:}! #postLoadForCoolBrowser.
+       
+              spec 
+                     package: 'CoolBrowser-Core' with: [
+                            spec 
+                                   file: 'CoolBrowser-Core-MichaelJones.20';
+                                   preLoadDoIt: #preloadForCore;
+                                   postLoadDoIt: #postloadForCore:package: ];
+                     package: 'CoolBrowser-Tests' with: 'CoolBrowser-Tests-JohnLewis.8';
+                     package: 'CoolBrowser-Addons' with: 'CoolBrowser-Addons-JohnLewis.6' ;
+                     package: 'CoolBrowser-AddonsTests' with: 'CoolBrowser-AddonsTests-JohnLewis.1' ].
 \end{code}
 
 In this example, we added pre and post load scripts at project level. Again, the selectors can receive 0, 1 or 2 arguments. 
@@ -736,20 +736,20 @@ Metacello automatically loads the package of the platform where we are loading t
 
 \begin{code}{} 
 ConfigurationOfCoolBrowser>>version09: spec 
-	<version: '0.9' imports: #('0.9-baseline')>
-	
-	!\textbf{spec for: \#common do: [}!
-		...
-		spec 
-	          ...
-			package: 'CoolBrowser-AddonsTests' with: 'CoolBrowser-AddonsTests-JohnLewis.1' ].
-	
-	!\textbf{spec for: \#gemstone do: [}!
-		spec package: 'CoolBrowser-Platform' with: 'CoolBrowser-PlatformGemstone-MichaelJones.4'.].
-	!\textbf{spec for: \#pharo do: [}!
-		spec package: 'CoolBrowser-Platform' with: 'CoolBrowser-PlatformPharo-JohnLewis.7'.].
-	!\textbf{spec for: \#squeak do: [}!
-		spec package: 'CoolBrowser-Platform' with: 'CoolBrowser-JohnLewis-dkh.3'.].
+       <version: '0.9' imports: #('0.9-baseline')>
+       
+       !\textbf{spec for: \#common do: [}!
+              ...
+              spec 
+                 ...
+                     package: 'CoolBrowser-AddonsTests' with: 'CoolBrowser-AddonsTests-JohnLewis.1' ].
+       
+       !\textbf{spec for: \#gemstone do: [}!
+              spec package: 'CoolBrowser-Platform' with: 'CoolBrowser-PlatformGemstone-MichaelJones.4'.].
+       !\textbf{spec for: \#pharo do: [}!
+              spec package: 'CoolBrowser-Platform' with: 'CoolBrowser-PlatformPharo-JohnLewis.7'.].
+       !\textbf{spec for: \#squeak do: [}!
+              spec package: 'CoolBrowser-Platform' with: 'CoolBrowser-JohnLewis-dkh.3'.].
 \end{code}
 
 You see that the version can handle different platform.
@@ -757,71 +757,71 @@ You see that the version can handle different platform.
 
 \begin{code}{}
 ConfigurationOfCoolBrowser>>baseline09: spec 
-	<version: '0.9-baseline'>
-	
-	spec for: #common do: [
-		spec blessing: #baseline.
-		spec repository: 'http://www.example.com/CoolBrowser'.
-		
-		spec 
-			package: 'CoolBrowser-Core';
-			package: 'CoolBrowser-Tests' with: [ spec requires: 'CoolBrowser-Core' ];
-			package: 'CoolBrowser-Addons' with: [ spec requires: 'CoolBrowser-Core' ] ;
-			package: 'CoolBrowser-AddonsTests' with: [ 
-				spec requires: #('CoolBrowser-Addons' 'CoolBrowser-Tests' ) ].
-		spec 
-			group: 'default' with: #('CoolBrowser-Core' 'CoolBrowser-Addons' );
-			group: 'Core' with: #('CoolBrowser-Core' 'CoolBrowser-Platform' );
-			group: 'Extras' with: #('CoolBrowser-Addon');
-			group: 'Tests' with: #('CoolBrowser-Tests' 'CoolBrowser-AddonsTests' );
-			group: 'CompleteWithoutTests' with: #('Core', 'Extras' );
-			group: 'CompleteWithTests' with: #('CompleteWithoutTests', 'Tests' )].
-			
-	!\textbf{spec for: \#gemstone do: [}!
-		spec package: 'CoolBrowser-Platform' with: 'CoolBrowser-PlatformGemstone'.].
-	!\textbf{spec for: \#pharo do: [}!
-		spec package: 'CoolBrowser-Platform' with: 'CoolBrowser-PlatformPharo'.].
-	!\textbf{spec for: \#squeak do: [}!
-		spec package: 'CoolBrowser-Platform' with: 'CoolBrowser-PlatformSqueak'.].
+       <version: '0.9-baseline'>
+       
+       spec for: #common do: [
+              spec blessing: #baseline.
+              spec repository: 'http://www.example.com/CoolBrowser'.
+              
+              spec 
+                     package: 'CoolBrowser-Core';
+                     package: 'CoolBrowser-Tests' with: [ spec requires: 'CoolBrowser-Core' ];
+                     package: 'CoolBrowser-Addons' with: [ spec requires: 'CoolBrowser-Core' ] ;
+                     package: 'CoolBrowser-AddonsTests' with: [ 
+                            spec requires: #('CoolBrowser-Addons' 'CoolBrowser-Tests' ) ].
+              spec 
+                     group: 'default' with: #('CoolBrowser-Core' 'CoolBrowser-Addons' );
+                     group: 'Core' with: #('CoolBrowser-Core' 'CoolBrowser-Platform' );
+                     group: 'Extras' with: #('CoolBrowser-Addon');
+                     group: 'Tests' with: #('CoolBrowser-Tests' 'CoolBrowser-AddonsTests' );
+                     group: 'CompleteWithoutTests' with: #('Core', 'Extras' );
+                     group: 'CompleteWithTests' with: #('CompleteWithoutTests', 'Tests' )].
+                     
+       !\textbf{spec for: \#gemstone do: [}!
+              spec package: 'CoolBrowser-Platform' with: 'CoolBrowser-PlatformGemstone'.].
+       !\textbf{spec for: \#pharo do: [}!
+              spec package: 'CoolBrowser-Platform' with: 'CoolBrowser-PlatformPharo'.].
+       !\textbf{spec for: \#squeak do: [}!
+              spec package: 'CoolBrowser-Platform' with: 'CoolBrowser-PlatformSqueak'.].
 \end{code}
 
-Notice that we add the package \ct{CoolBrowser-Platform} in the \ct{Core} group. As you can see, we can manage this package as any other and in a uniform way. Thus, we have a lot of flexibility. At runtime, when you load CoolBrowser, Metacello automatically detects in which dialect the load is happening and loads the specific package for that dialect.  	
+Notice that we add the package \ct{CoolBrowser-Platform} in the \ct{Core} group. As you can see, we can manage this package as any other and in a uniform way. Thus, we have a lot of flexibility. At runtime, when you load CoolBrowser, Metacello automatically detects in which dialect the load is happening and loads the specific package for that dialect.         
 
 Finally, note that the method \ct{for:do:} is not only used to specify a platform specific package, but also for anything that has to do with different dialects. You can put whatever you want from the configuration inside that block. So, for example, you can define groups, packages, repositories, etc, that are dependent on a dialect. For example, you can do this:
 
 
   \begin{code}{}
  ConfigurationOfCoolBrowser>>baseline010: spec 
-	<version: '0.10-baseline'>
-	
-	spec for: #common do: [
-		spec blessing: #baseline.].
-	
-	spec for: #pharo do: [
-		spec repository: 'http://www.pharo.com/CoolBrowser'.
-		
-		spec 
-			...
-		spec 
-			group: 'default' with: #('CoolBrowser-Core' 'CoolBrowser-Addons' );
-			group: 'Core' with: #('CoolBrowser-Core' 'CoolBrowser-Platform' );
-			group: 'Extras' with: #('CoolBrowser-Addon');
-			group: 'Tests' with: #('CoolBrowser-Tests' 'CoolBrowser-AddonsTests' );
-			group: 'CompleteWithoutTests' with: #('Core', 'Extras' );
-			group: 'CompleteWithTests' with: #('CompleteWithoutTests', 'Tests' )].
-			
-	spec for: #gemstone do: [
-		spec repository: 'http://www.gemstone.com/CoolBrowser'.
-		
-		spec 
-			package: 'CoolBrowser-Core';
-			package: 'CoolBrowser-Tests' with: [ spec requires: 'CoolBrowser-Core' ];
-		spec 
-			group: 'default' with: #('CoolBrowser-Core' 'CoolBrowser-Addons' );
-			group: 'Core' with: #('CoolBrowser-Core' 'CoolBrowser-Platform' )].			
+       <version: '0.10-baseline'>
+       
+       spec for: #common do: [
+              spec blessing: #baseline.].
+       
+       spec for: #pharo do: [
+              spec repository: 'http://www.pharo.com/CoolBrowser'.
+              
+              spec 
+                     ...
+              spec 
+                     group: 'default' with: #('CoolBrowser-Core' 'CoolBrowser-Addons' );
+                     group: 'Core' with: #('CoolBrowser-Core' 'CoolBrowser-Platform' );
+                     group: 'Extras' with: #('CoolBrowser-Addon');
+                     group: 'Tests' with: #('CoolBrowser-Tests' 'CoolBrowser-AddonsTests' );
+                     group: 'CompleteWithoutTests' with: #('Core', 'Extras' );
+                     group: 'CompleteWithTests' with: #('CompleteWithoutTests', 'Tests' )].
+                     
+       spec for: #gemstone do: [
+              spec repository: 'http://www.gemstone.com/CoolBrowser'.
+              
+              spec 
+                     package: 'CoolBrowser-Core';
+                     package: 'CoolBrowser-Tests' with: [ spec requires: 'CoolBrowser-Core' ];
+              spec 
+                     group: 'default' with: #('CoolBrowser-Core' 'CoolBrowser-Addons' );
+                     group: 'Core' with: #('CoolBrowser-Core' 'CoolBrowser-Platform' )].                     
 
-\end{code}	
-	
+\end{code}       
+       
 In this example, for Pharo we use a different repository than for Gemstone. However, this is not mandatory, since both can have the same repository and differ in other things like versions, post and pre code executions, dependencies, etc. 
 
 In addition, the addons and tests are not available for Gemstone, and thus, those packages and groups are not included. So, as you can see, all what we have been doing inside the \ct{for: #common: do:} can be done inside another \ct{for:do:} for a specific dialect. 
@@ -852,13 +852,13 @@ The latest version of Metacello introduces \emph{symbolic versions} whose purpos
 
 \begin{code}{}
 OmniBrowser>>stable: spec
-     <symbolicVersion: #'stable'>
+     <symbolicVersion: #stable>
      spec for: #'pharo1.0.x' version: '1.1.3'.
      spec for: #'pharo1.1.x' version: '1.1.5'.
      spec for: #'pharo1.2.x' version: '1.2.3'.
 \end{code}
 
-Symbolic versions can be used anywhere that a literal version can be used. From a load expressions such as \ct{(ConfigurationOfOmniBrowser project version: #'stable') load}
+Symbolic versions can be used anywhere that a literal version can be used. From a load expressions such as \ct{(ConfigurationOfOmniBrowser project version: #stable) load}
 to a project reference in a baseline version:
 
 \begin{code}{}
@@ -871,7 +871,7 @@ baseline10: spec
         project: 'OmniBrowser' with: [
           spec
              className: 'OmniBrowser';
-             !\textbf{versionString: \#'stable';}!
+             !\textbf{versionString: \#stable;}!
              repository: 'http://www.squeaksource.com/MetacelloRepository' ].
      spec
          package: 'OB-SUnitGUI' with: [
@@ -881,7 +881,17 @@ baseline10: spec
          package: 'GemTools-Platform' with: [
             spec requires: #( 'GemTools-Client'. ) ]].
 \end{code}
-        
+Note that the \ct{#stable} here override the bleeding edge loading behavior that you would get if you would be (fool enough) to load a baseline (remeber loading a baseline loads bleeding edge versions). Here we make sure that the stable version of OmniBrowser for your platform will be loaded (and not the latest one).
+    
+%%version number
+%%stable = I do not care except that I want a certified version for the platform.
+%%development = I do not care except that I want a certified version for the platform but in dev mode.
+%%bleedingEdge = latest (file)
+
+    
+    
+    
+    
     
 \subsection{Project Blessing and Loading}
 
@@ -937,24 +947,24 @@ When specifying a symbolic version with a \ct{symbolicVersion:} pragma it is leg
 
 \begin{code}{}
 stable: spec
-	<symbolicVersion: #'stable'>
+       <symbolicVersion: #stable>
 
-	spec for: #'gemstone' version: '1.5'.
-	spec for: #'squeak' version: '1.4'.
-	spec for: #'pharo1.0.x' version: '1.5'.
-	spec for: #'pharo1.1.x' version: '1.5'.
-	spec for: #'pharo1.2.x' version: #development.
+       spec for: #gemstone version: '1.5'.
+       spec for: #'squeak' version: '1.4'.
+       spec for: #'pharo1.0.x' version: '1.5'.
+       spec for: #'pharo1.1.x' version: '1.5'.
+       spec for: #'pharo1.2.x' version: #development.
 \end{code}
 
 Or to use the special symbolic version \ct{notDefined}: as in the following definition of the symbolic version \ct{development}:
 
 \begin{code}{}
 development: spec
-	<symbolicVersion: #'development'>
+       <symbolicVersion: #development>
 
-	spec for: #'common' version: #notDefined.
-	spec for: #'pharo1.1.x' version: '1.6'.
-	spec for: #'pharo1.2.x' version: '1.6'.
+       spec for: #common version: #notDefined.
+       spec for: #'pharo1.1.x' version: '1.6'.
+       spec for: #'pharo1.2.x' version: '1.6'.
 \end{code}
 
 Here this indicates that there are no version for the \ct{common} tag. 
@@ -964,17 +974,17 @@ The following is the definition for the \ct{bleedingEdge} symbolic version: \sd{
 
 \begin{code}{}
 bleedingEdge
-	<defaultSymbolicVersion: #bleedingEdge>
+       <defaultSymbolicVersion: #bleedingEdge>
 
-	| bleedingEdgeVersion |
-	bleedingEdgeVersion := (self project map values select: [ :version |
+       | bleedingEdgeVersion |
+       bleedingEdgeVersion := (self project map values select: [ :version |
 version blessing == #baseline ])
-		detectMax: [ :version | version ].
-	bleedingEdgeVersion ifNil: [ bleedingEdgeVersion := self project
+              detectMax: [ :version | version ].
+       bleedingEdgeVersion ifNil: [ bleedingEdgeVersion := self project
 latestVersion ].
-	bleedingEdgeVersion
-		ifNil: [ self versionDoesNotExistError: #bleedingEdge ].
-	^ bleedingEdgeVersion versionString
+       bleedingEdgeVersion
+              ifNil: [ self versionDoesNotExistError: #bleedingEdge ].
+       ^ bleedingEdgeVersion versionString
 \end{code}
 
 
@@ -1108,46 +1118,46 @@ The \ct{createBaseline:...} message copies the class \ct{MetacelloConfigTemplate
 \begin{code}{}
 ConfigurationOfGemToolsExample>>baseline10: spec
   <version: '1.0-baseline'>
-  spec for: #'common' do: [
+  spec for: #common do: [
      spec blessing: #'baseline'.
      spec repository: 'http://seaside.gemstone.com/ss/GLASSClient'.
      spec
         project: 'FFI' with: [
           spec
              className: 'ConfigurationOfFFI';
-             versionString: #'bleedingEdge';
+             versionString: #bleedingEdge;
              repository: 'http://www.squeaksource.com/MetacelloRepository' ];
         project: 'OmniBrowser' with: [
           spec
              className: 'ConfigurationOfOmniBrowser';
-             versionString: #'stable';
+             versionString: #stable;
              repository: 'http://www.squeaksource.com/MetacelloRepository' ];
         project: 'Shout' with: [
           spec
              className: 'ConfigurationOfShout';
-             versionString: #'stable';
+             versionString: #stable;
              repository: 'http://www.squeaksource.com/MetacelloRepository' ];
         project: 'HelpSystem' with: [
           spec
              className: 'ConfigurationOfHelpSystem';
-             versionString: #'stable';
+             versionString: #stable;
              repository: 'http://www.squeaksource.com/MetacelloRepository' ].
      spec
         package: 'OB-SUnitGUI' with: [
-          spec requires: #('OmniBrowser' ). ];
+          spec requires: #('OmniBrowser'). ];
         package: 'GemTools-Client' with: [
-          spec requires: #('OmniBrowser' 'FFI' 'Shout' 'OB-SUnitGUI' ). ];
+          spec requires: #('OmniBrowser' 'FFI' 'Shout' 'OB-SUnitGUI'). ];
         package: 'GemTools-Platform' with: [
-          spec requires: #('GemTools-Client' ). ];
+          spec requires: #('GemTools-Client'). ];
         package: 'GemTools-Help' with: [
-          spec requires: #('HelpSystem' 'GemTools-Client' ). ].
+          spec requires: #('HelpSystem' 'GemTools-Client'). ].
      spec group: 'default' with: #('OB-SUnitGUI' 'GemTools-Client'
-             'GemTools-Platform' 'GemTools-Help' ). ].
+             'GemTools-Platform' 'GemTools-Help'). ].
 \end{code}             
 
 
 
-Note that for the 'FFI' project the versionString is \ct{#bleedingEdge}, while the versionString for the other projects is \ct{#'stable'}. At the time of this writing the FFI project did not have a \ct{#stable} symbolic version defined, so the default versionString is set to \ct{#bleedingEdge}. If a \ct{#stable} symbolic version is defined for the project, the the default versionString is \ct{#stable}. There are no special version dependencies for the GemTools project so the defaults will work just fine.
+Note that for the 'FFI' project the versionString is \ct{#bleedingEdge}, while the versionString for the other projects is \ct{#stable}. At the time of this writing the FFI project did not have a \ct{#stable} symbolic version defined, so the default versionString is set to \ct{#bleedingEdge}. If a \ct{#stable} symbolic version is defined for the project, the the default versionString is \ct{#stable}. There are no special version dependencies for the GemTools project so the defaults will work just fine.
 
 
 
@@ -1168,16 +1178,16 @@ The \ct{createDevelopment:...} method creates a \ct{#version10:} method in your 
 \begin{code}{}
 ConfigurationOfGemToolsExample>>version10: spec
   <version: '1.0' imports: #('1.0-baseline' )>
-  spec for: #'common' do: [
-     spec blessing: #'development'.
+  spec for: #common do: [
+     spec blessing: #development.
      spec description: 'initial development version'.
      spec author: 'dkh'.
      spec timestamp: '1/12/2011 12:29'.
      spec 
         project: 'FFI' with: '1.2';
-        project: 'OmniBrowser' with: #'stable';
-        project: 'Shout' with: #'stable';
-        project: 'HelpSystem' with: #'stable'.
+        project: 'OmniBrowser' with: #stable;
+        project: 'Shout' with: #stable;
+        project: 'HelpSystem' with: #stable.
      spec
         package: 'OB-SUnitGUI' with: 'OB-SUnitGUI-dkh.52';
         package: 'GemTools-Client' with: 'GemTools-Client-NorbertHartl.544';
@@ -1189,8 +1199,8 @@ Note how the \ct{#stable} symbolic version specifications were carried through i
 
 \begin{code}{}
 ConfigurationOfGemToolsExample>>development: spec
-  <symbolicVersion: #'development'>
-  spec for: #'common' version: '1.0'.
+  <symbolicVersion: #development>
+  spec for: #common version: '1.0'.
 \end{code}
 
 
@@ -1272,16 +1282,16 @@ The \ct{development:} method ends up looking like this:
 
 \begin{code}{}
 ConfigurationOfGemToolsExample>>development: spec
-  <symbolicVersion: #'development'>
-  spec for: #'common' version: #'notDefined'.
+  <symbolicVersion: #development>
+  spec for: #common version: #'notDefined'.
 \end{code}  
   
 The \ct{stable:} method ends up looking like this:
 
 \begin{code}{}
 ConfigurationOfGemToolsExample>>stable: spec
-  <symbolicVersion: #'stable'>
-  spec for: #'common' version: '1.0'.
+  <symbolicVersion: #stable>
+  spec for: #common version: '1.0'.
 \end{code}  
   
 Finally you can copy the configuration to the MetacelloRepository using the following expression:
@@ -1400,14 +1410,14 @@ Finally, if you want to explicitly set a load type, you have to do it in the \ct
 \begin{code}{}
 ConfigurationOfCoolToolSet >>project
 
-	^ project ifNil: [ | constructor |
-		"Bootstrap Metacello if it is not already loaded"
-		self class ensureMetacello.
-		"Construct Metacello project"
-		constructor := (Smalltalk at: #MetacelloVersionConstructor) on: self.
-		project := constructor project.
-		project loadType: #linear. '"or #atomic'"
-		project ]
+       ^ project ifNil: [ | constructor |
+              "Bootstrap Metacello if it is not already loaded"
+              self class ensureMetacello.
+              "Construct Metacello project"
+              constructor := (Smalltalk at: #MetacelloVersionConstructor) on: self.
+              project := constructor project.
+              project loadType: #linear. '"or #atomic'"
+              project ]
 
 \end{code}
 
@@ -1424,19 +1434,19 @@ Example:
 
 \begin{code}{}
 ConfigurationOfCoolBrowser >>project
-	|  | 
-	^ project ifNil: [ | constructor |
-		"Bootstrap Metacello if it is not already loaded"
-		self class ensureMetacello.
-		"Construct Metacello project"
-		constructor := (Smalltalk at: #MetacelloVersionConstructor) on: self.
-		project := constructor project.
-		projectAttributes :=  ((Smalltalk at: #CBNode ifAbsent: []) == nil
-			ifTrue: [ #( #'CBNotPresent' ) ]
-			ifFalse: [ #( #'CBPresent' ) ]).
-		project projectAttributes:  projectAttributes.
-		project loadType: #linear.
-		project ]
+       |  | 
+       ^ project ifNil: [ | constructor |
+              "Bootstrap Metacello if it is not already loaded"
+              self class ensureMetacello.
+              "Construct Metacello project"
+              constructor := (Smalltalk at: #MetacelloVersionConstructor) on: self.
+              project := constructor project.
+              projectAttributes :=  ((Smalltalk at: #CBNode ifAbsent: []) == nil
+                     ifTrue: [ #( #'CBNotPresent' ) ]
+                     ifFalse: [ #( #'CBPresent' ) ]).
+              project projectAttributes:  projectAttributes.
+              project loadType: #linear.
+              project ]
 
 \end{code}
 
@@ -1446,36 +1456,36 @@ Now the questions is how to use these project attributes. In the following basel
 
 \begin{code}{}
 ConfigurationOfCoolToolSet >>baseline02: spec 
-	<version: '0.2-baseline'>
-	
-	spec for: #common do: [
-		spec blessing: #baseline.
-		spec repository: 'http://www.example.com/CoolToolSet'.
-		spec project: 'CoolBrowser default' with: [
-				spec
-					className: 'ConfigurationOfCoolBrowser';
-					versionString: '1.0';
-					loads: #('default' );
-					file: 'CoolBrowser-Metacello';
-					repository: 'http://www.example.com/CoolBrowser' ];
-			project: 'CoolBrowser Tests' 
-				copyFrom: 'CoolBrowser default' 
-				with: [ spec loads: #('Tests').].
-		spec 
-			package: 'CoolToolSet-Core';
-			package: 'CoolToolSet-Tests' with: [ 
-				spec requires: #('CoolToolSet-Core') ];
-			package: 'CoolToolSet-CB';			
-		spec for: #CBPresent do: [
-			spec
-				group: 'default' with: #('CoolToolSet-CB' )
-				yourself ].
-		spec for: #CBNotPresent do: [
-			spec 
-				package: 'CoolToolSet-CB' with: [ spec requires: 'CoolBrowser default' ];
-				yourself ].
-			].
-		
+       <version: '0.2-baseline'>
+       
+       spec for: #common do: [
+              spec blessing: #baseline.
+              spec repository: 'http://www.example.com/CoolToolSet'.
+              spec project: 'CoolBrowser default' with: [
+                            spec
+                                   className: 'ConfigurationOfCoolBrowser';
+                                   versionString: '1.0';
+                                   loads: #('default' );
+                                   file: 'CoolBrowser-Metacello';
+                                   repository: 'http://www.example.com/CoolBrowser' ];
+                     project: 'CoolBrowser Tests' 
+                            copyFrom: 'CoolBrowser default' 
+                            with: [ spec loads: #('Tests').].
+              spec 
+                     package: 'CoolToolSet-Core';
+                     package: 'CoolToolSet-Tests' with: [ 
+                            spec requires: #('CoolToolSet-Core') ];
+                     package: 'CoolToolSet-CB';                     
+              spec for: #CBPresent do: [
+                     spec
+                            group: 'default' with: #('CoolToolSet-CB' )
+                            yourself ].
+              spec for: #CBNotPresent do: [
+                     spec 
+                            package: 'CoolToolSet-CB' with: [ spec requires: 'CoolBrowser default' ];
+                            yourself ].
+                     ].
+              
 \end{code}
 
 You can notice that the way to use project attributes is through the existing method \ct{for:do:}. Inside that method you can do whatever you want: define groups, dependencies, etc. In our case, if CoolBrowser is present, then we just add 'CoolToolSet-CB' to the default group. If it is not present, then 'CoolBrowser default' is added to dependency to 'CoolToolSet-CB'. In this case, we do not add it to the default group because we do not want that. If desired, the user should explicitly load that package also. 
@@ -1491,18 +1501,18 @@ an author, a description, a blessing and a timestamp.  Let's see an example with
  
 \begin{code}{}
 ConfigurationOfCoolBrowser>>version07: spec 
-	<version: '0.7' imports: #('0.7-baseline')>
-	
-	spec for: #common do: [
-		spec blessing: #release.
-		!\textbf{spec description: 'In this release .....'.}!
-		!\textbf{spec author: 'JohnLewis'.}!
-		!\textbf{spec timestamp: '10/12/2009 09:26'.}!
-		spec 
-			package: 'CoolBrowser-Core' with: 'CoolBrowser-Core-MichaelJones.20';
-			package: 'CoolBrowser-Tests' with: 'CoolBrowser-Tests-JohnLewis.8';
-			package: 'CoolBrowser-Addons' with: 'CoolBrowser-Addons-JohnLewis.6' ;
-			package: 'CoolBrowser-AddonsTests' with: 'CoolBrowser-AddonsTests-JohnLewis.1' ].
+       <version: '0.7' imports: #('0.7-baseline')>
+       
+       spec for: #common do: [
+              spec blessing: #release.
+              !\textbf{spec description: 'In this release .....'.}!
+              !\textbf{spec author: 'JohnLewis'.}!
+              !\textbf{spec timestamp: '10/12/2009 09:26'.}!
+              spec 
+                     package: 'CoolBrowser-Core' with: 'CoolBrowser-Core-MichaelJones.20';
+                     package: 'CoolBrowser-Tests' with: 'CoolBrowser-Tests-JohnLewis.8';
+                     package: 'CoolBrowser-Addons' with: 'CoolBrowser-Addons-JohnLewis.6' ;
+                     package: 'CoolBrowser-AddonsTests' with: 'CoolBrowser-AddonsTests-JohnLewis.1' ].
 \end{code}
  
 We will describe each attribute in detail:
@@ -1527,6 +1537,148 @@ To end this section, we show you can query this information. This illustrates th
 
 \section{Conclusion}
 Metacello is an important part of Pharo. It will allow your project to scale. It allow you to control when you want to migrate to new version and for which packages. It is an important architectural backbone.
+
+
+\newpage
+
+\section{Metacello Memento}
+
+\begin{footnotesize}
+\begin{code}{}
+ConfigurationOfCoolToolSet>>baseline02: spec 						!\emph{"could be called differently just a convention"}!
+       <version: '0.2-baseline'> 						                        !\emph{"pragma and -baseline are important"}!
+       
+       spec for: !\textbf{\#common}! do: [                                    !\emph{"\#common/\#pharo/\#gemstone/\#pharo'1.4'"}!     
+              spec blessing: #baseline.				                       !\emph{"optional?"}!  
+              spec repository: 'http://www.example.com/CoolToolSet'.
+              
+              !\emph{"When we depend on other projects"}!
+              spec !\textbf{project:}! 'CoolBrowser default' !\textbf{with:}! [
+                            spec
+                                   className: 'ConfigurationOfCoolBrowser';
+                                   versionString: '1.0';			   !\emph{'1.0' ?? because baseline so ?}!
+                                   loads: #('default');				!\emph{which group to load}!
+                                   file: 'CoolBrowser-Metacello';
+                                   repository: 'http://www.example.com/CoolBrowser' ];
+                     !\textbf{project:}! 'CoolBrowser Tests' 
+                            !\textbf{copyFrom:}! 'CoolBrowser default' 
+                            !\textbf{with:}! [ spec loads: #('Tests').].
+             
+             !\emph{"Our internal package dependencies"}!
+              spec 
+                     !\textbf{package:}! 'CoolToolSet-Core';
+                     !\textbf{package:}! 'CoolToolSet-Tests' !\textbf{with:}! [ spec requires: #('CoolToolSet-Core') ];
+                     package: 'CoolToolSet-CB';
+                     
+              !\emph{"No idea :)"}!                             
+              spec for: #CBPresent do: [ spec group: 'default' with: #('CoolToolSet-CB')].  
+              	!\emph{what is CBPresent a class?}!
+              spec for: #CBNotPresent do: [  
+              	spec package: 'CoolToolSet-CB' with: [ spec requires: 'CoolBrowser default']].
+          ].  
+\end{code}\end{footnotesize} 
+
+\begin{footnotesize}
+\begin{code}{}
+ConfigurationOfCoolBrowser>>version07: spec 					!\emph{"could be called differently just a convention"}!
+       <version: '0.7' imports: #('0.7-baseline')>				!\emph{"pragma: no baseline so this is version"}!
+															!\emph{"do not import baseline from other baselines"}!
+    
+       spec for: !\textbf{\#common}! do: [                            !\emph{"\#common/\#pharo/\#gemstone/\#pharo'1.4'"}! 
+              spec blessing: #release.								!\emph{"WHAT IS THAT? \#stable?/\#bleedingEdge"}!
+              spec description: 'In this release .....'.
+              spec author: 'JohnLewis'.
+              spec timestamp: '10/12/2009 09:26'.
+              spec 
+                     !\textbf{package:}! 'CoolBrowser-Core' !\textbf{with:}! 'CoolBrowser-Core-MichaelJones.20';
+                     package: 'CoolBrowser-Tests' with: 'CoolBrowser-Tests-JohnLewis.8';
+                     package: 'CoolBrowser-Addons' with: 'CoolBrowser-Addons-JohnLewis.6' ;
+                     package: 'CoolBrowser-AddonsTests' with: 'CoolBrowser-AddonsTests-JohnLewis.1' ].
+\end{code}
+\end{footnotesize} 
+
+
+\newpage
+\begin{footnotesize}
+\begin{code}{}
+ConfigurationOfGemToolsExample>>development: spec        !\emph{"note that the selector can be anything"}!
+       <symbolicVersion: #development>    				!\emph{"\#stable/\#development/\#bleedingEdge"}!
+       spec for: #common version: '1.0'.	                   !\emph{"'1.0' is the version of your development version"}!
+       !\emph{"\#common or your platform attributes: \#gemstone, \#pharo, or \#'pharo1.4'"}!
+\end{code}
+\end{footnotesize} 
+
+
+\begin{footnotesize}
+\begin{code}{}
+ConfigurationOfGemToolsExample>>baseline10: spec
+  <version: '1.0-baseline'>
+  spec for: #common do: [
+     spec blessing: #'baseline'.                 !\emph{optional?}!
+     spec repository: 'http://seaside.gemstone.com/ss/GLASSClient'.
+     spec
+        !\textbf{project:}! 'FFI' !\textbf{with:}! [
+          spec
+             className: 'ConfigurationOfFFI';
+             !\textbf{versionString:}! #bleedingEdge;					!\emph{\#stable/\#development/\#bleedingEdge}!
+             repository: 'http://www.squeaksource.com/MetacelloRepository' ];
+        project: 'OmniBrowser' with: [
+          spec
+             className: 'ConfigurationOfOmniBrowser';
+             versionString: #stable;									!\emph{\#stable/\#development/\#bleedingEdge}!
+             repository: 'http://www.squeaksource.com/MetacelloRepository' ];
+        project: 'Shout' with: [
+          spec
+             className: 'ConfigurationOfShout';
+             versionString: #stable;
+             repository: 'http://www.squeaksource.com/MetacelloRepository' ];
+        project: 'HelpSystem' with: [
+          spec
+             className: 'ConfigurationOfHelpSystem';
+             versionString: #stable;
+             repository: 'http://www.squeaksource.com/MetacelloRepository'].
+     spec
+        !\textbf{package:}! 'OB-SUnitGUI' !\textbf{with:}! [spec requires: #('OmniBrowser')];
+        package: 'GemTools-Client' with: [ spec requires: #('OmniBrowser' 'FFI' 'Shout' 'OB-SUnitGUI' ).];
+        package: 'GemTools-Platform' with: [ spec requires: #('GemTools-Client' ). ];
+        package: 'GemTools-Help' with: [
+          spec requires: #('HelpSystem' 'GemTools-Client' ). ].
+     spec !\textbf{group:}! 'default' !\textbf{with:}! #('OB-SUnitGUI' 'GemTools-Client' 'GemTools-Platform' 'GemTools-Help')].
+\end{code}         
+\end{footnotesize} 
+
+
+
+
+
+
+
+\begin{footnotesize}
+\begin{code}{}
+ConfigurationOfGemToolsExample>>version10: spec
+     <!\textbf{version:}! '1.0' !\textbf{imports:}! #('1.0-baseline' )>
+     spec !\textbf{for:}! #common !\textbf{do:}! [
+          spec blessing: #development.
+          spec description: 'initial development version'.
+          spec author: 'dkh'.
+          spec timestamp: '1/12/2011 12:29'.
+     spec 
+          !\textbf{project:}! 'FFI' !\textbf{with:}! '1.2';
+          project: 'OmniBrowser' with: #stable;
+          project: 'Shout' with: #stable;
+          project: 'HelpSystem' with: #stable.
+     spec
+          !\textbf{package:}! 'OB-SUnitGUI' !\textbf{with:}! 'OB-SUnitGUI-dkh.52';
+          package: 'GemTools-Client' with: 'GemTools-Client-NorbertHartl.544';
+          package: 'GemTools-Platform' with: 'GemTools-Platform.pharo10beta-dkh.5';
+          package: 'GemTools-Help' with: 'GemTools-Help-DaleHenrichs.24'. ].
+\end{code}
+\end{footnotesize} 
+
+
+
+
+
 
 
 %=========================================================
