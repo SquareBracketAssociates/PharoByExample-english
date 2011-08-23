@@ -33,9 +33,12 @@
 %=================================================================
 
 \chapter{Basic Widgets}
+\ja{introduction. What is the goal of this chapter ? what should I learn reading it...}
 
 \section{The window}
 \index{Morphic!window}
+
+\ja{explain the basis of Widget ? What is a widget in pharo ? Which classes should I know ? }
 
 \subsection{Opening a window}
 The basic class for managing a window is \clsind{StandardWindow}. Let's start with an empty one.
@@ -44,7 +47,7 @@ The basic class for managing a window is \clsind{StandardWindow}. Let's start wi
 \begin{code}{}
 StandardWindow new openInWorld
 \end{code}
-You should see a window with a topbar that you can move with the mouse (see \figref{fig:emptyWindow}). 
+You should see a window with a top bar \ja{title bar ?} that you can move with the mouse (see \figref{fig:emptyWindow}). 
 
 \begin{figure}[ht]
 \begin{center}
@@ -54,12 +57,12 @@ You should see a window with a topbar that you can move with the mouse (see \fig
 \end{center}
 \end{figure} 
 
-On one side, the topbar has three buttons for closing, collapsing and expanding the window. On the other side, the topbar has a menu button with a default set of items.
+On one side, the topbar has three buttons for closing, collapsing and expanding the window. On the other side, the topbar has a menu button with a default set of items \ja{which ones ?}.
 
 \subsection{A window and its model}
 \index{Morphic!window model}
 
-To set a model to a window, it's quite easy:
+To set a model to a window \ja{what is a model ? why should I set a model to a window ?}, it's quite easy:
 
 \begin{code}{}
 StandardWindow new model: myModel
@@ -90,11 +93,12 @@ StandardWindow new openInWorld.
 StandardWindow new model: (MyModel new); openInWorld.
 \end{code}
 
-So you should see a window with the same size than the previous one, and a small window which size is exactly what you have specified in the method \mthind{Morph}{initialExtent} (see \figref{fig:withAndWithoutModel}).
+So you see a window with the same size than the previous one, and a small window which size is exactly what you have specified in the method \mthind{Morph}{initialExtent} (see \figref{fig:withAndWithoutModel}).
 \sd{should we always specifies a model?}
 \ben{If you want to specify the initial extent, either you define a model or you subclass (as far as I know)}
 \sd{what should be put in the model vs. the Morph itself?}
 \ben{I think/hope it will be clear when the API section will be complete}
+\ja{if you are sure about your answers, just include them in the real text.}
 
 \begin{figure}[ht]
 \begin{center}
@@ -104,7 +108,7 @@ So you should see a window with the same size than the previous one, and a small
 \end{center}
 \end{figure}
 
-You can also defined this method:
+You can also defined this method \ja{what is the goal ? I do not want to define a method for nothing... you are writing a story :)}:
 
 \begin{method}{Define if the model is ok to change or not}
 okToChange
@@ -112,13 +116,13 @@ okToChange
 	^ false
 \end{method}
 
-Now, when you try to close the small window nothing happens.
+Now, when you try to close the small window nothing happens \ja{why ? is there a method that I have replaced or extended ?}.
 
 \subsection{Your own topbar menu}
 
 Here, we will show you how to easily add direct and simple shortcuts in the window's menu.
 
-First, your window must have a model, then you simply have to implement the method \mthind{Object}{addModelItemsToWindowMenu: aMenu} and to fill up the menu provided as parameter as following:
+First, your window must have a model \ja{blah blah... why must have a model}, then you simply have to implement the method \mthind{Object}{addModelItemsToWindowMenu: aMenu} and to fill up the menu provided as parameter as following:
 \apl{addModelItemsToWindowMenu: is in Object !!}
 
 \begin{method}{}
@@ -149,7 +153,7 @@ MyModel>>addModelItemsToWindowMenu: aMenu
 		action: #inspect.
 \end{method} 
 
-So when you click on the menu button, you see at the end of the list the label we typed just before (see \figref{fig:menuBar}), and when you click on it, an inspector is opened (see \figref{fig:windowAndInspector})
+So when you click on the menu button, you see at the end of the list the label we typed just before \ja{in method 1.4 ?} (see \figref{fig:menuBar}), and when you click on it, an inspector is opened (see \figref{fig:windowAndInspector})
 
 \begin{figure}[ht]
 \begin{center}
@@ -169,7 +173,7 @@ So when you click on the menu button, you see at the end of the list the label w
 
 \subsection{Main Window API}
 
-Here is the list of the main API for a window
+\ja{some blahblah} Here is the list of the main API for a window
 
 \begin{itemize}
 \item Title
@@ -188,10 +192,10 @@ StandardWindow new
 	unexpandedFrame: (0@0 extent: 200@100) ; openInWorld
 \end{code}
 
-je ne comprends pas pourquoi je peux alors avoir une fenetre immense?
+je ne comprends pas pourquoi je peux alors avoir une fenetre immense? \ja{what ?}
 
-\item unresizeable?
-\item Action on close?
+\item unresizeable? \ja{what ?}
+\item Action on close? \ja{what ?}
 \end{itemize}
 
 \paragraph*{Title.}
