@@ -182,15 +182,76 @@ connection execute: 'CREATE TABLE CARD(ID INT AUTO_INCREMENT PRIMARY KEY, NAME V
 connection execute: 'INSERT INTO CARDS (NAME) VALUES(''Giant Growth'')'.
 connection execute: 'INSERT INTO CARDS (NAME) VALUES(''Llanowar Elves'')'.
 
-"If we did enable multistatements before opening the connection we can do some inserts at the same time!"
+"If we did enable multistatements before opening the connection we can do some inserts at the same time"
 connection executeMultiStatement: 'INSERT INTO CARDS (NAME) VALUES(''Rancor'');
-						            INSERT INTO CARDS (NAME) VALUES(''Counterspell'')'.
+                                   INSERT INTO CARDS (NAME) VALUES(''Counterspell'')'.
 
-"we execute an invalid SQL statement to see how it raises a DBXRecoverableError"
-conn execute: 'some invalid sql statement'.
+"we execute an invalid SQL statement to see how it raises a DBXError"
+connection execute: 'some invalid sql statement'.
+\end{code}
+
+\subsection{Fetching results}
+So far we have only executed statements without looking at their results.  Each statement execution has a Result, which may be one of DBXResult, DBXResultSet and DBXMultiStatementResultSetIterator.
+
+A DBXResult is obtained when executing a SQL statement which does not have a set of rows as a result -such as a \emph{CREATE TABLE}, \emph{INSERT} or \emph{UPDATE} operation.  You can ask it for its \#rowsAffected to know how many rows were affected in the operation.
+
+\begin{code}{}
+result := connection execute: 'UPDATE CARDS SET NAME=''CounterSpell'' where NAME=''Counterspell'' '.
+Transcript show: result rowsAffected.
+\end{code}
+
+A SQL statement with rows as a result -such as a \emph{SELECT} statement- brings a DBXResultSet as the result.  A DBXResultSet is a consumable set of rows.  This means that onces you've consumed all the rows in the DBXResultSet, they will not be available any more.  You can work with a DBXResultSet in several ways:
+
+\begin{itemize}
+\item Delegate row iteration to the result set:
+\begin{code}{}
+cardsResultSet := connection execute: 'SELECT * FROM CARDS'.
+cardsResultSet rowsDo: [ :row | Transcript show: (row valueAt: 1) ]
+\end{code}
+\item Getting all rows from a result set:
+\begin{code}{}
+cardsResultSet := connection execute: 'SELECT * FROM CARDS'.
+rows := cardsResultSet rows
+rows do: [ :row | Transcript show: (row valueAt: 1) ]
+\end{code}
+\item Fetching one row at a time:
+\begin{code}{}
+cardsResultSet := connection execute: 'SELECT * FROM CARDS'.
+[ row := cardsResultSet nextRow.
+  row notNil ] 
+    whileTrue: [ Transcript show: (row valueAt: 1); cr ]
+\end{code}
+\end{itemize}
+
+
+When accessing a ResultSet rows, we get some DBXRow instances to play with.  A DBXRow is the model of a database row, and each of the values for it's columns can be accessed in two formats: the raw format, which is the string representation of the value, sent by the database, and a converted format, which is the Pharo object representation for that object.
+The DBXRow objects understand some of the following messages:
+
+\begin{itemize}
+    \item \#valueAt: retrieves the converted value at the column in the given index.
+    \item \#values retrieves a sequenceable collection with all the converted values of the row.
+    \item \#rawValueAt: retrieves the raw value at the column in the given index.
+    \item \#rawValues retrieves a sequenceable collection with all the raw values of the row.
+\end{itemize}
+
+Some examples of the behavior of a DBXRow are the following:
+\begin{code}{}
+myRow valueAt: 1. -> 1          "First column is INTEGER and contains a 1. It retrieves a Pharo SmallInteger"
+myRow rawValueAt: 1. -> '1'     "First column is INTEGER and contains a 1. It retrieves an string"
+
+myRow values.    -> #(1 'Llanowar Elves')   "A collection with every row value converted to Pharo objects."
+myRow rawValues. -> #('1' 'Llanowar Elves') "A collection with every row raw value."
 \end{code}
 
 
+Finally, the other kind of result we can get from a SQL statement is a DBXMultiStatementResultSetIterator.  It stands as a DBXResultSet container, for multi-statement querys.  You can browse the results using the following convenience methods.
+
+\begin{code}{}
+myMultistatementResult allResultsDo: [ :aResult | "doSometing here with the result" ].  "internal iteration of the results."
+
+[result := myMultistatementResult next. result notNil] 
+    whileTrue: [ :aResult | "doSometing here with the result" ].  "iterating the results one by one."
+\end{code}
 
 %=========================================================
 \ifx\wholebook\relax\else
