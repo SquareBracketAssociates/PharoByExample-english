@@ -472,6 +472,41 @@ The message \ct{valueSupplyingAnswers:} supports such a task.
 This message should be sent to a block giving a list of questions and their answers as shown by the previous examples
 
 
+\section{Some useful scripts}
+Here is a script to fetch all the packages of a given project. This is useful to grab all your files and get a version locally.
+
+\begin{code}{}
+| go |
+go := Gofer new.
+go squeaksource: 'Pharo14'.
+go allResolved
+	do: [:each |
+			self crLog: each packageName.
+			go 
+				squeaksource: 'Pharo14';
+				package: each packageName;
+				fetch]
+\end{code}
+
+
+The following script publishes files from your local cache to a given repository.
+
+\begin{code}{}
+| go |
+go := Gofer new.
+go repository: (MCHttpRepository
+	location: 'http://ss3.gemstone.com/ss/Pharo14';
+	user: 'pharoUser'
+	password: 'pharoPwd').
+
+((FileDirectory on:
+	(FileDirectory default fullNameFor: 'package-cache'))
+	fileAndDirectoryNames
+		select: [:each | '*.mcz' match: each])
+					do: [:f | go version: ('.' join: (f findTokens: $.) allButLast); push]
+\end{code}
+
+
 \section{Conclusion}
 Gofer provides a robust and stable implementation to script the
 management of your packages. Now when you project grows you should

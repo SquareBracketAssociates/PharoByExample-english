@@ -1548,8 +1548,8 @@ Metacello is an important part of Pharo. It will allow your project to scale. It
 ConfigurationOfCoolToolSet>>baseline02: spec 
        <version: '0.2-baseline'>     
        
-       spec for: #common do: [                                 #common #pharo #squeak?
-              spec blessing: #baseline.
+       spec for: #common do: [                            !\emph{\#common/\#pharo/\#gemstone/\#pharo'1.4'}!     
+              spec blessing: #baseline.					!\emph{optional?}!  
               spec repository: 'http://www.example.com/CoolToolSet'.
               spec project: 'CoolBrowser default' with: [
                             spec
@@ -1593,11 +1593,13 @@ ConfigurationOfCoolBrowser>>version07: spec
 
 \begin{footnotesize}
 \begin{code}{}
-ConfigurationOfGemToolsExample>>development: spec
-  <symbolicVersion: #'development'>
-  spec for: #'common' version: '1.0'.
+ConfigurationOfGemToolsExample>>development: spec        !\emph{note that the selector can be anything}!
+       <symbolicVersion: #'development'>    				!\emph{\#stable/\#development/\#bleedingEdge}!
+       spec for: #'common' version: '1.0'.	                   !\emph{'1.0' is the version of your development version}!
+       !\emph{\#'common' or your platform attributes: \#'gemstone', \#'pharo', or \#'pharo1.4'}!
 \end{code}
 \end{footnotesize} 
+
 
 \begin{footnotesize}
 \begin{code}{}
@@ -1626,12 +1628,12 @@ ConfigurationOfGemToolsExample>>baseline10: spec
           spec
              className: 'ConfigurationOfHelpSystem';
              versionString: #'stable';
-             repository: 'http://www.squeaksource.com/MetacelloRepository' ].
+             repository: 'http://www.squeaksource.com/MetacelloRepository'].
      spec
         package: 'OB-SUnitGUI' with: [
           spec requires: #('OmniBrowser' ). ];
         package: 'GemTools-Client' with: [
-          spec requires: #('OmniBrowser' 'FFI' 'Shout' 'OB-SUnitGUI' ). ];
+          spec requires: #('OmniBrowser' 'FFI' 'Shout' 'OB-SUnitGUI' ).];
         package: 'GemTools-Platform' with: [
           spec requires: #('GemTools-Client' ). ];
         package: 'GemTools-Help' with: [
