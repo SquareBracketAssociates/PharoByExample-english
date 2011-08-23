@@ -1597,6 +1597,8 @@ ConfigurationOfCoolBrowser>>version07: spec 					!\emph{"could be called differe
 \end{code}
 \end{footnotesize} 
 
+
+\newpage
 \begin{footnotesize}
 \begin{code}{}
 ConfigurationOfGemToolsExample>>development: spec        !\emph{"note that the selector can be anything"}!
@@ -1654,19 +1656,19 @@ ConfigurationOfGemToolsExample>>baseline10: spec
 \begin{footnotesize}
 \begin{code}{}
 ConfigurationOfGemToolsExample>>version10: spec
-     <version: '1.0' imports: #('1.0-baseline' )>
-     spec for: #common do: [
+     <!\textbf{version:}! '1.0' !\textbf{imports:}! #('1.0-baseline' )>
+     spec !\textbf{for:}! #common !\textbf{do:}! [
           spec blessing: #development.
           spec description: 'initial development version'.
           spec author: 'dkh'.
           spec timestamp: '1/12/2011 12:29'.
      spec 
-          project: 'FFI' with: '1.2';
+          !\textbf{project:}! 'FFI' !\textbf{with:}! '1.2';
           project: 'OmniBrowser' with: #stable;
           project: 'Shout' with: #stable;
           project: 'HelpSystem' with: #stable.
      spec
-          package: 'OB-SUnitGUI' with: 'OB-SUnitGUI-dkh.52';
+          !\textbf{package:}! 'OB-SUnitGUI' !\textbf{with:}! 'OB-SUnitGUI-dkh.52';
           package: 'GemTools-Client' with: 'GemTools-Client-NorbertHartl.544';
           package: 'GemTools-Platform' with: 'GemTools-Platform.pharo10beta-dkh.5';
           package: 'GemTools-Help' with: 'GemTools-Help-DaleHenrichs.24'. ].
