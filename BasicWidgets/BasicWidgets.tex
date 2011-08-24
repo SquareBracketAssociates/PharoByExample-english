@@ -798,6 +798,61 @@ You can also experiment the other directions
 \end{figure}
 
 
+
+
+\section{Some}
+
+
+I would like to create a Text Morph that wraps the text horizontally, and expands the height to fit the text. Thus, this morph would never offer scrolling. Figure~\ref{fig:paneMorph}.
+
+
+\begin{code}{}
+| textMorph |
+textMorph := UITheme builder newText: ''.
+textMorph
+    hResizing: #spaceFill;
+    borderWidth: 1.
+(UITheme builder newColumn: {textMorph}) openInWindow.
+textMorph contentsWrapped: 'Some text here
+
+Get a halo and inspect the text morph
+then use #contentsWrapped: to change text'
+\end{code}
+
+\begin{figure}[ht]\centering
+	\includegraphics[width=7cm]{paneMorph}
+	\caption{PaneMorph}
+	\label{fig:paneMorph}
+\end{figure}
+
+
+If I place this one in a surrounding pane / expander / tab, how do I get the surrounding morph to resize when the text changes? See Figure~\ref{fig:expanders}.
+
+\begin{code}{}
+|textMorph|
+textMorph := UITheme builder newText: ''.
+textMorph
+    hResizing: #spaceFill;
+    borderWidth: 1.
+(UITheme builder newColumn: {
+    UITheme builder newExpander: 'One' for: textMorph.
+    UITheme builder newExpander: 'Two' for: Morph new}) openInWindow.
+
+textMorph contentsWrapped: 'Some text here
+use #contentsWrapped: to change text'
+\end{code}
+
+\begin{figure}[ht]\centering
+	\includegraphics[width=5cm]{expanded}\includegraphics[width=5cm]{expanded2}
+	\caption{Two Expanders }
+	\label{fig:expanders}
+\end{figure}
+
+
+In general, if the surrounding morph has \ct{#shrinkWrap} constraints then changes to the (minimum) dimensions of its submorphs will propagate resulting in a change of size for the surrounding morph.
+
+
+
 \section{Conclusion}
 
 %=========================================================
