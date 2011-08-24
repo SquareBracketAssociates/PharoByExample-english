@@ -62,6 +62,7 @@ On one side, the topbar has three buttons for closing, collapsing and expanding 
 \subsection{A window and its model}
 \index{Morphic!window model}
 
+\ben{introduce MVC}
 To set a model to a window \ja{what is a model ? why should I set a model to a window ?}, it's quite easy:
 
 \begin{code}{}
@@ -107,26 +108,26 @@ So you see a window with the same size than the previous one, and a small window
 	\figlabel{fig:withAndWithoutModel}
 \end{center}
 \end{figure}
-
-You can also defined this method \ja{what is the goal ? I do not want to define a method for nothing... you are writing a story :)}:
+\ben{move that into Model API part}
+You can also override this method \ja{what is the goal ? I do not want to define a method for nothing... you are writing a story :)}:
 
 \begin{method}{Define if the model is ok to change or not}
-okToChange
+MyModel>>#okToChange
 
 	^ false
 \end{method}
 
-Now, when you try to close the small window nothing happens \ja{why ? is there a method that I have replaced or extended ?}.
+Now, when you try to close the small window the window will not be closed since the model explicitly precise (through the method \mthind{okToChange}{okToChange} that we just override) that the widget is not ok to be changed.
 
 \subsection{Your own topbar menu}
 
 Here, we will show you how to easily add direct and simple shortcuts in the window's menu.
 
-First, your window must have a model \ja{blah blah... why must have a model}, then you simply have to implement the method \mthind{Object}{addModelItemsToWindowMenu: aMenu} and to fill up the menu provided as parameter as following:
+First, your window must have a model \ja{blah blah... why must have a model}, then you simply have to override the method \mthind{Object}{addModelItemsToWindowMenu: aMenu} and to fill up the menu provided as parameter as following:
 \apl{addModelItemsToWindowMenu: is in Object !!}
 
 \begin{method}{}
-addModelItemsToWindowMenu: aMenu
+MyModel>>#addModelItemsToWindowMenu: aMenu
 	"Add model-related items to the window menu"
 	
 	"First, we add a separator"
@@ -143,7 +144,7 @@ addModelItemsToWindowMenu: aMenu
 \subsubsection{Example:}
 
 \begin{method}{Define the extra entries of the menu}
-MyModel>>addModelItemsToWindowMenu: aMenu
+MyModel>>#addModelItemsToWindowMenu: aMenu
 	"Add model-related items to the window menu"
 	super addModelItemsToWindowMenu: aMenu.
 	aMenu addLine.
@@ -151,9 +152,9 @@ MyModel>>addModelItemsToWindowMenu: aMenu
 		add: 'Open an inspector on me'
 		target: self
 		action: #inspect.
-\end{method} 
+\end{method}
 
-So when you click on the menu button, you see at the end of the list the label we typed just before \ja{in method 1.4 ?} (see \figref{fig:menuBar}), and when you click on it, an inspector is opened (see \figref{fig:windowAndInspector})
+So when you click on the menu button, you see at the end of the list the label we typed just before in the method \ben{how to ref to method env}  (see \figref{fig:menuBar}), and when you click on it, an inspector is opened (see \figref{fig:windowAndInspector})
 
 \begin{figure}[ht]
 \begin{center}
