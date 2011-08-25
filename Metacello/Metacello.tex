@@ -1546,19 +1546,19 @@ Metacello is an important part of Pharo. It will allow your project to scale. It
 \begin{footnotesize}
 \begin{code}{}
 ConfigurationOfCoolToolSet>>baseline02: spec 						!\emph{"could be called differently just a convention"}!
-       <version: '0.2-baseline'> 						                        !\emph{"pragma and -baseline are important"}!
+       <version: '0.2-baseline'> 						                        !\emph{"could be called differently just a convention"}!
        
        spec for: !\textbf{\#common}! do: [                                    !\emph{"\#common/\#pharo/\#gemstone/\#pharo'1.4'"}!     
-              spec blessing: #baseline.				                       !\emph{"optional?"}!  
+              spec blessing: #baseline.				                       !\emph{"Important: identifies a baseline"}!  
               spec repository: 'http://www.example.com/CoolToolSet'.
               
               !\emph{"When we depend on other projects"}!
               spec !\textbf{project:}! 'CoolBrowser default' !\textbf{with:}! [
                             spec
                                    className: 'ConfigurationOfCoolBrowser';
-                                   versionString: '1.0';			   !\emph{'1.0' ?? because baseline so ?}!
+                                   !\textbf{versionString:}! #bleedingEdge;			   !\emph{Required field could be \#stable/\#edge/specific version}!
                                    loads: #('default');				!\emph{which group to load}!
-                                   file: 'CoolBrowser-Metacello';
+                                   file: 'CoolBrowser-Metacello'; !\emph{optional when same as class name}!
                                    repository: 'http://www.example.com/CoolBrowser' ];
                      !\textbf{project:}! 'CoolBrowser Tests' 
                             !\textbf{copyFrom:}! 'CoolBrowser default' 
@@ -1569,23 +1569,17 @@ ConfigurationOfCoolToolSet>>baseline02: spec 						!\emph{"could be called diffe
                      !\textbf{package:}! 'CoolToolSet-Core';
                      !\textbf{package:}! 'CoolToolSet-Tests' !\textbf{with:}! [ spec requires: #('CoolToolSet-Core') ];
                      package: 'CoolToolSet-CB';
-                     
-              !\emph{"No idea :)"}!                             
-              spec for: #CBPresent do: [ spec group: 'default' with: #('CoolToolSet-CB')].  
-              	!\emph{what is CBPresent a class?}!
-              spec for: #CBNotPresent do: [  
-              	spec package: 'CoolToolSet-CB' with: [ spec requires: 'CoolBrowser default']].
           ].  
 \end{code}\end{footnotesize} 
 
 \begin{footnotesize}
 \begin{code}{}
 ConfigurationOfCoolBrowser>>version07: spec 					!\emph{"could be called differently just a convention"}!
-       <version: '0.7' imports: #('0.7-baseline')>				!\emph{"pragma: no baseline so this is version"}!
+       <version: '0.7' imports: #('0.7-baseline')>				!\emph{"could be called differently just a convention: no baseline so this is version"}!
 															!\emph{"do not import baseline from other baselines"}!
     
        spec for: !\textbf{\#common}! do: [                            !\emph{"\#common/\#pharo/\#gemstone/\#pharo'1.4'"}! 
-              spec blessing: #release.								!\emph{"WHAT IS THAT? \#stable?/\#bleedingEdge"}!
+              spec !\textbf{blessing:}! #release.		!\emph{"Required \#development/\#release: release means that it will not change anymore"}!
               spec description: 'In this release .....'.
               spec author: 'JohnLewis'.
               spec timestamp: '10/12/2009 09:26'.
@@ -1614,7 +1608,7 @@ ConfigurationOfGemToolsExample>>development: spec        !\emph{"note that the s
 ConfigurationOfGemToolsExample>>baseline10: spec
   <version: '1.0-baseline'>
   spec for: #common do: [
-     spec blessing: #'baseline'.                 !\emph{optional?}!
+     spec blessing: #'baseline'.                 !\emph{required see above}!
      spec repository: 'http://seaside.gemstone.com/ss/GLASSClient'.
      spec
         !\textbf{project:}! 'FFI' !\textbf{with:}! [
@@ -1676,8 +1670,16 @@ ConfigurationOfGemToolsExample>>version10: spec
 \end{footnotesize} 
 
 
+Baseline
+Version development
+Validate the map
+Version release
 
-
+Version development
+...
+Baseline 
+Version development
+Version release
 
 
 
