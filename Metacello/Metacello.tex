@@ -36,24 +36,30 @@
 \chalabel{metacello}
 \chapterauthor{\authordale{} \\ \authormariano{}}
 
-Have you ever had a problem when trying to load a nice project where you got an error because a package that you were not even aware of  is missing or not correct? You've probably seen such a problem. The problem probably occurred because the project loaded fine for the  developer but only because he has a different context than yours. The project developer did not use a \emph{package configuration} to explicitly manage the dependencies between his packages. In this chapter we will show you how to use Metacello, a package management system and the power that you can get using it. 
+\noindent
+Have you ever had this problem when trying to load a project: you get an error because a package that you were not even aware of is missing, or worse, it is present, but you have the wrong version? You are probably nodding. This problem probably occurred because the project loaded fine for the  developers, but only because they were working in a context that was different from yours. 
+
+The solution is for the project developers to use a \emph{package management system} to explicitly manage the dependencies between packages.  
+This chapter shows you how to use Metacello, Pharo's package management system, and the benefits of using it. 
 
 \section{Introduction}
 
-Metacello is a package \textit{management} system for Monticello. But, exactly what is a \textit{Package Management System}?
-It is a collection of tools to automate the process of installing, upgrading, configuring, and removing a set of software packages. It also groups packages to help eliminate user confusion and manages dependencies \ie which versions of what components should be loaded to make sure that the complete system is coherent. 
+We say that Metacello is a \emph{package management system} for Monticello. 
+But what, exactly, does that mean?
+A package management system is a collection of tools that automate the process of installing, upgrading, configuring, and removing \emph{sets} of software packages. Metacello groups packages to simplify things for the user, and manages dependencies, \ie which versions of what components should be loaded to make sure that the whole set of packages is coherent. 
 
-A package management system provides a consistent method of installing packages. A package management system is sometimes incorrectly referred to as an installer. This can lead to confusion between them. Just for those who are familiar, package management systems for other technologies include Envy (in VisualAge Smalltalk), Maven in Java, apt-get/aptitude in Debian or Ubuntu, etc.
+A package management system provides a consistent way to install packages. 
+Indeed, package management systems are sometimes incorrectly referred to as installers. This can lead to confusion, because as package managment system does a lot more than install software.  You may have used package management systems in other contexts: examples include Envy (in VisualAge Smalltalk), Maven (in Java), and apt-get/aptitude (in Debian and Ubuntu).
 
-One of the key points of good package management is that \emph{any package should be correctly loaded without needing to manually install anything other than what is specified in the package configuration}. Each dependency, and the dependencies of the dependencies must also be loaded in the correct order. 
+One of the key features of good package management is that it should \emph{correctly load any package}: you should never need to manually install anything.  To make this possible, each dependency, and the dependencies of the dependencies, and so on, must be specified in the description of the package, with enough information to allow the package management tools to load them in the correct order. 
 
-If it was not clear enough, the idea is that when using Metacello, you can take a PharoCore image, for example, and load {\em any} package of {\em any} project without any problems with dependencies. Of course, Metacello does not do magic so it is up to the developer  to define the dependencies properly.
+As an example of the power of Metacello, you can take a PharoCore image, and load {\em any} package of {\em any} project without any problems with dependencies. Of course, Metacello does not do magic: this works only so long as the package developers have defined the dependencies properly.
 
 % The software is often downloaded from a number of software repositories. It is also common to have a central repository where all the software is submitted but this is totally orthogonal issue.
 
 \section{One tool for each job}
 
-To manage software, Pharo proposes several tools that are very closely related. In Pharo we have three tools: Monticello (which manages versions of source code), Gofer (which is a scripting API for Monticello) and Metacello (which is a package management system).
+Pharo provides three tools for managing software packages; they are closely related, but each has its own purpose. The tools are Monticello, which manages versions of source code, Gofer, which is a scripting interface for Monticello, and Metacello, which is a package management system.
 % it might make sense to talk about Monticello as a Source Code Management system or SCM here? %
 
 
@@ -62,14 +68,19 @@ To manage software, Pharo proposes several tools that are very closely related. 
 
 \begin{description}
 
-\item{\textbf{Monticello: Source code versioning.}}
-Source code versioning is the process of assigning either unique version names or unique version numbers to unique software states. At a fine-grained level, revision control incrementally keeps track of different versions of ``pieces of software". In object-oriented programming, these ``pieces of software" are methods, classes or packages. A versioning system tool lets you commit a new version, update to a new one, merge, diff, revert, etc. Monticello is the source code versioning system used in Pharo and it manages Monticello packages. With Monticello we can do most of the above operations on packages but there is no way to easily specify dependencies, identify stable versions, or group packages into meaningful units.  Monticello just manages package versions. Metacello manages package dependencies and the notion of projects.
+\item{\textbf{Monticello: source code versioning.}}
+Source code versioning is the process of assigning unique version names numbers to particular software states.  It is also called revision control.  
+In particular, source code versioning incrementally keeps track of different versions, also known as revisions, of ``pieces of software". 
+In object-oriented programming, these ``pieces of software" are methods, classes or packages. A source code versioning system lets you commit a new version, update to a new version committed by someone else, merge changes, look at the differences between versions, and revert to an older version. 
 
-\item {\textbf{Gofer: Monticello's Scripting API.}}
-Gofer is a small tool on top of Monticello that loads, updates, merges, diffs, reverts, commits, recompiles and unloads groups of Monticello packages. Contrary to existing tools Gofer makes sure that these operations are performed as cleanly as possible. Gofer is a scripting API to Monticello (See \charef{gofer}).
+Pharo uses the Monticello source code versioning system; it manages Monticello packages.  Monticello lets us do all of the above operations on individual packages, but Monticello does not provide a good way to easily specify dependencies \emph{between} packages, identify stable versions of a package, or group packages into meaningful units.  
 
+\item {\textbf{Gofer: Monticello's scripting interface.}}
+Gofer is a small tool that sits on top of Monticello: it is used to load, update, merge, difference, revert, commit, recompile and unload groups of Monticello packages. Gofer also makes sure that these operations are performed as cleanly as possible. 
+For more information, see \charef{gofer}.
 
-\item{\textbf{Metacello: Package Management System.}} Metacello manages projects (sets of related Monticello packages) and their dependencies as well as project metadata. Metacello manages also dependencies between packages.
+\item{\textbf{Metacello: package management.}} Metacello introduces the notion of a project as a set of related Monticello packages, and is used to manage projects,   their dependencies, and their metadata. 
+Metacello also manages dependencies between packages.
 \end{description}
 
 
@@ -77,27 +88,34 @@ Gofer is a small tool on top of Monticello that loads, updates, merges, diffs, r
 
 \section{Metacello features}
 
-Metacello is consistent with the important features of Monticello. It is based on the following points:
+Metacello is consistent with the important features of Monticello. It is based on the following ideas.
 
 \begin{description}
-\item[\textit{Declarative modeling.}] A Metacello project has named versions consisting of lists of explicit Monticello package versions. Dependencies are explicitly expressed in terms of named versions of required projects. A \emph{required project} is a reference to another Metacello project.
+\item[\textit{Declarative modeling.}] A Metacello project has named versions consisting of lists of Monticello package \emph{versions}. Dependencies are explicitly expressed in terms of named versions of required projects. A \emph{required project} is a reference to another Metacello project.
 
-\item[\textit{ Distributed repositories.}] Metacello project metadata is represented as instance methods in a class therefore the Metacello project metadata is stored in a Monticello package. As a result, it is easy for distributed groups of developers to collaborate on ad-hoc projects.
+\item[\textit{ Distributed repositories.}] Metacello project metadata is represented as instance methods in a class.  This means that Metacello project metadata can itself be stored as a Monticello package.  This means that Metacello project metadata is subject to version control.  As a result, it is easy for distributed groups of developers to collaborate on ad-hoc projects.
 
 \item[\textit{ Optimistic development.}] With Monticello-based packages, concurrent updates to the project metadata can be easily managed. Parallel versions of the metadata can be merged just like parallel versions of the code base itself. 
 
+\ab{These last two ideas seem like the same idea to me.  But there is an important idea --- that project descriptions should themselves be under version control --- that shows through only implicitly.  Maybe this section should be refactored?}
+
 \end{description}
 
-Additionally, the following points are important considerations for Metacello:
+Metacello has the following features:
 
 \begin{itemize}
-\item Cross-platform operations. Metacello must run on all platforms that support Monticello: currently Pharo, Squeak and GLASS.
-\item Conditional Monticello package loading. For projects that are expected to run on multiple platforms, it is essential that platform-specific Monticello packages can be conditionally loaded. 
+\item Cross-platform operation: Metacello  runs on all platforms that support Monticello, which currently means Pharo, Squeak and GLASS.
+
+\item Conditional package loading: to enable projects to run on multiple platforms, Metacello supports conditional loading of platform-specific Monticello packages. 
 \end{itemize}
 
-\section{A Simple Case}
+\section{A Simple Case Study}
 
-Let's start using Metacello for managing a software project called CoolBrowser. The first step is to create a configuration for the project by simply copying the class MetacelloConfigTemplate and naming it ConfigurationOfCoolBrowser (by convention the class name for a Metacello configuration is composed by prefixing the name of the project with \ct{'ConfigurationOf'}). To do this, right click in the class MetacelloConfigTemplate and select the option ``copy". 
+Let's start using Metacello to manage a software project called \emph{CoolBrowser}. The first step is to create a Metacello configuration for the project by simply copying the class \ct{MetacelloConfigTemplate} and naming it \ct{ConfigurationOfCoolBrowser}.  
+
+\ab{This is the first time that you have used the term `Configuraton'.  It needs to be explained first}.
+By convention, the name of a Metacello configuration is constructed by prefixing the name of the project with \ct{'ConfigurationOf'}. 
+To do this, find class \ct{MetacelloConfigTemplate} in the system browser, right click on the class name, and select the option \menu{copy}. 
 
 This is the class definition:
 \begin{code}{}
@@ -108,14 +126,13 @@ Object subclass: #ConfigurationOfCoolBrowser
        category: 'Metacello-MC-Model'
 \end{code}
 
-You will notice that the \ct{ConfigurationOfCoolBrowser} has some instance and class side methods. We will explain later how they are used. Notice that this class inherits from \ct{Object}.  Metacello configurations should be written such that they can be loaded without any prerequisites, including Metacello itself. So (at least for the time being) Metacello configurations cannot rely on a common superclass.
+You will notice that \ct{ConfigurationOfCoolBrowser} has some instance- and class-side methods; we will explain later how they are used. Notice also that this class inherits from \ct{Object}.  This is deliberate: it's important that Metacello configurations can be loaded without any prerequisites, including Metacello itself, so Metacello configurations cannot rely on a common superclass.
 
-Now, imagine that the project ``Cool Browser" has different versions, for example, 1.0, 1.0.1, 1.4, 1.67, etc. 
-With Metacello you create an instance side method for each version of the project. Method names for version methods are unimportant as long as the method is annotated with the <version:> pragma as shown below.
+Now imagine that the project \ct{CoolBrowser} has several versions, for example, 1.0, 1.0.1, 1.4, and 1.67. 
+With Metacello you create an instance-side method that describes the contents of each version of the project. Method names for version methods are unimportant as long as the method is annotated with the <version:> pragma, as shown below.  However, there is a  convention that  version methods are named \ct{versionXXX:}, where \ct{XXX} is the version number with illegal characters (like '.') removed.
 
-By convention the version method is named 'versionXXX:', where XXX is the version number with illegal characters (like '.') removed.
-
-Suppose for the moment that our project ``Cool Browser" has two packages: \ct{CoolBrowser-Core} and \ct{CoolBrowser-Tests} we name the method \ct{ConfigurationOfCoolBrowser>>version01: spec} as shown below:
+Suppose for the moment that the project \ct{CoolBrowser} contains two packages: \ct{CoolBrowser-Core} and \ct{CoolBrowser-Tests}. 
+A version method might look like this:
 
 \begin{code}{}
 ConfigurationOfCoolBrowser>>version01: spec 
@@ -125,33 +142,41 @@ ConfigurationOfCoolBrowser>>version01: spec
               spec repository: 'http://www.example.com/CoolBrowser'.
               spec 
                      package: 'CoolBrowser-Core' with: 'CoolBrowser-Core-MichaelJones.10';
-                     package: 'CoolBrowser-Tests' with: 'CoolBrowser-Tests-JohnLewis.3' ].
+                     package: 'CoolBrowser-Tests' with: 'CoolBrowser-Tests-JohnLewis.3' ]
 \end{code}
 
-
-In this example, there are a lot of things we need to explain:
+\noindent
+There are a lot of things that we need to explain in this code!
 
 \begin{itemize}
-\item Immediately after the method selector you see the pragma definition:  {\em <version: '0.1'>}. The pragma indicates that the version created in this method should be associated with version '0.1' of the CoolBrowser project. That's why we said that the name of the method is not that important. Metacello uses the pragma to identify the version being constructed.
+\item Immediately after the method selector you see the pragma definition:  \ct{ <version: '0.1'>}. The pragma indicates that the version created in this method should be associated with version \ct{0.1} of the CoolBrowser project. That's why we said that the name of the method is not that important. Metacello uses the pragma, not the method name, to identify the version being defined.
 
-\item Looking a little closer you see that the argument to the method, \ct{spec}, is the only variable in
-the method and it is used as the receiver to four different messages:    \ct{for:do:},    \ct{package:with:},  \ct{file:}  and  \ct{repository:}.
+\item Looking a little closer, you see that the argument to the method, \ct{spec}, is the only variable in
+the method and it is used as the receiver of four different messages:    \ct{for:do:},    \ct{package:with:},  \ct{file:}  and  \ct{repository:}.
 
 \item Each time a block expression is executed a new object is pushed on a stack and the messages within the block are sent to the object on the top of the stack.
+\ab{I've no idea what this means.}
 
-\item In addition to \ct{#common}, there are pre-defined attributes for each of the platforms upon which Metacello runs (\ct{#pharo}, \ct{#squeak}, \ct{#gemstone} and \ct{#squeakCommon}). Later in the chapter we will detail this feature. 
+\item The symbol \ct{#common} indicates that this project version is common to all platforms.  In addition to \ct{#common}, there are pre-defined attributes for each of the platforms on which Metacello runs (\ct{#pharo}, \ct{#squeak}, \ct{#gemstone} and \ct{#squeakCommon}). Later in the chapter we will detail this feature. 
 \end{itemize}
 
+The  method \ct{version01: spec} builds a description of version \ct{0.1} of the package in the object \ct{spec}.
+The common code for version \ct{0.1} (specified using the message \ct{for: #common do:}) consists of particular versions of the packages named \ct{'CoolBrowser-Core'} and \ct{'CoolBrowser-Tests'}.
+These are specified with the message \ct{package:} \emph{packageName} \ct{with:} \emph{versionName}.
+These versions are available in the Monticello repository \ct{'http://www.example.com/CoolBrowser'}, which is specified using the message \ct{repository:}.
 
-The  method \ct{version01:} should be read as: Create version '0.1'. The common code for version '0.1' (specified using the message \ct{for:do:}) consists of the packages named 'CoolBrowser-Core' (specified using the message \ct{package:with:}) and 'CoolBrowser-Tests'  whose files are named 'CoolBrowser-Core-MichaelJones.10' and 'CoolBrowser-Tests-JohnLewis.3' and whose repository is \ct{'http://www.example.com/CoolBrowser'} (specified using the message \ct{repository:}).
-
-Sometimes, a Monticello repository can be restricted and requires username and password. In such case the following message can be used:
+Sometimes, a Monticello repository requires a username and password. In such case the following message can be used:
 
 \begin{code}{}
          spec repository: 'http://www.example.com/private' username: 'foo' password: 'bar' 
 \end{code}
 
-We can access the specification created for version 0.1 by executing the following expression: \ct{(ConfigurationOfCoolBrowser project version: '0.1') spec}. 
+How can we access the specification of version \ct{0.1}?
+We do so by evaluating the following expression: 
+
+\begin{code}{}
+         (ConfigurationOfCoolBrowser project version: '0.1') spec
+\end{code}
 
 \begin{figure}
 \begin{center}
@@ -161,35 +186,38 @@ We can access the specification created for version 0.1 by executing the followi
 \end{figure}
 
 \paragraph{Creating a new version.}
-Let us assume that the version 0.2 consists of the files 'CoolBrowser-Core-MichaelJones.15' and 'CoolBrowser-Tests-JohnLewis.8' and a new package 'CoolBrowser-Addons' with version 'CoolBrowser-Addons-JohnLewis.3'. Then, all you have to do is to create the following method named \ct{version:}.
+Let us assume that version \ct{0.2} of our project consists of the versions \ct{'CoolBrowser-Core-MichaelJones.15'} and \ct{'CoolBrowser-Tests-JohnLewis.8'} and a new package \ct{'CoolBrowser-Addons'} with version \ct{'CoolBrowser-Addons-JohnLewis.3'}. 
+We can specify this by creating the following method named \ct{version02:}.
 
 \begin{code}{}
 ConfigurationOfCoolBrowser>>version02: spec 
-       <version: '0.2'>
+      <version: '0.2'>
        
-       spec for: #common do: [
-              spec repository: 'http://www.example.com/CoolBrowser'.
-              spec 
-                     package: 'CoolBrowser-Core' with: 'CoolBrowser-Core-MichaelJones.15';
-                     package: 'CoolBrowser-Tests' with: 'CoolBrowser-Tests-JohnLewis.8' ;
-                     package: 'CoolBrowser-Addons' with: 'CoolBrowser-Addons-JohnLewis.3']
+      spec for: #common do: [
+            spec repository: 'http://www.example.com/CoolBrowser'.
+            spec 
+                  package: 'CoolBrowser-Core' with: 'CoolBrowser-Core-MichaelJones.15';
+                  package: 'CoolBrowser-Tests' with: 'CoolBrowser-Tests-JohnLewis.8';
+                  package: 'CoolBrowser-Addons' with: 'CoolBrowser-Addons-JohnLewis.3']
 \end{code}
  
 \begin{figure}
 \begin{center}
 \includegraphics[width=0.6\linewidth]{version02}
-\caption{An second simple version.}
+\caption{Two versions of a project.}
 \end{center}
 \end{figure} 
  
 
 \section{Naming your configuration}
 
-In the previous section, we learned that we have to create a class for our configuration. It is not necessary to name this class with a particular name. Nevertheless there is a convention that we recommend you follow. The convention is to name the class \ct{ConfigurationOfXXX} where XXX is your project. In our example, it is \ct{ConfigurationOfCoolBrowser}.
+In the previous section, we learned that we have to create a class for our configuration. 
+\ab{I don't know what a `Configuration' is.  In the introduction you told me about `projects'. What are `configurations'?}
+It is not necessary to name this class with a particular name. Nevertheless there is a convention that we recommend you follow:  name the class \ct{ConfigurationOfXXX} where XXX is your project. In our example, it is \ct{ConfigurationOfCoolBrowser}.
 
-There is a convention also to create a particular package with the same name as the configuration class and put the class there. In our case you will have the package \ct{ConfigurationOfCoolBrowser} with only one class, \ct{ConfigurationOfCoolBrowser}. 
+There is a convention also to create a Monticello package with the same name as the configuration class and put the class there. So in this example you will have a package \ct{ConfigurationOfCoolBrowser} containing exactly one class, \ct{ConfigurationOfCoolBrowser}. 
 
-The package name and the class name match and by starting with ConfigurationOfXXX it is easier to scan through a repository listing the available projects. It is also very convenient to have the configurations grouped together rather than jumping around in the browser. That is why the repository \ct{http://www.squeaksource.com/Pharo10MetacelloRepository}, \ct{http://www.squeaksource.com/Pharo11MetacelloRepository} were created. They contain the configurations of several tools and applications and serve as a central repository. 
+By making the package name and the class name match, and by starting them with the string \ct{ConfigurationOf},  we make it easy to scan through a repository listing the available projects. It is also very convenient to have the configurations stored in their own Monticello repository. That is why the repositories \ct{http://www.squeaksource.com/Pharo10MetacelloRepository} and \ct{http://www.squeaksource.com/Pharo11MetacelloRepository} were created: they contain the configurations of various tools and applications, making them easy to find. 
 
 %Having all configurations in the same place has several advantages:
 %\begin{itemize}
@@ -199,12 +227,12 @@ The package name and the class name match and by starting with ConfigurationOfXX
 %\item Given that the name is slightly counter intuitive, it also has very few chances to %collide with other names.
 %\end{itemize}
 
-As a general practice, we suggest that you save the Configuration package in your working project and when you decide it is ready you can copy it into the MetacelloRepository. A process for publishing configurations in specific distribution repositories is under definition at the time of writing.
+As a general practice, we suggest that initially you save the Configuration package in your working project. When you decide it is ready for release, you can copy it into the MetacelloRepository. A process for publishing configurations in specific distribution repositories is currently being defined.
 
 
 
 \subsection{Loading a Metacello configuration}
-Of course, the point of specifying packages in Metacello is to be able to load a coherent set of package versions. Here are a couple of examples for loading versions of the CoolBrowser project. 
+Of course, the point of specifying projects in Metacello is to be able to load a coherent set of package versions. Here are a couple of examples for loading versions of the CoolBrowser project. 
 
 If you print the result of each expression, you will see the list of packages in load order. Metacello records not only which packages are loaded but also the order. 
 
@@ -213,39 +241,48 @@ If you print the result of each expression, you will see the list of packages in
   (ConfigurationOfCoolBrowser project version: '0.2') load.
 \end{code}
   
-Note that in each case, all of the packages associated with the version are loaded \--- this  
+Note that in each case, all of the packages associated with the version are loaded\,---\,this  
 is the default behavior. If you want to load a subset of the packages in a project, you should list 
-the packages that you are interested in as an argument to the \ct{load:} method as shown below:
+the names of the packages that you are interested in as an argument to the \ct{load:} method:
 
 \begin{code}{}
-  (ConfigurationOfCoolBrowser project version: '0.2') load: { 'CoolBrowser-Core' 'CoolBrowser-Addons' }.
+  (ConfigurationOfCoolBrowser project version: '0.2') load: { 
+  		'CoolBrowser-Core' 
+		'CoolBrowser-Addons' }.
 \end{code}
 
 
-Note that if you want to load simulate the loading of a configuration but not load it, you should use \ct{record:} instead of \ct{load:}
+Note that if you want to load simulate the loading of a configuration, but not to actually load it, you should use \ct{record:} instead of \ct{load:}
 
 \begin{code}{}
-  (ConfigurationOfCoolBrowser project version: '0.2') record: { 'CoolBrowser-Core' 'CoolBrowser-Addons' }.
+  (ConfigurationOfCoolBrowser project version: '0.2') record: {
+  		 'CoolBrowser-Core' 
+		 'CoolBrowser-Addons' }.
 \end{code}
 
 But instead of doing a "do it", do a "print it", send it the message loadDirective.
+\ab{Eh?  I'm lost.  What is the point here?}
 
 \begin{code}{}
-  ((ConfigurationOfCoolBrowser project version: '0.2') record: { 'CoolBrowser-Core' 'CoolBrowser-Addons' }) loadDirective.
+  ((ConfigurationOfCoolBrowser project version: '0.2') record: { 
+  		'CoolBrowser-Core' 
+		'CoolBrowser-Addons' }) loadDirective.
 \end{code} loadDirective.
 
 
-\section{Managing package internal dependencies}
+\section{Managing dependencies between packages}
 
-A project is generally composed of several packages which often have dependencies on other packages.  It is probable that a certain package depends on a specific version to behave correctly. Handling dependencies correctly is really important and this is what Metacello does for us. 
+A project is generally composed of several packages, which often have dependencies on other packages.  It is also likely that a certain package depends on a specific version of another package. Handling dependencies correctly is really important and  is one of the major benefits of Metacello. 
 
 There are two types of dependencies:
 \begin{itemize}
-\item Internal packages dependencies: Inside a certain project there are several packages and some of them depend on other packages in the same project. 
-\item Dependencies between projects. It is common also that a project depends on another project or just on some packages of it. For example Pier (a meta-described cms) depends on Magritte (a meta-data modeling framework) and Seaside (a framework for web application development).
+\item Internal dependencies: there are several packages inside a project; some of them depend on other packages in the same project. 
+\item Dependencies between projects: it is common for a project to depend on another project, or on some packages from another project. 
+For example, Pier (a meta-described content management system depends on Magritte (a metadata modeling framework) and Seaside (a framework for web application development).
 \end{itemize}
 
-For now we will focus on the first case. In our example, imagine that the package \ct{CoolBrowser-Tests} and \ct{CoolBrowser-Addons} depends on \ct{CoolBrowser-Core}. The new configuration \ct{'0.3'} is defined as follows (See Figure~\ref{fig:version03}):
+For now we will focus on the first case: internal dependencies.  In our example, imagine that the packages \ct{CoolBrowser-Tests} and \ct{CoolBrowser-Addons} both depend on \ct{CoolBrowser-Core}. 
+The specifications for versions \ct{0.1} and \ct{0.2} did not capture this dependency.  Here is a new configuration that does:
 
 \begin{code}{}
 ConfigurationOfCoolBrowser>>version03: spec 
@@ -265,25 +302,31 @@ ConfigurationOfCoolBrowser>>version03: spec
                                    !\textbf{requires:}! 'CoolBrowser-Core' ]].
 \end{code}
 
+\noindent
+This version is depicted in Figure~\ref{fig:version03}.
 In \ct{version03:} we've added dependency information using the \ct{requires:} directive.
-Both \ct{CoolBrowser-Tests} and  \ct{CoolBrowser-Addons} require \ct{CoolBrowser-Core} to be loaded before they are loaded. Pay attention that since we did not specify the exact version number for the \ct{Cool-Browser} package, we can have some problems (but do not worry, we will address this problem soon!).
+\ab{We have also introduced the file message, without saying anything about what it means.}
+Both \ct{CoolBrowser-Tests} and  \ct{CoolBrowser-Addons} require \ct{CoolBrowser-Core}, which must be loaded before they are loaded. 
+Notice that we did not specify the exact version of \ct{Cool-Browser-Core} on which they depend.  This can cause problems\,---\,but don't worry, we'll address this deficiency soon!.
 
 \begin{figure}
 \begin{center}
 \includegraphics[width=0.6\linewidth]{version03}
-\caption{A version expressing requirements between packages.\label{fig:version03}}
+\caption{Version \ct{0.3} expresses internal dependencies between packages in the same project.\label{fig:version03}}
 \end{center}
 \end{figure} 
 
 
-With this version we are mixing structural information (required packages and repository) with the file version info. It is expected that over time the file version info will change from
-version to version while the structural information will remain relatively the same. To resolve this, Metacello introduces the concept of {\em Baselines}.
+With this version we are mixing structural information (required packages and repository) with version information. 
+We can expect that, over time, the version information will change while the structural information will remain more or less the same. 
+To capture this, Metacello introduces the concept of \emph{Baselines}.
 
 
-\section{Baselining}
-A baseline is a concept related to Software Configuration Management (SCM). From this point of view, a baseline is a well-defined, well-documented reference that serves as the foundation for other activities. Generally, a baseline may be a distributed work product, or conflicting work products that can be used as a logical basis for comparison. 
+\section{Baselines}
+A baseline is a concept from Software Configuration Management. 
+A baseline is a well-defined, well-documented reference that serves as the foundation for other activities. Generally, a baseline may be a distributed work product \ab{eh?}, or conflicting work products \ab{eh?} that can be used as a logical basis for comparison \ab{of what?}
 
-In Metacello, a baseline represents the skeleton of a project in terms of the structural dependencies between packages or projects. A baseline defines the structure of a project using just package names. When the structure changes, the baseline should be updated. In the absence of structural changes, the changes are limited to package versions.
+In Metacello, a baseline represents the skeleton of a project in terms of the structural dependencies between packages or projects. A baseline defines the structure of a project using just package names. When the structure changes, the baseline should be updated. In the absence of structural changes, the changes are limited to picking specific versions of the packages in the baseline.
 
 Now, let's continue with our example. First we modify it to use baselines: we create a method per baseline. \sd{is the blessing: baseline important if so we should say it}
 
