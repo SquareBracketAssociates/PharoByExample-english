@@ -56,6 +56,7 @@ part, we will describe Glamour in more details.
 
 To install Glamour on your \pharo{} image execute the following code:
 
+\ja{i cannot load this code in PharoCore 1.3. We need a stable version}
 \begin{code}{}
 Gofer new
   squeaksource: 'Glamour'; 
@@ -251,7 +252,7 @@ PBE2CodeNavigator>>buildBrowser
 Executing \ct{PBE2CodeNavigator open} opens a new browser with the text
 ``a RPackageOrganizer'' and nothing else. We now extend our browser by
 adding a pane to display a list of packages.
-
+\ja{does it work with RPackage or Categories or both ?}
 \begin{code}{}
 PBE2CodeNavigator>>buildBrowser
   browser := GLMTabulator new.
@@ -266,7 +267,7 @@ PBE2CodeNavigator>>packagesIn: constructor
     format: #asString
 \end{code}
 
-In Glamour browsers are composed in terms of \emph{panes} and the
+Glamour browsers are composed in terms of \emph{panes} and the
 \emph{flow of data} between them. In our browser we currently have
 only one pane displaying packages. The flow of data is specified by
 means of \emph{transmissions}. These are triggered when certain
@@ -274,6 +275,7 @@ changes occur, such as the change of the selection in a list. To
 exemplify this, we extend our browser with a list of classes for the
 currently selected package (see \figref{showclasses}).
 
+\ja{I want to verify this source code: why do you define classesIn: where I think we could do "andShow: [:a | a definedClasses].". I have the same question for package. I understand that help us to reuse the pane... but we have to manipulate data, not presentation. Ok I understand, but in this case, you should rename classesIn: by something like presentationOfClassesIn: or listOfClassesIn:}
 \begin{code}{}
 PBE2CodeNavigator>>buildBrowser
   browser := GLMTabulator new.
@@ -331,6 +333,8 @@ condition to limit the applicability of the connection. By default,
 the only condition is that an item is in fact selected, \ie{} that the
 display variable argument is not \ct{nil}.
 
+\ja{here}
+
 \subsection{Another Presentation}
 
 Up to now, we have been displaying the packages as a list. The
@@ -367,7 +371,7 @@ selected by our tree presentation, we have to pass only the roots of
 the package hierarchy to the \ct{display:} argument.
 
 At this point, we can also add pane~3 that shows the method categories
-as shown in figure~\ref{fig:classnavigator_wireframe}. The listing
+as shown in figure~\ref{fig:classnavigator_wireframe} \ja{Is it not fig:treeandcategories  (fig 1.4)?}. The listing
 below introduces no new elements that we have not already discussed:
 
 \begin{code}{}
@@ -564,7 +568,7 @@ not yet created any connections between the panes. To get to the
 source, we need both the name of the selected method as well as the
 class in which it is defined. Since this information is defined only
 within the navigator browser, we must first export it to the outside
-world by using the \ct{sendToOutside:from:} message. For this we
+world by using the \ct{sendToOutside:from:} \ja{sendToOutside:from: or sendToOutside: ?} message. For this we
 append the following lines to \ct{codeNavigator}:
 
 \begin{code}{}
@@ -687,8 +691,10 @@ specific object. In our code browser for example, we may wish to show
 the classes not only as a list but as a visualization of their
 \emph{system complexity} as well. Glamour includes support to display
 and interact with visualizations created using the \emph{Mondrian
-  visualization engine}. To add a second presentation, we simply
+  visualization engine} \ja{presented in chapter...}. To add a second presentation, we simply
 define it in the \ct{using:} block as well:
+
+\ja{I don't really like constructor as name. Have you a name more explicit ?}
 
 \begin{code}{}
 PBE2CodeNavigator>>classesIn: constructor
@@ -766,6 +772,7 @@ To discover other kinds of browsers, explore the hierarchy of the
 
 %-------------------------------------------------------------------------------
 \subsection{Tutorial Conclusion}
+\ja{maybe replace tutorial by chapter ?}
 
 This concludes our tutorial of Glamour. Please note that this tutorial
 is not meant to give an exhaustive overview of Glamour, but is merely
