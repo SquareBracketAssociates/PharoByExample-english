@@ -37,9 +37,9 @@
 \chapterauthor{\authordale{} \\ \authormariano{}}
 
 \noindent
-Have you ever had this problem when trying to load a project: you get an error because a package that you were not even aware of is missing, or worse, it is present, but you have the wrong version? You are probably nodding. This problem probably occurred because the project loaded fine for the  developers, but only because they were working in a context that was different from yours. 
+Have you ever had this problem when trying to load a project: you get an error because a package that you were not even aware of is missing?  Or worse\,---\,it is present, but you have the wrong version? This situation can easily occur, even though the project loads fine for its developers, when the developers are working in a context that is different from yours. 
 
-The solution is for the project developers to use a \emph{package management system} to explicitly manage the dependencies between packages.  
+The solution is for the project developers to use a \emph{package management system} to explicitly manage the dependencies between the packages that make up a project.  
 This chapter shows you how to use Metacello, Pharo's package management system, and the benefits of using it. 
 
 \section{Introduction}
@@ -49,9 +49,9 @@ But what, exactly, does that mean?
 A package management system is a collection of tools that automate the process of installing, upgrading, configuring, and removing \emph{sets} of software packages. Metacello groups packages to simplify things for the user, and manages dependencies, \ie which versions of what components should be loaded to make sure that the whole set of packages is coherent. 
 
 A package management system provides a consistent way to install packages. 
-Indeed, package management systems are sometimes incorrectly referred to as installers. This can lead to confusion, because as package managment system does a lot more than install software.  You may have used package management systems in other contexts: examples include Envy (in VisualAge Smalltalk), Maven (in Java), and apt-get/aptitude (in Debian and Ubuntu).
+Indeed, package management systems are sometimes incorrectly referred to as installers. This can lead to confusion, because a package management system does a lot more than install software.  You may have used package management systems in other contexts: examples include Envy (in VisualAge Smalltalk), Maven (in Java), and apt-get/aptitude (in Debian and Ubuntu).
 
-One of the key features of good package management is that it should \emph{correctly load any package}: you should never need to manually install anything.  To make this possible, each dependency, and the dependencies of the dependencies, and so on, must be specified in the description of the package, with enough information to allow the package management tools to load them in the correct order. 
+One of the key features of a package management system is that it should \emph{correctly load any package}: you should never need to manually install anything.  To make this possible, each dependency, and the dependencies of the dependencies, and so on, must be specified in the description of the package, with enough information to allow the package management tools to load them in the correct order. 
 
 As an example of the power of Metacello, you can take a PharoCore image, and load {\em any} package of {\em any} project without any problems with dependencies. Of course, Metacello does not do magic: this works only so long as the package developers have defined the dependencies properly.
 
@@ -70,10 +70,10 @@ Pharo provides three tools for managing software packages; they are closely rela
 
 \item{\textbf{Monticello: source code versioning.}}
 Source code versioning is the process of assigning unique version names numbers to particular software states.  It is also called revision control.  
-In particular, source code versioning incrementally keeps track of different versions, also known as revisions, of ``pieces of software". 
-In object-oriented programming, these ``pieces of software" are methods, classes or packages. A source code versioning system lets you commit a new version, update to a new version committed by someone else, merge changes, look at the differences between versions, and revert to an older version. 
+In particular, source code versioning incrementally keeps track of different versions, also known as revisions, of ``pieces of software''. 
+In object-oriented programming, these ``pieces of software'' are methods, classes or packages. A source code versioning system lets you commit a new version, update to a new version committed by someone else, merge changes, look at the differences between versions, and revert to an older version. 
 
-Pharo uses the Monticello source code versioning system; it manages Monticello packages.  Monticello lets us do all of the above operations on individual packages, but Monticello does not provide a good way to easily specify dependencies \emph{between} packages, identify stable versions of a package, or group packages into meaningful units.  
+Pharo uses the Monticello source code versioning system, which manages Monticello packages.  Monticello lets us do all of the above operations on individual packages, but Monticello does not provide a good way to easily specify dependencies \emph{between} packages, identify stable versions of a package, or group packages into meaningful units.  
 
 \item {\textbf{Gofer: Monticello's scripting interface.}}
 Gofer is a small tool that sits on top of Monticello: it is used to load, update, merge, difference, revert, commit, recompile and unload groups of Monticello packages. Gofer also makes sure that these operations are performed as cleanly as possible. 
@@ -91,13 +91,16 @@ Metacello also manages dependencies between packages.
 Metacello is consistent with the important features of Monticello. It is based on the following ideas.
 
 \begin{description}
-\item[\textit{Declarative modeling.}] A Metacello project has named versions consisting of lists of Monticello package \emph{versions}. Dependencies are explicitly expressed in terms of named versions of required projects. A \emph{required project} is a reference to another Metacello project.
+\item[\textit{Declarative project descriptions.}] A Metacello project has named versions consisting of lists of Monticello package \emph{versions}. Dependencies are explicitly expressed in terms of named versions of required projects. A \emph{required project} is a reference to another Metacello project.  Collectively, all of these descriptions are called the project metadata.
 
-\item[\textit{ Distributed repositories.}] Metacello project metadata is represented as instance methods in a class.  This means that Metacello project metadata can itself be stored as a Monticello package.  This means that Metacello project metadata is subject to version control.  As a result, it is easy for distributed groups of developers to collaborate on ad-hoc projects.
+\item[\textit{Project metadata are versioned}] Metacello project metadata are represented as instance methods in a class.  This means that Metacello project metadata can themselves be stored as a Monticello package, and are thus subject to version control.  
+% As a result, it is easy for distributed groups of developers to collaborate on ad-hoc projects.
+% apb --- this doesn't seem like a result to me!  Whether the distributed group can collaborate easily seems to depend on a lot more, like, do they share the same values and goals, speak the same language ...
+As a result,
+concurrent updates to the project metadata can be managed easily: parallel versions of the metadata can be merged just like parallel versions of the code base itself. 
 
-\item[\textit{ Optimistic development.}] With Monticello-based packages, concurrent updates to the project metadata can be easily managed. Parallel versions of the metadata can be merged just like parallel versions of the code base itself. 
-
-\ab{These last two ideas seem like the same idea to me.  But there is an important idea --- that project descriptions should themselves be under version control --- that shows through only implicitly.  Maybe this section should be refactored?}
+%\ab{These last two ideas seem like the same idea to me.  But there is an important idea --- that project descriptions should themselves be under version control --- that shows through only implicitly.  Maybe this section should be refactored?}
+% So: I refactored it.  Does it make sense to you?  Is there a third idea that's missing?
 
 \end{description}
 
@@ -107,13 +110,18 @@ Metacello has the following features:
 \item Cross-platform operation: Metacello  runs on all platforms that support Monticello, which currently means Pharo, Squeak and GLASS.
 
 \item Conditional package loading: to enable projects to run on multiple platforms, Metacello supports conditional loading of platform-specific Monticello packages. 
+
+\item Configurations: Metacello actually manages not projects but \emph{configurations of projects}.  This is because large projects frequently have multiple variants: there might be a configuration for Pharo and another configuration for Squeak, which might have different prerequisites.  Moreover, there might be stable, released configurations as well as experimental configurations that have cool new features but also more bugs.
+
+\ab{Please correct the above; I found that something needed to be said about configurations before we start using the term.}
+
 \end{itemize}
+
 
 \section{A Simple Case Study}
 
 Let's start using Metacello to manage a software project called \emph{CoolBrowser}. The first step is to create a Metacello configuration for the project by simply copying the class \ct{MetacelloConfigTemplate} and naming it \ct{ConfigurationOfCoolBrowser}.  
 
-\ab{This is the first time that you have used the term `Configuraton'.  It needs to be explained first}.
 By convention, the name of a Metacello configuration is constructed by prefixing the name of the project with \ct{'ConfigurationOf'}. 
 To do this, find class \ct{MetacelloConfigTemplate} in the system browser, right click on the class name, and select the option \menu{copy}. 
 
@@ -128,8 +136,10 @@ Object subclass: #ConfigurationOfCoolBrowser
 
 You will notice that \ct{ConfigurationOfCoolBrowser} has some instance- and class-side methods; we will explain later how they are used. Notice also that this class inherits from \ct{Object}.  This is deliberate: it's important that Metacello configurations can be loaded without any prerequisites, including Metacello itself, so Metacello configurations cannot rely on a common superclass.
 
+\ab{Should these be called configuration methods?  Are versions different from or the same as configurations?  If they are different, then we need to explain the difference; if they are the same, then we should pick one term and use it.}
+
 Now imagine that the project \ct{CoolBrowser} has several versions, for example, 1.0, 1.0.1, 1.4, and 1.67. 
-With Metacello you create an instance-side method that describes the contents of each version of the project. Method names for version methods are unimportant as long as the method is annotated with the <version:> pragma, as shown below.  However, there is a  convention that  version methods are named \ct{versionXXX:}, where \ct{XXX} is the version number with illegal characters (like '.') removed.
+With Metacello you create an instance-side method that describes the contents of each version of the project. Method names for version methods are unimportant as long as the method is annotated with the \ct{<version: >} pragma, as shown below.  However, there is a  convention that  version methods are named \ct{versionXXX:}, where \ct{XXX} is the version number with illegal characters (like '.') removed.
 
 Suppose for the moment that the project \ct{CoolBrowser} contains two packages: \ct{CoolBrowser-Core} and \ct{CoolBrowser-Tests}. 
 A version method might look like this:
