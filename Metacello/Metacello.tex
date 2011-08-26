@@ -167,7 +167,8 @@ the method and it is used as the receiver of four different messages:    \ct{for
 \item Each time a block expression is executed a new object is pushed on a stack and the messages within the block are sent to the object on the top of the stack.
 \ab{I've no idea what this means.}
 
-\item The symbol \ct{#common} indicates that this project version is common to all platforms.  In addition to \ct{#common}, there are pre-defined attributes for each of the platforms on which Metacello runs (\ct{#pharo}, \ct{#squeak}, \ct{#gemstone} and \ct{#squeakCommon}). Later in the chapter we will detail this feature. 
+\item The symbol \ct{#common} indicates that this project version is common to all platforms.  In addition to \ct{#common}, there are pre-defined attributes for each of the platforms on which Metacello runs (\ct{#pharo}, \ct{#squeak}, \ct{#gemstone} and \ct{#squeakCommon}). 
+We will describe this feature later in the chapter. 
 \end{itemize}
 
 The  method \ct{version01: spec} builds a description of version \ct{0.1} of the package in the object \ct{spec}.
@@ -181,12 +182,20 @@ Sometimes, a Monticello repository requires a username and password. In such cas
          spec repository: 'http://www.example.com/private' username: 'foo' password: 'bar' 
 \end{code}
 
-How can we access the specification of version \ct{0.1}?
+\ab{Leave the above until later?  Or to a reference section?}
+
+How can we reify the specification of version \ct{0.1}?
 We do so by evaluating the following expression: 
 
 \begin{code}{}
          (ConfigurationOfCoolBrowser project version: '0.1') spec
 \end{code}
+
+This will answer an object (of class \ct{MetacelloMCVersionSpec}) that contains exactly the information in the method that defines version '0.1'.
+
+\ab{Somewhere we need to explain the difference between a version and a version spec.  I don't know why we have both visible.}
+
+\ab{At this point, I'm also a bit confused by the nomenclature.  The Class ``ConfigurationOfCoolBrowser'' seems to define ALL of the possible CoolBrowsers, so it really represents the project, not a particular configuration of the project.  Of course, we then get teh normal class-instance dichotomy, so an Instance of ConfigurationOfCoolBrowser does indeed describe a single configuration (called a version??)}
 
 \begin{figure}
 \begin{center}
@@ -196,7 +205,7 @@ We do so by evaluating the following expression:
 \end{figure}
 
 \paragraph{Creating a new version.}
-Let us assume that version \ct{0.2} of our project consists of the versions \ct{'CoolBrowser-Core-MichaelJones.15'} and \ct{'CoolBrowser-Tests-JohnLewis.8'} and a new package \ct{'CoolBrowser-Addons'} with version \ct{'CoolBrowser-Addons-JohnLewis.3'}. 
+Let us assume that version \ct{0.2} of our project consists of the package versions \ct{'CoolBrowser-Core-MichaelJones.15'} and \ct{'CoolBrowser-Tests-JohnLewis.8'} and a new package \ct{'CoolBrowser-Addons'} with version \ct{'CoolBrowser-Addons-JohnLewis.3'}. 
 We can specify this by creating the following method named \ct{version02:}.
 
 \begin{code}{}
@@ -219,15 +228,14 @@ ConfigurationOfCoolBrowser>>version02: spec
 \end{figure} 
  
 
-\section{Naming your configuration}
+\section{Naming your Configuration}
 
 In the previous section, we learned that we have to create a class for our configuration. 
-\ab{I don't know what a `Configuration' is.  In the introduction you told me about `projects'. What are `configurations'?}
 It is not necessary to name this class with a particular name. Nevertheless there is a convention that we recommend you follow:  name the class \ct{ConfigurationOfXXX} where XXX is your project. In our example, it is \ct{ConfigurationOfCoolBrowser}.
 
-There is a convention also to create a Monticello package with the same name as the configuration class and put the class there. So in this example you will have a package \ct{ConfigurationOfCoolBrowser} containing exactly one class, \ct{ConfigurationOfCoolBrowser}. 
+There is also a convention to create a Monticello package with the same name as the configuration class, and to put the class in that package. So in this example you will create a package \ct{ConfigurationOfCoolBrowser} containing exactly one class, \ct{ConfigurationOfCoolBrowser}. 
 
-By making the package name and the class name match, and by starting them with the string \ct{ConfigurationOf},  we make it easy to scan through a repository listing the available projects. It is also very convenient to have the configurations stored in their own Monticello repository. That is why the repositories \ct{http://www.squeaksource.com/Pharo10MetacelloRepository} and \ct{http://www.squeaksource.com/Pharo11MetacelloRepository} were created: they contain the configurations of various tools and applications, making them easy to find. 
+By making the package name and the configuration class name the same, and by starting them with the string \ct{ConfigurationOf},  we make it easy to scan through a repository listing the available projects. It is also very convenient to have the configurations stored in their own Monticello repository. That is why the repositories \ct{http://www.squeaksource.com/Pharo10MetacelloRepository} and \ct{http://www.squeaksource.com/Pharo11MetacelloRepository} exist: they contain the configurations of various tools and applications, making them easy to find. 
 
 %Having all configurations in the same place has several advantages:
 %\begin{itemize}
@@ -241,15 +249,17 @@ As a general practice, we suggest that initially you save the Configuration pack
 
 
 
-\subsection{Loading a Metacello configuration}
-Of course, the point of specifying projects in Metacello is to be able to load a coherent set of package versions. Here are a couple of examples for loading versions of the CoolBrowser project. 
+\subsection{Loading a Metacello Configuration}
+Of course, the point of specifying project configurations in Metacello is to be able to load exactly that configuration into your image, and thus to be sure that you have a coherent set of package versions. Here are some examples for loading versions of the CoolBrowser project. 
 
-If you print the result of each expression, you will see the list of packages in load order. Metacello records not only which packages are loaded but also the order. 
+If you print the result of each expression, you will see a list of packages \emph{in load order}: Metacello manages not only which packages are loaded, but also the order. 
 
 \begin{code}{}
   (ConfigurationOfCoolBrowser project version: '0.1') load.
   (ConfigurationOfCoolBrowser project version: '0.2') load.
 \end{code}
+
+\ab{The text seems first to imply first that these expressions return values (``a list of packages'') and then that they have an effect (``loads the packages'').  Do they do both?}
   
 Note that in each case, all of the packages associated with the version are loaded\,---\,this  
 is the default behavior. If you want to load a subset of the packages in a project, you should list 
@@ -261,8 +271,11 @@ the names of the packages that you are interested in as an argument to the \ct{l
 		'CoolBrowser-Addons' }.
 \end{code}
 
+\ab{This seems really arcane.  Need it be mentioned here?  Can't it be deferred to a reference section?}
 
 Note that if you want to load simulate the loading of a configuration, but not to actually load it, you should use \ct{record:} instead of \ct{load:}
+
+\ab{What on earth does that mean?}
 
 \begin{code}{}
   (ConfigurationOfCoolBrowser project version: '0.2') record: {
@@ -314,8 +327,12 @@ ConfigurationOfCoolBrowser>>version03: spec
 
 \noindent
 This version is depicted in Figure~\ref{fig:version03}.
+
+\ab{This diagram doesn't help me.  I think that I need to see a graph structure representing the configuration, it's components and the dependencies between them.  The Syntax of the DSL will get me only so far: I need a MODEL on which to hang the ideas.  I've been struggling \emph{not} to build my own (incorrect) model up to this point, while waiting for the text to give me one, but I can't hold any more ideas in my head without a model.}
+
 In \ct{version03:} we've added dependency information using the \ct{requires:} directive.
-\ab{We have also introduced the file message, without saying anything about what it means.}
+
+\ab{We have also introduced the file message, without saying anything about what it means.  What have \emph{files} got to do with any of this?}
 Both \ct{CoolBrowser-Tests} and  \ct{CoolBrowser-Addons} require \ct{CoolBrowser-Core}, which must be loaded before they are loaded. 
 Notice that we did not specify the exact version of \ct{Cool-Browser-Core} on which they depend.  This can cause problems\,---\,but don't worry, we'll address this deficiency soon!.
 
@@ -338,8 +355,9 @@ A baseline is a well-defined, well-documented reference that serves as the found
 
 In Metacello, a baseline represents the skeleton of a project in terms of the structural dependencies between packages or projects. A baseline defines the structure of a project using just package names. When the structure changes, the baseline should be updated. In the absence of structural changes, the changes are limited to picking specific versions of the packages in the baseline.
 
-Now, let's continue with our example. First we modify it to use baselines: we create a method per baseline. \sd{is the blessing: baseline important if so we should say it}
+Now, let's continue with our example. First we modify it to use baselines: we create one method per baseline. \sd{is the \lct{blessing: \#{}baseline} line important? If so we should say it what it means!}
 
+\needspace{17ex}
 \begin{code}{}
 ConfigurationOfCoolBrowser>>baseline04: spec 
        <version: '0.4-baseline'>
@@ -355,16 +373,17 @@ ConfigurationOfCoolBrowser>>baseline04: spec
 
 \end{code}
 
-Baseline \ct{baseline04:} will be used across several versions as for example the version \ct{'0.4'} defined below (see Figure~\ref{fig:version04}). In method \ct{baseline04:} the structure of version \ct{'0.4-baseline'} is specified. The baseline specifies a repository, the packages, but without version information, and the required packages (dependencies). We'll cover the \ct{blessing:} method  later.
+The method \ct{baseline04:} defines the structure of version \ct{'0.4-baseline'},
+which will be used by several versions.  For example, the version \ct{'0.4'} defined below refers to it, as shown in Figure~\ref{fig:version04}.  The baseline specifies a repository, the packages, and the  dependencies between those packages, but it does not specify the specific versions of the packages.  We'll cover the \ct{blessing:} message  later.
 
 \begin{figure}
 \begin{center}
 \includegraphics[width=0.6\linewidth]{version04}
-\caption{A version now imports a baseline that expresses dependencies between packages.\label{fig:version04}}
+\caption{Version 0.4 now imports a baseline that expresses the dependencies between packages.\label{fig:version04}}
 \end{center}
 \end{figure} 
 
-To define the version, we use another pragma \ct{<version:imports:>} as follows:
+To define a version in terms of a baseline, we use the pragma \mbox{\ct{<version:imports:>}}, as follows:
 
 \begin{code}{}
 ConfigurationOfCoolBrowser>>version04: spec 
@@ -378,68 +397,66 @@ ConfigurationOfCoolBrowser>>version04: spec
 \end{code}
 
 
-In the method \ct{version04:} versions are specified. Note that the pragma \ct{version:imports:} specifies the list of versions that this version (version '0.4') is based upon. In fact, if you print the spec for '0.4-baseline' and then print the spec for '0.4' you will see that '0.4' is a composition of both versions.
+In the method \ct{version04:}, we specify the specific versions of the packages. The pragma \ct{version:imports:} specifies the list of versions that this version (version '0.4') is based upon. In fact, if you print the spec for '0.4-baseline' and then print the spec for '0.4' you will see that '0.4' is a composition of both versions.
+\ab{The above text says something about the relationship between three objects.  However, we have only two objects in hand.  I'm confused.}
 
-Using baseline the way to load this version is still the same:
+Once a specific version is specified, it is loaded in the same way, regardless of the fact that it uses a baseline.
 \begin{code}{}
 (ConfigurationOfCoolBrowser project version: '0.4') load.
 \end{code}
 
-
-\paragraph{Loading baselines.}
-Even though version \ct{'0.4-baseline'} does not have explicit package versions, you may load it. When the loader encounters a package name without version information it attempts to load the latest version of the package from the repository. Take into account that exactly the same happens if you define a package in a baseline but you don't specify a version for that package in a version method. 
+\paragraph{Loading Baselines.}
+Even though version \ct{'0.4-baseline'} does not have explicit package versions, you can nevertheless load it. When the loader encounters a package without version information it attempts to load the latest version of the package from the repository.
  
 \begin{code}{}
 (ConfigurationOfCoolBrowser project version: '0.4-baseline') load.
 \end{code}
 
-Sometimes when a number of developers are working on a project it may be useful to load a \ct{baseline} version so that you get the latest work from all of the project members.
+Sometimes when a number of developers are working on a project it may be useful to load a \ct{baseline} version so that you get the latest work from all of the project members.  So, contrary to what the name suggests, the \ct{baseline} version is really the ``bleeding edge'' version.
 
-
-\paragraph{New version.}
-Now for example, we can have a new version \ct{'0.5'} that has the same baseline (the same structural information), but different packages versions. 
+\paragraph{Specifying a new version.}
+Now suppose that we want to create a new version of our project, version \ct{'0.5'}, that has the same structural information as verison \ct{'0.4'}, but different packages versions.  We can capture this by importing the same baseline; this relationship is depicted in Figure~\ref{fig:version05}.
 
 \begin{code}{} 
 ConfigurationOfCoolBrowser>>version05: spec 
        <!\textbf{version: '0.5' imports: \#('0.4-baseline')}>!
        
-       spec for: #common do: [
-              spec 
-                     package: 'CoolBrowser-Core' with: 'CoolBrowser-Core-MichaelJones.20';
-                     package: 'CoolBrowser-Tests' with: 'CoolBrowser-Tests-JohnLewis.8';
-                     package: 'CoolBrowser-Addons' with: 'CoolBrowser-Addons-JohnLewis.6' ].
+      spec for: #common do: [
+            spec 
+                  package: 'CoolBrowser-Core' with: 'CoolBrowser-Core-MichaelJones.20';
+                  package: 'CoolBrowser-Tests' with: 'CoolBrowser-Tests-JohnLewis.8';
+                  package: 'CoolBrowser-Addons' with: 'CoolBrowser-Addons-JohnLewis.6' ].
 \end{code}
-
-Note that version \ct{'0.5'} uses the same baseline as version \ct{'0.4'}: \ct{'0.4-baseline'} (see Figure~\ref{fig:version05}).
 
 \begin{figure}
 \begin{center}
 \includegraphics[width=0.6\linewidth]{version05}
-\caption{A second version imports again the baseline.}\label{fig:version05}
+\caption{A second version (0.5) imports the same baseline.}\label{fig:version05}
 \end{center}
 \end{figure} 
 
-After all these explanations you may have noticed that creating a baseline for a big project may require time. This is because you must know all the dependencies of all the packages and other things we will see later (this was a simple baseline). Once the baseline is defined, creating new versions of the project is very easy and takes very little time. 
+You might guess that creating a baseline for a big project will often require some time. This is because you must know all the dependencies of all the packages, as well as some other things that we will see later.
+However, once the baseline is defined, creating new versions of the project is gretly simplifed and takes very little time. 
 
 \section{Groups}
-Suppose that now the CoolBrowser project is getting better and someone wrote tests for the addons. We have a new package named \ct{'CoolBrowser-AddonsTests'}. It depends on \ct{'CoolBrowser-Addons'} and \ct{'CoolBrowser-Tests'} as shown by Figure~\ref{fig:version06}.
+Suppose that now the CoolBrowser project is getting better and someone wrote tests for the addons. We have a new package named \ct{'CoolBrowser-AddonsTests'}. It depends on \ct{'CoolBrowser-Addons'} and \ct{'CoolBrowser-Tests'}, as shown in Figure~\ref{fig:version06}.
 
-Now we may want to load projects with or without tests. In addition, it would be convenient to be able to load all of the tests with a simple expression like the following:
+We may want to load projects with or without tests. In addition, it would be convenient to be able to load all of the tests with a simple expression like the following:
 
 \begin{code}{}
 (ConfigurationOfCoolBrowser project version: '1.0') load: 'Tests'.
 \end{code}
 
-instead of having to explicitly list all of the test projects like this:
+instead of having to explicitly list all of the test packages like this:
  
 \begin{code}{} 
 (ConfigurationOfCoolBrowser project version: '1.0') 
        load: #('CoolBrowser-Tests' 'CoolBrowser-AddonsTests').
 \end{code}
  
-To solve this problem, Metacello offers the notion of group. A group is a list of items: packages, projects, or even other groups. 
+To solve this problem, Metacello provides the notion of group. A group is a list of items: packages, projects, or even other groups. 
  
-Groups are very useful because they let you customize different groups of items of different interests. Maybe you want to offer the  user the possibility to install just the core, or with add-ons and development features. Let's go back to our example. Here we defined a new baseline \ct{'0.6-baseline'} which defines 6 groups (see Figure~\ref{fig:version06}). 
+Groups are very useful because they let you customize different groups of items of different interests. Maybe you want to offer the  user the possibility of install just the core, or with add-ons and development features. Let's go back to our example. Here we defined a new baseline \ct{'0.6-baseline'} which defines 6 groups (see Figure~\ref{fig:version06}). 
 
 \begin{figure}
 \begin{center}
