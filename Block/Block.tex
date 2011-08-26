@@ -233,6 +233,56 @@ BExp>>testScopeSelf: aBlock
 
 Now when we execute \ct{BExp new testScopeSelf} and we see that \ct{a BExp666} gets printed, showing that a block captures self too. 
 
+\paragraph{An example of sharing.}
+
+Variables referred to by a block continue to be accessible and shared with other expressions. Let us 
+take some examples. 
+
+\begin{code}{}
+BExp>>foo
+	| a |
+	[ a := 0 ] value.
+	^ a
+\end{code}
+
+Here what you see is that the value is shared between the method body and the block. Inside the method body we can access the variable whose value was set by the block execution. 
+Both the method  and block bodies access to the temporary variable \ct{a}.
+
+Now imagine that we define the method \ct{foo} as follows:
+
+\begin{code}{}
+BExp>>foo
+	| a |
+	a := 0. 
+	^ {[ a := 2] . [a]} 
+\end{code}
+
+The method \ct{foo} defines a temporary variable \ct{a}. It sets the value to \ct{a}
+to zero and returns an array whose first element is a block setting the value to 2 and second element just returns the value of the temporary variable. 
+
+\begin{code}{}
+| res | 
+res := BExp new foo.
+res second value.
+     !\emph{returns 0}!. 
+res first 
+res second
+     !\emph{returns 2}!. 
+\end{code}
+
+You can also define the code as follows and open a transcript to see the results.
+
+
+\begin{code}
+| res |res := BExp new foo.res second value crLog.res first value.res second value crLog.
+\end{code}
+
+Notice that when the expression \ct{res second value} and \ct{res first value} are executed, the method \ct{foo} has already finished its execution - as such it is not on the execution stack anymore.  Still the temporary variable \ct{a} can be accessed and set to new value. It means that the variables referred to by a block may live longer than the methods that created the block that refers to them. We said that the variables outlive their defining context. 
+
+There the block implementation will have to keep the variable in a structure that is not linked to the execution stack but lives in the heap. We will go in more details in a following section. 
+
+
+
 
 
 \section{Returning from inside a block}
@@ -265,7 +315,7 @@ testExplicitReturn
 
 
 
-In certain Smalltalk dialects \sd{really?}, you can have expressions after a return statement in a block, in Pharo \ct{^} should be the last statement of a block body. You should get a compile error if you type and compile the following expression. 
+In Pharo \ct{^} should be the last statement of a block body. You should get a compile error if you type and compile the following expression. 
 
 \begin{code}{}
 [ self crLog: 'two'.
@@ -273,11 +323,14 @@ In certain Smalltalk dialects \sd{really?}, you can have expressions after a ret
   self crLog: 'not printed' ]
 \end{code}
 
-\sd{HERE}
 
-Simple block \ct{[:x :y| x*x. x+y]} returns the value of the last statement to the method that sends it the message value
 
-Continuation blocks \ct{[:x :y| ^ x + y]} returns the value to the method that activated its homeContext. As a block is always evaluated in its homeContext, it is possible to attempt to return from a method which has already returned using other return. This runtime error condition is trapped by the VM.
+\subsection{Different blocks}
+We can classify blocks based on their usage or not of return statement. 
+
+\paragraph{Simple block.} \ct{[:x :y| x*x. x+y]} returns the value of the last statement to the method that sends it the message value. Here the first expression is useless.
+
+\paragraph{Continuation blocks.} \ct{[:x :y| x*x. ^ x + y]} returns the value to the method that activated its homeContext. As a block is always evaluated in its homeContext, it is possible to attempt to return from a method which has already returned using other return. This runtime error condition is trapped by the VM.
 
 \begin{code}{}
 Object>>returnBlock
