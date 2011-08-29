@@ -411,10 +411,12 @@ To process other client connection requests, the interaction is performed in ano
 
 \begin{method}[meth:interactUsing]{The \ct!EchoServer>>>interactUsing:! Method}
 interactUsing: interactionSocket
-		| receivedData |
-		[receivedData := interactionSocket receiveDataTimeout: 5.
-		Transcript cr; show: receivedData.
-		interactionSocket sendData: 'ECHO: ', receivedData] ensure: [interactionSocket closeAndDestroy]
+	| receivedData |
+	[receivedData := interactionSocket receiveDataTimeout: 5.
+	 Transcript cr; show: receivedData.
+	 interactionSocket sendData: 'ECHO: ', receivedData
+	] ensure: [
+	 interactionSocket closeAndDestroy]
 \end{method}
 
 The interaction as implemented in method \ct!EchoServer>>>interactUsing:! (see \mthref{meth:interactUsing}) with a client is the only application specific part\footnote{In an actual application we should have an abstract server superclass which subclasses implement the \ct!interactUsing:! method.}.
@@ -422,10 +424,11 @@ The interaction boils down to reading data provided by the client and sending it
 It worth noting that we ensure that the interaction socket is destroyed, whether we have exchanged data or not (timeout).
 
 \section{SocketStream}
-\subsection{Client Side SocketStream}
 \ct!SocketStream! is a read-write stream that encapsualtes a TCP socket.
-It eases the interaction with a remote server.
-We illustrate this facility with the code of the following code snipet (\Scrref{script:streamGetLine}).
+It eases the data exchange by providing buffering together with a set of facility methods.
+
+\subsection{SocketStream at Client Side}
+We illustrate socket stream use at client side with the following code snipet (\Scrref{script:streamGetLine}).
 
 \begin{script}[script:streamGetLine]{Getting the first line of a web page using \ct!SocketStream!.}
 	|stream httpQuery result|
@@ -458,14 +461,36 @@ We safely ensure that the connection is closed.
 
 In this example, we only display the first line of response sent by the server.
 We can easily display the full response including the html code by sending the \ct!upToEnd! message to our socket stream.
-Note howver that you'll have to wait a bit longer compared to displaying a single line.
+Note however that you'll have to wait a bit longer compared to displaying a single line.
+
+\subsection{SocketStream at Server Side}
+SocketStreams can also be used at server side to wrap the interaction socket as shown in \Scrref{script:streamSimpleServer}.
+
+\begin{script}[script:streamSimpleServer]{Simple Server using \ct!SocketStream!.}
+|connectionSocket interactionSocket interactionStream|
+connectionSocket := Socket newTCP. 
+[
+	connectionSocket listenOn: 12345 backlogSize: 10. 
+	interactionSocket := connectionSocket waitForAcceptFor: 30. 
+	interactionStream := SocketStream on: interactionSocket.
+	interactionStream sendCommand: 'Greetings from Pharo Server'.
+	Transcript cr; show: interactionStream nextLine.
+] ensure: [
+	connectionSocket closeAndDestroy.
+	interactionStream ifNotNil: [interactionStream close]
+]
+\end{script}
+
+A server relying on socket streams still uses a socket for handling incoming connection requests.
+Socket streams come into action once a socket is created for interaction with a client.
+The socket is wrapped into a socket stream that eases data exchange using messages such as \ct!sendCommand:! or \ct!nextLine!.
+Once we are done, we close and destroy the socket handling connections and we close the interaction socket stream.
+This latter will take care of closing and destroy the underlying interaction socket.
 
 %%%%%%CONTINUE FROM HERE
-\section{A Basic Chat Application}
-\section{Distributed Object Applications}
 \section{Chapter summary}
-%Reference to chapter remoteSmalltalk (rST) TODO!
-
+Reference remoteSmalltalk (rST)
+Reference to OCEAN
 
 %=================================================================
 \ifx\wholebook\relax\else\end{document}\fi
