@@ -28,7 +28,8 @@
 \fi
 %=================================================================
 %Noury's commands
-\newcommand{\nouryComment}[1]{\textcolor{red}{\textbf{\emph{#1}}}}
+\newcommand{\nouryComment}[1]{}
+%\newcommand{\nouryComment}[1]{\textcolor{red}{\textbf{\emph{#1}}}}
 
 %=================================================================
 
@@ -42,7 +43,7 @@ A typical use is in the World Wide Web. Browsers and servers interact through HT
 The concept of socket was first introduced by researchers from Berkeley University in the 1960's. They defined the first socket API for the C programming language in the context of Unix operating systems. Since then, the concept of socket was spread out to other operating systems. 
 Its API was ported to most existing programming languages including Smalltalk.
 
-In this chapter, we present the socket's API in the context of Pharo Smalltalk.
+In this chapter, we present the socket's API in the context of Pharo.
 We first show through some examples how to to use sockets for building both clients and servers.
 Then, we'll introduce \ct!SocketStream! and how to use it.
 In practice, one is likely to use \ct!SocketStream! instead of plain sockets.
@@ -58,7 +59,8 @@ A socket can then be defined as a \textit{plug on a communication network}.
 	\label{fig:socketConcept}
 \end{figure}
 
-Sockets are used to achieve a bidirectional communication. They allow both sending and receiving data. Such interaction can be done according to communication protocols which are encapsulated in sockets. On the Internet and other networks such as ethernet LANs\footnote{Local Area Networks.}, two basic protocols widely used are \textit{TCP/IP} and \textit{UDP/IP}.
+Sockets are used to achieve a bidirectional communication. They allow both sending and receiving data. 
+Such interaction can be done according to communication protocols which are encapsulated by sockets. On the Internet and other networks such as ethernet LANs\footnote{Local Area Networks.}, two basic protocols widely used are \textit{TCP/IP} and \textit{UDP/IP}.
 
 \subsection{TCP/IP vs. UDP/IP}
 TCP/IP stands for \textit{Transmission Control Protocol / Internet Protocol} (TCP for short).
@@ -75,10 +77,16 @@ However, UDP is faster than TCP since no connection is required before sending d
 A typical use of UDP is  ``heart-beating'' as used in server-based social application, where clients need to notify the server their status (\eg Requesting interactions, or Invisible).
 
 \nouryComment{In a future version we will present UDP. But, so  far UDP does not work in \pharo.}
-In the reminder of this chapter we will focus on TCP Sockets.
-We first will present how to develop a simple client application using a socket
+In the remainder of this chapter we will focus on TCP Sockets.
+First, we show how to create a client socket, connect it to a server, exchange data and close the connection (section~\ref{sec:clientTcpSocket}).
+This lifecycle is illustrated using examples showing the use of client sockets to interact with a web server. 
+Next, section~\ref{sec:serverTcpSocket} presents server sockets.
+We describe their life-cycle and how to use them to implement a server that can handle multiple concurrent connections.
+Last, we introduce in section~\ref{sec:socketStream} socket streams.
+We give an overview of their benefits by describing their use on both client and server side.
  
-\section{A Simple TCP Client}
+\section{TCP Client}
+\label{sec:clientTcpSocket}
 We call \textit{TCP client}  an application that initiates a TCP connection to exchange data with another application: the \textit{server}.
 It is important to mention that the client and the server may be developed in different languages.
 The life-cycle of such a client in \pharo decomposes into 4 steps:
@@ -146,7 +154,7 @@ By data we mean a \ct!ByteString!\footnote{One can send a \ct!ByteArray!, but th
 Typically, the client sends some request to the server and then expects receiving some response.
 Web browsers act according to this schema.
 A web browser is a client that issues a request to some web server identified by the URL.
-Such request is often the path to some resource on the server such as an html file or a picture.
+Such request is often the path to some resource on the server such as a html file or a picture.
 Then, the browser awaits the server response (\eg html code, picture bytes).
 
 \begin{script}[dataExhangeWithTcpSocket]{Exchanging Data with some Server through a TCP Socket.}
@@ -177,7 +185,7 @@ do: [:timeOutException|
 \end{script}
 
 %Timeout
-Note that by using  \ct!receiveData!, the client waits until the server either sends no more data, or close the connection.
+Note that by using  \ct!receiveData!, the client waits until the server either sends no more data, or closes the connection.
 This means that the client may wait indefinitely.
 An alternative is to have the client signal a \ct!ConnectionTimedOut! exception if it had waited too much as shown in \Scrref{dataReceptionTimeOut}.
 We use message \ct!receiveDataTimeout:! to ask the client socket to wait for 5 seconds.
@@ -186,7 +194,7 @@ But if no data is received during the 5 seconds, a \ct!ConnectionTimedOut! is si
 So, we log a description of what happened on the \ct!Transcript!.
 
 \subsection{Close a Socket}
-A socket remains alive while devices at both ends are connected.
+A TCP socket remains alive while devices at both ends are connected.
 Once the interaction is over, either the server or the client can decide to close the socket.
 This can be done by sending the \ct!close! message to the socket.
 The image where this message is evaluated will then send a close request to the other side.
@@ -229,7 +237,8 @@ Since, we intend to display the result of our query on the \ct!Transcript!, we s
 After sending the http query, we wait at most 5 seconds for the html text that we display on the \ct!Transcript!.
 Socket connection, query sending and html reception are inside a block which execution is ensured to end with cleaning up socket related resources, by means of the \ct!closeAndDestroy! message.
 
-\section{A Simple TCP Server}
+\section{TCP Server}
+\label{sec:serverTcpSocket}
 Now let us build a simple TCP server. A \textit{TCP Server} is an application that awaits TCP connections from TCP clients. Once connection established, both the server and the client can send a receive data in any order. 
 A big difference between the server and the client is that the server uses at least two sockets.
 One socket is used for handling client connections, while the second serves for exchanging data with a particular client.
@@ -424,6 +433,7 @@ The interaction boils down to reading data provided by the client and sending it
 It worth noting that we ensure that the interaction socket is destroyed, whether we have exchanged data or not (timeout).
 
 \section{SocketStream}
+\label{sec:socketStream}
 \ct!SocketStream! is a read-write stream that encapsualtes a TCP socket.
 It eases the data exchange by providing buffering together with a set of facility methods.
 
