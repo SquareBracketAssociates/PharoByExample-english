@@ -33,7 +33,8 @@
 %=================================================================
 
 \chapter{Basic Widgets}
-\ja{introduction. What is the goal of this chapter ? what should I learn reading it...}
+
+This chapter is about the basic widow gadgets (aka widgets) used to compose Graphic User Interfaces in Pharo using the Morphic layer. Since Morphic is based on a composite pattern,  you can easily assemble different widgets to build complex interfaces. So we will explain how the basic widgets (the one that should be mainly used) work and then how to assemble them together. To help you to understand such mechanisms, an example will be used trough the whole chapter.
 
 \section{The window}
 \index{Morphic!window}
@@ -238,13 +239,12 @@ You should observe that the size and the position are not set with your values. 
 
 \section{Tree widgets}
 
-\section{Layout or how positioning submorphs}
+\section{Layout management}
 \index{Morphic!Layout management}
-
-\apl{"Layout management" serait mieux comme titre car il ne s'agit pas seulement de gerer les positions mais aussi les dimensions et la reaction aux changements de dimension}
 
 \ben{Maybe we should write a section about layouts to describe their API ?}
 \sd{yes excellent idea. Do you know that luarent and hilaire wrote some text }
+\ben{in fact, only TableLayout have a specific API}
 
 A morph is basically a composite. As such it can be composed of sub-morphs. As it is explained below, adding a morph into a parent is very simple: just use the \mthind{Morph}{addMorph:} message which is sent to a parent morph with a sub-morph passed as argument. The problem is to understand how a morph can manage its own layout according to its size and the morphs that it contains. There are two main possibilities: (1) a morph can be added to another morph with a fixed position or (2) the placement of a morph is automatically managed with regards to its parent morph.
 
@@ -541,10 +541,6 @@ window
 	"Here fractions: (0@0 corner: 1@1) means that the moprh will	fit the whole container"
 	"but offsets: (0@toolBarHeight corner: 0@0) precise that the top of the morph will always be at toolBarHeight from the top of the container"
 \end{code}
-
-\sd{can you explain fractions: (0@0 corner: 1@1)?}
-\ben{is that better ?}
-
 
 As a result, you can see the red static part and the blue part which fill the space. When you resize the window, the red part will always stay the same (see Figure~\ref{fig:layoutFrame}).
 
