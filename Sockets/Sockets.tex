@@ -503,7 +503,7 @@ This latter will take care of closing and destroy the underlying interaction soc
 
 The source code presented in this section is available on Squeaksource: http://www.squeaksource.com/PharoInstantMessenge. You can load it using Monticello (Chapter \ja{numChapter}). It contains also a user interface that is not explained in this chapter.
 
-The application contains 4 classes: ChatMessage represents a message sent between a client and a server, ChatServerBehavior represents the behavior of the server (\eg the management of messages), ChatServerLauncher represents the server itself, and ChatClient represents a client.
+The application contains 4 classes: ChatMessage represents a message sent between a client and a server, ChatServerBehavior represents the behavior of the server (\eg the management of messages), ChatServerLauncher represents the server itself, and ChatClient represents a client. Each instance and class variable has accessors, which are not present in the source code beside to improve readability.
 
 \begin{script}[script:pimChatMessage]{A Basic Chat application: Class ChatMessage}
 Object subclass: #ChatMessage
@@ -512,28 +512,7 @@ Object subclass: #ChatMessage
 	poolDictionaries: ''
 	category: 'PIM'
 
-ChatMessage>>separate: aString
-	| index |
-	index := aString indexOf: Character space.
-	recipient := Symbol readFromString: (aString copyFrom: 1 to: index).
-	rawMessage := aString copyFrom: index+1 to: aString size.
-
-ChatMessage>>separate: aStringtime
-	| dateAndTime stream |
-	dateAndTime := self date.
-	stream := WriteStream on: ''.
-	dateAndTime printHMSOn: stream.
-	^ stream contents
-
-ChatMessage>>separate: aStringtimeStamp
-	^ (DateAndTime fromString: self date) asTimeStamp asString
-
-ChatMessage Class>>rawMessage: aMessage
-
-	^ self new separate: aMessage
-
 ChatMessage Class>>recipient: aSymbol date: time author: author message: aMessage
-
 	^ self new
 			recipient: aSymbol;
 			date: time;
@@ -548,8 +527,6 @@ Object subclass: #ChatServerBehavior
 	poolDictionaries: ''
 	category: 'PIM'
 
-ChatServerBehavior>>allMessage
-	^ '/all'
 
 ChatServerBehavior>>allNick
 	^ #all
@@ -577,13 +554,6 @@ ChatServerBehavior>>execute
 
 ChatServerBehavior>>exitMessage
 	^'/exit'
-
-ChatServerBehavior>>findRecipient: aString
-	| index rec message |
-	index := aString indexOf: Character space.
-	rec := Symbol readFromString: (aString copyFrom: 1 to: index).
-	message := aString copyFrom: index+1 to: aString size.
-	^ (rec -> message)
 
 ChatServerBehavior>>findSocket: aSymbol
 	^ ConnectedMap at: aSymbol ifAbsent: [^ nil]
@@ -617,15 +587,6 @@ ChatServerBehavior>>register: aMessage
 
 ChatServerBehavior>>registrationMessage
 	^ '/register '
-
-ChatServerBehavior>>removeTheAllMessage: message
-	| index result |
-	index := message findString: self allMessage.
-	result := WriteStream on: ''.
-	result 
-		nextPutAll: (message copyFrom: 1 to: index);
-		nextPutAll: (message copyFrom: (index + self allMessage size+1) to: message size).
-	^result contents
 
 ChatServerBehavior>>sendListOfConnectedPeople
 	| result message |
@@ -697,9 +658,6 @@ ChatServerBehavior>>unregister
 		 socket closeAndDestroy.
 		Transcript show: 'Socket closed';cr].
 	self sendListOfConnectedPeople
-
-ChatServerBehavior Class>>interactionSocket: aSocket
-	^self new interactionSocket: aSocket
 \end{script}
 
 
@@ -718,13 +676,6 @@ ChatServerLauncher>>connect
 	connectionSocket closeAndDestroy.
 	^ interactionSocket
 
-ChatServerLauncher>>deconnect
-	ChatServerBehavior connectedMap associations copy do:[:each |
-		each value ifNotNil:[:value |
-			value closeAndDestroy.
-			ChatServerBehavior connectedMap removeKey: each key]]
-
-
 ChatServerLauncher>>execute
 	| socket |
 	[true]
@@ -732,18 +683,7 @@ ChatServerLauncher>>execute
 			socket := self connect.
 			"echo behavior"
 			socket ifNotNil:[
-				[(ChatServerBehavior interactionSocket: socket) execute] fork]]
-
-
-ChatServerLauncher>>initialize
-	super initialize.
-	listOfBehaviors := OrderedCollection new.
-
-ChatServerLauncher Class>>example
-	| server |
-	server := self port: 9987.
-	[server execute] fork.
-	^server
+				[(ChatServerBehavior new interactionSocket: socket) execute] fork]]
 
 ChatServerLauncher Class>>launch: aNumber
 	| server |
@@ -854,6 +794,18 @@ ChatClient Class>>hostname: aString port: anInteger name: aSymbol
 		name: aSymbol
 
 \end{script}
+
+
+An example:
+\begin{script}[script:pimServerExample]{A Basic Chat application: Server running}
+ChatServerLauncher launch: aPortNumber
+\end{script}
+
+\ja{to do}
+\begin{script}[script:pimServerExample]{A Basic Chat application: Client running}
+
+\end{script}
+
 
 %\section{Distributed Object Applications}
 \section{Chapter summary}
