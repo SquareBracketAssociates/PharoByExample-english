@@ -613,7 +613,12 @@ The \ct{**GCs**} provides statistics about the garbage collector. An example of 
 
 \begin{code}
 
-**GCs**	full			0 totalling 0ms (0.0% uptime)	incr		9707 totalling 7,985ms (16.0% uptime), avg 1.0ms	tenures		1 (avg 9707 GCs/tenure)	root table	0 overflows\end{code}
+**GCs**
+	full			0 totalling 0ms (0.0% uptime)
+	incr		9707 totalling 7,985ms (16.0% uptime), avg 1.0ms
+	tenures		1 (avg 9707 GCs/tenure)
+	root table	0 overflows
+\end{code}
 
 Four values are available.
 
@@ -813,23 +818,26 @@ As an exercise, profile \ct{35 fibSlow} and \ct{35 fib} to be convinced of the g
 
 It is often important to know the amount of instances and the memory consumption of a given class. The class \ct{SpaceTally} offers this functionality. 
 
-The expression \ct{SpaceTally new printSpaceAnalysis} runs over all the classes of the system and gathers for each of them its code size, the amount of instances and the total memory space taken by the instances. The result is sorted along the total memory space taken by instances and is stored in a file named \ct{STspace.text}, located next to the Pharo image. \ja{is it possible  to display it ?}\ab{apparently no. We need to put this in the image}
+The expression \ct{SpaceTally new printSpaceAnalysis} runs over all the classes of the system and gathers for each of them its code size, the amount of instances and the total memory space taken by the instances. The result is sorted along the total memory space taken by instances and is stored in a file named \ct{STspace.text}, located next to the Pharo image. \ja{is it possible  to display it ?}\alex{apparently no. We need to put this in the image}
 
-\ab{@@here}
-It is not surprising to see that strings, compiled methods and bitmaps represents the largest part of the Pharo memory. \ja{explain...}
+It is not surprising to see that strings, compiled methods and bitmaps represents the largest part of the Pharo memory. The proportion of the compiled code, string and bitmap may be found in other platforms for diverse applications. \ja{explain...}\alex{I added a sentence}
+
+SpaceTally's output is structured as follows:
 
 \begin{code}{}
-Class                          	 code space   # instances  inst space percent
-ByteString                        2217       	91946         6325763    26.0
-CompiledMethod            	21186      	 60807        3704137    15.2
-Bitmap                              3893          319            3685532    15.1
-Array                          	      2478      	96671        3015172    12.4
-ByteSymbol     					920       	   40109        1009703     4.1
+Class                            code space # instances  inst space     percent   inst average sizeByteString                           2053      109613        9133154       31.20               83.32Bitmap                                 3653            379       6122156       20.90          16153.45CompiledMethod                 20067      51579       3307151       11.30                64.12Array                                   2535         85560       3071680      10.50                 35.90ByteSymbol                        1086         35746         914367        3.10                 25.58...
 \end{code}
 
-\ct{SpaceTally} may also be executed on a reduced set of classes. Consider:
+Each line represents the memory analysis of a Pharo class. Classes are ordered along the space they occupy. The class \ct{ByteString} describes strings. It is frequent to have strings to consume one third of the memory.
+Code space gives the amount of bytes used by the class and its metaclass. It does not include the space used by class variables. The value is given by the method \ct{Behavior>>spaceUsed}. 
 
-\ja{what is the relation between the information before and below ?}
+The \ct{# instances} column gives the amount of instances. It is the result of \ct{Behavior>>instanceCount}. 
+The \ct{inst space} column is the amount of bytes consumed by all the instances, including the object header. It is the result of \ct{Behavior>>instancesSizeInMemory}.
+The percentage of the memory occupation is given by the column \ct{percent} and the last column gives the average size of instances.
+
+Running \ct{SpaceTally} on all classes takes a few minutes. \ct{SpaceTally} may also be executed on a reduced set of classes to increase the analysis time. Consider:
+
+\ja{what is the relation between the information before and below ?}\alex{I changed the text a bit. Does your comment still matter?}
 
 \begin{code}{}
 ((SpaceTally new spaceTally: (Array with: TextMorph with: Point)) 
@@ -837,8 +845,10 @@ ByteSymbol     					920       	   40109        1009703     4.1
 \end{code}
 \ja{Does it exist a better method to produce something more visual than a collection ?}
 
+The method \ct{SpaceTally>>spaceTally:} analyzes the memory consumed by each classes of its argument. It returns a list of instance of \ct{SpaceTallyItem}.
 
-\ja{maybe add more explanation}
+
+\ja{maybe add more explanation}\alex{do you feel it is enough?}
 
 \section{Few advices}
 
