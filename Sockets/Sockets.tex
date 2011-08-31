@@ -462,7 +462,126 @@ Note howver that you'll have to wait a bit longer compared to displaying a singl
 
 %%%%%%CONTINUE FROM HERE
 \section{A Basic Chat Application}
-\section{Distributed Object Applications}
+
+The source code presented in this section is available on Squeaksource: http://www.squeaksource.com/PharoInstantMessenge. You can load it using Monticello (Chapter \ja{numChapter}). It contains also a user interface that is not explained in this chapter.
+
+The application contains 4 classes: ChatMessage represents a message sent between a client and a server, ChatServerBehavior represents the behavior of the server (\eg the management of messages), ChatServerLauncher represents the server itself, and ChatClient represents a client.
+
+\begin{script}[script:pimChatMessage]{A Basic Chat application: Class ChatMessage}
+Object subclass: #ChatMessage	instanceVariableNames: 'date author message recipient'	classVariableNames: ''	poolDictionaries: ''	category: 'PIM'
+
+ChatMessage>>separate: aString	| index |	index := aString indexOf: Character space.	recipient := Symbol readFromString: (aString copyFrom: 1 to: index).	rawMessage := aString copyFrom: index+1 to: aString size.
+
+ChatMessage>>separate: aStringtime	| dateAndTime stream |	dateAndTime := self date.	stream := WriteStream on: ''.	dateAndTime printHMSOn: stream.	^ stream contents
+
+ChatMessage>>separate: aStringtimeStamp	^ (DateAndTime fromString: self date) asTimeStamp asString
+
+ChatMessage Class>>rawMessage: aMessage	^ self new separate: aMessage
+
+ChatMessage Class>>recipient: aSymbol date: time author: author message: aMessage	^ self new			recipient: aSymbol;			date: time;			author: author;			message: aMessage.
+\end{script}
+
+\begin{script}[script:pimChatServerBehavior]{A Basic Chat application: Class ChatServerBehavior}
+Object subclass: #ChatServerBehavior	instanceVariableNames: 'interactionSocket'	classVariableNames: 'ConnectedMap'	poolDictionaries: ''	category: 'PIM'
+
+ChatServerBehavior>>allMessage	^ '/all'
+
+ChatServerBehavior>>allNick	^ #all
+
+ChatServerBehavior>>alreadyConnectedError	self alreadyConnectedError: interactionSocket
+
+ChatServerBehavior>>alreadyConnectedError: aSocket	| message |	message := ChatMessage					recipient: #Server					date: DateAndTime now					author: #Server					message: 'Username already connected. Please choose another nickname'.						aSocket sendData: message storeString.	self forceClose
+
+ChatServerBehavior>>close	self unregister.	self forceClose.
+
+ChatServerBehavior>>execute	[self transmit] whileTrue:[].	self close.
+
+ChatServerBehavior>>exitMessage	^'/exit'
+
+ChatServerBehavior>>findRecipient: aString	| index rec message |	index := aString indexOf: Character space.	rec := Symbol readFromString: (aString copyFrom: 1 to: index).	message := aString copyFrom: index+1 to: aString size.	^ (rec -> message)
+
+ChatServerBehavior>>findSocket: aSymbol	^ ConnectedMap at: aSymbol ifAbsent: [^ nil]
+
+ChatServerBehavior>>forceClose	interactionSocket ifNotNilDo:[:socket | socket closeAndDestroy].
+
+ChatServerBehavior>>initialize	super initialize.	ConnectedMap 		ifNil: [			ConnectedMap := Dictionary new.			ConnectedMap at: #Server put: nil.			ConnectedMap at: self allNick put: nil]
+
+ChatServerBehavior>>interactionSocket: anObject	interactionSocket := anObject
+
+ChatServerBehavior>>printReceivedData: receivedData	Transcript << receivedData.	Transcript cr.
+
+ChatServerBehavior>>register: aMessage	| name |	name := aMessage author.	(ConnectedMap keys includes: name)		ifTrue: [^ self alreadyConnectedError].	ConnectedMap at: name put: interactionSocket.	Transcript show: name printString, ' registered';cr.	self sendListOfConnectedPeople.
+
+ChatServerBehavior>>registrationMessage	^ '/register '
+
+ChatServerBehavior>>removeTheAllMessage: message	| index result |	index := message findString: self allMessage.	result := WriteStream on: ''.	result 		nextPutAll: (message copyFrom: 1 to: index);		nextPutAll: (message copyFrom: (index + self allMessage size+1) to: message size).	^result contents
+
+ChatServerBehavior>>sendListOfConnectedPeople	| result message |	result := WriteStream on: ''.	result 		nextPutAll: '/list';		nextPut: Character cr;		nextPutAll: '#all';		nextPut: Character cr.	ConnectedMap associations do: [:association || nick socket |		nick := association key.		socket := association value.		socket notNil			ifTrue: [result 						nextPutAll: nick printString;						nextPut: Character cr]].	message := ChatMessage					recipient: #Server					date: DateAndTime now					author: #Server					message: result contents.	ConnectedMap values do: [:socket |		socket notNil			ifTrue: [socket sendData: message storeString]]
+
+
+ChatServerBehavior>>transmit	| receivedData  sock assoc message chatMessage |	interactionSocket ifNotNil:[		interactionSocket isConnected 			ifTrue: [					receivedData := interactionSocket receiveData.				receivedData isEmpty ifTrue: [^true].				chatMessage := Compiler evaluate: receivedData.				(chatMessage message beginsWith: self exitMessage) 					ifTrue:[						self printReceivedData: ('Close the connection with ', interactionSocket address printString).						^false].				(chatMessage message beginsWith: self registrationMessage)					ifTrue:[						self register: chatMessage.						^true].				(chatMessage recipient == self allNick)					ifTrue: [						ConnectedMap values do: [:socket |							(socket ~~ interactionSocket and: [socket notNil])								ifTrue: [socket sendData: receivedData]].						^true].								sock := self findSocket: chatMessage recipient.				sock 					ifNil:[						message := ChatMessage										recipient: #Server										date: DateAndTime now										author: #Server										message: 'User ', chatMessage recipient printString, ' is not connected'.						interactionSocket sendData: message storeString]					ifNotNil: [sock sendData: receivedData.].				self printReceivedData: receivedData.				^true]].	^false.
+
+
+ChatServerBehavior>>unregister	| socket |	socket := ConnectedMap removeKey: (ConnectedMap keyAtValue: interactionSocket ifAbsent: []) ifAbsent: [].	socket ifNotNil: [		 socket closeAndDestroy.		Transcript show: 'Socket closed';cr].	self sendListOfConnectedPeople
+
+ChatServerBehavior Class>>interactionSocket: aSocket	^self new interactionSocket: aSocket\end{script}
+
+
+\begin{script}[script:pimChatServerLauncher]{A Basic Chat application: Class ChatServerLauncher}
+Object subclass: #ChatServerLauncher	instanceVariableNames: 'port'	classVariableNames: ''	poolDictionaries: ''	category: 'PIM'
+
+ChatServerLauncher>>connect	| connectionSocket interactionSocket |	connectionSocket := Socket newTCP.	connectionSocket listenOn: self port backlogSize: 10.	interactionSocket := connectionSocket waitForAcceptFor: 60.	connectionSocket closeAndDestroy.	^ interactionSocket
+
+ChatServerLauncher>>deconnect	ChatServerBehavior connectedMap associations copy do:[:each |		each value ifNotNil:[:value |			value closeAndDestroy.			ChatServerBehavior connectedMap removeKey: each key]]
+
+
+ChatServerLauncher>>execute	| socket |	[true]		whileTrue: [			socket := self connect.			"echo behavior"			socket ifNotNil:[				[(ChatServerBehavior interactionSocket: socket) execute] fork]]
+
+
+ChatServerLauncher>>initialize	super initialize.	listOfBehaviors := OrderedCollection new.
+
+ChatServerLauncher Class>>example	| server |	server := self port: 9987.	[server execute] fork.	^server
+
+ChatServerLauncher Class>>launch: aNumber	| server |	server := self port: aNumber.	[server execute] fork.	^server
+
+ChatServerLauncher Class>>port: anInteger	^self new port: anInteger
+
+\end{script}
+
+
+\begin{script}[script:pimChatClient]{A Basic Chat application: Class ChatClient}
+Object subclass: #ChatClient	instanceVariableNames: 'host port connectionSocket name isConnected'	classVariableNames: ''	poolDictionaries: ''	category: 'PIM'
+
+ChatClient>>buildMessageString: message	| stream |	stream := WriteStream on: ''.	self messageFormat do: [:each |		each isSymbol			ifTrue: [stream nextPutAll: (message perform: each)]			ifFalse: [stream nextPutAll: each]].	^ stream contents
+
+ChatClient>>close	isConnected := false.	connectionSocket closeAndDestroy.
+
+ChatClient>>connect	connectionSocket := Socket newTCP.		connectionSocket 		connectTo: host port: port; 		waitForConnectionFor: 10.	isConnected := true.	[self receive] fork.	self register.
+
+ChatClient>>displayMessage: aString for: aNick	WindowsManager default displayMessage: aString for: aNick	
+ChatClient>>exit	self send: '/exit' to: #Server.	self close.
+
+ChatClient>>listMessage	^'/list'
+
+ChatClient>>messageFormat	^ {'['. #time. ']'. ' '. #author. ' says: '. String cr. #message }
+
+ChatClient>>newMessage: aString	| string |	string := ''.	aString isEmpty not ifTrue: [| chatMessage |		chatMessage := Compiler evaluate: aString.		"((chatMessage recipient == self name) or: [chatMessage recipient == #all])			ifFalse: [self halt ]."		chatMessage author == #Server			ifTrue: [self serverMessage: chatMessage]			ifFalse:[				string := self buildMessageString: chatMessage.				chatMessage recipient == #all					ifTrue: [ self displayMessage: string for: #all ]					ifFalse:[ self displayMessage: string for: chatMessage author ]]].
+
+ChatClient>>receive	[isConnected]		whileTrue:[			| message |			connectionSocket isConnected				ifTrue:[					message := connectionSocket receiveData.					self newMessage: message]]
+
+ChatClient>>register	self send: ('/register ',name printString) to: #Server
+
+ChatClient>>send: aMessage to: aSymbol	| message |	message := ChatMessage					recipient: aSymbol					date: DateAndTime now					author: self name					message: aMessage.	connectionSocket sendData: message storeString.	aSymbol == #Server		ifFalse: [self displayMessage: (self buildMessageString: message) for: aSymbol]
+
+ChatClient>>serverMessage: aChatMessage	(aChatMessage message beginsWith: self listMessage)		ifTrue: [^ self updateContactsList: aChatMessage].	self displayMessage: (self buildMessageString: aChatMessage message) for: #Server
+
+ChatClient>>updateContactsList: aChatMessage	| list |	list := (aChatMessage message subStrings: String cr) allButFirst.	WindowsManager default updateContactsList: list.
+
+ChatClient Class>>hostname: aString port: anInteger name: aSymbol	^self new 		host: (NetNameResolver addressForName: aString);		port: anInteger;		name: aSymbol
+
+\end{script}
+
+%\section{Distributed Object Applications}
 \section{Chapter summary}
 %Reference to chapter remoteSmalltalk (rST) TODO!
 
