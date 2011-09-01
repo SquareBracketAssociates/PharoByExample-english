@@ -239,7 +239,7 @@ Socket connection, query sending and html reception are inside a block which exe
 
 \section{TCP Server}
 \label{sec:serverTcpSocket}
-Now let us build a simple TCP server. A \textit{TCP Server} is an application that awaits TCP connections from TCP clients. Once connection established, both the server and the client can send a receive data in any order. 
+Now, let us build a simple TCP server. A \textit{TCP Server} is an application that awaits TCP connections from TCP clients. Once connection established, both the server and the client can send a receive data in any order. 
 A big difference between the server and the client is that the server uses at least two sockets.
 One socket is used for handling client connections, while the second serves for exchanging data with a particular client.
 
@@ -254,7 +254,7 @@ The life-cycle of a TCP server in \pharo  has 5 steps:
 \item Close \textit{socket$_1$} when we decide to kill the server and stop accepting client connections.
 \end{enumerate}
 
-Concurrence is implicit in this life-cycle.
+Concurrency is implicit in this life-cycle.
 The server listens for incoming client's connection requests through \textit{socket$_1$}, while exchanging data with some clients through \textit{socket$_2$}.
 The server can even simultaneously exchange data with multiple clients through different sockets.
 In the following, we first illustrate the socket serving machinery.
@@ -279,17 +279,18 @@ interactionSocket closeAndDestroy.
 
 First, we create the socket that we will use for handling incoming connections.
 We set it up to listen on port 9999.
-The \ct!backlogSize! is set to 10, meaning that we as the Operating System to allocate a buffer for 10 connection requests. This backlog will not be actually used in this example.
+The \ct!backlogSize! is set to 10, meaning that we ask the Operating System to allocate a buffer for 10 connection requests. 
+This backlog will not be actually used in this example.
 But, a more realistic server will have to handle multiple connections and then store pending connection requests into the backlog.
 
-Once the connection socket is prepared, it starts listening for client connections.
+Once the connection socket (referenced by variable \ct!connectionSocket!) is set up, it starts listening for client connections.
 The \ct!waitForAcceptFor: 60! message makes the socket wait connection requests for 60 seconds.
 If no client attempts to connect during these 60 seconds, the message answers \ct!nil!.
 Otherwise, we get a new socket \ct!interactionSocket! connected the client's socket.
-At this point, we don't need the connection socket anymore, so we can close it (\ct!closeAndDestroy! message).
+At this point, we don't need the connection socket anymore, so we can close it (\ct!connectionSocket closeAndDestroy! message).
 
 Since the interaction socket is already connected to the client, we can use it to exchange data.
-Messages \ct!receiveData! and \ct!sendData:! presented above (see section~\ref{sec:exchangeData}) can be used to this end.
+Messages \ct!receiveData! and \ct!sendData:! presented above (see section~\ref{sec:exchangeData}) can be used to achieve this goal.
 In our example, we wait for data from the client, next we display it on the \ct!Transcript!, and last we send it back to the client prefixed with the \ct!'ECHO: '! string.
 Last, we finish the interaction with the client by closing the interaction socket.
 
@@ -307,8 +308,9 @@ clientSocket := Socket newTCP.
 \end{script}
 
 
-You cannot test this script totally without having a second image that will execute the client code. 
-Therefore use two different images, one that runs the server code and one for the client code. Indeed, since we use the user interaction process, the \pharo UI will be frozen at some points, such as during the \ct!waitForAcceptFor:!.
+You cannot test this script totally without having the client code running, for example in a different process or a second image. 
+We do use two different images, one that runs the server code and one for the client code. 
+Indeed, since we use the user interaction process, the \pharo UI will be frozen at some points, such as during the \ct!waitForAcceptFor:!.
 \Scrref{echoClient} provides the code to run on the client image.
 Note that you have to run the server code first.
 Otherwise, the client will fail.
@@ -329,7 +331,7 @@ Otherwise, the client will fail.
 \subsection{Echo Server Class}
 We define here the \ct!EchoServer! class that deals with concurrency issues.
 It handles concurrent client queries and it does not freeze the UI.
-As we can see in the definition labelled as \clsref{echoServerClassDef}, the \ct!EchoServer! declares three instance variables.
+As we can see in the definition labelled \clsref{echoServerClassDef}, the \ct!EchoServer! declares three instance variables.
 The first one (\ct!connectionSocket!) refers to the socket used for listening to client connections.
 The two last instance variables (\ct!isRunning! and \ct!isRunningLock!) are used to manage the server process life-cycle while dealing with synchronization issues.
  
@@ -375,16 +377,18 @@ This will have the consequence of stopping the serving loop in method \ct!EchoSe
 
 \begin{method}[meth:serve]{The \ct!EchoServer>>>serve! Method}
 serve
-	| interactionSocket |
-	[self isRunning] whileTrue: [self interactOnConnection].
-	connectionSocket closeAndDestroy
+| interactionSocket |
+[[self isRunning]
+	whileTrue: [self interactOnConnection]]
+	ensure: [connectionSocket closeAndDestroy]
 \end{method}
 
 The activity of the serving process is implemented in the \ct!serve! method (see \mthref{meth:serve}).
 It interacts with clients on connections while the \ct!isRunning! flag is \ct!true!.
-After a \ct!stop!, the connection socket is destroyed and the serving process is terminated. 
-The creation of this serving process is the responsibility of method \ct!EchoServer>>>start! (see the last line of \mthref{meth:start}).
-eidosco
+After a \ct!stop!, the serving process is terminates by destroying the connection socket.
+The \ct!ensure:! message garantees that that this destruction is performed even if the serving process is terminated abnormally. 
+Such termination may occure because of an exception (\eg network disconnection) or a user action (\eg through the process browser).   
+
 \begin{method}[meth:start]{The \ct!EchoServer>>>start! Method}
 start
 	isRunningLock critical: [
@@ -395,14 +399,16 @@ start
 	[self serve] fork
 \end{method}
 
+The creation of the serving process is the responsibility of method \ct!EchoServer>>>start! (see the last line of \mthref{meth:start}).
 The \ct!EchoServer>>>start! method first checks if the server is already running.
 It returns if this is case.
-Otherwise, the a TCP socket dedicated to connection handling is created and made to listen on port 9999.
-The backlog size refers to the size of the system buffer for storing pending client connection requests.
+Otherwise, a TCP socket dedicated to connection handling is created and made to listen on port 9999.
+The backlog size is set to 10, that is -as mentionned above- the system allocates a buffer for storing 10 pending client connection requests.
 This value is a trade-off that depends on how fast is the server (varies according to the VM and the hardward) and the maximum rate of client connections requests.
-Thus, the backlog size should be big enough to avoid loosing any connection request, but not too big to avoid wasting memory.
+Thus, the backlog size should be big enough to avoid losing any connection request, but not too big to avoid wasting memory.
 Finally \ct!EchoServer>>>start! method creates a process by sending the \ct!fork! message to the \ct![self serve]! block.
 The created process has the same priority as the creator process (i.e. the one that performs the \ct!EchoServer>>>start! method).
+
 
 \begin{method}[meth:interactOnConnection]{The \ct!EchoServer>>>interactOnConnection! Method}
 interactOnConnection
@@ -428,8 +434,7 @@ interactUsing: interactionSocket
 	 interactionSocket closeAndDestroy]
 \end{method}
 
-The interaction as implemented in method \ct!EchoServer>>>interactUsing:! (see \mthref{meth:interactUsing}) with a client is the only application specific part\footnote{In an actual application we should have an abstract server superclass which subclasses implement the \ct!interactUsing:! method.}.
-The interaction boils down to reading data provided by the client and sending it back prefixed with the \ct!'ECHO: '! string.
+The interaction as implemented in method \ct!EchoServer>>>interactUsing:! (see \mthref{meth:interactUsing}) with a client boils down to reading data provided by the client and sending it back prefixed with the \ct!'ECHO: '! string.
 It worth noting that we ensure that the interaction socket is destroyed, whether we have exchanged data or not (timeout).
 
 \section{SocketStream}
