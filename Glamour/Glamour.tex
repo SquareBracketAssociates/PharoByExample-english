@@ -3,7 +3,8 @@
 % $Revision$
 
 % HISTORY:
-% Chapter started by Damien C (2009-09-02)
+% 2009-09-02 - Chapter started by Damien C
+% 2011-09-01 - Alexandre doing a pass on the chapter. I updated the FileSystem code with the latest version
 
 %=================================================================
 \ifx\wholebook\relax\else
@@ -35,46 +36,45 @@
 \chalabel{glamour}
 
 Browsers are a crucial instrument to understand complex systems or
-models. Each problem domain is accompanied by an abundance of browsers
+models. A browser is a tool to navigate and interact with a particular domain.
+Each problem domain is accompanied by an abundance of browsers
 that are created to help analyze and interpret the underlying
 elements. The issue with these browsers is that they are frequently
-rewritten from scratch, making them expensive to create and burdensome
+(re)written from scratch, making them expensive to create and burdensome
 to maintain. While many frameworks exist to ease the development of
 user interfaces in general, they provide only limited support to
 simplifying the creation of browsers.
 
 Glamour is a dedicated framework to describe the navigation flow
-of browsers. Thanks to its declarative language, Glamour allows to
+of browsers. Thanks to its declarative language, Glamour allows one to
 quickly define new browsers for their data.
 
 In this chapter we will first detail the creation of some example
 browsers to have an overview of the Glamour framework. In a second
-part, we will describe Glamour in more details.
+part, we will jump into details.
 
 \section{Installation and first browser}
 \label{sec:inst-first-brows}
 
 To install Glamour on your \pharo{} image execute the following code:
 
-\ja{i cannot load this code in PharoCore 1.3. We need a stable version}
+\ja{i cannot load this code in PharoCore 1.3. We need a stable version} \ab{Strange, I just tried and it works with a 13299} 
 \begin{code}{}
 Gofer new
   squeaksource: 'Glamour'; 
   package: 'ConfigurationOfGlamour';
   load.
-(Smalltalk at: #ConfigurationOfGlamour)
-  perform: #loadDefault.
+(Smalltalk at: #ConfigurationOfGlamour) perform: #loadDefault.
 \end{code}
 
-Now that Glamour is installed, we are going to build a first browser
-in order to dive into Glamour's declarative language. What about
-building an Apple's Finder-like file browser? This browser is built
+Now that Glamour is installed, we are ready to build our first browser by using Glamour's declarative language. 
+What about building an Apple's Finder-like file browser? This browser is built
 using the Miller Columns browsing technique, displaying hierarchical
-elements in a series of columns. The principle of such a browser is
+elements in a series of columns. The principle of this browser is
 that a column always reflects the content of the element selected in
 the previous column, the first column-content being chosen on opening.
 
-In our case of implementing a file browser, we want to display a list
+In our case of navigating through the file systems, the browser displays a list
 of a particular directory's entries (each files and directories) in
 the first column and then, depending on the user selection, appending
 another column (see \figref{casestudies/file_finder}):
@@ -94,20 +94,19 @@ another column (see \figref{casestudies/file_finder}):
   \end{center}
 \end{figure}
 
-This may look complex at first. However, Glamour provides a very
-simple way of describing Miller Columns-based browsers. Glamour calls
-that kind of browsers finders, referring to the Apple's Finder found
-on Mac OS X. To create such a browser, we are going to use the
-\clsind{GLMFinder} class and then tell Glamour that we want elements
-to be in a list:
+This may look complex at first because of the recursion. However, Glamour provides an intuitive way of describing Miller Columns-based browsers. According to the Glamour's terminology this particular browser is called \emph{finder}, referring to the Apple's Finder found
+on Mac OS X. 
+Glamour offers this behavior with the class \clsind{GLMFinder}. This class has to be instantiated and initialized to properly list our domain of interest, the files:
 
 \begin{code}{}
-|browser|
+| browser |
 browser := GLMFinder new.
 browser list
 	display: #children.
-browser openOn: FSFilesystem onDisk root.
+browser openOn: FSFilesystem disk root.
 \end{code}
+
+Note that at that stage selecting a plain file raises an error. We will understand why and how to fix that situation soon.
 
 From this small piece of code you get a list of all entries (either
 files or directories) found at the root of your file system, each line
@@ -128,7 +127,7 @@ browser list
 \end{code}
 
 This way, the message \ct{basename} will be sent to each entry to get its
-name. This makes the files and directory much easier to read.
+name. This makes the files and directores much easier to read by showing the file name instead of its fullname.
 
 Another problem is that the code does not distinguish between files
 and directories. If you click on a file, you will get an error because
@@ -143,7 +142,7 @@ browser list
   format: #basename.
 \end{code}
 
-This works well but the user can't distinguish between a line
+This works well but the user can not distinguish between a line
 representing a file or a directory. This can be fixed by, for example,
 adding a slash at the end of the file name if it is a directory:
 
@@ -159,7 +158,7 @@ entry if it is a file. The following gives the final version of the
 file browser:
 
 \begin{code}{}
-|browser|
+| browser |
 browser := GLMFinder new
   variableSizePanes;
   title: 'Find your file';
@@ -177,7 +176,7 @@ browser text
   display: [:entry | [entry readStream contents]
                         on: Exception
                         do: ['Can''t display the content of this file']].
-browser openOn: FSFilesystem onDisk root.
+browser openOn: FSFilesystem disk root.
 \end{code}
 
 This code extends the previous one with variable-sized panes, a title
@@ -185,14 +184,15 @@ as well as directory entry sorting, access permission handling and
 file content reading. The resulting browser is presented in
 \figref{casestudies/file_finder}.
 
-This short
-introduction has just presented how to install Glamour and how to use
+This short introduction has just presented how to install Glamour and how to use
 it to create a simple file browser. 
 
-\section{Tutorial: Implementing a code browser}
+%:%%%%%%%%%%%
 
-The following will present a more complete example as well as detailed
-information about the framework.
+%\section{Tutorial: Implementing a code browser}
+\section{Presentation, Transmission and Ports}
+
+This section gives a realistic example and details the Glamour framework.
 
 \subsection{Running example}
 \label{sec:tutorial/getting_started}
@@ -200,7 +200,7 @@ information about the framework.
 In the following tutorial we will be creating a simple Smalltalk class
 navigator. Such navigators are used in many Smalltalk browsers and
 usually consist of four panes, which are abstractly depicted in
-figure~\ref{fig:classnavigator_wireframe}.
+figure~\figref{classnavigator_wireframe}.
 
 \begin{figure}[htbp]
 \centerline{\includegraphics[width=\linewidth]{classnavigator_wireframe.pdf}}
@@ -209,7 +209,7 @@ figure~\ref{fig:classnavigator_wireframe}.
 \end{figure}
 
 The class navigator functions as follows: Pane~1 shows a list or a
-tree of \emph{packages} (containing classes) which make up the
+tree of \emph{packages}, each package containing classes, which make up the
 organizational structure of the environment. When a package is
 selected, pane~2 shows a list of all classes in the selected
 package. When a class is selected, pane~3 shows all \emph{protocols}
@@ -252,7 +252,8 @@ PBE2CodeNavigator>>buildBrowser
 Executing \ct{PBE2CodeNavigator open} opens a new browser with the text
 ``a RPackageOrganizer'' and nothing else. We now extend our browser by
 adding a pane to display a list of packages.
-\ja{does it work with RPackage or Categories or both ?}
+\ja{does it work with RPackage or Categories or both ?}\ab{It works with RPAckage only, there is a ref to RPackageOrganizer}
+
 \begin{code}{}
 PBE2CodeNavigator>>buildBrowser
   browser := GLMTabulator new.
@@ -271,9 +272,7 @@ Glamour browsers are composed in terms of \emph{panes} and the
 \emph{flow of data} between them. In our browser we currently have
 only one pane displaying packages. The flow of data is specified by
 means of \emph{transmissions}. These are triggered when certain
-changes occur, such as the change of the selection in a list. To
-exemplify this, we extend our browser with a list of classes for the
-currently selected package (see \figref{showclasses}).
+changes in the browser graphical user interface occur, such as an item selection in a list. We make our browser more interesting by displaying classes contained in the selected package (see \figref{showclasses}).
 
 \ja{I want to verify this source code: why do you define classesIn: where I think we could do "andShow: [:a | a definedClasses].". I have the same question for package. I understand that help us to reuse the pane... but we have to manipulate data, not presentation. Ok I understand, but in this case, you should rename classesIn: by something like presentationOfClassesIn: or listOfClassesIn:}
 \begin{code}{}
@@ -308,7 +307,7 @@ The \ct{transmit:}, \ct{to:} and \ct{from:} keywords create a
 \emph{transmission}---a directed connection that defines the flow of
 information from one pane to another. In this case, we create a link
 from the \emph{packages} pane to the \emph{classes} pane. The
-\ct{from:} signifies the \emph{origin} of the transmission and
+\ct{from:} keyword signifies the \emph{origin} of the transmission and
 \ct{to:} the \emph{destination}. If nothing more specific is stated,
 Glamour assumes that the origin refers to the \emph{selection} of the
 specified pane. We show how to specify other aspects of the origin
@@ -319,28 +318,23 @@ pane when the connection is activated or \emph{transmitted}. In our
 example, we want to show a list of the classes that are contained in
 the selected package.
 
-\ct{display:} simply stores the supplied block within the
+The \ct{display:} keyword simply stores the supplied block within the
 presentation. The blocks will only be evaluated later, when the
 presentation should be displayed on-screen. If no explicit display
-block is specified, Glamour will attempt to display the object in some
+block is specified, Glamour attempts to display the object in some
 generic way. In the case of list presentations, this means that the
-\ct{displayString} message will be sent to the object to retrieve a
-standard string representation. \ct{format:} can be used to change
+\ct{displayString} message is sent to the object to retrieve a
+standard string representation. As we have previously seen, \ct{format:} is used to change
 this default behavior.
 
 Along with \ct{display:}, it is possible to specify a \ct{when:}
 condition to limit the applicability of the connection. By default,
 the only condition is that an item is in fact selected, \ie{} that the
-display variable argument is not \ct{nil}.
-
-\ja{here}
+display variable argument is not \ct{null}.
 
 \subsection{Another Presentation}
-
-Up to now, we have been displaying the packages as a list. The
-packages in Smalltalk, howerver, are actually organized in a hierarchy
-and we have only been looking at the first level of this structure. To
-mend this, we replace the list by a tree presentation for packages:
+So far, packages are visually represented as a flat list. However, packages are naturally structured with the corresponding class category. To
+exploit this structure, we replace the list by a tree presentation for packages:
 
 \begin{code}{}
 PBE2CodeNavigator>>packagesIn: constructor
@@ -365,13 +359,12 @@ PBE2CodeNavigator>>rootPackagesOn: organizer
 % with Emacs
 
 The tree presentation uses a \ct{children:} argument that takes a
-selector or a block which specifies how to retrieve the children of a
+selector or a block to specify how to retrieve the children of a
 given item in the tree. Since the children of each package are now
 selected by our tree presentation, we have to pass only the roots of
 the package hierarchy to the \ct{display:} argument.
 
-At this point, we can also add pane~3 that shows the method categories
-as shown in figure~\ref{fig:classnavigator_wireframe} \ja{Is it not fig:treeandcategories  (fig 1.4)?}. The listing
+At this point, we can also add Pane~3 to list the method categories (\figref{classnavigator_wireframe}) \ja{Is it not fig:treeandcategories  (fig 1.4)?}. The listing
 below introduces no new elements that we have not already discussed:
 
 \begin{code}{}
@@ -393,20 +386,21 @@ PBE2CodeNavigator>>categoriesIn: constructor
 
 
 The browser resulting from the above changes is shown in
-figure~\ref{fig:treeandcategories}.
+figure \figref{treeandcategories}.
 
 \begin{figure}[htbp]
 \centerline{\includegraphics[width=\linewidth]{treeandcategories.pdf}}
-\caption{	Improved class navigator including a tree to display the packages and a list of method categories for the selected class.}
+\caption{	Improved class navigator including a tree to display the packages and a list of method categories for the selected class.\alex{Why is there visualworks shows in the figure? Where did we get this figure from? This is not Pharo apparently}}
 \label{fig:treeandcategories}
 \end{figure}
 
 
+\alex{here}
 
 %-------------------------------------------------------------------------------
 \subsection{Multiple Origins}
 
-The mechanism to show the methods is slightly more complicated. When a
+Adding Pane 4 to list the method is slightly more complicated. When a
 method category is selected we want to show \emph{only} the methods
 that belong to that category. If no category is selected, we want to
 show \emph{all} methods that belong to the current class.
@@ -420,7 +414,7 @@ PBE2CodeNavigator>>buildBrowser
   browser := GLMTabulator new.
   browser
     column: #packages;
-    column:  #classes;
+    column: #classes;
     column: #categories;
     column: #methods.
 
@@ -455,8 +449,7 @@ class is not. When a presentation must be displayed even in the
 presence of undefined origin, it is necessary to use \ct{allowNil} as
 shown. We can therefore omit the category from the display block.
 
-The completed class navigator is displayed in
-figure~\ref{fig:codenavigator}.
+The completed class navigator is displayed in \figref{codenavigator}.
 
 \begin{figure}[htbp]
 \centerline{\includegraphics[width=\linewidth]{codenavigator.pdf}}
