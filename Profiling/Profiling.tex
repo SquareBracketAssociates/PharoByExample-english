@@ -661,7 +661,6 @@ MessageTally spyOn:
                      9000 timesRepeat: [ str nextPut: $A ]]].
 \end{code}
 
-\ja{here again, there is a strange value for incr information}
 \begin{code}{}
 
  - 807 tallies, 807 msec.
@@ -752,7 +751,7 @@ MessageTally spyOn:
 \end{code}
 
 \paragraph{An experiment.}
-Doing benchmarks shines when different executions are compared. In the previous piece of code, replacing the value 9000 by 500 is  valuable. The time taken with 9000 iterations is 2.7 \ja{to verify} times slower than with 500. Using the string concatenation (\ie using the \ct{,} method) instead of a stream widens the gap with a factor 10. This experiment clearly illustrates the importance of using appropriate tools to concatenate strings.
+Doing benchmarks shines when different executions are compared. In the previous piece of code, replacing the value 9000 by 500 is  valuable. The time taken with 9000 iterations is 2.7 times slower than with 500. Using the string concatenation (\ie using the \ct{,} method) instead of a stream widens the gap with a factor 10. This experiment clearly illustrates the importance of using appropriate tools to concatenate strings.
 
 The time of the profiled execution is also an important quality factor for the result. MessageTally employs a sampling technique to profile code. Per default, MessageTally samples the current executing thread each millisecond per default. It is therefore necessary that all the methods involved in the computation are executed a ``fair'' amount of time to appear in the result report. If the application to profile is very short (few milliseconds only), then executing it a  number of times help improving the accuracy of the report. 
 
@@ -818,14 +817,20 @@ As an exercise, profile \ct{35 fibSlow} and \ct{35 fib} to be convinced of the g
 
 It is often important to know the amount of instances and the memory consumption of a given class. The class \ct{SpaceTally} offers this functionality. 
 
-The expression \ct{SpaceTally new printSpaceAnalysis} runs over all the classes of the system and gathers for each of them its code size, the amount of instances and the total memory space taken by the instances. The result is sorted along the total memory space taken by instances and is stored in a file named \ct{STspace.text}, located next to the Pharo image. \ja{is it possible  to display it ?}\alex{apparently no. We need to put this in the image}
+The expression \ct{SpaceTally new printSpaceAnalysis} runs over all the classes of the system and gathers for each of them its code size, the amount of instances and the total memory space taken by the instances. The result is sorted along the total memory space taken by instances and is stored in a file named \ct{STspace.text}, located next to the Pharo image.
 
-It is not surprising to see that strings, compiled methods and bitmaps represents the largest part of the Pharo memory. The proportion of the compiled code, string and bitmap may be found in other platforms for diverse applications. \ja{explain...}\alex{I added a sentence}
+It is not surprising to see that strings, compiled methods and bitmaps represents the largest part of the Pharo memory. The proportion of the compiled code, string and bitmap may be found in other platforms for diverse applications.
 
 SpaceTally's output is structured as follows:
 
 \begin{code}{}
-Class                            code space # instances  inst space     percent   inst average sizeByteString                           2053      109613        9133154       31.20               83.32Bitmap                                 3653            379       6122156       20.90          16153.45CompiledMethod                 20067      51579       3307151       11.30                64.12Array                                   2535         85560       3071680      10.50                 35.90ByteSymbol                        1086         35746         914367        3.10                 25.58...
+Class                            code space # instances  inst space     percent   inst average size
+ByteString                           2053      109613        9133154       31.20               83.32
+Bitmap                                 3653            379       6122156       20.90          16153.45
+CompiledMethod                 20067      51579       3307151       11.30                64.12
+Array                                   2535         85560       3071680      10.50                 35.90
+ByteSymbol                        1086         35746         914367        3.10                 25.58
+...
 \end{code}
 
 Each line represents the memory analysis of a Pharo class. Classes are ordered along the space they occupy. The class \ct{ByteString} describes strings. It is frequent to have strings to consume one third of the memory.
@@ -837,18 +842,13 @@ The percentage of the memory occupation is given by the column \ct{percent} and 
 
 Running \ct{SpaceTally} on all classes takes a few minutes. \ct{SpaceTally} may also be executed on a reduced set of classes to increase the analysis time. Consider:
 
-\ja{what is the relation between the information before and below ?}\alex{I changed the text a bit. Does your comment still matter?}
 
 \begin{code}{}
 ((SpaceTally new spaceTally: (Array with: TextMorph with: Point)) 
 	asSortedCollection: [:a :b | a spaceForInstances > b spaceForInstances]) 
 \end{code}
-\ja{Does it exist a better method to produce something more visual than a collection ?}
 
 The method \ct{SpaceTally>>spaceTally:} analyzes the memory consumed by each classes of its argument. It returns a list of instance of \ct{SpaceTallyItem}.
-
-
-\ja{maybe add more explanation}\alex{do you feel it is enough?}
 
 \section{Few advices}
 
