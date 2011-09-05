@@ -58,7 +58,7 @@ part, we will jump into details.
 
 To install Glamour on your \pharo{} image execute the following code:
 
-\ja{i cannot load this code in PharoCore 1.3. We need a stable version} \ab{Strange, I just tried and it works with a 13299} 
+\ja{i cannot load this code in PharoCore 1.3. We need a stable version} \alex{Strange, I just tried and it works with a 13299} 
 \begin{code}{}
 Gofer new
   squeaksource: 'Glamour'; 
@@ -252,7 +252,7 @@ PBE2CodeNavigator>>buildBrowser
 Executing \ct{PBE2CodeNavigator open} opens a new browser with the text
 ``a RPackageOrganizer'' and nothing else. We now extend our browser by
 adding a pane to display a list of packages.
-\ja{does it work with RPackage or Categories or both ?}\ab{It works with RPAckage only, there is a ref to RPackageOrganizer}
+\ja{does it work with RPackage or Categories or both ?}\alex{It works with RPAckage only, there is a ref to RPackageOrganizer}
 
 \begin{code}{}
 PBE2CodeNavigator>>buildBrowser
@@ -274,7 +274,7 @@ only one pane displaying packages. The flow of data is specified by
 means of \emph{transmissions}. These are triggered when certain
 changes in the browser graphical user interface occur, such as an item selection in a list. We make our browser more interesting by displaying classes contained in the selected package (see \figref{showclasses}).
 
-\ja{I want to verify this source code: why do you define classesIn: where I think we could do "andShow: [:a | a definedClasses].". I have the same question for package. I understand that help us to reuse the pane... but we have to manipulate data, not presentation. Ok I understand, but in this case, you should rename classesIn: by something like presentationOfClassesIn: or listOfClassesIn:}
+\ja{I want to verify this source code: why do you define classesIn: where I think we could do "andShow: [:a | a definedClasses].". I have the same question for package. I understand that help us to reuse the pane... but we have to manipulate data, not presentation. Ok I understand, but in this case, you should rename classesIn: by something like presentationOfClassesIn: or listOfClassesIn:}\alex{I am not really shocked by this. It looks natural to have a method classesIn:}
 \begin{code}{}
 PBE2CodeNavigator>>buildBrowser
   browser := GLMTabulator new.
@@ -293,7 +293,7 @@ PBE2CodeNavigator>>classesIn: constructor
 \begin{figure}[htbp]
   \centerline{\includegraphics[width=\linewidth]{showclasses.pdf}}
   \caption{Two-pane browser. When a package is selected in the left
-    pane, the contained classes are shown on the right pane.}
+    pane, the contained classes are shown on the right pane.\alex{This is not Glamour in Pharo}}
   \label{fig:showclasses}
 \end{figure}
 
@@ -364,7 +364,7 @@ given item in the tree. Since the children of each package are now
 selected by our tree presentation, we have to pass only the roots of
 the package hierarchy to the \ct{display:} argument.
 
-At this point, we can also add Pane~3 to list the method categories (\figref{classnavigator_wireframe}) \ja{Is it not fig:treeandcategories  (fig 1.4)?}. The listing
+At this point, we can also add Pane~3 to list the method categories (\figref{classnavigator_wireframe}) \ja{Is it not fig:treeandcategories  (fig 1.4)?}\alex{I do not understand this comment}. The listing
 below introduces no new elements that we have not already discussed:
 
 \begin{code}{}
@@ -395,13 +395,11 @@ figure \figref{treeandcategories}.
 \end{figure}
 
 
-\alex{here}
-
 %-------------------------------------------------------------------------------
 \subsection{Multiple Origins}
 
-Adding Pane 4 to list the method is slightly more complicated. When a
-method category is selected we want to show \emph{only} the methods
+Adding the list of methods as Pane 4 involves slightly more machinery. 
+When a method category is selected we want to show \emph{only} the methods
 that belong to that category. If no category is selected, we want to
 show \emph{all} methods that belong to the current class.
 
@@ -421,12 +419,13 @@ PBE2CodeNavigator>>buildBrowser
   browser transmit to: #packages; andShow: [:a | self packagesIn: a].
   browser transmit from: #packages; to: #classes; andShow: [:a | self classesIn: a].
   browser transmit from: #classes; to: #categories; andShow: [:a | self categoriesIn: a].
-  browser transmit from: #classes; from: #categories; to: #methods; andShow: [:a | self methodsIn: a].
+  browser transmit from: #classes; from: #categories; to: #methods; 
+  		andShow: [:a | self methodsIn: a].
 
 PBE2CodeNavigator>>methodsIn: constructor
   constructor list
-    display: [:class :category | (class organization listAtCategoryNamed: category)
-                                      sorted].
+    display: [:class :category | 
+    			(class organization listAtCategoryNamed: category) sorted].
   constructor list
     when: [:class :category | class notNil and: [category isNil]];
     display: [:class | class selectors sorted];
@@ -434,8 +433,7 @@ PBE2CodeNavigator>>methodsIn: constructor
 \end{code}
 
 
-The listing shows a couple of properties we have not seen
-before. First, the multiple origins are reflected in the number of
+The listing shows a couple of new properties. First, the multiple origins are reflected in the number of
 arguments of the blocks that are used in the \ct{display:} and
 \ct{when:} clauses. Secondly, we are using more than one
 presentation---Glamour shows all presentations whose conditions match in
@@ -443,9 +441,8 @@ the order that they were defined when the corresponding transmission
 is fired.
 
 In the first presentation, the condition matches when all arguments
-are defined (not nil), this is the default for all presentations. The
-second condition matches only when the category is undefined but the
-class is not. When a presentation must be displayed even in the
+are defined (not \ct{null}), this is the default for all presentations. The
+second condition matches only when the category is undefined and the class defined. When a presentation must be displayed even in the
 presence of undefined origin, it is necessary to use \ct{allowNil} as
 shown. We can therefore omit the category from the display block.
 
@@ -476,7 +473,7 @@ browser transmit from: #packages port: #selection; to: #classes; andShow: [:a | 
 \end{code}
 
 \dc{It is currently not clear what are the available ports for each
-  presentation. It looks like hover does not exist anymore}
+  presentation. It looks like hover does not exist anymore} \alex{I asked the moose mailing list. We will see}
 
 Other ports exist and may be used depending on the presentation. For
 example, the list presentation also populates the \emph{hover} port
@@ -490,9 +487,8 @@ presentations being used.
 \subsection{Reusing Browsers}
 \label{sec:tutorial/reusing-browsers}
 
-One of the strengths of Glamour lies in the ability to use browsers in
-place of primitive presentations such as lists and trees. This allows
-us to reuse browsers and nest them within each other.
+One of  Glamour strengths is to use browsers in
+place of primitive presentations such as lists and trees. This conveys formidable possibilities to compose and nest browsers.
 
 In the next example we want to create a class \emph{editor} as shown
 in figure~\ref{fig:classbrowser_wireframe}. Panes 1 through 4 are
@@ -513,12 +509,14 @@ existing navigator return the constructed browser.
 
 \begin{code}{}
 PBE2CodeNavigator>>buildBrowser
-  [...]
-  ^ browswer
+  " ... "
+  ^ browser
 \end{code}
 
 We can then reuse the navigator in the new editor browser as shown
 below.
+
+\ab{@@here}
 
 \begin{code}{}
 Object subclass: #PBE2CodeEditor
