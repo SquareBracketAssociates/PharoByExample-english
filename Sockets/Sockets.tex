@@ -447,7 +447,9 @@ We illustrate socket stream use at client side with the following code snipet (\
 
 \begin{script}[script:streamGetLine]{Getting the first line of a web page using \ct!SocketStream!.}
 	|stream httpQuery result|
-	stream := SocketStream openConnectionToHostNamed: 'www.pharo-project.org' port: 80.
+	stream := SocketStream 
+			openConnectionToHostNamed: 'www.pharo-project.org' 
+			port: 80.
 	httpQuery := 'GET / HTTP/1.1', String crlf, 
 		'Host: www.pharo-project.org:80', String crlf, 
 		'Accept: text/html', String crlf.
@@ -500,7 +502,7 @@ A server relying on socket streams still uses a socket for handling incoming con
 Socket streams come into action once a socket is created for interaction with a client.
 The socket is wrapped into a socket stream that eases data exchange using messages such as \ct!sendCommand:! or \ct!nextLine!.
 Once we are done, we close and destroy the socket handling connections and we close the interaction socket stream.
-This latter will take care of closing and destroy the underlying interaction socket.
+This latter will take care of closing and destroying the underlying interaction socket.
 
 %%%%%%CONTINUE FROM HERE
 
@@ -1082,10 +1084,20 @@ This latter will take care of closing and destroy the underlying interaction soc
 
 %\section{Distributed Object Applications}
 \section{Chapter summary}
-Reference remoteSmalltalk (rST)
-Reference to OCEAN
+In this chapter we presented how to use TCP sockets and socket streams to develop both clients and servers.
+As mentionned in the introduction, we recommand ot use socket streams which are of higher level and provide facility methods.
+They were successfully used in projects such as Swazoo and Kom web servers used respectively by AidaWeb and Seaside web frameworks.
 
-Reference to a chat instant messages:  on Squeaksource: http://www.squeaksource.com/PharoInstantMessenge \ben{maybe it should be moved in another repo}. You can load it using Monticello (Chapter \ja{numChapter}).
+However, socket streams remain still low-level if you have an application involving different objects distributed over communicating images.
+In a such software, developers need to deal with message passing between remote objects by serializing arguments and results.
+They'll have also to take care of distributed garbage-collection.
+An object should not be destroyed if it is referenced by a remote one.
+This recurrent not trivial issues are solved by Object-Request Brokers (ORB) such as rST\footnote{http://www.squeaksource.com/rST.html}.
+An ORB frees the developer from networking issues and thus allows expressing remote communications simply using messages exchanged between remote objects.
+
+
+% Noury: Pour pousser le message "Utilisez les SocketStream", est-ce Ben tu pourras remplacer les socket par des SocketStream dans ton code ?
+% Reference to a chat instant messages:  on Squeaksource: http://www.squeaksource.com/PharoInstantMessenge \ben{maybe it should be moved in another repo}. You can load it using Monticello (Chapter \ja{numChapter}).
 
 %=================================================================
 \ifx\wholebook\relax\else\end{document}\fi
