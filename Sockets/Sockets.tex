@@ -239,7 +239,7 @@ Socket connection, query sending and html reception are inside a block which exe
 
 \section{TCP Server}
 \label{sec:serverTcpSocket}
-Now let us build a simple TCP server. A \textit{TCP Server} is an application that awaits TCP connections from TCP clients. Once connection established, both the server and the client can send a receive data in any order. 
+Now, let us build a simple TCP server. A \textit{TCP Server} is an application that awaits TCP connections from TCP clients. Once connection established, both the server and the client can send a receive data in any order. 
 A big difference between the server and the client is that the server uses at least two sockets.
 One socket is used for handling client connections, while the second serves for exchanging data with a particular client.
 
@@ -254,7 +254,7 @@ The life-cycle of a TCP server in \pharo  has 5 steps:
 \item Close \textit{socket$_1$} when we decide to kill the server and stop accepting client connections.
 \end{enumerate}
 
-Concurrence is implicit in this life-cycle.
+Concurrency is implicit in this life-cycle.
 The server listens for incoming client's connection requests through \textit{socket$_1$}, while exchanging data with some clients through \textit{socket$_2$}.
 The server can even simultaneously exchange data with multiple clients through different sockets.
 In the following, we first illustrate the socket serving machinery.
@@ -279,17 +279,18 @@ interactionSocket closeAndDestroy.
 
 First, we create the socket that we will use for handling incoming connections.
 We set it up to listen on port 9999.
-The \ct!backlogSize! is set to 10, meaning that we as the Operating System to allocate a buffer for 10 connection requests. This backlog will not be actually used in this example.
+The \ct!backlogSize! is set to 10, meaning that we ask the Operating System to allocate a buffer for 10 connection requests. 
+This backlog will not be actually used in this example.
 But, a more realistic server will have to handle multiple connections and then store pending connection requests into the backlog.
 
-Once the connection socket is prepared, it starts listening for client connections.
+Once the connection socket (referenced by variable \ct!connectionSocket!) is set up, it starts listening for client connections.
 The \ct!waitForAcceptFor: 60! message makes the socket wait connection requests for 60 seconds.
 If no client attempts to connect during these 60 seconds, the message answers \ct!nil!.
 Otherwise, we get a new socket \ct!interactionSocket! connected the client's socket.
-At this point, we don't need the connection socket anymore, so we can close it (\ct!closeAndDestroy! message).
+At this point, we don't need the connection socket anymore, so we can close it (\ct!connectionSocket closeAndDestroy! message).
 
 Since the interaction socket is already connected to the client, we can use it to exchange data.
-Messages \ct!receiveData! and \ct!sendData:! presented above (see section~\ref{sec:exchangeData}) can be used to this end.
+Messages \ct!receiveData! and \ct!sendData:! presented above (see section~\ref{sec:exchangeData}) can be used to achieve this goal.
 In our example, we wait for data from the client, next we display it on the \ct!Transcript!, and last we send it back to the client prefixed with the \ct!'ECHO: '! string.
 Last, we finish the interaction with the client by closing the interaction socket.
 
@@ -307,8 +308,9 @@ clientSocket := Socket newTCP.
 \end{script}
 
 
-You cannot test this script totally without having a second image that will execute the client code. 
-Therefore use two different images, one that runs the server code and one for the client code. Indeed, since we use the user interaction process, the \pharo UI will be frozen at some points, such as during the \ct!waitForAcceptFor:!.
+You cannot test this script totally without having the client code running, for example in a different process or a second image. 
+We do use two different images, one that runs the server code and one for the client code. 
+Indeed, since we use the user interaction process, the \pharo UI will be frozen at some points, such as during the \ct!waitForAcceptFor:!.
 \Scrref{echoClient} provides the code to run on the client image.
 Note that you have to run the server code first.
 Otherwise, the client will fail.
@@ -329,7 +331,7 @@ Otherwise, the client will fail.
 \subsection{Echo Server Class}
 We define here the \ct!EchoServer! class that deals with concurrency issues.
 It handles concurrent client queries and it does not freeze the UI.
-As we can see in the definition labelled as \clsref{echoServerClassDef}, the \ct!EchoServer! declares three instance variables.
+As we can see in the definition labelled \clsref{echoServerClassDef}, the \ct!EchoServer! declares three instance variables.
 The first one (\ct!connectionSocket!) refers to the socket used for listening to client connections.
 The two last instance variables (\ct!isRunning! and \ct!isRunningLock!) are used to manage the server process life-cycle while dealing with synchronization issues.
  
@@ -375,16 +377,18 @@ This will have the consequence of stopping the serving loop in method \ct!EchoSe
 
 \begin{method}[meth:serve]{The \ct!EchoServer>>>serve! Method}
 serve
-	| interactionSocket |
-	[self isRunning] whileTrue: [self interactOnConnection].
-	connectionSocket closeAndDestroy
+| interactionSocket |
+[[self isRunning]
+	whileTrue: [self interactOnConnection]]
+	ensure: [connectionSocket closeAndDestroy]
 \end{method}
 
 The activity of the serving process is implemented in the \ct!serve! method (see \mthref{meth:serve}).
 It interacts with clients on connections while the \ct!isRunning! flag is \ct!true!.
-After a \ct!stop!, the connection socket is destroyed and the serving process is terminated. 
-The creation of this serving process is the responsibility of method \ct!EchoServer>>>start! (see the last line of \mthref{meth:start}).
-eidosco
+After a \ct!stop!, the serving process is terminates by destroying the connection socket.
+The \ct!ensure:! message garantees that that this destruction is performed even if the serving process is terminated abnormally. 
+Such termination may occure because of an exception (\eg network disconnection) or a user action (\eg through the process browser).   
+
 \begin{method}[meth:start]{The \ct!EchoServer>>>start! Method}
 start
 	isRunningLock critical: [
@@ -395,14 +399,16 @@ start
 	[self serve] fork
 \end{method}
 
+The creation of the serving process is the responsibility of method \ct!EchoServer>>>start! (see the last line of \mthref{meth:start}).
 The \ct!EchoServer>>>start! method first checks if the server is already running.
 It returns if this is case.
-Otherwise, the a TCP socket dedicated to connection handling is created and made to listen on port 9999.
-The backlog size refers to the size of the system buffer for storing pending client connection requests.
+Otherwise, a TCP socket dedicated to connection handling is created and made to listen on port 9999.
+The backlog size is set to 10, that is -as mentionned above- the system allocates a buffer for storing 10 pending client connection requests.
 This value is a trade-off that depends on how fast is the server (varies according to the VM and the hardward) and the maximum rate of client connections requests.
-Thus, the backlog size should be big enough to avoid loosing any connection request, but not too big to avoid wasting memory.
+Thus, the backlog size should be big enough to avoid losing any connection request, but not too big to avoid wasting memory.
 Finally \ct!EchoServer>>>start! method creates a process by sending the \ct!fork! message to the \ct![self serve]! block.
 The created process has the same priority as the creator process (i.e. the one that performs the \ct!EchoServer>>>start! method).
+
 
 \begin{method}[meth:interactOnConnection]{The \ct!EchoServer>>>interactOnConnection! Method}
 interactOnConnection
@@ -428,8 +434,7 @@ interactUsing: interactionSocket
 	 interactionSocket closeAndDestroy]
 \end{method}
 
-The interaction as implemented in method \ct!EchoServer>>>interactUsing:! (see \mthref{meth:interactUsing}) with a client is the only application specific part\footnote{In an actual application we should have an abstract server superclass which subclasses implement the \ct!interactUsing:! method.}.
-The interaction boils down to reading data provided by the client and sending it back prefixed with the \ct!'ECHO: '! string.
+The interaction as implemented in method \ct!EchoServer>>>interactUsing:! (see \mthref{meth:interactUsing}) with a client boils down to reading data provided by the client and sending it back prefixed with the \ct!'ECHO: '! string.
 It worth noting that we ensure that the interaction socket is destroyed, whether we have exchanged data or not (timeout).
 
 \section{SocketStream}
@@ -442,7 +447,9 @@ We illustrate socket stream use at client side with the following code snipet (\
 
 \begin{script}[script:streamGetLine]{Getting the first line of a web page using \ct!SocketStream!.}
 	|stream httpQuery result|
-	stream := SocketStream openConnectionToHostNamed: 'www.pharo-project.org' port: 80.
+	stream := SocketStream 
+			openConnectionToHostNamed: 'www.pharo-project.org' 
+			port: 80.
 	httpQuery := 'GET / HTTP/1.1', String crlf, 
 		'Host: www.pharo-project.org:80', String crlf, 
 		'Accept: text/html', String crlf.
@@ -495,590 +502,602 @@ A server relying on socket streams still uses a socket for handling incoming con
 Socket streams come into action once a socket is created for interaction with a client.
 The socket is wrapped into a socket stream that eases data exchange using messages such as \ct!sendCommand:! or \ct!nextLine!.
 Once we are done, we close and destroy the socket handling connections and we close the interaction socket stream.
-This latter will take care of closing and destroy the underlying interaction socket.
+This latter will take care of closing and destroying the underlying interaction socket.
 
 %%%%%%CONTINUE FROM HERE
 
-\section{A Basic Chat Application}
-
-The source code presented in this section is available on Squeaksource: http://www.squeaksource.com/PharoInstantMessenge \ben{maybe it should be moved in another repo}. You can load it using Monticello (Chapter \ja{numChapter}). It contains also a user interface that is not explained in this chapter.
-
-The application contains 4 classes: ChatMessage represents a message sent between a client and a server, ChatServerBehavior represents the behavior of the server (\eg the management of messages), ChatServerLauncher represents the server itself, and ChatClient represents a client. Each instance and class variable has accessors, which are not present in the source code beside to improve readability.
-
-\begin{script}[script:pimChatMessage]{A Basic Chat application: Class ChatMessage}
-Object subclass: #ChatMessage
-	instanceVariableNames: 'date author message recipient'
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'PIM'
-
-ChatMessage Class>>recipient: aSymbol date: time author: author message: aMessage
-	^ self new
-			recipient: aSymbol;
-			date: time;
-			author: author;
-			message: aMessage.
-\end{script}
-
-\begin{script}[script:pimChatServerBehavior]{A Basic Chat application: Class ChatServerBehavior}
-Object subclass: #ChatServerBehavior
-	instanceVariableNames: 'interactionSocket'
-	classVariableNames: 'ConnectedMap'
-	poolDictionaries: ''
-	category: 'PIM'
-
-
-ChatServerBehavior>>allNick
-	^ #all
-
-ChatServerBehavior>>alreadyConnectedError
-	self alreadyConnectedError: interactionSocket
-
-ChatServerBehavior>>alreadyConnectedError: aSocket
-	| message |
-	message := ChatMessage
-					recipient: #Server
-					date: DateAndTime now
-					author: #Server
-					message: 'Username already connected. Please choose another nickname'.					
-	aSocket sendData: message storeString.
-	self forceClose
-
-ChatServerBehavior>>close
-	self unregister.
-	self forceClose.
-
-ChatServerBehavior>>execute
-	[self transmit] whileTrue:[].
-	self close.
-
-ChatServerBehavior>>exitMessage
-	^'/exit'
-
-ChatServerBehavior>>findSocket: aSymbol
-	^ ConnectedMap at: aSymbol ifAbsent: [^ nil]
-
-ChatServerBehavior>>forceClose
-	interactionSocket ifNotNilDo:[:socket | socket closeAndDestroy].
-
-ChatServerBehavior>>initialize
-	super initialize.
-	ConnectedMap 
-		ifNil: [
-			ConnectedMap := Dictionary new.
-			ConnectedMap at: #Server put: nil.
-			ConnectedMap at: self allNick put: nil]
-
-ChatServerBehavior>>interactionSocket: anObject
-	interactionSocket := anObject
-
-ChatServerBehavior>>printReceivedData: receivedData
-	Transcript << receivedData.
-	Transcript cr.
-
-ChatServerBehavior>>register: aMessage
-	| name |
-	name := aMessage author.
-	(ConnectedMap keys includes: name)
-		ifTrue: [^ self alreadyConnectedError].
-	ConnectedMap at: name put: interactionSocket.
-	Transcript show: name printString, ' registered';cr.
-	self sendListOfConnectedPeople.
-
-ChatServerBehavior>>registrationMessage
-	^ '/register '
-
-ChatServerBehavior>>sendListOfConnectedPeople
-	| result message |
-	result := WriteStream on: ''.
-	result 
-		nextPutAll: '/list';
-		nextPut: Character cr;
-		nextPutAll: '#all';
-		nextPut: Character cr.
-	ConnectedMap associations do: [:association || nick socket |
-		nick := association key.
-		socket := association value.
-		socket notNil
-			ifTrue: [result 
-						nextPutAll: nick printString;
-						nextPut: Character cr]].
-	message := ChatMessage
-					recipient: #Server
-					date: DateAndTime now
-					author: #Server
-					message: result contents.
-	ConnectedMap values do: [:socket |
-		socket notNil
-			ifTrue: [socket sendData: message storeString]]
-
-
-ChatServerBehavior>>transmit
-	| receivedData  sock assoc message chatMessage |
-	interactionSocket ifNotNil:[
-		interactionSocket isConnected 
-			ifTrue: [	
-				receivedData := interactionSocket receiveData.
-				receivedData isEmpty ifTrue: [^true].
-				chatMessage := Compiler evaluate: receivedData.
-				(chatMessage message beginsWith: self exitMessage) 
-					ifTrue:[
-						self printReceivedData: ('Close the connection with ', interactionSocket address printString).
-						^false].
-				(chatMessage message beginsWith: self registrationMessage)
-					ifTrue:[
-						self register: chatMessage.
-						^true].
-				(chatMessage recipient == self allNick)
-					ifTrue: [
-						ConnectedMap values do: [:socket |
-							(socket ~~ interactionSocket and: [socket notNil])
-								ifTrue: [socket sendData: receivedData]].
-						^true].
-				
-				sock := self findSocket: chatMessage recipient.
-				sock 
-					ifNil:[
-						message := ChatMessage
-										recipient: #Server
-										date: DateAndTime now
-										author: #Server
-										message: 'User ', chatMessage recipient printString, ' is not connected'.
-						interactionSocket sendData: message storeString]
-					ifNotNil: [sock sendData: receivedData.].
-				self printReceivedData: receivedData.
-				^true]].
-	^false.
-
-
-ChatServerBehavior>>unregister
-	| socket |
-	socket := ConnectedMap removeKey: (ConnectedMap keyAtValue: interactionSocket ifAbsent: []) ifAbsent: [].
-	socket ifNotNil: [
-		 socket closeAndDestroy.
-		Transcript show: 'Socket closed';cr].
-	self sendListOfConnectedPeople
-\end{script}
-
-
-\begin{script}[script:pimChatServerLauncher]{A Basic Chat application: Class ChatServerLauncher}
-Object subclass: #ChatServerLauncher
-	instanceVariableNames: 'port'
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'PIM'
-
-ChatServerLauncher>>connect
-	| connectionSocket interactionSocket |
-	connectionSocket := Socket newTCP.
-	connectionSocket listenOn: self port backlogSize: 10.
-	interactionSocket := connectionSocket waitForAcceptFor: 60.
-	connectionSocket closeAndDestroy.
-	^ interactionSocket
-
-ChatServerLauncher>>execute
-	| socket |
-	[true]
-		whileTrue: [
-			socket := self connect.
-			"echo behavior"
-			socket ifNotNil:[
-				[(ChatServerBehavior new interactionSocket: socket) execute] fork]]
-
-ChatServerLauncher Class>>launch: aNumber
-	| server |
-	server := self port: aNumber.
-	[server execute] fork.
-	^server
-
-ChatServerLauncher Class>>port: anInteger
-	^self new port: anInteger
-=======
-\begin{classdef}[script:pimChatMessage]{A Basic Chat application: Class ChatMessage}
-Object subclass: #ChatMessage
-	instanceVariableNames: ''date author message recipient''
-	classVariableNames: ''''
-	poolDictionaries: ''''
-	category: ''PIM''
-
-ChatMessage>>time
-
-	| dateAndTime stream |
-	dateAndTime := self date.
-	stream := WriteStream on: ''''.
-	dateAndTime printHMSOn: stream.
-	^ stream contents
-
-ChatMessage>>timeStamp
-
-	^ (DateAndTime fromString: self date) asTimeStamp asString
-
-ChatMessage class>>recipient: aSymbol date: time author: author message: aMessage
-
-	^ self new
-			recipient: aSymbol;
-			date: time;
-			author: author;
-			message: aMessage.
-\end{classdef}
->>>>>>> d8c95637a3a4577067240b91ef046d95528980e5
-
-\begin{classdef}[script:pimChatServerBehavior]{A Basic Chat application: Class ChatServerBehavior}
-Object subclass: #ChatServerBehavior
-	instanceVariableNames: ''interactionSocket''
-	classVariableNames: ''ConnectedMap''
-	poolDictionaries: ''''
-	category: ''PIM''
-
-ChatServerBehavior>>allNick
-
-	^ #all
-
-ChatServerBehavior>>alreadyConnectedError
-
-	self alreadyConnectedError: interactionSocket
-
-ChatServerBehavior>>alreadyConnectedError: aSocket
-
-	| message |
-	message := ChatMessage
-					recipient: #Server
-					date: DateAndTime now
-					author: #Server
-					message: ''Username already connected. Please choose another nickname''.
-						
-	aSocket sendData: message storeString.
-	self forceClose
-
-ChatServerBehavior>>close
-	
-	self unregister.
-	self forceClose.
-
-ChatServerBehavior>>execute
-
-	[self transmit] whileTrue:[].
-	self close.
-
-ChatServerBehavior>>exitMessage
-
-	^''/exit''
-
-ChatServerBehavior>>findSocket: aSymbol
-
-	^ ConnectedMap at: aSymbol ifAbsent: [^ nil]
-
-ChatServerBehavior>>forceClose
-	
-	interactionSocket ifNotNilDo:[:socket | socket closeAndDestroy].
-
-ChatServerBehavior>>initialize
-
-	super initialize.
-	ConnectedMap 
-		ifNil: [
-			ConnectedMap := Dictionary new.
-			ConnectedMap at: #Server put: nil.
-			ConnectedMap at: self allNick put: nil]
-
-ChatServerBehavior>>printReceivedData: receivedData
-	
-	Transcript << receivedData.
-	Transcript cr.
-
-ChatServerBehavior>>register: aMessage
-
-	| name |
-	name := aMessage author.
-	(ConnectedMap keys includes: name)
-		ifTrue: [^ self alreadyConnectedError].
-	ConnectedMap at: name put: interactionSocket.
-	Transcript show: name printString, '' registered'';cr.
-	self sendListOfConnectedPeople.
-
-ChatServerBehavior>>registrationMessage
-
-	^ ''/register ''
-
-ChatServerBehavior>>sendListOfConnectedPeople
-
-	| result message |
-	result := WriteStream on: ''''.
-	result 
-		nextPutAll: ''/list'';
-		nextPut: Character cr;
-		nextPutAll: ''#all'';
-		nextPut: Character cr.
-	ConnectedMap associations do: [:association || nick socket |
-		nick := association key.
-		socket := association value.
-		socket notNil
-			ifTrue: [result 
-						nextPutAll: nick printString;
-						nextPut: Character cr]].
-	
-	message := ChatMessage
-					recipient: #Server
-					date: DateAndTime now
-					author: #Server
-					message: result contents.
-
-	ConnectedMap values do: [:socket |
-		socket notNil
-			ifTrue: [socket sendData: message storeString]]
-
-ChatServerBehavior>>transmit
-	| receivedData  sock assoc message chatMessage |
-	interactionSocket ifNotNil:[
-		interactionSocket isConnected 
-			ifTrue: [	
-				receivedData := interactionSocket receiveData.
-				receivedData isEmpty ifTrue: [^true].
-				chatMessage := Compiler evaluate: receivedData.
-				(chatMessage message beginsWith: self exitMessage) 
-					ifTrue:[
-						self printReceivedData: (''Close the connection with '', interactionSocket address printString).
-						^false].
-				(chatMessage message beginsWith: self registrationMessage)
-					ifTrue:[
-						self register: chatMessage.
-						^true].
-				(chatMessage recipient == self allNick)
-					ifTrue: [
-						ConnectedMap values do: [:socket |
-							(socket ~~ interactionSocket and: [socket notNil])
-								ifTrue: [socket sendData: receivedData]].
-						^true].
-				
-				sock := self findSocket: chatMessage recipient.
-				sock 
-					ifNil:[
-						message := ChatMessage
-										recipient: #Server
-										date: DateAndTime now
-										author: #Server
-										message: ''User '', chatMessage recipient printString, '' is not connected''.
-						interactionSocket sendData: message storeString]
-					ifNotNil: [sock sendData: receivedData.].
-				self printReceivedData: receivedData.
-				^true]].
-	^false.
-
-ChatServerBehavior>>unregister
-
-	| socket |
-	socket := ConnectedMap removeKey: (ConnectedMap keyAtValue: interactionSocket ifAbsent: []) ifAbsent: [].
-	socket ifNotNil: [
-		 socket closeAndDestroy.
-		Transcript show: ''Socket closed'';cr].
-	self sendListOfConnectedPeople
-
-ChatServerBehavior class>>connectedMap
-
-	^ ConnectedMap
-
-ChatServerBehavior class>>interactionSocket: aSocket
-
-	^self new interactionSocket: aSocket
-\end{classdef}
-
-
-\begin{classdef}[script:pimChatServerLauncher]{A Basic Chat application: Class ChatServerLauncher}
-Object subclass: #ChatServerLauncher
-	instanceVariableNames: ''port''
-	classVariableNames: ''''
-	poolDictionaries: ''''
-	category: ''PIM''
-
-ChatServerLauncher>>connect
-	| connectionSocket interactionSocket |
-	connectionSocket := Socket newTCP.
-	connectionSocket listenOn: self port backlogSize: 10.
-	interactionSocket := connectionSocket waitForAcceptFor: 60.
-	connectionSocket closeAndDestroy.
-	^ interactionSocket
-
-ChatServerLauncher>>deconnect
-
-	ChatServerBehavior connectedMap associations copy do:[:each |
-		each value ifNotNil:[:value |
-			value closeAndDestroy.
-			ChatServerBehavior connectedMap removeKey: each key]]
-
-ChatServerLauncher>>execute
-
-	| socket |
-	[true]
-		whileTrue: [
-			socket := self connect.
-			"echo behavior"
-			socket ifNotNil:[
-				[(ChatServerBehavior interactionSocket: socket) execute] fork]]
-
-ChatServerLauncher>>initialize
-
-	super initialize.
-	listOfBehaviors := OrderedCollection new.
-
-ChatServerLauncher class>>example
-	"self example"
-
-	^ self launch: 9999
-
-ChatServerLauncher class>>launch: aNumber
-	| server |
-	server := self port: aNumber.
-	[server execute] fork.
-	^server
-
-ChatServerLauncher class>>port: anInteger
-	^self new port: anInteger
-
-\end{classdef}
-
-
-\begin{classdef}[script:pimChatClient]{A Basic Chat application: Class ChatClient}
-Object subclass: #ChatClient
-	instanceVariableNames: ''host port connectionSocket name isConnected''
-	classVariableNames: ''''
-	poolDictionaries: ''''
-	category: ''PIM''
-
-ChatClient>>author: aMessage
-
-	^ (aMessage subStrings: ''|'') second 
-
-ChatClient>>buildMessageString: message
-
-	| stream |
-	stream := WriteStream on: ''''.
-	self messageFormat do: [:each |
-		each isSymbol
-			ifTrue: [stream nextPutAll: (message perform: each)]
-			ifFalse: [stream nextPutAll: each]].
-	^ stream contents
-
-ChatClient>>close
-	isConnected := false.
-	connectionSocket closeAndDestroy.
-
-ChatClient>>connect
-	connectionSocket := Socket newTCP.	
-	connectionSocket 
-		connectTo: host port: port; 
-		waitForConnectionFor: 10.
-	isConnected := true.
-	[self receive] fork.
-	self register.
-
-ChatClient>>displayMessage: aString for: aNick
-
-	WindowsManager default displayMessage: aString for: aNick
-	
-
-ChatClient>>exit
-	
-	self send: ''/exit'' to: #Server.
-	self close.
-
-ChatClient>>listMessage
-
-	^''/list''
-
-ChatClient>>message: aMessage
-
-	^ (aMessage subStrings: ''|'') third 
-
-ChatClient>>messageFormat
-
-	^ {''[''. #time. '']''. '' ''. #author. '' says: ''. String cr. #message }
-
-ChatClient>>newMessage: aString
-
-	| string |
-	string := ''''.
-	aString isEmpty not ifTrue: [| chatMessage |
-		chatMessage := Compiler evaluate: aString.
-		"((chatMessage recipient == self name) or: [chatMessage recipient == #all])
-			ifFalse: [self halt ]."
-		chatMessage author == #Server
-			ifTrue: [self serverMessage: chatMessage]
-			ifFalse:[
-				string := self buildMessageString: chatMessage.
-				chatMessage recipient == #all
-					ifTrue: [ self displayMessage: string for: #all ]
-					ifFalse:[ self displayMessage: string for: chatMessage author ]]].
-
-ChatClient>>receive
-
-	[isConnected]
-		whileTrue:[
-			| message |
-			connectionSocket isConnected
-				ifTrue:[
-					message := connectionSocket receiveData.
-					self newMessage: message]]
-
-ChatClient>>register
-	
-	self send: (''/register '',name printString) to: #Server
-
-ChatClient>>send: aMessage to: aSymbol
-
-	| message |
-	message := ChatMessage
-					recipient: aSymbol
-					date: DateAndTime now
-					author: self name
-					message: aMessage.
-	connectionSocket sendData: message storeString.
-	aSymbol == #Server
-		ifFalse: [self displayMessage: (self buildMessageString: message) for: aSymbol]
-
-ChatClient>>serverMessage: aChatMessage
-
-	(aChatMessage message beginsWith: self listMessage)
-		ifTrue: [^ self updateContactsList: aChatMessage].
-	self displayMessage: (self buildMessageString: aChatMessage message) for: #Server
-
-ChatClient>>timeStamp: aMessage
-
-	^ (aMessage subStrings: ''|'') first 
-
-ChatClient>>updateContactsList: aChatMessage
-
-	| list |
-	list := (aChatMessage message subStrings: String cr) allButFirst.
-	WindowsManager default updateContactsList: list.
-
-ChatClient class>>example
-
-	(self hostname: ''127.0.0.1'' port: 9999 name: #test) connect
-
-ChatClient class>>hostname: aString port: anInteger name: aSymbol
-	^self new 
-		host: (NetNameResolver addressForName: aString);
-		port: anInteger;
-		name: aSymbol
-
-\end{classdef}
-
-
-An example:
-\begin{script}[script:pimServerExample]{A Basic Chat application: Server running}
-ChatServerLauncher launch: aPortNumber
-\end{script}
-
-\ja{to do}
-\begin{script}[script:pimServerExample]{A Basic Chat application: Client running}
-
-\end{script}
-
+%\section{A Basic Chat Application}
+%
+%
+%
+%The application contains 4 classes: ChatMessage represents a message sent between a client and a server, ChatServerBehavior represents the behavior of the server (\eg the management of messages), ChatServerLauncher represents the server itself, and ChatClient represents a client. Each instance and class variable has accessors, which are not present in the source code beside to improve readability.
+%
+%\begin{script}[script:pimChatMessage]{A Basic Chat application: Class ChatMessage}
+%Object subclass: #ChatMessage
+%	instanceVariableNames: 'date author message recipient'
+%	classVariableNames: ''
+%	poolDictionaries: ''
+%	category: 'PIM'
+%
+%ChatMessage Class>>recipient: aSymbol date: time author: author message: aMessage
+%	^ self new
+%			recipient: aSymbol;
+%			date: time;
+%			author: author;
+%			message: aMessage.
+%\end{script}
+%
+%\begin{script}[script:pimChatServerBehavior]{A Basic Chat application: Class ChatServerBehavior}
+%Object subclass: #ChatServerBehavior
+%	instanceVariableNames: 'interactionSocket'
+%	classVariableNames: 'ConnectedMap'
+%	poolDictionaries: ''
+%	category: 'PIM'
+%
+%
+%ChatServerBehavior>>allNick
+%	^ #all
+%
+%ChatServerBehavior>>alreadyConnectedError
+%	self alreadyConnectedError: interactionSocket
+%
+%ChatServerBehavior>>alreadyConnectedError: aSocket
+%	| message |
+%	message := ChatMessage
+%					recipient: #Server
+%					date: DateAndTime now
+%					author: #Server
+%					message: 'Username already connected. Please choose another nickname'.					
+%	aSocket sendData: message storeString.
+%	self forceClose
+%
+%ChatServerBehavior>>close
+%	self unregister.
+%	self forceClose.
+%
+%ChatServerBehavior>>execute
+%	[self transmit] whileTrue:[].
+%	self close.
+%
+%ChatServerBehavior>>exitMessage
+%	^'/exit'
+%
+%ChatServerBehavior>>findSocket: aSymbol
+%	^ ConnectedMap at: aSymbol ifAbsent: [^ nil]
+%
+%ChatServerBehavior>>forceClose
+%	interactionSocket ifNotNilDo:[:socket | socket closeAndDestroy].
+%
+%ChatServerBehavior>>initialize
+%	super initialize.
+%	ConnectedMap 
+%		ifNil: [
+%			ConnectedMap := Dictionary new.
+%			ConnectedMap at: #Server put: nil.
+%			ConnectedMap at: self allNick put: nil]
+%
+%ChatServerBehavior>>interactionSocket: anObject
+%	interactionSocket := anObject
+%
+%ChatServerBehavior>>printReceivedData: receivedData
+%	Transcript << receivedData.
+%	Transcript cr.
+%
+%ChatServerBehavior>>register: aMessage
+%	| name |
+%	name := aMessage author.
+%	(ConnectedMap keys includes: name)
+%		ifTrue: [^ self alreadyConnectedError].
+%	ConnectedMap at: name put: interactionSocket.
+%	Transcript show: name printString, ' registered';cr.
+%	self sendListOfConnectedPeople.
+%
+%ChatServerBehavior>>registrationMessage
+%	^ '/register '
+%
+%ChatServerBehavior>>sendListOfConnectedPeople
+%	| result message |
+%	result := WriteStream on: ''.
+%	result 
+%		nextPutAll: '/list';
+%		nextPut: Character cr;
+%		nextPutAll: '#all';
+%		nextPut: Character cr.
+%	ConnectedMap associations do: [:association || nick socket |
+%		nick := association key.
+%		socket := association value.
+%		socket notNil
+%			ifTrue: [result 
+%						nextPutAll: nick printString;
+%						nextPut: Character cr]].
+%	message := ChatMessage
+%					recipient: #Server
+%					date: DateAndTime now
+%					author: #Server
+%					message: result contents.
+%	ConnectedMap values do: [:socket |
+%		socket notNil
+%			ifTrue: [socket sendData: message storeString]]
+%
+%
+%ChatServerBehavior>>transmit
+%	| receivedData  sock assoc message chatMessage |
+%	interactionSocket ifNotNil:[
+%		interactionSocket isConnected 
+%			ifTrue: [	
+%				receivedData := interactionSocket receiveData.
+%				receivedData isEmpty ifTrue: [^true].
+%				chatMessage := Compiler evaluate: receivedData.
+%				(chatMessage message beginsWith: self exitMessage) 
+%					ifTrue:[
+%						self printReceivedData: ('Close the connection with ', interactionSocket address printString).
+%						^false].
+%				(chatMessage message beginsWith: self registrationMessage)
+%					ifTrue:[
+%						self register: chatMessage.
+%						^true].
+%				(chatMessage recipient == self allNick)
+%					ifTrue: [
+%						ConnectedMap values do: [:socket |
+%							(socket ~~ interactionSocket and: [socket notNil])
+%								ifTrue: [socket sendData: receivedData]].
+%						^true].
+%				
+%				sock := self findSocket: chatMessage recipient.
+%				sock 
+%					ifNil:[
+%						message := ChatMessage
+%										recipient: #Server
+%										date: DateAndTime now
+%										author: #Server
+%										message: 'User ', chatMessage recipient printString, ' is not connected'.
+%						interactionSocket sendData: message storeString]
+%					ifNotNil: [sock sendData: receivedData.].
+%				self printReceivedData: receivedData.
+%				^true]].
+%	^false.
+%
+%
+%ChatServerBehavior>>unregister
+%	| socket |
+%	socket := ConnectedMap removeKey: (ConnectedMap keyAtValue: interactionSocket ifAbsent: []) ifAbsent: [].
+%	socket ifNotNil: [
+%		 socket closeAndDestroy.
+%		Transcript show: 'Socket closed';cr].
+%	self sendListOfConnectedPeople
+%\end{script}
+%
+%
+%\begin{script}[script:pimChatServerLauncher]{A Basic Chat application: Class ChatServerLauncher}
+%Object subclass: #ChatServerLauncher
+%	instanceVariableNames: 'port'
+%	classVariableNames: ''
+%	poolDictionaries: ''
+%	category: 'PIM'
+%
+%ChatServerLauncher>>connect
+%	| connectionSocket interactionSocket |
+%	connectionSocket := Socket newTCP.
+%	connectionSocket listenOn: self port backlogSize: 10.
+%	interactionSocket := connectionSocket waitForAcceptFor: 60.
+%	connectionSocket closeAndDestroy.
+%	^ interactionSocket
+%
+%ChatServerLauncher>>execute
+%	| socket |
+%	[true]
+%		whileTrue: [
+%			socket := self connect.
+%			"echo behavior"
+%			socket ifNotNil:[
+%				[(ChatServerBehavior new interactionSocket: socket) execute] fork]]
+%
+%ChatServerLauncher Class>>launch: aNumber
+%	| server |
+%	server := self port: aNumber.
+%	[server execute] fork.
+%	^server
+%
+%ChatServerLauncher Class>>port: anInteger
+%	^self new port: anInteger
+%=======
+%\begin{classdef}[script:pimChatMessage]{A Basic Chat application: Class ChatMessage}
+%Object subclass: #ChatMessage
+%	instanceVariableNames: ''date author message recipient''
+%	classVariableNames: ''''
+%	poolDictionaries: ''''
+%	category: ''PIM''
+%
+%ChatMessage>>time
+%
+%	| dateAndTime stream |
+%	dateAndTime := self date.
+%	stream := WriteStream on: ''''.
+%	dateAndTime printHMSOn: stream.
+%	^ stream contents
+%
+%ChatMessage>>timeStamp
+%
+%	^ (DateAndTime fromString: self date) asTimeStamp asString
+%
+%ChatMessage class>>recipient: aSymbol date: time author: author message: aMessage
+%
+%	^ self new
+%			recipient: aSymbol;
+%			date: time;
+%			author: author;
+%			message: aMessage.
+%\end{classdef}
+%>>>>>>> d8c95637a3a4577067240b91ef046d95528980e5
+%
+%\begin{classdef}[script:pimChatServerBehavior]{A Basic Chat application: Class ChatServerBehavior}
+%Object subclass: #ChatServerBehavior
+%	instanceVariableNames: ''interactionSocket''
+%	classVariableNames: ''ConnectedMap''
+%	poolDictionaries: ''''
+%	category: ''PIM''
+%
+%ChatServerBehavior>>allNick
+%
+%	^ #all
+%
+%ChatServerBehavior>>alreadyConnectedError
+%
+%	self alreadyConnectedError: interactionSocket
+%
+%ChatServerBehavior>>alreadyConnectedError: aSocket
+%
+%	| message |
+%	message := ChatMessage
+%					recipient: #Server
+%					date: DateAndTime now
+%					author: #Server
+%					message: ''Username already connected. Please choose another nickname''.
+%						
+%	aSocket sendData: message storeString.
+%	self forceClose
+%
+%ChatServerBehavior>>close
+%	
+%	self unregister.
+%	self forceClose.
+%
+%ChatServerBehavior>>execute
+%
+%	[self transmit] whileTrue:[].
+%	self close.
+%
+%ChatServerBehavior>>exitMessage
+%
+%	^''/exit''
+%
+%ChatServerBehavior>>findSocket: aSymbol
+%
+%	^ ConnectedMap at: aSymbol ifAbsent: [^ nil]
+%
+%ChatServerBehavior>>forceClose
+%	
+%	interactionSocket ifNotNilDo:[:socket | socket closeAndDestroy].
+%
+%ChatServerBehavior>>initialize
+%
+%	super initialize.
+%	ConnectedMap 
+%		ifNil: [
+%			ConnectedMap := Dictionary new.
+%			ConnectedMap at: #Server put: nil.
+%			ConnectedMap at: self allNick put: nil]
+%
+%ChatServerBehavior>>printReceivedData: receivedData
+%	
+%	Transcript << receivedData.
+%	Transcript cr.
+%
+%ChatServerBehavior>>register: aMessage
+%
+%	| name |
+%	name := aMessage author.
+%	(ConnectedMap keys includes: name)
+%		ifTrue: [^ self alreadyConnectedError].
+%	ConnectedMap at: name put: interactionSocket.
+%	Transcript show: name printString, '' registered'';cr.
+%	self sendListOfConnectedPeople.
+%
+%ChatServerBehavior>>registrationMessage
+%
+%	^ ''/register ''
+%
+%ChatServerBehavior>>sendListOfConnectedPeople
+%
+%	| result message |
+%	result := WriteStream on: ''''.
+%	result 
+%		nextPutAll: ''/list'';
+%		nextPut: Character cr;
+%		nextPutAll: ''#all'';
+%		nextPut: Character cr.
+%	ConnectedMap associations do: [:association || nick socket |
+%		nick := association key.
+%		socket := association value.
+%		socket notNil
+%			ifTrue: [result 
+%						nextPutAll: nick printString;
+%						nextPut: Character cr]].
+%	
+%	message := ChatMessage
+%					recipient: #Server
+%					date: DateAndTime now
+%					author: #Server
+%					message: result contents.
+%
+%	ConnectedMap values do: [:socket |
+%		socket notNil
+%			ifTrue: [socket sendData: message storeString]]
+%
+%ChatServerBehavior>>transmit
+%	| receivedData  sock assoc message chatMessage |
+%	interactionSocket ifNotNil:[
+%		interactionSocket isConnected 
+%			ifTrue: [	
+%				receivedData := interactionSocket receiveData.
+%				receivedData isEmpty ifTrue: [^true].
+%				chatMessage := Compiler evaluate: receivedData.
+%				(chatMessage message beginsWith: self exitMessage) 
+%					ifTrue:[
+%						self printReceivedData: (''Close the connection with '', interactionSocket address printString).
+%						^false].
+%				(chatMessage message beginsWith: self registrationMessage)
+%					ifTrue:[
+%						self register: chatMessage.
+%						^true].
+%				(chatMessage recipient == self allNick)
+%					ifTrue: [
+%						ConnectedMap values do: [:socket |
+%							(socket ~~ interactionSocket and: [socket notNil])
+%								ifTrue: [socket sendData: receivedData]].
+%						^true].
+%				
+%				sock := self findSocket: chatMessage recipient.
+%				sock 
+%					ifNil:[
+%						message := ChatMessage
+%										recipient: #Server
+%										date: DateAndTime now
+%										author: #Server
+%										message: ''User '', chatMessage recipient printString, '' is not connected''.
+%						interactionSocket sendData: message storeString]
+%					ifNotNil: [sock sendData: receivedData.].
+%				self printReceivedData: receivedData.
+%				^true]].
+%	^false.
+%
+%ChatServerBehavior>>unregister
+%
+%	| socket |
+%	socket := ConnectedMap removeKey: (ConnectedMap keyAtValue: interactionSocket ifAbsent: []) ifAbsent: [].
+%	socket ifNotNil: [
+%		 socket closeAndDestroy.
+%		Transcript show: ''Socket closed'';cr].
+%	self sendListOfConnectedPeople
+%
+%ChatServerBehavior class>>connectedMap
+%
+%	^ ConnectedMap
+%
+%ChatServerBehavior class>>interactionSocket: aSocket
+%
+%	^self new interactionSocket: aSocket
+%\end{classdef}
+%
+%
+%\begin{classdef}[script:pimChatServerLauncher]{A Basic Chat application: Class ChatServerLauncher}
+%Object subclass: #ChatServerLauncher
+%	instanceVariableNames: ''port''
+%	classVariableNames: ''''
+%	poolDictionaries: ''''
+%	category: ''PIM''
+%
+%ChatServerLauncher>>connect
+%	| connectionSocket interactionSocket |
+%	connectionSocket := Socket newTCP.
+%	connectionSocket listenOn: self port backlogSize: 10.
+%	interactionSocket := connectionSocket waitForAcceptFor: 60.
+%	connectionSocket closeAndDestroy.
+%	^ interactionSocket
+%
+%ChatServerLauncher>>deconnect
+%
+%	ChatServerBehavior connectedMap associations copy do:[:each |
+%		each value ifNotNil:[:value |
+%			value closeAndDestroy.
+%			ChatServerBehavior connectedMap removeKey: each key]]
+%
+%ChatServerLauncher>>execute
+%
+%	| socket |
+%	[true]
+%		whileTrue: [
+%			socket := self connect.
+%			"echo behavior"
+%			socket ifNotNil:[
+%				[(ChatServerBehavior interactionSocket: socket) execute] fork]]
+%
+%ChatServerLauncher>>initialize
+%
+%	super initialize.
+%	listOfBehaviors := OrderedCollection new.
+%
+%ChatServerLauncher class>>example
+%	"self example"
+%
+%	^ self launch: 9999
+%
+%ChatServerLauncher class>>launch: aNumber
+%	| server |
+%	server := self port: aNumber.
+%	[server execute] fork.
+%	^server
+%
+%ChatServerLauncher class>>port: anInteger
+%	^self new port: anInteger
+%
+%\end{classdef}
+%
+%
+%\begin{classdef}[script:pimChatClient]{A Basic Chat application: Class ChatClient}
+%Object subclass: #ChatClient
+%	instanceVariableNames: ''host port connectionSocket name isConnected''
+%	classVariableNames: ''''
+%	poolDictionaries: ''''
+%	category: ''PIM''
+%
+%ChatClient>>author: aMessage
+%
+%	^ (aMessage subStrings: ''|'') second 
+%
+%ChatClient>>buildMessageString: message
+%
+%	| stream |
+%	stream := WriteStream on: ''''.
+%	self messageFormat do: [:each |
+%		each isSymbol
+%			ifTrue: [stream nextPutAll: (message perform: each)]
+%			ifFalse: [stream nextPutAll: each]].
+%	^ stream contents
+%
+%ChatClient>>close
+%	isConnected := false.
+%	connectionSocket closeAndDestroy.
+%
+%ChatClient>>connect
+%	connectionSocket := Socket newTCP.	
+%	connectionSocket 
+%		connectTo: host port: port; 
+%		waitForConnectionFor: 10.
+%	isConnected := true.
+%	[self receive] fork.
+%	self register.
+%
+%ChatClient>>displayMessage: aString for: aNick
+%
+%	WindowsManager default displayMessage: aString for: aNick
+%	
+%
+%ChatClient>>exit
+%	
+%	self send: ''/exit'' to: #Server.
+%	self close.
+%
+%ChatClient>>listMessage
+%
+%	^''/list''
+%
+%ChatClient>>message: aMessage
+%
+%	^ (aMessage subStrings: ''|'') third 
+%
+%ChatClient>>messageFormat
+%
+%	^ {''[''. #time. '']''. '' ''. #author. '' says: ''. String cr. #message }
+%
+%ChatClient>>newMessage: aString
+%
+%	| string |
+%	string := ''''.
+%	aString isEmpty not ifTrue: [| chatMessage |
+%		chatMessage := Compiler evaluate: aString.
+%		"((chatMessage recipient == self name) or: [chatMessage recipient == #all])
+%			ifFalse: [self halt ]."
+%		chatMessage author == #Server
+%			ifTrue: [self serverMessage: chatMessage]
+%			ifFalse:[
+%				string := self buildMessageString: chatMessage.
+%				chatMessage recipient == #all
+%					ifTrue: [ self displayMessage: string for: #all ]
+%					ifFalse:[ self displayMessage: string for: chatMessage author ]]].
+%
+%ChatClient>>receive
+%
+%	[isConnected]
+%		whileTrue:[
+%			| message |
+%			connectionSocket isConnected
+%				ifTrue:[
+%					message := connectionSocket receiveData.
+%					self newMessage: message]]
+%
+%ChatClient>>register
+%	
+%	self send: (''/register '',name printString) to: #Server
+%
+%ChatClient>>send: aMessage to: aSymbol
+%
+%	| message |
+%	message := ChatMessage
+%					recipient: aSymbol
+%					date: DateAndTime now
+%					author: self name
+%					message: aMessage.
+%	connectionSocket sendData: message storeString.
+%	aSymbol == #Server
+%		ifFalse: [self displayMessage: (self buildMessageString: message) for: aSymbol]
+%
+%ChatClient>>serverMessage: aChatMessage
+%
+%	(aChatMessage message beginsWith: self listMessage)
+%		ifTrue: [^ self updateContactsList: aChatMessage].
+%	self displayMessage: (self buildMessageString: aChatMessage message) for: #Server
+%
+%ChatClient>>timeStamp: aMessage
+%
+%	^ (aMessage subStrings: ''|'') first 
+%
+%ChatClient>>updateContactsList: aChatMessage
+%
+%	| list |
+%	list := (aChatMessage message subStrings: String cr) allButFirst.
+%	WindowsManager default updateContactsList: list.
+%
+%ChatClient class>>example
+%
+%	(self hostname: ''127.0.0.1'' port: 9999 name: #test) connect
+%
+%ChatClient class>>hostname: aString port: anInteger name: aSymbol
+%	^self new 
+%		host: (NetNameResolver addressForName: aString);
+%		port: anInteger;
+%		name: aSymbol
+%
+%\end{classdef}
+%
+%
+%An example:
+%\begin{script}[script:pimServerExample]{A Basic Chat application: Server running}
+%ChatServerLauncher launch: aPortNumber
+%\end{script}
+%
+%\ja{to do}
+%\begin{script}[script:pimServerExample]{A Basic Chat application: Client running}
+%
+%\end{script}
+%
 
 %\section{Distributed Object Applications}
 \section{Chapter summary}
-Reference remoteSmalltalk (rST)
-Reference to OCEAN
+In this chapter we presented how to use TCP sockets and socket streams to develop both clients and servers.
+As mentionned in the introduction, we recommand ot use socket streams which are of higher level and provide facility methods.
+They were successfully used in projects such as Swazoo and Kom web servers used respectively by AidaWeb and Seaside web frameworks.
+
+However, socket streams remain still low-level if you have an application involving different objects distributed over communicating images.
+In a such software, developers need to deal with message passing between remote objects by serializing arguments and results.
+They'll have also to take care of distributed garbage-collection.
+An object should not be destroyed if it is referenced by a remote one.
+This recurrent not trivial issues are solved by Object-Request Brokers (ORB) such as rST\footnote{http://www.squeaksource.com/rST.html}.
+An ORB frees the developer from networking issues and thus allows expressing remote communications simply using messages exchanged between remote objects.
+
+
+% Noury: Pour pousser le message "Utilisez les SocketStream", est-ce Ben tu pourras remplacer les socket par des SocketStream dans ton code ?
+% Reference to a chat instant messages:  on Squeaksource: http://www.squeaksource.com/PharoInstantMessenge \ben{maybe it should be moved in another repo}. You can load it using Monticello (Chapter \ja{numChapter}).
 
 %=================================================================
 \ifx\wholebook\relax\else\end{document}\fi
