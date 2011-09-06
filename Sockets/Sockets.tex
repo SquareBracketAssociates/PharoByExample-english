@@ -243,7 +243,7 @@ Now, let us build a simple TCP server. A \textit{TCP Server} is an application t
 A big difference between the server and the client is that the server uses at least two sockets.
 One socket is used for handling client connections, while the second serves for exchanging data with a particular client.
 
-\subsection{TCP Socket Server Life-cyle}
+\subsection{TCP Socket Server Life-cycle}
 The life-cycle of a TCP server in \pharo  has 5 steps:
 \begin{enumerate}
 \item Create a first TCP socket labelled \textit{socket$_1$}.
@@ -386,8 +386,8 @@ serve
 The activity of the serving process is implemented in the \ct!serve! method (see \mthref{meth:serve}).
 It interacts with clients on connections while the \ct!isRunning! flag is \ct!true!.
 After a \ct!stop!, the serving process is terminates by destroying the connection socket.
-The \ct!ensure:! message garantees that that this destruction is performed even if the serving process is terminated abnormally. 
-Such termination may occure because of an exception (\eg network disconnection) or a user action (\eg through the process browser).   
+The \ct!ensure:! message guarantees that that this destruction is performed even if the serving process is terminated abnormally. 
+Such termination may occur because of an exception (\eg network disconnection) or a user action (\eg through the process browser).   
 
 \begin{method}[meth:start]{The \ct!EchoServer>>>start! Method}
 start
@@ -403,8 +403,8 @@ The creation of the serving process is the responsibility of method \ct!EchoServ
 The \ct!EchoServer>>>start! method first checks if the server is already running.
 It returns if the \ct!isRunning! flag is set to \ct!true!.
 Otherwise, a TCP socket dedicated to connection handling is created and made to listen on port 9999.
-The backlog size is set to 10 that is -as mentionned above- the system allocates a buffer for storing 10 pending client connection requests.
-This value is a trade-off that depends on how fast is the server (varies according to the VM and the hardward) and the maximum rate of client connections requests.
+The backlog size is set to 10 that is -as mentioned above- the system allocates a buffer for storing 10 pending client connection requests.
+This value is a trade-off that depends on how fast is the server (varies according to the VM and the hardware) and the maximum rate of client connections requests.
 The backlog size should be big enough to avoid losing any connection request, but not too big to avoid wasting memory.
 Finally \ct!EchoServer>>>start! method creates a process by sending the \ct!fork! message to the \ct![self serve]! block.
 The created process has the same priority as the creator process (i.e. the one that performs the \ct!EchoServer>>>start! method).
@@ -439,11 +439,11 @@ It worth noting that we ensure that the interaction socket is destroyed, whether
 
 \section{SocketStream}
 \label{sec:socketStream}
-\ct!SocketStream! is a read-write stream that encapsualtes a TCP socket.
+\ct!SocketStream! is a read-write stream that encapsulates a TCP socket.
 It eases the data exchange by providing buffering together with a set of facility methods.
 
 \subsection{SocketStream at Client Side}
-We illustrate socket stream use at client side with the following code snipet (\Scrref{script:streamGetLine}).
+We illustrate socket stream use at client side with the following code snippet (\Scrref{script:streamGetLine}).
 
 \begin{script}[script:streamGetLine]{Getting the first line of a web page using \ct!SocketStream!.}
 	|stream httpQuery result|
@@ -462,14 +462,14 @@ We illustrate socket stream use at client side with the following code snipet (\
 
 The first line creates a stream that encapsulates a newly created socket connected to the provided server.
 This is the responsibility of message \ct!openConnectionToHostNamed:port:!.
-It suspends the execution until the connection with the server is estabilished.
+It suspends the execution until the connection with the server is established.
 If the server does not respond, the socket stream signals a \ct!ConnectionTimedOut! exception.
-This exception is actually signalled by the underlying socket.
+This exception is actually signaled by the underlying socket.
 The timeout delay is 45 seconds (defined in method \ct!Socket class>>>standardTimeout!).
 
 Once our socket stream connected to the server, we forge and send an HTTP GET query.
-Notice that compared to \scrref{script:closeAndDestroy} (page~\pageref{scr:script:closeAndDestroy}) we skipted here (\Scrref{script:streamGetLine}) one final \ct!String crlf!.
-This is because the \ct!SocketStream>>>sendCommand:! method automatically inserts CR and LF caracters after sent data to mark line ending.
+Notice that compared to \scrref{script:closeAndDestroy} (page~\pageref{scr:script:closeAndDestroy}) we skipped here (\Scrref{script:streamGetLine}) one final \ct!String crlf!.
+This is because the \ct!SocketStream>>>sendCommand:! method automatically inserts CR and LF characters after sent data to mark line ending.
 
 Reception of the requested web page is triggered by sending the \ct!nextLine! message to our socket stream.
 It will waits a few seconds until data is received.
@@ -516,7 +516,7 @@ Readers with a Unix machine (Linux, Mac OS X) or with Cygwin (for Windows) can u
 \subsection{\ct!nc! (netcat)}
 \ct!nc! allows to set up either a client or a server for both TCP (default protocol) and UDP.
 It redirects the content of its \ct!stdin! to the other side.
-The following snipet show how to send \ct!'Hello from a client'! to a server on the local machine listening on port 9090.
+The following snippet show how to send \ct!'Hello from a client'! to a server on the local machine listening on port 9090.
 \begin{code}{}
 echo Hello from a client | nc 127.0.0.1 9090 
 \end{code}
@@ -528,9 +528,9 @@ echo Hi from server | nc -l 9090
 \end{code}
 
 You can keep the server running by means of option \ct!-k!.
-But, the string produced by the preceeding \ct!echo! is sent only to the first client to connect.
+But, the string produced by the preceding \ct!echo! is sent only to the first client to connect.
 An alternative solution is to make the \ct!nc! server send text you type.
-Simply evalute the following command line. 
+Simply evaluate the following command line. 
 \begin{code}{}
 echo nc -lk 9090 
 \end{code}
@@ -538,7 +538,7 @@ echo nc -lk 9090
 Type in some text in the same terminal where you started the server.
 Then, run a client in another terminal.
 Your text will be displayed on the client side.
-You can repat these two last actions (type text at the server side, then start client) as many times as needed.
+You can repeat these two last actions (type text at the server side, then start client) as many times as needed.
 
 You can even go more interactive by making the connection between a client and a server more persistent.
 By evaluating the following command line, the client sends every line (ended with "Enter").
@@ -573,7 +573,7 @@ lsof -nP -i tcp
 
 \section{Chapter summary}
 In this chapter we presented how to use TCP sockets and socket streams to develop both clients and servers.
-As mentionned in the introduction, we recommand ot use socket streams which are of higher level and provide facility methods.
+As mentioned in the introduction, we recommend to use socket streams which are of higher level and provide facility methods.
 They were successfully used in projects such as Swazoo and Kom web servers used respectively by AidaWeb and Seaside web frameworks.
 
 Nevertheless, socket streams remain still low-level if you have an application involving different objects distributed over communicating images.
