@@ -55,7 +55,7 @@ A socket can then be defined as a \textit{plug on a communication network}.
 
 \begin{figure}[ht]\centering
 	\includegraphics[width=.75\linewidth]{socketConcept}
-	\caption{Inter-Process Remote Communication Through Sockets.}
+	\caption{Inter-Process Remote Communication Through Sockets.\alex{typo in the figure, Nework}}
 	\label{fig:socketConcept}
 \end{figure}
 
@@ -362,7 +362,7 @@ EchoServer>>>isRunning: aBoolean
 
 The \ct! isRunning! instance variable is a flag that is set to \ct!true! while the serving is running.
 As we will see below, it can be accessed by different processes.
-Therefore, we use the mutex (see \mthref{meth:serverInitialize}) referenced using the \ct!isRunningLock! instance variable.;
+Therefore, we use the mutex (see \mthref{meth:serverInitialize}) referenced using the \ct!isRunningLock! instance variable.; \alex{check the end of the sentence}
 This mutex ensures that a single process can read or write the value of \ct!isRunning! (use of the \ct!critical:! message in \mthref{meth:isRunningRead} and \mthref{meth:isRunningWrite}).
 
 \begin{method}[meth:stop]{The \ct!EchoServer>>>stop! Method}
@@ -433,7 +433,7 @@ interactUsing: interactionSocket
 	] ensure: [
 	 interactionSocket closeAndDestroy]
 \end{method}
-
+\alex{I would move the closing ']' after 'receivedData', with a blank character before the square bracket}
 The interaction as implemented in method \ct!EchoServer>>>interactUsing:! (see \mthref{meth:interactUsing}) with a client boils down to reading data provided by the client and sending it back prefixed with the \ct!'ECHO: '! string.
 It worth noting that we ensure that the interaction socket is destroyed, whether we have exchanged data or not (timeout).
 
@@ -443,7 +443,7 @@ It worth noting that we ensure that the interaction socket is destroyed, whether
 It eases the data exchange by providing buffering together with a set of facility methods.
 
 \subsection{SocketStream at Client Side}
-We illustrate socket stream use at client side with the following code snippet (\Scrref{script:streamGetLine}).
+\alex{Maybe better: The client uses a socket stream to get the first line of a webpage} We illustrate socket stream use at client side with the following code snippet (\Scrref{script:streamGetLine}).
 
 \begin{script}[script:streamGetLine]{Getting the first line of a web page using \ct!SocketStream!.}
 	|stream httpQuery result|
@@ -461,7 +461,7 @@ We illustrate socket stream use at client side with the following code snippet (
 \end{script}
 
 The first line creates a stream that encapsulates a newly created socket connected to the provided server.
-This is the responsibility of message \ct!openConnectionToHostNamed:port:!.
+\alex{It is the responsibility} This is the responsibility of message \ct!openConnectionToHostNamed:port:!.
 It suspends the execution until the connection with the server is established.
 If the server does not respond, the socket stream signals a \ct!ConnectionTimedOut! exception.
 This exception is actually signaled by the underlying socket.
@@ -481,7 +481,7 @@ We can easily display the full response including the html code by sending the \
 Note however that you will have to wait a bit longer compared to displaying a single line.
 
 \subsection{SocketStream at Server Side}
-SocketStreams can also be used at server side to wrap the interaction socket as shown in \Scrref{script:streamSimpleServer}.
+SocketStreams \alex{''may'' better than ''can''} can also be used at server side to wrap the interaction socket as shown in \Scrref{script:streamSimpleServer}.
 
 \begin{script}[script:streamSimpleServer]{Simple Server using \ct!SocketStream!.}
 |connectionSocket interactionSocket interactionStream|
