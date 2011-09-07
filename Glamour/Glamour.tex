@@ -59,7 +59,7 @@ part, we will jump into details.
 
 To install Glamour on your \pharo{} image execute the following code:
 
-\ja{i cannot load this code in PharoCore 1.3. We need a stable version} \alex{Strange, I just tried and it works with a 13299} \ja{ok, I should try again. But I am not sure that we must have loadDefault. We need a fixed version, like that, the source code will work in 3 years.}
+\ja{i cannot load this code in PharoCore 1.3. We need a stable version} \alex{Strange, I just tried and it works with a 13299} \ja{ok, I should try again. But I am not sure that we must have loadDefault. We need a fixed version, like that, the source code will work in 3 years.}\ab{We will check this before publishing the book}
 \begin{code}{}
 Gofer new
   squeaksource: 'Glamour'; 
@@ -253,7 +253,7 @@ Executing \ct{PBE2CodeNavigator open} opens a new browser with the text
 
 
 We now extend our browser with a new pane to display a list of packages.
-\ja{does it work with RPackage or Categories or both ?}\alex{It works with RPAckage only, there is a ref to RPackageOrganizer}\ja{this is a problem, because RPackage is not in 1.3 by default}
+\ja{does it work with RPackage or Categories or both ?}\alex{It works with RPAckage only, there is a ref to RPackageOrganizer}\ja{this is a problem, because RPackage is not in 1.3 by default}\alex{I think PBE2 should be based on Pharo 1.4}
 
 
 \begin{code}{}
@@ -292,9 +292,9 @@ PBE2CodeNavigator>>classesIn: constructor
 \end{code}
 
 \begin{figure}[htbp]
-  \centerline{\includegraphics[width=\linewidth]{showclasses.pdf}}
+  \centerline{\includegraphics[width=\linewidth]{showclasses.png}}
   \caption{Two-pane browser. When a package is selected in the left
-    pane, the contained classes are shown on the right pane.\alex{This is not Glamour in Pharo}}
+    pane, the contained classes are shown on the right pane.}
   \label{fig:showclasses}
 \end{figure}
 
@@ -390,8 +390,8 @@ The browser resulting from the above changes is shown in
 figure \figref{treeandcategories}.
 
 \begin{figure}[htbp]
-\centerline{\includegraphics[width=\linewidth]{treeandcategories.pdf}}
-\caption{	Improved class navigator including a tree to display the packages and a list of method categories for the selected class.\alex{Why is visualworks shown in the figure? Where did we get this figure from? This is not Pharo apparently}}
+\centerline{\includegraphics[width=\linewidth]{treeandcategories.png}}
+\caption{Improved class navigator including a tree to display the packages and a list of method categories for the selected class.}
 \label{fig:treeandcategories}
 \end{figure}
 
@@ -449,7 +449,7 @@ shown. We can therefore omit the category from the display block.
 The completed class navigator is displayed in \figref{codenavigator}.
 
 \begin{figure}[htbp]
-\centerline{\includegraphics[width=\linewidth]{codenavigator.pdf}}
+\centerline{\includegraphics[width=\linewidth]{codenavigator.png}}
 \caption{Complete code navigator. If no method category is selected, all methods of the class
 are displayed. Otherwise, only the methods that belong to that category are shown.}
 \label{fig:codenavigator}
@@ -622,7 +622,7 @@ already written earlier. The composed browser described by the listing
 is shown in figure~\ref{fig:composed-browser}.
 
 \begin{figure}[htbp]
-\centerline{\includegraphics[width=\linewidth]{classbrowser.pdf}}
+\centerline{\includegraphics[width=\linewidth]{classbrowser.png}}
 \caption{Composed browser that reuses the previously described class navigator to show the source of a selected method.}
 \label{fig:composed-browser}
 \end{figure}
@@ -708,7 +708,7 @@ figure~\ref{fig:mondrian-presentation}. The clause \ct{title:} sets
 the name of the tab used to render the presentation.
 
 \begin{figure}[htbp]
-\centerline{\includegraphics[width=\linewidth]{mondrian-presentation.pdf}}
+\centerline{\includegraphics[width=\linewidth]{mondrian-presentation.png}}
 \caption{Code editor sporting a Mondrian presentation in addition to a simple class list.}
 \label{fig:mondrian-presentation}
 \end{figure}
@@ -749,7 +749,7 @@ show the subclasses of the selected item. This can continue
 indefinitely as long as something to select remains.
 
 \begin{figure}[htbp]
-\centerline{\includegraphics[width=\linewidth]{finder.pdf}}
+\centerline{\includegraphics[width=\linewidth]{finder.png}}
 \caption{Subclass navigator using Miller Columns style browsing.}
 \label{fig:finder}
 \end{figure}
