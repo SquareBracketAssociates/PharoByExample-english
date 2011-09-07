@@ -59,7 +59,7 @@ part, we will jump into details.
 
 To install Glamour on your \pharo{} image execute the following code:
 
-\ja{i cannot load this code in PharoCore 1.3. We need a stable version} \alex{Strange, I just tried and it works with a 13299} 
+\ja{i cannot load this code in PharoCore 1.3. We need a stable version} \alex{Strange, I just tried and it works with a 13299} \ja{ok, I should try again. But I am not sure that we must have loadDefault. We need a fixed version, like that, the source code will work in 3 years.}
 \begin{code}{}
 Gofer new
   squeaksource: 'Glamour'; 
@@ -253,7 +253,7 @@ Executing \ct{PBE2CodeNavigator open} opens a new browser with the text
 
 
 We now extend our browser with a new pane to display a list of packages.
-\ja{does it work with RPackage or Categories or both ?}\alex{It works with RPAckage only, there is a ref to RPackageOrganizer}
+\ja{does it work with RPackage or Categories or both ?}\alex{It works with RPAckage only, there is a ref to RPackageOrganizer}\ja{this is a problem, because RPackage is not in 1.3 by default}
 
 
 \begin{code}{}
@@ -276,7 +276,6 @@ only one pane displaying packages. The flow of data is specified by
 means of \emph{transmissions}. These are triggered when certain
 changes in the browser graphical user interface occur, such as an item selection in a list. We make our browser more interesting by displaying classes contained in the selected package (see \figref{showclasses}).
 
-\ja{I want to verify this source code: why do you define classesIn: where I think we could do "andShow: [:a | a definedClasses].". I have the same question for package. I understand that help us to reuse the pane... but we have to manipulate data, not presentation. Ok I understand, but in this case, you should rename classesIn: by something like presentationOfClassesIn: or listOfClassesIn:}\alex{I am not really shocked by this. It looks natural to have a method classesIn:}
 \begin{code}{}
 PBE2CodeNavigator>>buildBrowser
   browser := GLMTabulator new.
@@ -556,7 +555,7 @@ Evaluating \ct{PBE2CodeEditor open} opens a browser that embeds the navigator in
 pane at the lower part. Source code is not displayed yet because no connection has been made between the panes so far. The source code is obtained by wiring the navigator with the text pane: we need both the name of the selected method as well as the
 class in which it is defined. Since this information is defined only
 within the navigator browser, we must first export it to the outside
-world by using \ct{sendToOutside:from:} \ja{sendToOutside:from: or sendToOutside: ?}\alex{ sendToOutside: has no implementor}. For this we
+world by using \ct{sendToOutside:from:}. For this we
 append the following lines to \ct{codeNavigator}:
 
 \begin{code}{}
