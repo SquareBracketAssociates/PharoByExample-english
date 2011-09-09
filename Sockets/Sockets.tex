@@ -40,12 +40,12 @@ Modern application are often distributed on multiple devices and collaborate thr
 The basic approach to set up such a collaboration is to use \textit{sockets}.
 A typical use is in the World Wide Web. Browsers and servers interact through HTTP sockets.
 
-The concept of socket was first introduced by researchers from Berkeley University in the 1960's. They defined the first socket API for the C programming language in the context of Unix operating systems. Since then, the concept of socket was spread out to other operating systems. 
+The concept of socket was first introduced by researchers from Berkeley University in the 1960s. They defined the first socket API for the C programming language in the context of Unix operating systems. Since then, the concept of socket was spread out to other operating systems. 
 Its API was ported to most existing programming languages including Smalltalk.
 
-In this chapter, we present the socket's API in the context of Pharo.
-We first show through some examples how to to use sockets for building both clients and servers.
-Then, we'll introduce \ct!SocketStream! and how to use it.
+In this chapter, we present the API of sockets in the context of Pharo.
+We first show through some examples how to use sockets for building both clients and servers.
+Then, we introduce \ct!SocketStream! and how to use it.
 In practice, one is likely to use \ct!SocketStream! instead of plain sockets.
 
 \section{Basic Concepts}
@@ -55,7 +55,7 @@ A socket can then be defined as a \textit{plug on a communication network}.
 
 \begin{figure}[ht]\centering
 	\includegraphics[width=.75\linewidth]{socketConcept}
-	\caption{Inter-Process Remote Communication Through Sockets.}
+	\caption{Inter-Process Remote Communication Through Sockets.\alex{typo in the figure, Nework}}
 	\label{fig:socketConcept}
 \end{figure}
 
@@ -69,11 +69,11 @@ Once a connection is established interacting parties can send and receive an arb
 Data reach the destination in the same order of their sending.
 
 UDP/IP stands for \textit{User Datagram Protocol / Internet Protocol} (UDP for short).
-Datagrams are chunks of data which size can not exceed 64KB.
+Datagrams are chunks of data which size cannot exceed 64KB.
 UDP is an unreliable protocol because of two reasons.
 First, UDP does not guarantee that  datagrams will actually reach there destination.
 The second reason why UDP is qualified as unreliable is that the reception order of multiple datagrams from a single sender to some particular receiver may arrive in an arbitrary order.
-However, UDP is faster than TCP since no connection is required before sending data.
+Nevertheless, UDP is faster than TCP since no connection is required before sending data.
 A typical use of UDP is  ``heart-beating'' as used in server-based social application, where clients need to notify the server their status (\eg Requesting interactions, or Invisible).
 
 \nouryComment{In a future version we will present UDP. But, so  far UDP does not work in \pharo.}
@@ -107,13 +107,13 @@ Socket newTCP
 Method \ct!newTCP! hands out the tcp type (which is stored in the class variable \ct!TCPSocketType!) to set up a TCP socket.
 
 \subsection{Connect a TCP Socket to some Server}
-To connect a TCP Socket to a server, you need to have the object representing the IP address of that server. This address is a instance of \ct!SocketAddress!.
+To connect a TCP Socket to a server, you need to have the object representing the IP address of that server. This address is an instance of \ct!SocketAddress!.
 A handy way to create it is to use \ct!NetNameResolver! that  provides IP style network name lookup and translation facilities.
 
 \Scrref{creatingSocketAddress} provides two examples of socket address creation.
-The first one creates an address from a string describing the server name (\ct!'www.esug.org'!), while the second does the creation from a string representing the server's IP address (\ct!'127.0.0.1'!).
+The first one creates an address from a string describing the server name (\ct!'www.esug.org'!), while the second does the creation from a string representing the  IP address of the server (\ct!'127.0.0.1'!).
 Note that to use the \ct!NetNameResolver! you need to have your machine connected to a network with a DNS\footnote{\emph{Domain Name System}: basically a directory that maps device names to their IP address.}.
-The only exception is for retrieving the local host address, i.e. \ct!127.0.0.1! which is the generic address to refer to the machine that runs your software (\pharo in our case).
+The only exception is for retrieving the local host address, i.e. \ct!127.0.0.1! which is the generic address to refer to the machine that runs your software (\pharo here).
 
 \nouryComment{There are dedicated methods for retrieving the localhost address but they are buggy at the time of writing this text.}
 \nouryComment{The NameLookupFailure exception is used ONLY in NetNameResolver class>>addressForName:timeout:. It should be more widely used.}
@@ -127,7 +127,7 @@ localAddress := NetNameResolver addressForName: '127.0.0.1'.
 Now we can connect our TCP socket to the server as shown in \Scrref{connectingTcpSocket}.
 Message \ct!connectTo:port:! attempts to connect the socket to the server which address and port are provided as parameters.
 \nouryComment{SocketAddress can also store the port of the server. 
-However, NetNameResolver does NOT support building socket address WITH port.}
+But, NetNameResolver does NOT support building socket address WITH port.}
 
 \begin{script}[connectingTcpSocket]{Connecting a TCP Socket to ESUG Server.}
 | clientSocket serverAddress |
@@ -143,7 +143,7 @@ The \ct!connectTo:port:!  message returns immediately after issuing to the syste
 Message \ct!waitForConnectionFor: 10! suspends the current process until the socket is connected to the server.
 It waits at most \ct!10! seconds as requested by the parameter.
 If the socket is not connected after 10 seconds, the \ct!ConnectionTimedOut! exception is signaled. 
-Otherwise, the execution can carry on by evaluating the expression \ct!clientSocket isConnected! which obviously answers \ct!true!.
+Otherwise, the execution can proceed by evaluating the expression \ct!clientSocket isConnected! which obviously answers \ct!true!.
 
 
 
@@ -199,7 +199,7 @@ Once the interaction is over, either the server or the client can decide to clos
 This can be done by sending the \ct!close! message to the socket.
 The image where this message is evaluated will then send a close request to the other side.
 The socket remains connected until the other side closes it.
-However, this may last indefinitely when there is an network failure or when the other side is down.
+This may last indefinitely when there is a network failure or when the other side is down.
 This is why sockets also answer the \ct!destroy! message, which frees system resources required by the socket.
 
 In practice we use \ct!closeAndDestroy!. It first attempts to close the socket by sending the \ct!close! message.
@@ -229,7 +229,7 @@ First, we retrieve the IP address of the \url{www.esug.org} server.
 Then, we create a TCP socket and connect it to the server.
 We use the IP address we get in the previous step and the default port for web servers: 80.
 Next we forge the HTTP\footnote{HyperText Transfer Protocol used for web communications.} query.
-The string corresponding  to our query starts with the \ct!GET! keyword, followed by a slash saying that we would like to get the root file of the server.
+The string corresponding  to our query starts with the \ct!GET! keyword, followed by a slash saying that we are requesting the root file of the server.
 Follows the protocol version \ct!HTTP/1.1!.
 The second line recalls the host name and port.
 The third and last line of the HTTP query refers to format accepted by our client. 
@@ -243,22 +243,22 @@ Now, let us build a simple TCP server. A \textit{TCP Server} is an application t
 A big difference between the server and the client is that the server uses at least two sockets.
 One socket is used for handling client connections, while the second serves for exchanging data with a particular client.
 
-\subsection{TCP Socket Server Life-cyle}
+\subsection{TCP Socket Server Life-cycle}
 The life-cycle of a TCP server in \pharo  has 5 steps:
 \begin{enumerate}
-\item Create a first TCP socket, let's call it \textit{socket$_1$}.
+\item Create a first TCP socket labelled \textit{socket$_1$}.
 \item Wait for connections by making \textit{socket$_1$}  listen on some port.
-\item Accept a client request for connection. As a result, \textit{socket$_1$} will build a second socket, let's call it \textit{socket$_2$}.
+\item Accept a client request for connection. As a result, \textit{socket$_1$} will build a second socket labelled \textit{socket$_2$}.
 \item Exchange data with the client through \textit{socket$_2$}. In the meanwhile, \textit{socket$_1$} can continue to wait for connections, and possibly create new sockets to exchange data with other clients. 
 \item Close \textit{socket$_2$}.
 \item Close \textit{socket$_1$} when we decide to kill the server and stop accepting client connections.
 \end{enumerate}
 
 Concurrency is implicit in this life-cycle.
-The server listens for incoming client's connection requests through \textit{socket$_1$}, while exchanging data with some clients through \textit{socket$_2$}.
+The server listens for incoming client connection requests through \textit{socket$_1$}, while exchanging data with some clients through \textit{socket$_2$}.
 The server can even simultaneously exchange data with multiple clients through different sockets.
 In the following, we first illustrate the socket serving machinery.
-Then, we give a complete server class and explain the server's life-cycle and related concurrency issues.
+Then, we give a complete server class and explain the server life-cycle and related concurrency issues.
 
 \subsection{Serving Basic Example}
 We illustrate the serving basics through a simple example of an echo TCP server that accepts a single client request.
@@ -278,7 +278,7 @@ interactionSocket closeAndDestroy.
 \end{script}
 
 First, we create the socket that we will use for handling incoming connections.
-We set it up to listen on port 9999.
+We configure it to listen on port 9999.
 The \ct!backlogSize! is set to 10, meaning that we ask the Operating System to allocate a buffer for 10 connection requests. 
 This backlog will not be actually used in this example.
 But, a more realistic server will have to handle multiple connections and then store pending connection requests into the backlog.
@@ -287,7 +287,7 @@ Once the connection socket (referenced by variable \ct!connectionSocket!) is set
 The \ct!waitForAcceptFor: 60! message makes the socket wait connection requests for 60 seconds.
 If no client attempts to connect during these 60 seconds, the message answers \ct!nil!.
 Otherwise, we get a new socket \ct!interactionSocket! connected the client's socket.
-At this point, we don't need the connection socket anymore, so we can close it (\ct!connectionSocket closeAndDestroy! message).
+At this point, we do not need the connection socket anymore, so we can close it (\ct!connectionSocket closeAndDestroy! message).
 
 Since the interaction socket is already connected to the client, we can use it to exchange data.
 Messages \ct!receiveData! and \ct!sendData:! presented above (see section~\ref{sec:exchangeData}) can be used to achieve this goal.
@@ -361,9 +361,9 @@ EchoServer>>>isRunning: aBoolean
 \end{method}
 
 The \ct! isRunning! instance variable is a flag that is set to \ct!true! while the serving is running.
-As we'll see below, it can be accessed by different processes.
-Therefore, we use the mutex (see \mthref{meth:serverInitialize}) referenced using the \ct!isRunningLock! instance variable.;
-This mutex ensures that only one process can read or write the value of \ct!isRunning! (use of the \ct!critical:! message in \mthref{meth:isRunningRead} and \mthref{meth:isRunningWrite}).
+As we will see below, it can be accessed by different processes.
+Therefore, we use the mutex (see \mthref{meth:serverInitialize}) referenced using the \ct!isRunningLock! instance variable.; \alex{check the end of the sentence}
+This mutex ensures that a single process can read or write the value of \ct!isRunning! (use of the \ct!critical:! message in \mthref{meth:isRunningRead} and \mthref{meth:isRunningWrite}).
 
 \begin{method}[meth:stop]{The \ct!EchoServer>>>stop! Method}
 EchoServer>>>stop
@@ -371,7 +371,7 @@ EchoServer>>>stop
 \end{method}
 
 In order to manage the life-cycle of our server, we introduced two methods \ct!EchoServer>>>start! and \ct!EchoServer>>>stop!.
-Let's begin with the simplest one \ct!EchoServer>>>stop! which definition is provided as \mthref{meth:stop}.
+We begin with the simplest one \ct!EchoServer>>>stop! which definition is provided as \mthref{meth:stop}.
 It simply sets the \ct!isRunning! flag to \ct!false!.
 This will have the consequence of stopping the serving loop in method \ct!EchoServer>>>serve! (see \mthref{meth:serve}). 
 
@@ -386,8 +386,8 @@ serve
 The activity of the serving process is implemented in the \ct!serve! method (see \mthref{meth:serve}).
 It interacts with clients on connections while the \ct!isRunning! flag is \ct!true!.
 After a \ct!stop!, the serving process is terminates by destroying the connection socket.
-The \ct!ensure:! message garantees that that this destruction is performed even if the serving process is terminated abnormally. 
-Such termination may occure because of an exception (\eg network disconnection) or a user action (\eg through the process browser).   
+The \ct!ensure:! message guarantees that that this destruction is performed even if the serving process is terminated abnormally. 
+Such termination may occur because of an exception (\eg network disconnection) or a user action (\eg through the process browser).   
 
 \begin{method}[meth:start]{The \ct!EchoServer>>>start! Method}
 start
@@ -401,11 +401,11 @@ start
 
 The creation of the serving process is the responsibility of method \ct!EchoServer>>>start! (see the last line of \mthref{meth:start}).
 The \ct!EchoServer>>>start! method first checks if the server is already running.
-It returns if this is case.
+It returns if the \ct!isRunning! flag is set to \ct!true!.
 Otherwise, a TCP socket dedicated to connection handling is created and made to listen on port 9999.
-The backlog size is set to 10, that is -as mentionned above- the system allocates a buffer for storing 10 pending client connection requests.
-This value is a trade-off that depends on how fast is the server (varies according to the VM and the hardward) and the maximum rate of client connections requests.
-Thus, the backlog size should be big enough to avoid losing any connection request, but not too big to avoid wasting memory.
+The backlog size is set to 10 that is -as mentioned above- the system allocates a buffer for storing 10 pending client connection requests.
+This value is a trade-off that depends on how fast is the server (varies according to the VM and the hardware) and the maximum rate of client connections requests.
+The backlog size should be big enough to avoid losing any connection request, but not too big to avoid wasting memory.
 Finally \ct!EchoServer>>>start! method creates a process by sending the \ct!fork! message to the \ct![self serve]! block.
 The created process has the same priority as the creator process (i.e. the one that performs the \ct!EchoServer>>>start! method).
 
@@ -433,17 +433,17 @@ interactUsing: interactionSocket
 	] ensure: [
 	 interactionSocket closeAndDestroy]
 \end{method}
-
+\alex{I would move the closing ']' after 'receivedData', with a blank character before the square bracket}
 The interaction as implemented in method \ct!EchoServer>>>interactUsing:! (see \mthref{meth:interactUsing}) with a client boils down to reading data provided by the client and sending it back prefixed with the \ct!'ECHO: '! string.
 It worth noting that we ensure that the interaction socket is destroyed, whether we have exchanged data or not (timeout).
 
 \section{SocketStream}
 \label{sec:socketStream}
-\ct!SocketStream! is a read-write stream that encapsualtes a TCP socket.
+\ct!SocketStream! is a read-write stream that encapsulates a TCP socket.
 It eases the data exchange by providing buffering together with a set of facility methods.
 
 \subsection{SocketStream at Client Side}
-We illustrate socket stream use at client side with the following code snipet (\Scrref{script:streamGetLine}).
+\alex{Maybe better: The client uses a socket stream to get the first line of a webpage} We illustrate socket stream use at client side with the following code snippet (\Scrref{script:streamGetLine}).
 
 \begin{script}[script:streamGetLine]{Getting the first line of a web page using \ct!SocketStream!.}
 	|stream httpQuery result|
@@ -461,15 +461,15 @@ We illustrate socket stream use at client side with the following code snipet (\
 \end{script}
 
 The first line creates a stream that encapsulates a newly created socket connected to the provided server.
-This is the responsibility of message \ct!openConnectionToHostNamed:port:!.
-It suspends the execution until the connection with the server is estabilished.
+\alex{It is the responsibility} This is the responsibility of message \ct!openConnectionToHostNamed:port:!.
+It suspends the execution until the connection with the server is established.
 If the server does not respond, the socket stream signals a \ct!ConnectionTimedOut! exception.
-This exception is actually signalled by the underlying socket.
+This exception is actually signaled by the underlying socket.
 The timeout delay is 45 seconds (defined in method \ct!Socket class>>>standardTimeout!).
 
 Once our socket stream connected to the server, we forge and send an HTTP GET query.
-Notice that compared to \scrref{script:closeAndDestroy} (page~\pageref{scr:script:closeAndDestroy}) we skipted here (\Scrref{script:streamGetLine}) one final \ct!String crlf!.
-This is because the \ct!SocketStream>>>sendCommand:! method automatically inserts CR and LF caracters after sent data to mark line ending.
+Notice that compared to \scrref{script:closeAndDestroy} (page~\pageref{scr:script:closeAndDestroy}) we skipped here (\Scrref{script:streamGetLine}) one final \ct!String crlf!.
+This is because the \ct!SocketStream>>>sendCommand:! method automatically inserts CR and LF characters after sent data to mark line ending.
 
 Reception of the requested web page is triggered by sending the \ct!nextLine! message to our socket stream.
 It will waits a few seconds until data is received.
@@ -478,10 +478,10 @@ We safely ensure that the connection is closed.
 
 In this example, we only display the first line of response sent by the server.
 We can easily display the full response including the html code by sending the \ct!upToEnd! message to our socket stream.
-Note however that you'll have to wait a bit longer compared to displaying a single line.
+Note however that you will have to wait a bit longer compared to displaying a single line.
 
 \subsection{SocketStream at Server Side}
-SocketStreams can also be used at server side to wrap the interaction socket as shown in \Scrref{script:streamSimpleServer}.
+SocketStreams \alex{''may'' better than ''can''} can also be used at server side to wrap the interaction socket as shown in \Scrref{script:streamSimpleServer}.
 
 \begin{script}[script:streamSimpleServer]{Simple Server using \ct!SocketStream!.}
 |connectionSocket interactionSocket interactionStream|
@@ -504,597 +504,86 @@ The socket is wrapped into a socket stream that eases data exchange using messag
 Once we are done, we close and destroy the socket handling connections and we close the interaction socket stream.
 This latter will take care of closing and destroying the underlying interaction socket.
 
-%%%%%%CONTINUE FROM HERE
+\section{Tips on Networking Experiments}
+In sections related to client-side sockets and socket streams, we use interactions with a web server as an example.
+So, we forge an HTTP Get query and send it to the server.
+It worth noting that we chose these examples to make experiments straightforward and platform agnostic.
+In real scale applications, interactions involving HTTP should be coded using a higher level library such as Zinc HTTP\footnote{\url{http://zn.stfx.eu/zn/index.html}}.
 
-%\section{A Basic Chat Application}
-%
-%
-%
-%The application contains 4 classes: ChatMessage represents a message sent between a client and a server, ChatServerBehavior represents the behavior of the server (\eg the management of messages), ChatServerLauncher represents the server itself, and ChatClient represents a client. Each instance and class variable has accessors, which are not present in the source code beside to improve readability.
-%
-%\begin{script}[script:pimChatMessage]{A Basic Chat application: Class ChatMessage}
-%Object subclass: #ChatMessage
-%	instanceVariableNames: 'date author message recipient'
-%	classVariableNames: ''
-%	poolDictionaries: ''
-%	category: 'PIM'
-%
-%ChatMessage Class>>recipient: aSymbol date: time author: author message: aMessage
-%	^ self new
-%			recipient: aSymbol;
-%			date: time;
-%			author: author;
-%			message: aMessage.
-%\end{script}
-%
-%\begin{script}[script:pimChatServerBehavior]{A Basic Chat application: Class ChatServerBehavior}
-%Object subclass: #ChatServerBehavior
-%	instanceVariableNames: 'interactionSocket'
-%	classVariableNames: 'ConnectedMap'
-%	poolDictionaries: ''
-%	category: 'PIM'
-%
-%
-%ChatServerBehavior>>allNick
-%	^ #all
-%
-%ChatServerBehavior>>alreadyConnectedError
-%	self alreadyConnectedError: interactionSocket
-%
-%ChatServerBehavior>>alreadyConnectedError: aSocket
-%	| message |
-%	message := ChatMessage
-%					recipient: #Server
-%					date: DateAndTime now
-%					author: #Server
-%					message: 'Username already connected. Please choose another nickname'.					
-%	aSocket sendData: message storeString.
-%	self forceClose
-%
-%ChatServerBehavior>>close
-%	self unregister.
-%	self forceClose.
-%
-%ChatServerBehavior>>execute
-%	[self transmit] whileTrue:[].
-%	self close.
-%
-%ChatServerBehavior>>exitMessage
-%	^'/exit'
-%
-%ChatServerBehavior>>findSocket: aSymbol
-%	^ ConnectedMap at: aSymbol ifAbsent: [^ nil]
-%
-%ChatServerBehavior>>forceClose
-%	interactionSocket ifNotNilDo:[:socket | socket closeAndDestroy].
-%
-%ChatServerBehavior>>initialize
-%	super initialize.
-%	ConnectedMap 
-%		ifNil: [
-%			ConnectedMap := Dictionary new.
-%			ConnectedMap at: #Server put: nil.
-%			ConnectedMap at: self allNick put: nil]
-%
-%ChatServerBehavior>>interactionSocket: anObject
-%	interactionSocket := anObject
-%
-%ChatServerBehavior>>printReceivedData: receivedData
-%	Transcript << receivedData.
-%	Transcript cr.
-%
-%ChatServerBehavior>>register: aMessage
-%	| name |
-%	name := aMessage author.
-%	(ConnectedMap keys includes: name)
-%		ifTrue: [^ self alreadyConnectedError].
-%	ConnectedMap at: name put: interactionSocket.
-%	Transcript show: name printString, ' registered';cr.
-%	self sendListOfConnectedPeople.
-%
-%ChatServerBehavior>>registrationMessage
-%	^ '/register '
-%
-%ChatServerBehavior>>sendListOfConnectedPeople
-%	| result message |
-%	result := WriteStream on: ''.
-%	result 
-%		nextPutAll: '/list';
-%		nextPut: Character cr;
-%		nextPutAll: '#all';
-%		nextPut: Character cr.
-%	ConnectedMap associations do: [:association || nick socket |
-%		nick := association key.
-%		socket := association value.
-%		socket notNil
-%			ifTrue: [result 
-%						nextPutAll: nick printString;
-%						nextPut: Character cr]].
-%	message := ChatMessage
-%					recipient: #Server
-%					date: DateAndTime now
-%					author: #Server
-%					message: result contents.
-%	ConnectedMap values do: [:socket |
-%		socket notNil
-%			ifTrue: [socket sendData: message storeString]]
-%
-%
-%ChatServerBehavior>>transmit
-%	| receivedData  sock assoc message chatMessage |
-%	interactionSocket ifNotNil:[
-%		interactionSocket isConnected 
-%			ifTrue: [	
-%				receivedData := interactionSocket receiveData.
-%				receivedData isEmpty ifTrue: [^true].
-%				chatMessage := Compiler evaluate: receivedData.
-%				(chatMessage message beginsWith: self exitMessage) 
-%					ifTrue:[
-%						self printReceivedData: ('Close the connection with ', interactionSocket address printString).
-%						^false].
-%				(chatMessage message beginsWith: self registrationMessage)
-%					ifTrue:[
-%						self register: chatMessage.
-%						^true].
-%				(chatMessage recipient == self allNick)
-%					ifTrue: [
-%						ConnectedMap values do: [:socket |
-%							(socket ~~ interactionSocket and: [socket notNil])
-%								ifTrue: [socket sendData: receivedData]].
-%						^true].
-%				
-%				sock := self findSocket: chatMessage recipient.
-%				sock 
-%					ifNil:[
-%						message := ChatMessage
-%										recipient: #Server
-%										date: DateAndTime now
-%										author: #Server
-%										message: 'User ', chatMessage recipient printString, ' is not connected'.
-%						interactionSocket sendData: message storeString]
-%					ifNotNil: [sock sendData: receivedData.].
-%				self printReceivedData: receivedData.
-%				^true]].
-%	^false.
-%
-%
-%ChatServerBehavior>>unregister
-%	| socket |
-%	socket := ConnectedMap removeKey: (ConnectedMap keyAtValue: interactionSocket ifAbsent: []) ifAbsent: [].
-%	socket ifNotNil: [
-%		 socket closeAndDestroy.
-%		Transcript show: 'Socket closed';cr].
-%	self sendListOfConnectedPeople
-%\end{script}
-%
-%
-%\begin{script}[script:pimChatServerLauncher]{A Basic Chat application: Class ChatServerLauncher}
-%Object subclass: #ChatServerLauncher
-%	instanceVariableNames: 'port'
-%	classVariableNames: ''
-%	poolDictionaries: ''
-%	category: 'PIM'
-%
-%ChatServerLauncher>>connect
-%	| connectionSocket interactionSocket |
-%	connectionSocket := Socket newTCP.
-%	connectionSocket listenOn: self port backlogSize: 10.
-%	interactionSocket := connectionSocket waitForAcceptFor: 60.
-%	connectionSocket closeAndDestroy.
-%	^ interactionSocket
-%
-%ChatServerLauncher>>execute
-%	| socket |
-%	[true]
-%		whileTrue: [
-%			socket := self connect.
-%			"echo behavior"
-%			socket ifNotNil:[
-%				[(ChatServerBehavior new interactionSocket: socket) execute] fork]]
-%
-%ChatServerLauncher Class>>launch: aNumber
-%	| server |
-%	server := self port: aNumber.
-%	[server execute] fork.
-%	^server
-%
-%ChatServerLauncher Class>>port: anInteger
-%	^self new port: anInteger
-%=======
-%\begin{classdef}[script:pimChatMessage]{A Basic Chat application: Class ChatMessage}
-%Object subclass: #ChatMessage
-%	instanceVariableNames: ''date author message recipient''
-%	classVariableNames: ''''
-%	poolDictionaries: ''''
-%	category: ''PIM''
-%
-%ChatMessage>>time
-%
-%	| dateAndTime stream |
-%	dateAndTime := self date.
-%	stream := WriteStream on: ''''.
-%	dateAndTime printHMSOn: stream.
-%	^ stream contents
-%
-%ChatMessage>>timeStamp
-%
-%	^ (DateAndTime fromString: self date) asTimeStamp asString
-%
-%ChatMessage class>>recipient: aSymbol date: time author: author message: aMessage
-%
-%	^ self new
-%			recipient: aSymbol;
-%			date: time;
-%			author: author;
-%			message: aMessage.
-%\end{classdef}
-%>>>>>>> d8c95637a3a4577067240b91ef046d95528980e5
-%
-%\begin{classdef}[script:pimChatServerBehavior]{A Basic Chat application: Class ChatServerBehavior}
-%Object subclass: #ChatServerBehavior
-%	instanceVariableNames: ''interactionSocket''
-%	classVariableNames: ''ConnectedMap''
-%	poolDictionaries: ''''
-%	category: ''PIM''
-%
-%ChatServerBehavior>>allNick
-%
-%	^ #all
-%
-%ChatServerBehavior>>alreadyConnectedError
-%
-%	self alreadyConnectedError: interactionSocket
-%
-%ChatServerBehavior>>alreadyConnectedError: aSocket
-%
-%	| message |
-%	message := ChatMessage
-%					recipient: #Server
-%					date: DateAndTime now
-%					author: #Server
-%					message: ''Username already connected. Please choose another nickname''.
-%						
-%	aSocket sendData: message storeString.
-%	self forceClose
-%
-%ChatServerBehavior>>close
-%	
-%	self unregister.
-%	self forceClose.
-%
-%ChatServerBehavior>>execute
-%
-%	[self transmit] whileTrue:[].
-%	self close.
-%
-%ChatServerBehavior>>exitMessage
-%
-%	^''/exit''
-%
-%ChatServerBehavior>>findSocket: aSymbol
-%
-%	^ ConnectedMap at: aSymbol ifAbsent: [^ nil]
-%
-%ChatServerBehavior>>forceClose
-%	
-%	interactionSocket ifNotNilDo:[:socket | socket closeAndDestroy].
-%
-%ChatServerBehavior>>initialize
-%
-%	super initialize.
-%	ConnectedMap 
-%		ifNil: [
-%			ConnectedMap := Dictionary new.
-%			ConnectedMap at: #Server put: nil.
-%			ConnectedMap at: self allNick put: nil]
-%
-%ChatServerBehavior>>printReceivedData: receivedData
-%	
-%	Transcript << receivedData.
-%	Transcript cr.
-%
-%ChatServerBehavior>>register: aMessage
-%
-%	| name |
-%	name := aMessage author.
-%	(ConnectedMap keys includes: name)
-%		ifTrue: [^ self alreadyConnectedError].
-%	ConnectedMap at: name put: interactionSocket.
-%	Transcript show: name printString, '' registered'';cr.
-%	self sendListOfConnectedPeople.
-%
-%ChatServerBehavior>>registrationMessage
-%
-%	^ ''/register ''
-%
-%ChatServerBehavior>>sendListOfConnectedPeople
-%
-%	| result message |
-%	result := WriteStream on: ''''.
-%	result 
-%		nextPutAll: ''/list'';
-%		nextPut: Character cr;
-%		nextPutAll: ''#all'';
-%		nextPut: Character cr.
-%	ConnectedMap associations do: [:association || nick socket |
-%		nick := association key.
-%		socket := association value.
-%		socket notNil
-%			ifTrue: [result 
-%						nextPutAll: nick printString;
-%						nextPut: Character cr]].
-%	
-%	message := ChatMessage
-%					recipient: #Server
-%					date: DateAndTime now
-%					author: #Server
-%					message: result contents.
-%
-%	ConnectedMap values do: [:socket |
-%		socket notNil
-%			ifTrue: [socket sendData: message storeString]]
-%
-%ChatServerBehavior>>transmit
-%	| receivedData  sock assoc message chatMessage |
-%	interactionSocket ifNotNil:[
-%		interactionSocket isConnected 
-%			ifTrue: [	
-%				receivedData := interactionSocket receiveData.
-%				receivedData isEmpty ifTrue: [^true].
-%				chatMessage := Compiler evaluate: receivedData.
-%				(chatMessage message beginsWith: self exitMessage) 
-%					ifTrue:[
-%						self printReceivedData: (''Close the connection with '', interactionSocket address printString).
-%						^false].
-%				(chatMessage message beginsWith: self registrationMessage)
-%					ifTrue:[
-%						self register: chatMessage.
-%						^true].
-%				(chatMessage recipient == self allNick)
-%					ifTrue: [
-%						ConnectedMap values do: [:socket |
-%							(socket ~~ interactionSocket and: [socket notNil])
-%								ifTrue: [socket sendData: receivedData]].
-%						^true].
-%				
-%				sock := self findSocket: chatMessage recipient.
-%				sock 
-%					ifNil:[
-%						message := ChatMessage
-%										recipient: #Server
-%										date: DateAndTime now
-%										author: #Server
-%										message: ''User '', chatMessage recipient printString, '' is not connected''.
-%						interactionSocket sendData: message storeString]
-%					ifNotNil: [sock sendData: receivedData.].
-%				self printReceivedData: receivedData.
-%				^true]].
-%	^false.
-%
-%ChatServerBehavior>>unregister
-%
-%	| socket |
-%	socket := ConnectedMap removeKey: (ConnectedMap keyAtValue: interactionSocket ifAbsent: []) ifAbsent: [].
-%	socket ifNotNil: [
-%		 socket closeAndDestroy.
-%		Transcript show: ''Socket closed'';cr].
-%	self sendListOfConnectedPeople
-%
-%ChatServerBehavior class>>connectedMap
-%
-%	^ ConnectedMap
-%
-%ChatServerBehavior class>>interactionSocket: aSocket
-%
-%	^self new interactionSocket: aSocket
-%\end{classdef}
-%
-%
-%\begin{classdef}[script:pimChatServerLauncher]{A Basic Chat application: Class ChatServerLauncher}
-%Object subclass: #ChatServerLauncher
-%	instanceVariableNames: ''port''
-%	classVariableNames: ''''
-%	poolDictionaries: ''''
-%	category: ''PIM''
-%
-%ChatServerLauncher>>connect
-%	| connectionSocket interactionSocket |
-%	connectionSocket := Socket newTCP.
-%	connectionSocket listenOn: self port backlogSize: 10.
-%	interactionSocket := connectionSocket waitForAcceptFor: 60.
-%	connectionSocket closeAndDestroy.
-%	^ interactionSocket
-%
-%ChatServerLauncher>>deconnect
-%
-%	ChatServerBehavior connectedMap associations copy do:[:each |
-%		each value ifNotNil:[:value |
-%			value closeAndDestroy.
-%			ChatServerBehavior connectedMap removeKey: each key]]
-%
-%ChatServerLauncher>>execute
-%
-%	| socket |
-%	[true]
-%		whileTrue: [
-%			socket := self connect.
-%			"echo behavior"
-%			socket ifNotNil:[
-%				[(ChatServerBehavior interactionSocket: socket) execute] fork]]
-%
-%ChatServerLauncher>>initialize
-%
-%	super initialize.
-%	listOfBehaviors := OrderedCollection new.
-%
-%ChatServerLauncher class>>example
-%	"self example"
-%
-%	^ self launch: 9999
-%
-%ChatServerLauncher class>>launch: aNumber
-%	| server |
-%	server := self port: aNumber.
-%	[server execute] fork.
-%	^server
-%
-%ChatServerLauncher class>>port: anInteger
-%	^self new port: anInteger
-%
-%\end{classdef}
-%
-%
-%\begin{classdef}[script:pimChatClient]{A Basic Chat application: Class ChatClient}
-%Object subclass: #ChatClient
-%	instanceVariableNames: ''host port connectionSocket name isConnected''
-%	classVariableNames: ''''
-%	poolDictionaries: ''''
-%	category: ''PIM''
-%
-%ChatClient>>author: aMessage
-%
-%	^ (aMessage subStrings: ''|'') second 
-%
-%ChatClient>>buildMessageString: message
-%
-%	| stream |
-%	stream := WriteStream on: ''''.
-%	self messageFormat do: [:each |
-%		each isSymbol
-%			ifTrue: [stream nextPutAll: (message perform: each)]
-%			ifFalse: [stream nextPutAll: each]].
-%	^ stream contents
-%
-%ChatClient>>close
-%	isConnected := false.
-%	connectionSocket closeAndDestroy.
-%
-%ChatClient>>connect
-%	connectionSocket := Socket newTCP.	
-%	connectionSocket 
-%		connectTo: host port: port; 
-%		waitForConnectionFor: 10.
-%	isConnected := true.
-%	[self receive] fork.
-%	self register.
-%
-%ChatClient>>displayMessage: aString for: aNick
-%
-%	WindowsManager default displayMessage: aString for: aNick
-%	
-%
-%ChatClient>>exit
-%	
-%	self send: ''/exit'' to: #Server.
-%	self close.
-%
-%ChatClient>>listMessage
-%
-%	^''/list''
-%
-%ChatClient>>message: aMessage
-%
-%	^ (aMessage subStrings: ''|'') third 
-%
-%ChatClient>>messageFormat
-%
-%	^ {''[''. #time. '']''. '' ''. #author. '' says: ''. String cr. #message }
-%
-%ChatClient>>newMessage: aString
-%
-%	| string |
-%	string := ''''.
-%	aString isEmpty not ifTrue: [| chatMessage |
-%		chatMessage := Compiler evaluate: aString.
-%		"((chatMessage recipient == self name) or: [chatMessage recipient == #all])
-%			ifFalse: [self halt ]."
-%		chatMessage author == #Server
-%			ifTrue: [self serverMessage: chatMessage]
-%			ifFalse:[
-%				string := self buildMessageString: chatMessage.
-%				chatMessage recipient == #all
-%					ifTrue: [ self displayMessage: string for: #all ]
-%					ifFalse:[ self displayMessage: string for: chatMessage author ]]].
-%
-%ChatClient>>receive
-%
-%	[isConnected]
-%		whileTrue:[
-%			| message |
-%			connectionSocket isConnected
-%				ifTrue:[
-%					message := connectionSocket receiveData.
-%					self newMessage: message]]
-%
-%ChatClient>>register
-%	
-%	self send: (''/register '',name printString) to: #Server
-%
-%ChatClient>>send: aMessage to: aSymbol
-%
-%	| message |
-%	message := ChatMessage
-%					recipient: aSymbol
-%					date: DateAndTime now
-%					author: self name
-%					message: aMessage.
-%	connectionSocket sendData: message storeString.
-%	aSymbol == #Server
-%		ifFalse: [self displayMessage: (self buildMessageString: message) for: aSymbol]
-%
-%ChatClient>>serverMessage: aChatMessage
-%
-%	(aChatMessage message beginsWith: self listMessage)
-%		ifTrue: [^ self updateContactsList: aChatMessage].
-%	self displayMessage: (self buildMessageString: aChatMessage message) for: #Server
-%
-%ChatClient>>timeStamp: aMessage
-%
-%	^ (aMessage subStrings: ''|'') first 
-%
-%ChatClient>>updateContactsList: aChatMessage
-%
-%	| list |
-%	list := (aChatMessage message subStrings: String cr) allButFirst.
-%	WindowsManager default updateContactsList: list.
-%
-%ChatClient class>>example
-%
-%	(self hostname: ''127.0.0.1'' port: 9999 name: #test) connect
-%
-%ChatClient class>>hostname: aString port: anInteger name: aSymbol
-%	^self new 
-%		host: (NetNameResolver addressForName: aString);
-%		port: anInteger;
-%		name: aSymbol
-%
-%\end{classdef}
-%
-%
-%An example:
-%\begin{script}[script:pimServerExample]{A Basic Chat application: Server running}
-%ChatServerLauncher launch: aPortNumber
-%\end{script}
-%
-%\ja{to do}
-%\begin{script}[script:pimServerExample]{A Basic Chat application: Client running}
-%
-%\end{script}
-%
+To experiment without dealing with HTTP, we can use Unix utilities.
+Readers with a Unix machine (Linux, Mac OS X) or with Cygwin (for Windows) can use \ct!nc! (or netcat), \ct!netstat! and \ct!lsof! for their tests.
 
-%\section{Distributed Object Applications}
+\subsection{\ct!nc! (netcat)}
+\ct!nc! allows to set up either a client or a server for both TCP (default protocol) and UDP.
+It redirects the content of its \ct!stdin! to the other side.
+The following snippet show how to send \ct!'Hello from a client'! to a server on the local machine listening on port 9090.
+\begin{code}{}
+echo Hello from a client | nc 127.0.0.1 9090 
+\end{code}
+
+The command line below starts a server listening on port 9090 that sends \ct!'Hi from server'! to the first client to connect.
+It terminates after the interaction.
+\begin{code}{}
+echo Hi from server | nc -l 9090 
+\end{code}
+
+You can keep the server running by means of option \ct!-k!.
+But, the string produced by the preceding \ct!echo! is sent only to the first client to connect.
+An alternative solution is to make the \ct!nc! server send text you type.
+Simply evaluate the following command line. 
+\begin{code}{}
+echo nc -lk 9090 
+\end{code}
+
+Type in some text in the same terminal where you started the server.
+Then, run a client in another terminal.
+Your text will be displayed on the client side.
+You can repeat these two last actions (type text at the server side, then start client) as many times as needed.
+
+You can even go more interactive by making the connection between a client and a server more persistent.
+By evaluating the following command line, the client sends every line (ended with "Enter").
+It will terminate when sending the EOF signal (ctl-D).
+\begin{code}{}
+echo cat | nc -l 9090 
+\end{code}
+
+
+\subsection{\ct!netstat!}
+This command provides various information on network interfaces and sockets of your computer.
+It provides many statics so one need to use appropriate options to filter out useful information.
+The following command line allows displaying status of tcp sockets and their addresses.
+Note that the port numbers and addresses are separated by a dot.
+\begin{code}{}
+netstat -p tcp -a -n
+\end{code}
+ 
+\subsection{\ct!lsof!}
+The \ct!lsof! command lists all files open in your system.
+This of course includes sockets, since everything is a file in Unix.
+Why \ct!lsof! is useful, would you say, if we already have \ct!netstat!?
+The answer is that \ct!lsof! shows the link between processes and sockets.
+So, you can find out sockets related to your program.
+
+The example provided by following command line lists TCP sockets.
+The \ct!n! and \ct!P! options force \ct!lsof! to display host addresses and ports as numbers. 
+\begin{code}{}
+lsof -nP -i tcp
+\end{code}
+
+
 \section{Chapter summary}
 In this chapter we presented how to use TCP sockets and socket streams to develop both clients and servers.
-As mentionned in the introduction, we recommand ot use socket streams which are of higher level and provide facility methods.
+As mentioned in the introduction, we recommend to use socket streams which are of higher level and provide facility methods.
 They were successfully used in projects such as Swazoo and Kom web servers used respectively by AidaWeb and Seaside web frameworks.
 
-However, socket streams remain still low-level if you have an application involving different objects distributed over communicating images.
+Nevertheless, socket streams remain still low-level if you have an application involving different objects distributed over communicating images.
 In a such software, developers need to deal with message passing between remote objects by serializing arguments and results.
-They'll have also to take care of distributed garbage-collection.
+They will have also to take care of distributed garbage-collection.
 An object should not be destroyed if it is referenced by a remote one.
 This recurrent not trivial issues are solved by Object-Request Brokers (ORB) such as rST\footnote{http://www.squeaksource.com/rST.html}.
 An ORB frees the developer from networking issues and thus allows expressing remote communications simply using messages exchanged between remote objects.
 
+\alex{Maybe having a list of the essential points of the chapter will be good}
 
 % Noury: Pour pousser le message "Utilisez les SocketStream", est-ce Ben tu pourras remplacer les socket par des SocketStream dans ton code ?
 % Reference to a chat instant messages:  on Squeaksource: http://www.squeaksource.com/PharoInstantMessenge \ben{maybe it should be moved in another repo}. You can load it using Monticello (Chapter \ja{numChapter}).

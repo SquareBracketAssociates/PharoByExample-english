@@ -5,6 +5,7 @@
 % HISTORY:
 % 2009-09-02 - Chapter started by Damien C
 % 2011-09-01 - Alexandre doing a pass on the chapter. I updated the FileSystem code with the latest version
+% 2011-06-06 - Alexandre finished his pass. Waiting for comments
 
 %=================================================================
 \ifx\wholebook\relax\else
@@ -58,7 +59,7 @@ part, we will jump into details.
 
 To install Glamour on your \pharo{} image execute the following code:
 
-\ja{i cannot load this code in PharoCore 1.3. We need a stable version} \alex{Strange, I just tried and it works with a 13299} 
+\ja{i cannot load this code in PharoCore 1.3. We need a stable version} \alex{Strange, I just tried and it works with a 13299} \ja{ok, I should try again. But I am not sure that we must have loadDefault. We need a fixed version, like that, the source code will work in 3 years.}\ab{We will check this before publishing the book}
 \begin{code}{}
 Gofer new
   squeaksource: 'Glamour'; 
@@ -188,8 +189,6 @@ This short introduction has just presented how to install Glamour and how to use
 it to create a simple file browser. 
 
 %:%%%%%%%%%%%
-
-%\section{Tutorial: Implementing a code browser}
 \section{Presentation, Transmission and Ports}
 
 This section gives a realistic example and details the Glamour framework.
@@ -250,9 +249,12 @@ PBE2CodeNavigator>>buildBrowser
 \end{code}
 
 Executing \ct{PBE2CodeNavigator open} opens a new browser with the text
-``a RPackageOrganizer'' and nothing else. We now extend our browser by
-adding a pane to display a list of packages.
-\ja{does it work with RPackage or Categories or both ?}\alex{It works with RPAckage only, there is a ref to RPackageOrganizer}
+``a RPackageOrganizer'' and nothing else. Note that we now use the \ct{GLMTabulator} class to create our browser. A \ct{GLMTabulator} is an explicit browser that allows us to place panes in columns and rows.
+
+
+We now extend our browser with a new pane to display a list of packages.
+\ja{does it work with RPackage or Categories or both ?}\alex{It works with RPAckage only, there is a ref to RPackageOrganizer}\ja{this is a problem, because RPackage is not in 1.3 by default}\alex{I think PBE2 should be based on Pharo 1.4}
+
 
 \begin{code}{}
 PBE2CodeNavigator>>buildBrowser
@@ -274,7 +276,6 @@ only one pane displaying packages. The flow of data is specified by
 means of \emph{transmissions}. These are triggered when certain
 changes in the browser graphical user interface occur, such as an item selection in a list. We make our browser more interesting by displaying classes contained in the selected package (see \figref{showclasses}).
 
-\ja{I want to verify this source code: why do you define classesIn: where I think we could do "andShow: [:a | a definedClasses].". I have the same question for package. I understand that help us to reuse the pane... but we have to manipulate data, not presentation. Ok I understand, but in this case, you should rename classesIn: by something like presentationOfClassesIn: or listOfClassesIn:}\alex{I am not really shocked by this. It looks natural to have a method classesIn:}
 \begin{code}{}
 PBE2CodeNavigator>>buildBrowser
   browser := GLMTabulator new.
@@ -291,9 +292,9 @@ PBE2CodeNavigator>>classesIn: constructor
 \end{code}
 
 \begin{figure}[htbp]
-  \centerline{\includegraphics[width=\linewidth]{showclasses.pdf}}
+  \centerline{\includegraphics[width=\linewidth]{showclasses.png}}
   \caption{Two-pane browser. When a package is selected in the left
-    pane, the contained classes are shown on the right pane.\alex{This is not Glamour in Pharo}}
+    pane, the contained classes are shown on the right pane.}
   \label{fig:showclasses}
 \end{figure}
 
@@ -346,7 +347,7 @@ PBE2CodeNavigator>>packagesIn: constructor
 PBE2CodeNavigator>>classesIn: constructor
   constructor list
     when: [:packageName | self organizer includesPackageNamed: packageName ];
-    display: [:packageName | (self organizer packageNamed: packageName) definedClasses];
+    display: [:packageName | (self organizer packageNamed: packageName) definedClasses]
 
 PBE2CodeNavigator>>childrenOf: rootPackage on: organizer
   ^ organizer packageNames select: [ :name | name beginsWith: rootPackage , '-' ]
@@ -364,7 +365,7 @@ given item in the tree. Since the children of each package are now
 selected by our tree presentation, we have to pass only the roots of
 the package hierarchy to the \ct{display:} argument.
 
-At this point, we can also add Pane~3 to list the method categories (\figref{classnavigator_wireframe}) \ja{Is it not fig:treeandcategories  (fig 1.4)?}\alex{I do not understand this comment}. The listing
+At this point, we can also add Pane~3 to list the method categories (\figref{treeandcategories}). The listing
 below introduces no new elements that we have not already discussed:
 
 \begin{code}{}
@@ -389,8 +390,8 @@ The browser resulting from the above changes is shown in
 figure \figref{treeandcategories}.
 
 \begin{figure}[htbp]
-\centerline{\includegraphics[width=\linewidth]{treeandcategories.pdf}}
-\caption{	Improved class navigator including a tree to display the packages and a list of method categories for the selected class.\alex{Why is there visualworks shows in the figure? Where did we get this figure from? This is not Pharo apparently}}
+\centerline{\includegraphics[width=\linewidth]{treeandcategories.png}}
+\caption{Improved class navigator including a tree to display the packages and a list of method categories for the selected class.}
 \label{fig:treeandcategories}
 \end{figure}
 
@@ -400,8 +401,7 @@ figure \figref{treeandcategories}.
 
 Adding the list of methods as Pane 4 involves slightly more machinery. 
 When a method category is selected we want to show \emph{only} the methods
-that belong to that category. If no category is selected, we want to
-show \emph{all} methods that belong to the current class.
+that belong to that category. If no category is selected, \emph{all} methods that belong to the current class are shown.
 
 This leads to our methods pane depending on the selection of two other
 panes, the class pane and the category pane. Multiple origins can be
@@ -443,13 +443,13 @@ is fired.
 In the first presentation, the condition matches when all arguments
 are defined (not \ct{null}), this is the default for all presentations. The
 second condition matches only when the category is undefined and the class defined. When a presentation must be displayed even in the
-presence of undefined origin, it is necessary to use \ct{allowNil} as
+presence of an undefined origin, it is necessary to use \ct{allowNil} as
 shown. We can therefore omit the category from the display block.
 
 The completed class navigator is displayed in \figref{codenavigator}.
 
 \begin{figure}[htbp]
-\centerline{\includegraphics[width=\linewidth]{codenavigator.pdf}}
+\centerline{\includegraphics[width=\linewidth]{codenavigator.png}}
 \caption{Complete code navigator. If no method category is selected, all methods of the class
 are displayed. Otherwise, only the methods that belong to that category are shown.}
 \label{fig:codenavigator}
@@ -472,25 +472,26 @@ browser transmit from: #packages; to: #classes; andShow: [:a | ...].
 browser transmit from: #packages port: #selection; to: #classes; andShow: [:a | ...].
 \end{code}
 
-\dc{It is currently not clear what are the available ports for each
-  presentation. It looks like hover does not exist anymore} \alex{I asked the moose mailing list. We will see}
 
-Other ports exist and may be used depending on the presentation. For
-example, the list presentation also populates the \emph{hover} port
-when the user hovers over an item over a list and a text presentation
-updates the \emph{text} port to reflect its contents as a user types
-within it. For a full reference, see the documentation of the
-presentations being used.
+%\alex{hover is not supported currently}
+%Other ports exist and may be used depending on the presentation. For
+%example, the list presentation also populates the \emph{hover} port
+%when the user hovers over an item over a list and a text presentation
+%updates the \emph{text} port to reflect its contents as a user types
+%within it. For a full reference, see the documentation of the
+%presentations being used.
 
 
-%-------------------------------------------------------------------------------
+%:%%%%%%%%%%%
+\section{Composing and Interaction}
+
 \subsection{Reusing Browsers}
 \label{sec:tutorial/reusing-browsers}
 
 One of  Glamour strengths is to use browsers in
 place of primitive presentations such as lists and trees. This conveys formidable possibilities to compose and nest browsers.
 
-In the next example we want to create a class \emph{editor} as shown
+The subsequent example defines a class \emph{editor} as shown
 in figure~\ref{fig:classbrowser_wireframe}. Panes 1 through 4 are
 equivalent to those described previously. Pane~5 shows the source code
 of the method that is currently selected in pane~4.
@@ -501,22 +502,20 @@ of the method that is currently selected in pane~4.
 \label{fig:classbrowser_wireframe}
 \end{figure}
 
-For the sake of the example, we will create this editor in a new class
-called \ct{PBE2CodeEditor}. This editor will delegate the presentation
+A new class \ct{PBE2CodeEditor} will implement this editor. An editor will delegate the presentation
 of panes 1 through 4 to the previously implemented
 \ct{PBE2CodeNavigator}. To achieve this, we first have to make the
-existing navigator return the constructed browser.
+existing navigator return the constructed browser. 
 
 \begin{code}{}
 PBE2CodeNavigator>>buildBrowser
-  " ... "
-  ^ browser
+  ...
+  "new line"
+  ^ browser 
 \end{code}
 
 We can then reuse the navigator in the new editor browser as shown
 below.
-
-\ab{@@here}
 
 \begin{code}{}
 Object subclass: #PBE2CodeEditor
@@ -544,7 +543,7 @@ PBE2CodeEditor>>buildBrowser
   browser transmit to: #navigator; andShow:  [:a | self navigatorIn: a ]. 
 
 PBE2CodeEditor>>navigatorIn:  constructor
-  constructor  custom:  (PBE2CodeNavigator new buildBrowser)
+  constructor custom: (PBE2CodeNavigator new buildBrowser)
 \end{code}
 
 
@@ -552,19 +551,16 @@ The listing shows how the browser is used exactly like we would use a
 list or other type of presentation. In fact, browsers are a type of
 presentation.
 
-When evaluating the code \ct{PBE2CodeEditor open}, a new browser is
-opened that shows the navigator embedded in the top pane and an empty
-pane at the bottom. No source code will be displayed because we have
-not yet created any connections between the panes. To get to the
-source, we need both the name of the selected method as well as the
+Evaluating \ct{PBE2CodeEditor open} opens a browser that embeds the navigator in the upper part and has an empty
+pane at the lower part. Source code is not displayed yet because no connection has been made between the panes so far. The source code is obtained by wiring the navigator with the text pane: we need both the name of the selected method as well as the
 class in which it is defined. Since this information is defined only
 within the navigator browser, we must first export it to the outside
-world by using the \ct{sendToOutside:from:} \ja{sendToOutside:from: or sendToOutside: ?} message. For this we
+world by using \ct{sendToOutside:from:}. For this we
 append the following lines to \ct{codeNavigator}:
 
 \begin{code}{}
 PBE2CodeNavigator>>buildBrowser
-  [...]
+  ...
   browser transmit from: #classes; toOutsidePort:  #selectedClass. 
   browser transmit from: #methods; toOutsidePort:  #selectedMethod.
   
@@ -575,11 +571,10 @@ This will send the selection within classes and methods to the
 \emph{selectedClass} and \emph{selectedMethod} ports of the containing
 pane. Alternatively, we could have added these lines to the
 \ct{navigatorIn:} method in the code editor---it makes no difference
-to Glamour.
+to Glamour as follows:
 
 \begin{code}{}
 PBE2CodeEditor>>navigatorIn: constructor
-
   "Alternative way of adding outside ports. There is no need to use this
    code and the previous one simultaneously."
 
@@ -596,9 +591,8 @@ However, we consider it sensible to clearly define the interface on
 the side of the code \emph{navigator} rather than within the code
 editor in order to promote the reuse of this interface as well.
 
-Note that a message for achieving the reverse---importing a port from
-the outside pane and storing its value on one of the browser's panes
-also exists and requires the use of \ct{fromOutsidePort:} and \ct{to:}.
+
+%\alex{Not sure what the following is useful for} Note that a message for achieving the reverse---importing a port from the outside pane and storing its value on one of the browser's panes also exists and requires the use of \ct{fromOutsidePort:} and \ct{to:}. 
 
 We extend our code editor example as follows:
 
@@ -609,7 +603,7 @@ PBE2CodeEditor>>buildBrowser
 		row: #navigator;
 		row: #source.
 		
-	browser transmit to: #navigator; andShow:  [:a | self navigatorIn: a ]. 
+	browser transmit to: #navigator; andShow:  [:a | self navigatorIn: a]. 
 	browser transmit
 		from:  #navigator port: #selectedClass;
 		from: #navigator port: #selectedMethod;
@@ -628,7 +622,7 @@ already written earlier. The composed browser described by the listing
 is shown in figure~\ref{fig:composed-browser}.
 
 \begin{figure}[htbp]
-\centerline{\includegraphics[width=\linewidth]{classbrowser.pdf}}
+\centerline{\includegraphics[width=\linewidth]{classbrowser.png}}
 \caption{Composed browser that reuses the previously described class navigator to show the source of a selected method.}
 \label{fig:composed-browser}
 \end{figure}
@@ -637,7 +631,8 @@ is shown in figure~\ref{fig:composed-browser}.
 \subsection{Actions}
 \label{sec:tutorial/actions}
 
-Browsers generally rely on \emph{actions}---first-class behavioral objects that are executed when a keyboard shortcut is pressed or when an entry in a context menu is clicked. Glamour supports such actions through the \ct{act:on:} message sent to a presentation:
+Navigating through the domain is essential to find interesting elements. However, having a proper set of available actions is essential to let one to interact with the domain.
+Actions may be defined and associated to a presentation. An action is a block that is evaluated when a keyboard shortcut is pressed or when an entry in a context menu is clicked. An action is defined via \ct{act:on:} sent to a presentation:
 
 \begin{code}{}
 PBE2CodeEditor>>sourceIn: constructor
@@ -652,10 +647,10 @@ The argument passed to \ct{on:} is a character that specifies the
 keyboard shortcut that should be used to trigger the action when the
 corresponding presentation has the focus. Whether the character needs
 to be combined with a meta-key---such as command, control or alt---is
-platform specific and need not be specified. The \ct{act:} block
+platform specific and does not need to be specified. The \ct{act:} block
 provides the corresponding presentation as its first argument which
 can be used to poll its various properties such as the contained text
-or the current selection. The other arguments to the block are the
+or the current selection. The other block arguments are the
 incoming origins as defined by \ct{from:} and are equivalent to the
 arguments of \ct{display:} and \ct{when:}.
 
@@ -672,6 +667,8 @@ the current method back to the class:
   entitled: 'Save'
 \end{code}
 
+The contextual menu is accessible via the triangle downward-oriented above the text pane, located on the left hand side.
+
 %$
 
 %-------------------------------------------------------------------------------
@@ -679,8 +676,7 @@ the current method back to the class:
 
 Frequently, developers wish to provide more than one presentation of a
 specific object. In our code browser for example, we may wish to show
-the classes not only as a list but as a visualization of their
-\emph{system complexity} as well. Glamour includes support to display
+the classes not only as a list but as a graphical representation as well. Glamour includes support to display
 and interact with visualizations created using the \emph{Mondrian
   visualization engine} \ja{presented in chapter...}. To add a second presentation, we simply
 define it in the \ct{using:} block as well:
@@ -712,7 +708,7 @@ figure~\ref{fig:mondrian-presentation}. The clause \ct{title:} sets
 the name of the tab used to render the presentation.
 
 \begin{figure}[htbp]
-\centerline{\includegraphics[width=\linewidth]{mondrian-presentation.pdf}}
+\centerline{\includegraphics[width=\linewidth]{mondrian-presentation.png}}
 \caption{Code editor sporting a Mondrian presentation in addition to a simple class list.}
 \label{fig:mondrian-presentation}
 \end{figure}
@@ -721,7 +717,7 @@ the name of the tab used to render the presentation.
 %-------------------------------------------------------------------------------
 \subsection{Other Browsers}
 
-Up to now in the tutorial, we have only used the \ct{GLMTabulator}
+We have essentially used the \ct{GLMTabulator}
 which is named after its ability to generate custom layouts using the
 aforementioned \ct{row:} and \ct{column:} keywords. Additional
 browsers are provided or can be written by the user. Browser
@@ -753,7 +749,7 @@ show the subclasses of the selected item. This can continue
 indefinitely as long as something to select remains.
 
 \begin{figure}[htbp]
-\centerline{\includegraphics[width=\linewidth]{finder.pdf}}
+\centerline{\includegraphics[width=\linewidth]{finder.png}}
 \caption{Subclass navigator using Miller Columns style browsing.}
 \label{fig:finder}
 \end{figure}
@@ -762,10 +758,24 @@ To discover other kinds of browsers, explore the hierarchy of the
 \ct{GLMBrowser} class.
 
 %-------------------------------------------------------------------------------
-\subsection{Tutorial Conclusion}
-\ja{maybe replace tutorial by chapter ?}
+%:%%%%%%%%%%%
+\section{Chapter Summary}
 
-This concludes our tutorial of Glamour. Please note that this tutorial
+This chapter gave a short introduction to the Glamour browser framework. Glamour is essentially used to build to build tool that enable one to navigate and interact with an arbitrary domain, made of plain objects.
+
+\begin{itemize}
+\item \ct{GLMTabulator} is a generic browser in which widget are ordered in columns and rows.
+\item Columns are defined by successively sending \ct{column:} with a symbol name as argument. Rows are defined with \ct{row:}.
+\item Data flows along transmissions set with \ct{transmit from: #source; to: #target}.
+\item A transmission may have several source.
+\item List and text panes are obtained by sending \ct{list} and \ct{text} to a browser. Content is set with \ct{display:} and items are formatted with \ct{format:}.
+\item Ports define the component interface of a browser. This enables easy reuse and embedding.
+\item Interaction is defined in term of actions, defined by sending \ct{act:} to a widget.
+\item Glamour support multiple presentations. 
+\item Glamour is not made to build a general purpose graphical user interfaces. 
+\end{itemize}
+
+Note that this chapter 
 is not meant to give an exhaustive overview of Glamour, but is merely
 intended to introduce the reader to the usage and to our intent for
 our approach. For a more extensive view of Glamour, its concepts and
@@ -787,7 +797,7 @@ chapter dedicated.
 %-----------------------------------------------------------------
 
 %%% Local Variables:
-%%% coding: utf-8
+%%% coding: utf-86
 %%% mode: latex
 %%% TeX-master: t
 %%% TeX-PDF-mode: t
