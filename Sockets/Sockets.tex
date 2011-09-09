@@ -36,7 +36,7 @@
 \chapter{Sockets}\label{cha:sockets}
 \chapterauthor{\authornoury{}}
 
-Modern application are often distributed on multiple devices and collaborate through a network to achieve some task.
+Modern applications are often distributed on multiple devices and collaborate through a network to achieve some task.
 The basic approach to set up such a collaboration is to use \textit{sockets}.
 A typical use is in the World Wide Web. Browsers and servers interact through HTTP sockets.
 
@@ -461,7 +461,7 @@ It eases the data exchange by providing buffering together with a set of facilit
 \end{script}
 
 The first line creates a stream that encapsulates a newly created socket connected to the provided server.
-\alex{It is the responsibility} This is the responsibility of message \ct!openConnectionToHostNamed:port:!.
+It is the responsibility of message \ct!openConnectionToHostNamed:port:!.
 It suspends the execution until the connection with the server is established.
 If the server does not respond, the socket stream signals a \ct!ConnectionTimedOut! exception.
 This exception is actually signaled by the underlying socket.
@@ -481,7 +481,7 @@ We can easily display the full response including the html code by sending the \
 Note however that you will have to wait a bit longer compared to displaying a single line.
 
 \subsection{SocketStream at Server Side}
-SocketStreams \alex{''may'' better than ''can''} can also be used at server side to wrap the interaction socket as shown in \Scrref{script:streamSimpleServer}.
+SocketStreams may also be used at server side to wrap the interaction socket as shown in \Scrref{script:streamSimpleServer}.
 
 \begin{script}[script:streamSimpleServer]{Simple Server using \ct!SocketStream!.}
 |connectionSocket interactionSocket interactionStream|
