@@ -305,8 +305,7 @@ Due to the fact that $1 - 0 = 1$ and $1 - 1 = 0$, taking the complement of each 
 
 
 Try the following expressions in Pharo and experiment with it. We compute the direct inversion (bitwise NOT) and add one. 
-
-\sd{mmp: what is the ``bitwise NOT''?}
+Remember a bitwise NOT is turning any 1s into 0s and conversely. 
 
 \begin{code}{}
 2 bitString 
@@ -319,7 +318,7 @@ Try the following expressions in Pharo and experiment with it. We compute the di
 			'1111111111111111111111111111110'		 
 \end{code}
 
-\sd{mmp if we see those prints, we can notice that they are 31 bits long instead of 32. Maybe just saying in one line that the last bit is used to differentiate memory addresses from immediate small integers helps}
+If you check the length of the printed results, you will notice that they are 31 bits long instead of 32. This is because in Pharo and most Smalltalk implementations, small integers are specially encoded and this encoding requires one bit.
 
 Note that the two's complement of a negative number is the corresponding positive value as shown by the following expressions: -2 two complement is 2. First we compute the direct inversion (bitwise NOT) and add one. 
 
