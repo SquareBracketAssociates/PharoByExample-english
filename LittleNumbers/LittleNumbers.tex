@@ -264,14 +264,15 @@ The key point of complement techniques is to convert subtractions into additions
 
 \paragraph{Examples.}
 $8 - 3 = 5$. The 10's complement of 3 is $9 - 3 + 1 = 7$. We add 7 to 8 and get 15. 
-We drop the carry we obtained when from the addition. So we obtain 5. Note that on binary representation the carry results in overflow because there will be not enough bits to represent it).
+We drop the carry we obtained when from the addition. So we obtain 5. (Note that when using binary representation as we will show later, the carry results in overflow because there will be not enough bits to represent it. Therefore implementors should use tricks to determine if the subtraction is correct - usually the trick is to perform a bitXor on the last two digits).
 
 Now $98-60$. The 10's complement of 60 is $9-6$, $9-0$ \ie $39 + 1$ \ie 40. 
- $98-60 = 98 + 40 - 100 = 138 - 100 = 38$. 
+ $98-60 = 98 + 40 - 100 = 138 - 100 = 38$. Note that the 100 subtraction is a way to show that we drop the carry. 
+ We could have written $98-60 = 98 + 40 = 138 = 38$ but this is an incorrect use of the $=$ mathematical operator.
 
 
 Now performing $60-80$ works too. 80 10's complement is $9-8$, $9-0$, so 19 + 1, so 20.
-$60 - 80 = 60 - (100 - 20) = 80 - 100 = -20$. Notice that we do not do the (100-20) operation this is just to make easier to you to follow: $60-80$ just requires to compute the complement and perform one addition.
+$60 - 80 = -20$. Again $60-80$ just requires to compute the complement and perform one addition.
 
 
 \paragraph{Another look at it.} 
@@ -280,19 +281,20 @@ The 10's complement takes advantage of the fact that 109237 is also $999999 - 89
 
 \begin{code}{}
 109237 = 999999 - 890762
-109237 = 999999 - 890762 + 1 - 1
+109237 = 999999 - 890762 (+ 1 - 1)
 109237 = 1000000 - 890762 - 1
 \end{code}
 
 Now the first subtraction is expressed as:
-
 \begin{code}{}
-5006002 - 109237 = 5006002 - (1000000 - 890762 - 1)
-= 5006002 - 1000000 + 890762 + 1
-= 5006002  + 890762 + 1 - 1000000
+190680 - 109237
+= 190680 - (1000000 - 890762 - 1)
+= 190680 - 1000000 + 890762 + 1
+= 190680  + 890762 + 1 - 1000000
+= 1081443 - 1000000
+= 81443
 \end{code}
 
-\sd{mmp: I was a little bit lost with this example. Are you sure all the numbers are correct?}
 
 \section{Two's complement of a number}
 
