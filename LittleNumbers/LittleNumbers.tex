@@ -337,12 +337,10 @@ Note that the two's complement of a negative number is the corresponding positiv
 \end{code}
 
 \paragraph{Negative number value.}
-To know the value of a positive number it is simple: we just sum all the powers of 2 given by the binary representation as explained at the beginning of this Chapter. Now getting the value of a negative number (in two's complement) is quite simple: we do the same except that we count the sign bit as negative, all the other ones as positive. 
+To know the value of a positive number it is simple: we just sum all the powers of 2 given by the binary representation as explained at the beginning of this Chapter. Now getting the value of a negative number (in two's complement) is quite simple: we do the same except that we count the \emph{sign bit} as negative, all the other ones as positive. The sign bit is the most significant bit. For example, on 8 bit representation it will be the one associated with the weight $2^{7}$.
 
 Let us illustrate that: 
 $-69$ is represented on 8 a bit encoding as: 1011 1011. So get the value out of the bit representation is simple we sum: $-2^7 + 0*2^6 + 2^5 + 2^4 + 2^3 + 0*2^2 + 2^1 + 2^0$, \ie $-128 + 32 + 16 + 8 + 2 + 1$ and we get $-69$. 
-
-\sd{mmp: why you took -2 raisedTo: 7 as the negative?  you should explain which bit marks the sign}
 
 
 \paragraph{Subtracting.}
