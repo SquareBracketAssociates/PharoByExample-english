@@ -215,10 +215,10 @@ Integer>>bitAt: anInteger
 We shift to the right from an integer minus one (hence \ct{1 - anInteger})
 and with a \ct{bitAnd:} we know whether there is a one or zero in the location.
 
-\sd{mmp: show an example, otherwise it is difficult to understand. Use for example 2r000001101 bitAt: 5 -> returns 0. Do the drawing you always do and it will be much clear. }
+\sd{mmp: show an example, otherwise it is difficult to understand. Use for example 2r000001101 bitAt: 5 -> returns 0. Do the drawing you always do and it will be much clear. }\sd{ok later}
 
 
-Pharo offers the traditional Boolean operations for bit sequence. Hence the messages \ct{bitAnd:}, \ct{bitOr:}, and \ct{bitXor:} can be sent to numbers. 
+Pharo offers the traditional Boolean operations for bit sequence. Hence you can send the messages \ct{bitAnd:}, \ct{bitOr:}, and \ct{bitXor:} to numbers. 
 
 \begin{code}{bitAnd:}
 2r000001101 bitAnd: 2r11
@@ -232,13 +232,12 @@ Again, nothing really special but this was to refresh our memories. Now we will 
 To fully understand 2's complement it is interesting to see how it works with decimal numbers. There is no obvious usage for 10's complement but here the point we want to show is that a complement is the replacement of addition with subtraction (\ie adding the complement of A to B is equivalent to subtracting A from B).
 
 
-The 10's complement of a positive decimal integer $n$ is 10 to the power of $k$, minus $n$, where $k$ is the number of digits in the decimal representation of $n$. It can be calculated in the following way: 
-
-\sd{mmp: Write it as a math formula, otherwise it is difficult to understand the precedense of the calculus. Is it  10 raisedTo: (k-n)  or is it (10 raisedTo: k) - n  ? }
-
-\sd{mmp: Apart from that, what do you mean by "where $k$ is the number of digits in the decimal representation of $n$."  ?  For the example of 1968 I would have expected 4 since it has 4 digits. But instead it is 5. I am so stupid? }
+The 10's complement of a positive decimal integer $n$ is 10 to the power of $k$ + 1, minus $n$, where $k$ is the number of digits in the decimal representation of $n$. $Complement_{10}(n) = 10^{k+1} - n$.
+For example $Complement_{10}(8)= 10^1-8$, $Complement_{10}(1968)=10^{5}-1968=8032$
 
 
+
+It can be calculated in the following way: 
 \begin{enumerate}
 \item replace each digit $d$ of the number by $9-d$ and  
 \item add one to the resulting number.
@@ -265,18 +264,14 @@ The key point of complement techniques is to convert subtractions into additions
 
 \paragraph{Examples.}
 $8 - 3 = 5$. The 10's complement of 3 is $9 - 3 + 1 = 7$. We add 7 to 8 and get 15. 
-We drop the carry. So we obtain 5.
-
-\sd{mmp: what is to drop the carry?  how much do you drop and how did you know that? how did you get 5? }
+We drop the carry we obtained when from the addition. So we obtain 5. Note that on binary representation the carry results in overflow because there will be not enough bits to represent it).
 
 Now $98-60$. The 10's complement of 60 is $9-6$, $9-0$ \ie $39 + 1$ \ie 40. 
-$98-60 = 98 + 40 - 100 = 138 - 100 = 38$.
-
-\sd{mmp: You said that ``The key point of complement techniques is to convert subtractions into additions''. But here there is a substraction as well, the minus 100. So?}
+ $98-60 = 98 + 40 - 100 = 138 - 100 = 38$. 
 
 
 Now performing $60-80$ works too. 80 10's complement is $9-8$, $9-0$, so 19 + 1, so 20.
-$60 - 80 = 60 - (100 - 20) = 80 - 100 = -20$.
+$60 - 80 = 60 - (100 - 20) = 80 - 100 = -20$. Notice that we do not do the (100-20) operation this is just to make easier to you to follow: $60-80$ just requires to compute the complement and perform one addition.
 
 
 \paragraph{Another look at it.} 
