@@ -349,6 +349,16 @@ To subtract a number to another one, we will add the second number's two complem
 When we want to compute $110110 - 101$, we will compute the 2's completement and add it. 
 So we will add 110110 and 111011, and get 110001. This is correct: $54 - 5 = 49$.
 
+
+\begin{code}{}
+110110 - 101
+   110110
++ 111011
+----------
+   110001
+\end{code}
+
+Let us test in Pharo
 \begin{code}{}
 (2r110110 - 2r101) bitString	
 	returns '0000000000000000000000000110001'
