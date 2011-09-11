@@ -1757,19 +1757,22 @@ ConfigurationOfGemToolsExample>>version10: spec
 \end{code}
 \end{footnotesize} 
 
+\paragraph{Proposed development process.}
+Using metacello we suggest the following development steps.
 
-Baseline
-Version development
-Validate the map
+\begin{code}{}
+Baseline						"first we define a baseline"
+Version development			"Then a version tagged as development"
+Validate the map				"Once it is validated"
+Version release				"We are ready to tag a version as release"	
+
+Version development			"Since development continue we create a new version"
+...							"Tagged as development. It will be tagged as release and so one"
+Baseline 					"When architecture changes, a new baseline will appear"
+Version development			"and the story will continue"
 Version release
 
-Version development
-...
-Baseline 
-Version development
-Version release
-
-
+\end{code}
 
 %=========================================================
 \ifx\wholebook\relax\else

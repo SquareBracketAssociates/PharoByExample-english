@@ -70,7 +70,7 @@ Using a sequence of bits we can encode numbers. How to encode 13? It cannot be h
 \end{figure}
 
 \subsection*{Binary notation}
-Smalltalk has a format for representing number in different bases. We write \ct{2r1101} where 2 indicates the base or radix, here 2, and the rest the number expressed in this base. Note that we could also write \ct{2r01101} or \ct{2r0001101} since the leading zeroes do not change the number.
+Smalltalk has a format for representing numbers in different bases. We write \ct{2r1101} where 2 indicates the base or radix, here 2, and the rest the number expressed in this base. Note that we could also write \ct{2r01101} or \ct{2r0001101} since the leading zeroes do not change the number.
 \begin{code}{}
 2r1101
 	returns 13
@@ -304,7 +304,7 @@ What the 10's complement shows us  that it is achieved by taking the difference 
 Due to the fact that $1 - 0 = 1$ and $1 - 1 = 0$, computing the \emph{two's complement of number is exactly the same as flipping 1's to 0's and vice versa and adding 1.}
 
 
-Try the following expressions in Pharo and experiment with it. We compute the direct inversion (bitwise NOT) and add one. 
+Try the following expressions in Pharo and experiment with them. We compute the direct inversion (bitwise NOT) and add one. 
 Remember a bitwise NOT is turning any 1s into 0s and conversely. 
 
 \begin{code}{}
@@ -426,7 +426,8 @@ In Pharo, you can experiment to confirm the fact that the two's complement is th
     returns  '0000000000000000000000000000010'
    
 '0000000000000000000000000000010' 
-    collect: [:each | $0 = each ifTrue: [$1] ifFalse: [$0]]    returns '1111111111111111111111111111101' 
+    collect: [:each | $0 = each ifTrue: [$1] ifFalse: [$0]]
+    returns '1111111111111111111111111111101' 
     
 -2 bitString
 	returns '1111111111111111111111111111110'
@@ -499,7 +500,7 @@ SmallInteger>>bitInvert
 2 bitInvert.
 	returns '1111111111111111111111111111101'
 	
--1 
+-1 bitString
 	returns '1111111111111111111111111111111'
 2 negated (two complement)
 	returns '1111111111111111111111111111110'
@@ -515,7 +516,7 @@ If you want to know the number of bits used to represent a
 SmallInteger, just evaluate:
 
 \begin{code}{}
-SmallInteger maxVal highBit + 1.
+SmallInteger maxVal highBit + 1
 	returns 31
 \end{code}
 
@@ -559,7 +560,7 @@ Let us explore a bit.
 \end{code}
 
 \section{Hexadecimal}
-We cannot finish this Chapter without talking about hexadecimal. In Smalltalk, the same syntax than for binary is used for hexadecimal. 16rF indicates that F is encoded in 16 base. 
+We cannot finish this Chapter without talking about hexadecimal. In Smalltalk, the same syntax than for binary is used for hexadecimal. \ct{16rF} indicates that \ct{F} is encoded in 16 base. 
 
 We can get the hexadecimal equivalent of a number using the message \ct{hex}. 
 Using the message \ct{printStringHex} we get the number printed in hexadecimal without the radix notation. 
@@ -570,7 +571,7 @@ Using the message \ct{printStringHex} we get the number printed in hexadecimal w
 	
 15 printStringHex 'F'
 
-16rF
+16rF printIt
 	returns 15
 \end{code}
 
