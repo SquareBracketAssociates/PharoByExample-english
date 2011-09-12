@@ -3,6 +3,9 @@
 % $Revision: 28563 $
 
 % HISTORY:
+% 2011-09-08: addressed mariano + nicolas paez comments
+% 2011-09-11 - Migrated to PharoBox: svn checkout https://XXX@scm.gforge.inria.fr/svn/pharobooks/PharoByExampleTwo-Eng
+
 
 
 %=================================================================
@@ -35,7 +38,7 @@
 \chapter{Exploring Little Numbers}
 
 We manipulate numbers all the time and in this Chapter we propose you a little journey into the way 
-integers are mapped to their binary representations. We will open the box and take a language implementor perspective and explore happily how small integers are represented. 
+integers are mapped to their binary representations. We will open the box and take a language implementor perspective and happily explore how small integers are represented. 
 
 We will start with some simple reminders on math that are the basics of our digital world. Then we will have a look at how integers and in particular small integers are encoded.
 
@@ -70,16 +73,15 @@ Using a sequence of bits we can encode numbers. How to encode 13? It cannot be h
 \end{figure}
 
 \subsection*{Binary notation}
-Smalltalk has a format for representing number in different bases. We write \ct{2r1101} where 2 indicates the base or radix, here 2, and the rest the number expressed in this base.
-
+Smalltalk has a format for representing numbers in different bases. We write \ct{2r1101} where 2 indicates the base or radix, here 2, and the rest the number expressed in this base. Note that we could also write \ct{2r01101} or \ct{2r0001101} since the leading zeroes do not change the number.
 \begin{code}{}
-2r01101
+2r1101
 	returns 13
 
 13 printStringBase: 2
-	returns '01101'
+	returns '1101'
 	
-Integer readFrom: '01101' base: 2 	
+Integer readFrom: '1101' base: 2 	
 	returns 13
 \end{code}
 
@@ -105,12 +107,12 @@ The following examples show how to use them.
 	returns 16
 \end{code}
 
-The message \ct{bitShift:} is equivalent to \ct{>>} and \ct{<<}. It just use negative and positive integers to indicate the shift direction. A positive argument offers the same behavior than \ct{<<}, multiplying the receiver by a power of 2. A negative is similar to \ct{>>}. 
+The message \ct{bitShift:} is equivalent to \ct{>>} and \ct{<<}, but it uses negative and positive integers to indicate the shift direction. A positive argument offers the same behavior than \ct{<<}, multiplying the receiver by a power of 2. A negative is similar to \ct{>>}. 
 
 \begin{figure}[h]
 \begin{center}
 \includegraphics[width=0.65\textwidth]{16bits-numberMultiplication}
-\caption{Multiply by 2 or dividing by 2.\label{bitshiftmult}}
+\caption{Multiplying and dividing by 2.\label{bitshiftmult}}
 \end{center}
 \end{figure}
 
@@ -132,14 +134,14 @@ Of course we can shift by more than one bit at a time.
 	returns 2
 (2r000001000 >> 2) printStringBase: 2 
 	returns '10'	
-2r000001000 << 1					"we multiply by two"
-	returns 16
+2r000001000 << 2					"we multiply by four"
+	returns 32
 \end{code}
 
 
 
 
-The previous examples show only bit shifting numbers with a single 1 bit but there is no constraint at this level.
+The previous examples only show bit shifting numbers with one or two bits but there is no constraint at this level.
 The complete sequence of bits can be shifted as shown with \ct{2r000001100} below and Figure~\ref{16bits-1280shifted8}.
 
 \begin{code}{}
@@ -179,13 +181,10 @@ to walk on a hill before climbing a mountain.
 
 
 \section{Bit Access and Manipulation}
-Smalltalk offers way to access bit information. The message \ct{bitAt:} returns the value of the bit at a given position. It follows the Smalltalk convention that collection starts one. 
+Smalltalk lets you access bit information. The message \ct{bitAt:} returns the value of the bit at a given position. It follows the Smalltalk convention that collections' indexes start with one. 
 
 
 \begin{code}{}
-2r000001101 bitAt: 0
-	returns 0 
-	
 2r000001101 bitAt: 1
 	returns 1 
 	
@@ -193,6 +192,9 @@ Smalltalk offers way to access bit information. The message \ct{bitAt:} returns 
 	returns 0 
 			
 2r000001101 bitAt: 3
+	returns 1
+	
+2r000001101 bitAt: 4
 	returns 1
 	 
 2r000001101 bitAt: 5
@@ -216,22 +218,29 @@ Integer>>bitAt: anInteger
 We shift to the right from an integer minus one (hence \ct{1 - anInteger})
 and with a \ct{bitAnd:} we know whether there is a one or zero in the location.
 
-Pharo offers the traditional Boolean operations for bit sequence. Hence the messages \ct{bitAnd:}, \ct{bitOr:}, and \ct{bitXor:} can be send to numbers. 
+\sd{mmp: show an example, otherwise it is difficult to understand. Use for example 2r000001101 bitAt: 5 -> returns 0. Do the drawing you always do and it will be much clear. }\sd{ok later}
+
+
+Pharo offers the traditional Boolean operations for bit sequence. Hence you can send the messages \ct{bitAnd:}, \ct{bitOr:}, and \ct{bitXor:} to numbers. 
 
 \begin{code}{bitAnd:}
 2r000001101 bitAnd: 2r11
 	returns 1 
 \end{code}
 
-Again nothing really special but this was to refresh our memories. Now we will see how numbers are internally encoded in Pharo using two's complement. 
+Again, nothing really special but this was to refresh our memories. Now we will see how numbers are internally encoded in Pharo using two's complement. 
 
 \section{Ten's complement of a number}
 
 To fully understand 2's complement it is interesting to see how it works with decimal numbers. There is no obvious usage for 10's complement but here the point we want to show is that a complement is the replacement of addition with subtraction (\ie adding the complement of A to B is equivalent to subtracting A from B).
 
 
-The 10's complement of a positive decimal integer $n$ is 10 to the power of $k$, minus $n$, where $k$ is the number of digits in the decimal representation of $n$. It can be calculated in the following way: 
+The 10's complement of a positive decimal integer $n$ is 10 to the power of $k$ + 1, minus $n$, where $k$ is the number of digits in the decimal representation of $n$. $Complement_{10}(n) = 10^{k+1} - n$.
+For example $Complement_{10}(8)= 10^1-8$, $Complement_{10}(1968)=10^{5}-1968=8032$
 
+
+
+It can be calculated in the following way: 
 \begin{enumerate}
 \item replace each digit $d$ of the number by $9-d$ and  
 \item add one to the resulting number.
@@ -247,27 +256,26 @@ This two steps rule is equivalent to the following one which looks more complex.
 
 \paragraph{Examples.}
 The 10's complement of 1968 is $9-1$, $9-9$, $9-6$, $9-8$ + 1 \ie $8031 + 1$ \ie 8032. 
-Using the rule two we compute $9-1$, $9-9$, $9-6$, $10-8$ \ie 8032. So our 10's complement is 8032. Indeed $1968 + 8032 = 10000 = 10^{5}$. Therefore it follows well the definition above: 8032 is the result of $10000 - 1968$.
+Using the rule two we compute $9-1$, $9-9$, $9-6$, $10-8$ \ie 8032. So our 10's complement is 8032. Indeed $1968 + 8032 = 10000 = 10^{5}$. Therefore it correctly follows the definition above: 8032 is the result of $10000 - 1968$.
 
 The 10's complement of 190680 is then $9-1$, $9-9$, $9-0$, $9-6$, $9-8$, $9-0$ + 1 \ie $809319 + 1$ \ie 809320. Let's verify: $190680 + 809320 = 1000000$.
  
 So to compute the 10's complement of a number, it is enough to perform \ct{9-d} for each digit and add one to the result.
 
-
 \subsection{Subtraction at work}
-The key point of complement techniques is to convert subtraction into addition. So let us check that.
+The key point of complement techniques is to convert subtractions into additions. Let's check that.
 
 \paragraph{Examples.}
-$8 - 3 = 5$. The 10's complement of 3 is $9 - 3 + 1 = 7$. We add 8 to 7 and get 15. 
-We drop the carry. So we obtain 5.
-
+$8 - 3 = 5$. The 10's complement of 3 is $9 - 3 + 1 = 7$. We add 7 to 8 and get 15. 
+We drop the carry we obtained when from the addition. So we obtain 5. (Note that when using binary representation as we will show later, the carry results in overflow because there will be not enough bits to represent it. Therefore implementors should use tricks to determine if the subtraction is correct - usually the trick is to perform a bitXor on the last two digits).
 
 Now $98-60$. The 10's complement of 60 is $9-6$, $9-0$ \ie $39 + 1$ \ie 40. 
-$98-60 = 98 + 40 - 100 = 138 - 100 = 38$.
+ $98-60 = 98 + 40 - 100 = 138 - 100 = 38$. Note that the 100 subtraction is a way to show that we drop the carry. 
+ We could have written $98-60 = 98 + 40 = 138 = 38$ but this is an incorrect use of the $=$ mathematical operator.
 
 
 Now performing $60-80$ works too. 80 10's complement is $9-8$, $9-0$, so 19 + 1, so 20.
-$60 - 80 = 60 - (100 - 20) = 80 - 100 = -20$.
+$60 - 80 = -20$. Again $60-80$ just requires to compute the complement and perform one addition.
 
 
 \paragraph{Another look at it.} 
@@ -276,16 +284,18 @@ The 10's complement takes advantage of the fact that 109237 is also $999999 - 89
 
 \begin{code}{}
 109237 = 999999 - 890762
-109237 = 999999 - 890762 + 1 - 1
+109237 = 999999 - 890762 (+ 1 - 1)
 109237 = 1000000 - 890762 - 1
 \end{code}
 
 Now the first subtraction is expressed as:
-
 \begin{code}{}
-5006002 - 109237 = 5006002 - (1000000 - 890762 - 1)
-= 5006002 - 1000000 + 890762 + 1
-= 5006002  + 890762 + 1 - 1000000
+190680 - 109237
+= 190680 - (1000000 - 890762 - 1)
+= 190680 - 1000000 + 890762 + 1
+= 190680  + 890762 + 1 - 1000000
+= 1081443 - 1000000
+= 81443
 \end{code}
 
 
@@ -294,10 +304,12 @@ Now the first subtraction is expressed as:
 The two's complement is a common method to represent signed integers. The advantages are that addition and subtraction are implemented without having to  check the sign of the operands and two's complement has only one representation for zero (avoiding negative zero). Adding numbers of different sign encoded using two's complement does not  require any special processing: the sign of the result is determined automatically. 
 
 What the 10's complement shows us  that it is achieved by taking the difference of each digit with the largest number available in the base system, 9 in decimal base and adding one. Now in the case of binary, the base is one.
-Due to the fact that $1 - 0 = 1$ and $1 - 1 = 0$, taking the complement of each digit is exactly the same as flipping 1's to 0's and vice versa and adding 1.
+Due to the fact that $1 - 0 = 1$ and $1 - 1 = 0$, computing the \emph{two's complement of number is exactly the same as flipping 1's to 0's and vice versa and adding 1.}
 
 
-Try the following expressions in Pharo and experiment with it. We compute the direct inversion (bitwise NOT) and add one. 
+Try the following expressions in Pharo and experiment with them. We compute the direct inversion (bitwise NOT) and add one. 
+Remember a bitwise NOT is turning any 1s into 0s and conversely. 
+
 \begin{code}{}
 2 bitString 
 			'0000000000000000000000000000010'
@@ -308,6 +320,8 @@ Try the following expressions in Pharo and experiment with it. We compute the di
 -2 bitString 
 			'1111111111111111111111111111110'		 
 \end{code}
+
+If you check the length of the printed results, you will notice that they are 31 bits long instead of 32. This is because in Pharo and most Smalltalk implementations, small integers are specially encoded and this encoding requires one bit.
 
 Note that the two's complement of a negative number is the corresponding positive value as shown by the following expressions: -2 two complement is 2. First we compute the direct inversion (bitwise NOT) and add one. 
 
@@ -326,7 +340,7 @@ Note that the two's complement of a negative number is the corresponding positiv
 \end{code}
 
 \paragraph{Negative number value.}
-To know the value of a positive number it is simple: we just sum all the powers of 2 given by the binary representation as explained at the beginning of this Chapter. Now getting the value of a negative number (in two's complement) is quite simple: we do the same except that we count the sign bit as negative, all the other ones as positive. 
+To know the value of a positive number it is simple: we just sum all the powers of 2 given by the binary representation as explained at the beginning of this Chapter. Now getting the value of a negative number (in two's complement) is quite simple: we do the same except that we count the \emph{sign bit} as negative, all the other ones as positive. The sign bit is the most significant bit \ie the bit that represents the largest value. For example, on 8 bit representation it will be the one associated with the weight $2^{7}$.
 
 Let us illustrate that: 
 $-69$ is represented on 8 a bit encoding as: 1011 1011. So get the value out of the bit representation is simple we sum: $-2^7 + 0*2^6 + 2^5 + 2^4 + 2^3 + 0*2^2 + 2^1 + 2^0$, \ie $-128 + 32 + 16 + 8 + 2 + 1$ and we get $-69$. 
@@ -338,6 +352,16 @@ To subtract a number to another one, we will add the second number's two complem
 When we want to compute $110110 - 101$, we will compute the 2's completement and add it. 
 So we will add 110110 and 111011, and get 110001. This is correct: $54 - 5 = 49$.
 
+
+\begin{code}{}
+110110 - 101
+   110110
++ 111011
+----------
+   110001
+\end{code}
+
+Let us test in Pharo
 \begin{code}{}
 (2r110110 - 2r101) bitString	
 	returns '0000000000000000000000000110001'
@@ -357,7 +381,7 @@ Posing the addition using only 8 bits we see the following:
 \begin{code}{}
 carry	1111111 
 		 00110110
-+		 11111011	
++		11111011	
 	----------------------------------
 		 00110001	
 \end{code}
@@ -365,11 +389,14 @@ carry	1111111
 Note that the overflowing carry is dropped.
 
 \paragraph{Representing negative numbers.}
-What is nice with the 2's complement is that we can use it to represent a negative number. Indeed, we can negate a number by computing its two complement. The two's complement of a positive number represents a negative number of the number.
+What is nice with the 2's complement is that we can use it to represent a negative number. Indeed, we can negate a number by computing its two complement. The two's complement of a positive number represents the negative form of that number.
 
 Let's look at 2. 2 is encoded on 8 bits as 000000010 and -2 as 11111110 as shown in Figure~\ref{negativePositive}.
 000000010 flipped is: 11111101 and we add one: so we get 11111110.
-Now the difference between  -2 (11111110) and 126 (01111110) is given by the most significant bit. 
+
+
+
+The difference between  -2 (11111110) and 126 (01111110) is given by the most significant bit which conveys the sign of the integer.
 
 \begin{figure}[h]
 \begin{center}
@@ -378,42 +405,68 @@ Now the difference between  -2 (11111110) and 126 (01111110) is given by the mos
 \end{center}
 \end{figure}
 
-There is one exception. One a given number of bits, let's 8 bits as in Figure~\ref{negativePositive},
-we obtained the negative of a number but computing its two's complement (flipping all the bits and adding 1), except for the most negative number. On a 8 bits representation, the most negative number is -128 (1000 0000), inverting it is (0111 1111), and adding one results in itself (1000 0000). Why because we cannot encode 128 on 8 bits signed convention. Here the carry is "eaten" by the sign bit. 
+
+
+There is one exception. One a given number of bits, let's say 8 bits as in Figure~\ref{negativePositive},
+we obtained the negative of a number but computing its two's complement (flipping all the bits and adding 1), except for the most negative number. On a 8 bits representation, the most negative number is -128 (1000 0000), inverting it is (0111 1111), and adding one results in itself (1000 0000). We cannot encode 128 on 8 bits signed convention. Here the carry is "eaten" by the sign bit. 
 
 
 \paragraph{In Pharo.}
 Let's try with Pharo to check a bit our understanding. 
-
-%You can add the following method \ct{bitString} to the SmallInteger class. It returns a string of bit representing the bit representation of the receiver.
-%
-%\begin{code}{}
-%SmallInteger>>bitString
-%	"Returns the bit representation of the receiver."
-%	""
-%	^ String streamContents: [:s | 
-%		30 to: 1 by: -1 do: [:i | s nextPut: ((self bitAt: i) + 48) asCharacter ] .
-%		s contents ]
-%\end{code}
-\sd{should use bitString}
+If your Smalltalk does not offer the \ct{bitString} method. You can define it as follow:
 \begin{code}{}
-| v |
-v := 10. 
-String streamContents: [:s | 
-	31 to: 1 by: -1 do: [:i | s nextPut: ((v bitAt: i) + 48) asCharacter   ] .
-	s contents] 
-	 '0000000000000000000000000001010'
-
-| v |
-v := -3.  "1111111111101"
-String streamContents: [:s | 
-	31 to: 1 by: -1 do: [:i | s nextPut: ((v bitAt: i) + 48) asCharacter   ] .
-	s contents ]
-	 '1111111111111111111111111111101' 
+SmallInteger>>bitString
+	"Returns the bit representation of the receiver."
+	^ String streamContents: [:s | 
+		30 to: 1 by: -1 do: [:i | s nextPut: ((self bitAt: i) + 48) asCharacter ] .
+		s contents ]
 \end{code}
 	
-As we will show in a subsequent section, Pharo's small integers are encoded on 31 bits and the smallest (small integer) negative
-integer is \ct{SmallInteger maxVal negated - 1}. Here we see the exception of the most negative integer.
+In Pharo, you can experiment to confirm the fact that the two's complement is the negative version of a number.
+ 
+\begin{code}{}
+2 bitString
+    returns  '0000000000000000000000000000010'
+   
+'0000000000000000000000000000010' 
+    collect: [:each | $0 = each ifTrue: [$1] ifFalse: [$0]]
+    returns '1111111111111111111111111111101' 
+    
+-2 bitString
+	returns '1111111111111111111111111111110'
+\end{code}	
+	
+	
+Creating a two complement version of a number equals negating the number bits and adding one.
+\begin{code}{Calculating two complement of 3}
+3 bitString 
+	returns '0000000000000000000000000000011'
+3 bitInvert bitString 
+	returns '1111111111111111111111111111100'
+(3 bitInvert + 1) bitString 
+	returns '1111111111111111111111111111101'
+-3 bitString 
+	returns '1111111111111111111111111111101'
+\end{code}
+
+
+Now the case where the result is a negative number is also well handled. For example, if we want to compute $-15 + 5$, we should get 10 and this is what we get.
+
+\begin{code}{}
+-15 bitString 
+	returns '1111111111111111111111111110001'
+
+5 bitString 
+	returns '0000000000000000000000000000101'
+	
+-10 bitString 
+	returns '1111111111111111111111111110110'
+\end{code}
+
+
+\paragraph{Maximum value encoding.}		
+As we will show in a subsequent section, Pharo's small integers are encoded on 31 bits (because their internal representation requires one bit) and the smallest (small integer) negative integer is \ct{SmallInteger maxVal negated - 1}. Here we see the exception of the most negative integer.
+
 
 \begin{code}{} 
 "we negate the maximum number encoded on a small integer"
@@ -433,36 +486,6 @@ SmallInteger maxVal negated class
 \end{code}
 
 
-\paragraph{A two's complement.}
-
-Creating a two complement version of a number equals negating the number bits and adding one.
-\begin{code}{Calculating two complement of 3}
-3 bitString 
-	returns '0000000000000000000000000000011'
-3 bitInvert bitString 
-	returns '1111111111111111111111111111100'
-(3 bitInvert + 1) bitString 
-	returns '1111111111111111111111111111101'
--3 bitString 
-	returns '1111111111111111111111111111101'
-\end{code}
-
-
-Now the case where the result is a negative number is also well handled. For example, if we want to compute $-15 + 5$, we should get 10 and this is what we get.
-
-\begin{code}
--15 bitString 
-	returns '1111111111111111111111111110001'
-
-5 bitString 
-	returns '0000000000000000000000000000101'
-	
--10 bitString 
-	returns '1111111111111111111111111110110'
-\end{code}
-
-
-
 \paragraph{Understanding some methods.}
 Now you should be able to understand the implementation of \ct{SmallInteger>>bitInvert} method.
 
@@ -480,7 +503,7 @@ SmallInteger>>bitInvert
 2 bitInvert.
 	returns '1111111111111111111111111111101'
 	
--1 
+-1 bitString
 	returns '1111111111111111111111111111111'
 2 negated (two complement)
 	returns '1111111111111111111111111111110'
@@ -489,14 +512,14 @@ SmallInteger>>bitInvert
 
 \section{SmallIntegers in Pharo}
 
-Smalltalk small integers use a two's complement arithmetic on 31 bits.  An N-bit two's-complement numeral system can represent every integer in the range $-1 * 2^{N-1}\ to\ 2^{N-1}-1$. So for 31 bits Smalltalk systems small integers values are the range -1073741824 to  1073741823.  Remember in Smalltalk integers are special objects and this marking requires one bit, therefore on 32 bits we are 31 bits for small signed integers. Of course since we also have automatic coercion this is not really a concern for the end programmer. Here we take a language implementation perspective.
+Smalltalk small integers use a two's complement arithmetic on 31 bits.  A N-bit two's-complement numeral system can represent every integer in the range $-1 * 2^{N-1}\ to\ 2^{N-1}-1$. So for 31 bits Smalltalk systems small integers values are the range -1073741824 to  1073741823.  Remember in Smalltalk integers are special objects and this marking requires one bit, therefore on 32 bits we have 31 bits for small signed integers. Of course since we also have automatic coercion this is not really a concern for the end programmer. Here we take a language implementation perspective.
  Let's check that a bit (this is the occasion to say it). 
 
 If you want to know the number of bits used to represent a
 SmallInteger, just evaluate:
 
-\begin{code}
-SmallInteger maxVal highBit + 1.
+\begin{code}{}
+SmallInteger maxVal highBit + 1
 	returns 31
 \end{code}
 
@@ -519,6 +542,9 @@ Let us explore a bit.
 
 1073741824 class
 	returns LargePositiveInteger
+	
+(1073741824 - 1) class
+	returns SmallInteger
 
 -1073741824 class 
 	returns SmallInteger
@@ -537,7 +563,7 @@ Let us explore a bit.
 \end{code}
 
 \section{Hexadecimal}
-We cannot finish this Chapter without talking about hexadecimal. In Smalltalk, the same syntax than for binary is used for hexadecimal. 16rF indicates that F is encoded in 16 base. 
+We cannot finish this Chapter without talking about hexadecimal. In Smalltalk, the same syntax than for binary is used for hexadecimal. \ct{16rF} indicates that \ct{F} is encoded in 16 base. 
 
 We can get the hexadecimal equivalent of a number using the message \ct{hex}. 
 Using the message \ct{printStringHex} we get the number printed in hexadecimal without the radix notation. 
@@ -546,9 +572,10 @@ Using the message \ct{printStringHex} we get the number printed in hexadecimal w
 15 hex
 	returns '16rF'
 	
-15 printStringHex 'F'
+15 printStringHex 
+	returns 'F'
 
-16rF
+16rF printIt
 	returns 15
 \end{code}
 
@@ -598,7 +625,7 @@ To get the encoded value, we shift out the 8 first ones and clear all the others
 
 \section{Conclusion}
 
-Smalltalk uses two's complement encoding for its internal number representation and support  bit manipulation of their internal representation. This is useful when we want to speed up algorithms using simple encoding.
+Smalltalk uses two's complement encoding for its internal number representation and supports  bit manipulation of their internal representation. This is useful when we want to speed up algorithms using simple encoding.
 
 
 %=========================================================

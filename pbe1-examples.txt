@@ -18,7 +18,7 @@ about testing, see the Wiki link under:
 
 http://www.squeaksource.com/PharoByExample.html
 
-Last update: 2010-05-16T12:50:36+02:00
+Last update: 2011-09-11T17:17:55+02:00
 
 ===== CHAPTER: Preface ==========
 
@@ -472,7 +472,7 @@ BorderedMorph>>initialize
 	super initialize.
 	self borderInitialize
 -----
-anEllipse constructorString "--> '((EllipseMorph newBounds: (0@0 corner: 50@40) color: Color yellow) setBorderWidth: 1 borderColor: Color black)'"
+anEllipse constructorString "--> '(EllipseMorph newBounds: (0@0 corner: 50@40) color: Color yellow)'"
 -----
 Morph>>constructorString
 	^ String streamContents: [:s | self printConstructorOn: s indent: 0].
@@ -712,7 +712,7 @@ $a "--> $a"
 #(1 2 3) "--> #(1 2 3)"
 Color red "--> Color red"
 -----
-{10@10 . 100@100} "--> {10@10 . 100@100}"
+{10@10. 100@100} "--> {10@10. 100@100}"
 {Browser new . 100@100} "--> an Array(a Browser 100@100)"
 -----
 #(10@10 100@100) "--> #(10 #@ 10 100 #@ 100)"
@@ -950,7 +950,7 @@ anArray at: 2 put: 3/2.
 anArray at: 3 put: 'ssss'.
 anArray at: 1 "--> 4"
 -----
-Array with: 4 with: 3/2 with: 'lulu' "-->  {4 . (3/2) . 'lulu'}"
+Array with: 4 with: 3/2 with: 'lulu' "-->  {4. (3/2). 'lulu'}"
 -----
 #(1 'here') size "--> 2"
 -----
@@ -993,11 +993,11 @@ colors at: #blue put: Color blue.
 colors at: #red put: Color red.
 colors at: #yellow "--> Color yellow"
 colors keys "--> a Set(#blue #yellow #red)"
-colors values "--> {Color blue . Color yellow . Color red}"
+colors values "--> {Color blue. Color yellow. Color red}"
 -----
 colors := Dictionary newFrom: { #blue->Color blue . #red->Color red . #yellow->Color yellow }.
 colors removeKey: #blue.
-colors associations "--> {#yellow->Color yellow . #red->Color red}"
+colors associations "--> {#yellow->Color yellow. #red->Color red}"
 -----
 a := 'foobar'.
 b := a copy.
@@ -1674,7 +1674,7 @@ TranslucentColor subclasses "--> #()"
 TranslucentColor allSuperclasses "--> an OrderedCollection(Color Object ProtoObject)"
 TranslucentColor instVarNames "--> #('alpha')"
 TranslucentColor allInstVarNames "--> #('rgb' 'cachedDepth' 'cachedBitPattern' 'alpha')"
-TranslucentColor selectors "-->  an IdentitySet(#pixelValueForDepth: #pixelWord32 #convertToCurrentVersion:refStream: #isTransparent #scaledPixelValue32 #bitPatternForDepth: #storeArrayValuesOn: #setRgb:alpha: #alpha #isOpaque #pixelWordForDepth: #isTranslucentColor #hash #isTranslucent #alpha: #storeOn: #asNontranslucentColor #privateAlpha #balancedPatternForDepth:)"
+TranslucentColor selectors "-->  an IdentitySet(#pixelWord32 #asNontranslucentColor #privateAlpha #pixelValueForDepth: #isOpaque #isTranslucentColor #storeOn: #pixelWordForDepth: #scaledPixelValue32 #alpha #bitPatternForDepth: #hash #isTransparent #isTranslucent #balancedPatternForDepth: #setRgb:alpha: #alpha: #storeArrayValuesOn:)"
 -----
 TranslucentColor class superclass "--> Color class"
 TranslucentColor superclass class "--> Color class"
@@ -2298,7 +2298,7 @@ SplitJointTest class>>documentation
 	
 	^ 'This package provides function.... "
 -----
-(SplitJoinTest class >> #showDocumentation) pragmas
+(SplitJoinTest class >> #showDocumentation) pragmas.
  "--> an Array(<ignoreForCoverage>)"
 (Float>>#+) pragmas "--> an Array(<primitive: 41>)"
 -----

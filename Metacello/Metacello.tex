@@ -2,6 +2,12 @@
 % $Date: 2009-08-24 10:17:33 +0200 (Mon, 24 Aug 2009) $
 % $Revision: 28563 $
 
+% 2011-08-23 - Memento addition Stef chating with dale at ESUG.
+% 2011-09-11 - Migrated to PharoBox: svn checkout https://XXX@scm.gforge.inria.fr/svn/pharobooks/PharoByExampleTwo-Eng
+
+%% todo: Stef should go over all the text with the memento in mind and verify all the snippets and stress the right usage in the text
+
+
 %=================================================================
 \ifx\wholebook\relax\else
 % --------------------------------------------
@@ -1757,19 +1763,22 @@ ConfigurationOfGemToolsExample>>version10: spec
 \end{code}
 \end{footnotesize} 
 
+\paragraph{Proposed development process.}
+Using metacello we suggest the following development steps.
 
-Baseline
-Version development
-Validate the map
+\begin{code}{}
+Baseline						"first we define a baseline"
+Version development			"Then a version tagged as development"
+Validate the map				"Once it is validated"
+Version release				"We are ready to tag a version as release"	
+
+Version development			"Since development continue we create a new version"
+...							"Tagged as development. It will be tagged as release and so one"
+Baseline 					"When architecture changes, a new baseline will appear"
+Version development			"and the story will continue"
 Version release
 
-Version development
-...
-Baseline 
-Version development
-Version release
-
-
+\end{code}
 
 %=========================================================
 \ifx\wholebook\relax\else

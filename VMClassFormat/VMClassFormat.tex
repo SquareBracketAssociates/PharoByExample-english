@@ -1,6 +1,7 @@
 % $Author: ducasse $
 % $Date: 2009-08-24 10:17:33 +0200 (Mon, 24 Aug 2009) $
 % $Revision: 28563 $
+% 2011-09-11 - Migrated to PharoBox: svn checkout https://XXX@scm.gforge.inria.fr/svn/pharobooks/PharoVM-Eng
 
 %=================================================================
 \ifx\wholebook\relax\else
@@ -214,39 +215,64 @@ Finally, at the VM level the method named \ct{formatOf:} refers to what we call 
 Finally, if you are curious you can check senders of \ct{formatOf:} and you will see all the places where the VM needs to know the format of an object. \sd{list some examples}
 
 \section{Creating Class with special  Formats}
-We saw all the details of the class formats but we didn’t see how to create a class with a special one. The way to create a subclass in Smalltalk is by sending a message: a message to the desired superclass. 
-The method is \ct{Class>>#subclass:instanceVariableNames:classVariableNames:poolDictionaries:category:}. Now, if you check in the category of that method, that is, 'subclass creation' you will see much more methods like:\begin{itemize}
+
+We saw all the details of the class formats but we didn’t see how to create a class with a special one. The way to create a subclass in Smalltalk is by sending a message: a message to the desired superclass. 
+The method is \ct{Class>>#subclass:instanceVariableNames:classVariableNames:poolDictionaries:category:}. Now, if you check in the category of that method, that is, 'subclass creation' you will see much more methods like:
+\begin{itemize}
 \item \ct{#variableSubclass: t instanceVariableNames: f classVariableNames: d poolDictionaries: s category: cat},
-\item \ct{#variableByteSubclass: t instanceVariableNames: f classVariableNames: d poolDictionaries: s category: cat}\item \ct{#variableWordSubclass: t instanceVariableNames: f classVariableNames: d poolDictionaries: s category: cat}
+\item \ct{#variableByteSubclass: t instanceVariableNames: f classVariableNames: d poolDictionaries: s category: cat}
+\item \ct{#variableWordSubclass: t instanceVariableNames: f classVariableNames: d poolDictionaries: s category: cat}
 \item \ct{#weakSubclass: t instanceVariableNames: f classVariableNames: d poolDictionaries: s category: cat}.
 \end{itemize}
-You image what each of those methods do, don’t you? If we want to confirm our hypothesis, take a look to the definition of the classes. For example, we saw that Bitmap was ``word'' and ByteArray was ``byte'', hence:
+
+You image what each of those methods do, don’t you? If we want to confirm our hypothesis, take a look to the definition of the classes. For example, we saw that Bitmap was ``word'' and ByteArray was ``byte'', hence:
 
 \begin{code}{}
-ArrayedCollection variableWordSubclass: #Bitmap	instanceVariableNames: ''	classVariableNames: ''	poolDictionaries: ''	category:'Graphics-Primitives'
+ArrayedCollection variableWordSubclass: #Bitmap
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category:'Graphics-Primitives'
 \end{code}
 
 And:
 
 \begin{code}{}
 ArrayedCollection variableByteSubclass: #ByteArray
-	instanceVariableNames: ''	classVariableNames: ''	poolDictionaries:''
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries:''
 	category: 'Collections-Arrayed
 \end{code}
 
-Do you notice the difference?	It is important to note also that there must be some validation. For example, if I define a class as variable with bytes, I shouldn’t be able to declare instance variables to that class, because I cannot mix both (only CompiledMethod do that!). So for example, if you try to do:
+
+Do you notice the difference?	It is important to note also that there must be some validation. For example, if I define a class as variable with bytes, I shouldn’t be able to declare instance variables to that class, because I cannot mix both (only CompiledMethod do that!). So for example, if you try to do:
 
 \begin{code}{}
-TestCase	 variableByteSubclass: #MarianoArray	instanceVariableNames: 'size'	classVariableNames: ''	poolDictionaries: ''    category: 'Collections-Arrayed
+TestCase	 variableByteSubclass: #MarianoArray
+	instanceVariableNames: 'size'
+	classVariableNames: ''
+	poolDictionaries: ''
+    category: 'Collections-Arrayed
 \end{code}
-You will get an error that says 'cannot make a byte subclass of a class with named fields'. These validation are done by the ClassBuilder class.
+
+You will get an error that says 'cannot make a byte subclass of a class with named fields'. These validation are done by the ClassBuilder class.
 
 \section{CompiledMethod format}
 
 \ct{CompiledMethod} has a very special class format, and we can read it in his own class comment ``My instances are methods suitable for interpretation by the virtual machine. This is the only class in the system whose instances intermix both indexable pointer fields and indexable integer fields.'' This means that CompiledMethod was created with the message \ct{#variableByteSubclass:instanceVariableNames:classVariableNames:poolDictionaries:category:} and in addition:
 
 \begin{code}{}
-CompiledMethod isBytes	  return trueCompiledMethod isWords	  return	 false	  "lying!! since it also	includes words for pointers"CompiledMethod isPointers	  return false	  "lying!! since also	 includes words for pointers"
+CompiledMethod isBytes	
+  return true
+
+CompiledMethod isWords	
+  return	 false	
+  "lying!! since it also	includes words for pointers"
+
+CompiledMethod isPointers	
+  return false	
+  "lying!! since also	 includes words for pointers"
 \end{code}
 
 Note that such a choice was a design decision to gain the allocation of the bytecode array. This decision made sense at a time were memory was scarced. Now it rather makes everything more complex. 

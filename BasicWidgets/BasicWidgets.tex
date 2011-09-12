@@ -3,6 +3,7 @@
 % $Revision: 28563 $
 
 % HISTORY:
+% 2011-09-11 - Migrated to PharoBox: svn checkout https://XXX@scm.gforge.inria.fr/svn/pharobooks/PharoByExampleTwo-Eng
 
 
 %=================================================================
@@ -801,21 +802,45 @@ Here you see that the space is kept below submorphs (see Figure~\ref{fig:tableLa
 You can also experiment the other directions
 
 \begin{figure}[ht]\centering
-	\includegraphics[width=7cm]{TableLayout3}
+	\includegraphics[width=4cm]{TableLayout3}
 	\caption{Bottom To Top}
 	\label{fig:tableLayout3}
-	\includegraphics[width=7cm]{TableLayout4}
+	\includegraphics[width=4cm]{TableLayout4}
 	\caption{Left To Righ}
 	\label{fig:tableLayout4}
-	\includegraphics[width=7cm]{TableLayout5}
+	\includegraphics[width=4cm]{TableLayout5}
 	\caption{Right To Left}
 	\label{fig:tableLayout5}
 \end{figure}
 
 
+TableLayout is also good to get a FlowLayout using its \ct{wrapDirection}.
+By flow layout we mean  which works the same way usually text is handled:
+All submorphs are put on a single line and wrapped when the border is hit.
+
+\begin{code}{}
+|builder|
+builder := UITheme builder.
+(builder newRow: {
+   Morph new color: Color red.
+   Morph new color: Color yellow.
+   Morph new color: Color green.
+   Morph new color: Color blue.
+   Morph new color: Color orange})
+      cellInset: 10;
+      wrapDirection: #topToBottom;
+      openInWindow
+\end{code}
+
+\begin{figure}[ht]\centering
+	\includegraphics[width=4cm]{FlowLayout}
+	\caption{TableLayout can be used to implement FlowLaout To Left}
+	\label{fig:tableLayout5}
+\end{figure}
 
 
-\section{Some}
+\newpage
+\section{Some Examples}
 
 
 I would like to create a Text Morph that wraps the text horizontally, and expands the height to fit the text. Thus, this morph would never offer scrolling. Figure~\ref{fig:paneMorph}.
