@@ -28,35 +28,40 @@
 \chapter{Mondrian}
 \chalabel{mondrian}
 
-\ja{What the reader will learn why this is worth reading this chapter}
 \ja{we should verify the end of paragraphs: a lot of them have no end point}
 
-\section{Introduction}
-Mondrian is made to visualize data, and is commonly employed to operate on software source code. This chapter will keep this original intent by using small and concrete examples of software and numerical.
+Giving a meaning to a a large amount of data is challenging without adequate tools. Textual outputs are known to be limiting in their expression and interactions. 
 
-There are essentially two ways to work with Mondrian. By either using the easel which provides an interactive scripting engine or by directly interacting with a view renderer. 
+Mondrian is an agile visualization engine. It is made to visualize and interact with any arbitrary data, defined in terms of objects and their relationships. Mondrian is commonly employed in software assessment activities. Mondrian excels at visualizing software source code. This chapter introduces Mondrian's principles and describes its expressive commands to quickly make up your data. After its reading, you will be able to create interactive and visual representation.
 
-We will first use Mondrian in its easiest way, by using the easel. Note that this chapter assume you have basic Smalltalk knowledge.
+%=====================
 
-To open an easel, you can either use the World menu or execute the expression.
+\section{Installation and first visualization}
 
-\ja{we must provide the script to load Mondrian}
+Mondrian is available via a Metacello configuration. Just open a workspace and type:
+
+\begin{code}{}
+Gofer new
+	squeaksource: 'Mondrian'; 
+	package: 'ConfigurationOfMondrian';
+	load.
+(Smalltalk at: #ConfigurationOfMondrian) loadDefault
+\end{code}
+
+There are essentially two ways to work with Mondrian. By either using the easel which provides an interactive scripting engine or by directly interacting with a view renderer. We will first use Mondrian in its easiest way, by using the easel. To open an easel, you can either use the World menu (it should contains the entry ``Mondrian Easel'') or execute the expression:
 
 \begin{code}{}
 MOEasel open.
 \end{code}
-%=====================
 
-\section{First visualization}
-In the easel you have just opened, you can see two panels: the one on top is the visualization panel, the second one is the script panel. In the script panel, enter the following code and press the \emph{generate} button
+In the easel you have just opened, you can see two panels: the one on top is the visualization panel, the second one is the script panel. In the script panel, enter the following code and press the \emph{generate} button:
 
 \begin{code}{}
 view nodes: (1 to: 20).
 \end{code}
 \begin{center}\includegraphics[scale=0.4]{picture1}\end{center}
 
-
-You should see a new window \ja{this is not a new window} with about 20 small boxes lined up in the top left corner. You have just rendered the numerical set between 1 and 20.
+You should see in the top pane 20 small boxes lined up in the top left corner. You have just rendered the numerical set between 1 and 20. Each box represents a number. The amount of interaction you can do is quite limited for now. You can only drag and drop a number and get a tooltip that indicates its value. We will soon see how to define interactions. For now, let us explore the basic drawing capabilities of Mondrian.
 
 We can add edges between nodes that we already drawn. Add a second line:
 
@@ -66,22 +71,28 @@ view edgesFrom: [ :v | v * 2 ].
 \end{code}
 \begin{center}\includegraphics[scale=0.4]{picture2}\end{center}
 
+Each number is linked with its double. Not all the doubles are visualized. For example, the double of 20 is 400, which is not part of the visualization. In that case, no edge is drawn. 
 
-Each value is connected to its next value. Nodes may be dragged by double clicking on it.
+The message \ct{edgesFrom:} defines one edge per node, when possible. For each node that has been added in the visualization, an edge is defined between this node and a node lookup from the provided block.
 
-\ja{we must say that there are multiple layout and here we use circle.}
-Nodes may be ordered in circule using the circle layout.
+Mondrian contains a number of layouts to order nodes. We use the circle layout:
 
 \begin{code}{}
 view nodes: (1 to: 20).
 view edgesFrom: [ :v | v * 2 ].
 view circleLayout.
 \end{code}
+
+The visualization you obtain is:
+
 \begin{center}\includegraphics[scale=0.4]{picture3}\end{center}
+
+In the subsequent section we will visualize software code. Visualizing source code is often employed to discover patterns, useful when assessing code quality.
 
 %=====================
 
 \section{Visualizing the collection framework}
+
 We will now visualize Smalltalk classes. In the remaining of this section, we will intensively use Smalltalk reflection to make compelling examples. Let's visualize the hierarchy of classes contained in the Collection framework:
 
 \begin{code}{}
@@ -92,30 +103,36 @@ view treeLayout.
 \begin{center}\includegraphics[scale=0.4]{picture4}\end{center}
 
 
-We have used a tree layout to visualize Smalltalk class hierarchies. This fits well since Smalltalk is single-inheritance oriented.
-
-Collection is the root class of the Smalltalk collection framework library. The message \ct{withAllSubclasses} returns the list of its subclasses.
+We have used a tree layout to visualize Smalltalk class hierarchies. This layout is particularly adequate since Smalltalk is single-inheritance oriented. Collection is the root class of the Smalltalk collection framework library. The message \ct{withAllSubclasses} returns the list of its subclasses.
 
 Classes are ordered vertically along their inheritance link. A superclass is above its subclasses. 
+
 %=====================
 
 \section{Reshaping nodes}
 
-Mondrian visualizes graph of objects. Each graph element (i.e., node and edge) has a shape that represents the visual aspect of the element. As you have seen the default shape of a node is a five pixels wide square and the default shape of an edge is a thin straight gray line.
+Mondrian visualizes graph of objects. Each object of the domain is associated to a graph element, a node or an edge. Graph element are not aware of their graphical representation. Graphical aspect is given by a shape. 
 
-A number of dimensions defines the apparance of a shape: the width and the height of a rectangle; the size of a line dash, for example. We will reshape the node of our visualization to convey more information about the classes we are visualizing.
-\ja{explain what you want to have explicitly: the width is the number of instance variable, ...}
+So far, we have solely use the default shape to represent node and edges. The default shape of a node is a five pixels wide square and the default shape of an edge is a thin straight gray line.
+
+A number of dimensions defines the appearance of a shape: the width and the height of a rectangle, the size of a line dash, border and inner colors, for example. We will reshape the nodes of our visualization to convey more information about the internal structure of the classes we are visualizing. Consider:
 
 \begin{code}{}
 view shape rectangle
-  width: [ :each | each instVarNames size * 3];
+  width: [ :each | each instVarNames size * 3 ];
   height: [ :each | each methods size ].
 view nodes: Collection withAllSubclasses.
 view edgesFrom: #superclass.
 view treeLayout.
 \end{code}
-\begin{center}\includegraphics[scale=0.4]{picture5}\end{center}
 
+\figref{picture5} shows the result. Each class is represented as a box. \ct{Collection}, the root of the hierarchy, is the top most box. The width of a class tells about the amount of instance variables it has. We multiply it by 3 for more contrasting results. The height tells about the number of methods. We can immediately spot classes with many more methods than others: \ct{Collection}, \ct{SequentiableCollection}, \ct{String}, \ct{CompiledMethod}. Classes with more variables than others are: \ct{RunArray} and \ct{SparseLargeTable}.
+
+\begin{figure}[htbp]
+\centerline{\includegraphics[width=\linewidth]{picture5}}
+\caption{The system complexity for the collection class hierarchy.}
+\label{fig:picture5}
+\end{figure}
 
 Note that the expression 
 \begin{code}{}
@@ -149,29 +166,51 @@ is equivalent to
 %=====================
 
 \section{Multiple edges}
-Multiple edges may be defined. In the previous section, edges where departed from the superclass to the running node. Alternatively, edges may depart from the running nodes to all subclasses. For that very purpose, we will use \ct{edges:from:toAll:}, a variant of \ct{edges:from:to:}.
+
+The message \ct{edgesFrom:} is used to draw one edge at most per node. A variant of it is \ct{edges:from:toAll:}. It support the definition of several edges starting from a given node. Consider the dependencies between classes. The script: 
 
 \begin{code}{}
-view shape rectangle
-  width: [ :each | each instVarNames size * 3];
-  height: [ :each | each methods size ].
-view nodes: Collection withAllSubclasses.
-view edges: Collection withAllSubclasses from: #yourself toAll: #subclasses.
-view treeLayout.
+view shape rectangle size: [:cls | cls referencedClasses size ].view nodes: ArrayedCollection withAllSubclasses.view shape arrowedLine.view 
+	edges: ArrayedCollection withAllSubclasses from: #yourself toAll: #referencedClasses.view circleLayout
 \end{code}
-\begin{center}\includegraphics[scale=0.4]{picture6}\end{center}
+
+The obtained visualization is given in \figref{classDependencies}.
+
+\begin{figure}[htbp]
+\centerline{\includegraphics[width=\linewidth]{classDependencies}}
+\caption{Direct references between classes.}
+\label{fig:classDependencies}
+\end{figure}
+
+\ct{String} and \ct{CompiledMethod} clearly shows up. These two classes contains many references to other classes.
+
+We also see that \ct{text:} makes a shape contain a text.
+
+\ab{@@here}
+
+%Multiple edges may be defined. In the previous section, edges where departed from the superclass to the running node. Alternatively, edges may depart from the running nodes to all subclasses. For that very purpose, we will use \ct{edges:from:toAll:}, a variant of \ct{edges:from:to:}.
+%
+%\begin{code}{}
+%view shape rectangle
+%  width: [ :each | each instVarNames size * 3];
+%  height: [ :each | each methods size ].
+%view nodes: Collection withAllSubclasses.
+%view edges: Collection withAllSubclasses from: #yourself toAll: #subclasses.
+%view treeLayout.
+%\end{code}
+%\begin{center}\includegraphics[scale=0.4]{picture6}\end{center}
 
 
-With \ct{edges:from:toAll:} and \ct{edgesFrom:}, two edges cannot start from a unique node.
-
-Time to time, you may need a finer grain for edge declaration \ja{can you explain what do you mean with finer grain ?}. The following is commonly employed as in:
-
-\begin{code}{}
-view nodes: (1 to: 5). 
-view shape arrowedLine. 
-view edges: { 1 -> 2 . 1 -> 5 . 4 -> 3 } from: #key to: #value. 
-view circleLayout
-\end{code}
+%With \ct{edges:from:toAll:} and \ct{edgesFrom:}, two edges cannot start from a unique node.
+%
+%Time to time, you may need a finer grain for edge declaration \ja{can you explain what do you mean with finer grain ?}. The following is commonly employed as in:
+%
+%\begin{code}{}
+%view nodes: (1 to: 5). 
+%view shape arrowedLine. 
+%view edges: { 1 -> 2 . 1 -> 5 . 4 -> 3 } from: #key to: #value. 
+%view circleLayout
+%\end{code}
 %=====================
 
 \section{Adding colors}
