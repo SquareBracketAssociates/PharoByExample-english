@@ -118,15 +118,9 @@ So far, we have solely use the default shape to represent node and edges. The de
 A number of dimensions defines the appearance of a shape: the width and the height of a rectangle, the size of a line dash, border and inner colors, for example. We will reshape the nodes of our visualization to convey more information about the internal structure of the classes we are visualizing. Consider:
 
 \begin{code}{}
-view shape rectangle
-  width: [ :each | each instVarNames size * 3 ];
-  height: [ :each | each methods size ].
-view nodes: Collection withAllSubclasses.
-view edgesFrom: #superclass.
-view treeLayout.
-\end{code}
+view shape rectangle	width: [ :each | each instVarNames size * 3 ];	height: #numberOfMethods.view nodes: Collection withAllSubclasses.view edgesFrom: #superclass.view treeLayout.\end{code}
 
-\figref{picture5} shows the result. Each class is represented as a box. \ct{Collection}, the root of the hierarchy, is the top most box. The width of a class tells about the amount of instance variables it has. We multiply it by 3 for more contrasting results. The height tells about the number of methods. We can immediately spot classes with many more methods than others: \ct{Collection}, \ct{SequentiableCollection}, \ct{String}, \ct{CompiledMethod}. Classes with more variables than others are: \ct{RunArray} and \ct{SparseLargeTable}.
+\figref{picture5} shows the result. Each class is represented as a box. The \ct{Collection} class, the root of the hierarchy, is the top most box. The width of a class tells about the amount of instance variables it has. We multiply it by 3 for more contrasting results. The height tells about the number of methods. We can immediately spot classes with many more methods than others: \ct{Collection}, \ct{SequentiableCollection}, \ct{String}, \ct{CompiledMethod}. Classes with more variables than others are: \ct{RunArray} and \ct{SparseLargeTable}.
 
 \begin{figure}[htbp]
 \centerline{\includegraphics[width=\linewidth]{picture5}}
@@ -134,35 +128,6 @@ view treeLayout.
 \label{fig:picture5}
 \end{figure}
 
-Note that the expression 
-\begin{code}{}
-view edgesFrom: #superclass
-\end{code}
-
-is equivalent to
-
-\begin{code}{}
-view edges: Collection withAllSubclasses from: #yourself to: #superclass.
-\end{code}
-
-itself equivalent to
-\begin{code}{}
-view 
-  edges: Collection withAllSubclasses 
-  from: [ :each | each superclass ] 
-  to: [ :each | each  ].
-\end{code}
-
-Edges are created by computing the source and target node for each node provided as first argument. \ja{I don't understand the link between the two sentences before and after} In Mondrian, the expression \ja{is it not a repetition that what you explain just before ?}
-
-\begin{code}{}
-[ :aClass | aClass superclass ].
-\end{code}
-
-is equivalent to
-\begin{code}{}
-#superclass
-\end{code}
 %=====================
 
 \section{Multiple edges}
@@ -170,8 +135,12 @@ is equivalent to
 The message \ct{edgesFrom:} is used to draw one edge at most per node. A variant of it is \ct{edges:from:toAll:}. It support the definition of several edges starting from a given node. Consider the dependencies between classes. The script: 
 
 \begin{code}{}
-view shape rectangle size: [:cls | cls referencedClasses size ].view nodes: ArrayedCollection withAllSubclasses.view shape arrowedLine.view 
-	edges: ArrayedCollection withAllSubclasses from: #yourself toAll: #referencedClasses.view circleLayout
+view shape rectangle size: [:cls | cls referencedClasses size ].
+view nodes: ArrayedCollection withAllSubclasses.
+view shape arrowedLine.
+view 
+	edges: ArrayedCollection withAllSubclasses from: #yourself toAll: #referencedClasses.
+view circleLayout
 \end{code}
 
 The obtained visualization is given in \figref{classDependencies}.
@@ -186,7 +155,24 @@ The obtained visualization is given in \figref{classDependencies}.
 
 We also see that \ct{text:} makes a shape contain a text.
 
-\ab{@@here}
+Mondrian provides a whole bunch of utility methods to easily create elements.  Consider the expression:
+\begin{code}{}
+view edgesFrom: #superclass
+\end{code}
+
+\ct{edgesFrom:} is equivalent to \ct{edges:from:to:} :
+
+\begin{code}{}
+view edges: Collection withAllSubclasses from: #yourself to: #superclass.
+\end{code}
+
+itself equivalent to
+\begin{code}{}
+view 
+  edges: Collection withAllSubclasses 
+  from: [ :each | each yourself ] 
+  to: [ :each | each superclass ].
+\end{code}
 
 %Multiple edges may be defined. In the previous section, edges where departed from the superclass to the running node. Alternatively, edges may depart from the running nodes to all subclasses. For that very purpose, we will use \ct{edges:from:toAll:}, a variant of \ct{edges:from:to:}.
 %
@@ -213,126 +199,75 @@ We also see that \ct{text:} makes a shape contain a text.
 %\end{code}
 %=====================
 
-\section{Adding colors}
-Node color \ja{nothing about edge color ? I think we can say that it is possible too} is an important information support, as the width and the height of a node. Color should be easy to pick to represent particular condition.
+\section{Colored shapes}
 
-The keyword if:fillColor: enables one to assign a color for a particular condition. Consider we want to extend the previous example by coloring abstract classes in red.
-
-\begin{code}{}
-view shape rectangle
-  width: [ :each | each instVarNames size * 3];
-  height: [ :each | each methods size ];
-  if: #isAbstractClass fillColor: Color red.
-view nodes: Collection withAllSubclasses.
-
-view edges: Collection withAllSubclasses from: #yourself toAll: #subclasses.
-
-view treeLayout.
-\end{code}
-
-The method \ct{isAbstractClass} is defined on Behavior and Metaclass. By sending the \ct{isAbstractClass} to a class return a boolean value telling us whether the class is abstract or not. We recall that an abstract class in Smalltalk is a class that defines or inherits at least one  abstract method (i.e., which contain 'self subclassResponsibility').
-
-The message \ct{if:fillColor:} may be sent to a shape to conditionally set a color. \ja{what is the link with the source code below ?}
+A shape may be colored in various different way. Node shapes understand the message \ct{fillColor:}, \ct{textColor:}, \ct{borderColor:}. Line shapes understands \ct{color:}. Let's color the visualization of the collection hierarchy:
 
 \begin{code}{}
-view shape rectangle
-  width: [ :each | each instVarNames size * 3];
-  height: [ :each | each methods size ];
-  if: #isAbstractClass fillColor: Color red.
-view nodes: Collection withAllSubclasses.
+view shape rectangle	size: 10;	borderColor: [ :cls | ('*Array*' match: cls name) 
+										ifTrue: [ Color blue ] 
+										ifFalse: [ Color black ] ];	fillColor: [ :cls | cls isAbstractClass ifTrue: [ Color lightGray ] ifFalse: [ Color white] ].view nodes: Collection withAllSubclasses.view edgesFrom: #superclass.view treeLayout.\end{code}
 
-view edgesFrom: #superclass.
+The produced visualization is given in \figref{abstractClasses}. It easily help identifying abstract classes that are not named as ``Abstract'' and the one that are abstract without having an abstract method.
 
-view treeLayout.
-\end{code}
+\begin{figure}[htbp]
+\centerline{\includegraphics[width=\linewidth]{abstractClasses}}
+\caption{Abstract classes are in gray and classes with the word ``Abstract'' in their name are in blue.}
+\label{fig:abstractClasses}
+\end{figure}
 
-All red nodes represent abstract class. Waving the moose above a node make a text tooltip appear revealing its name. 
-
-\ja{it should not be here, we are in section 'adding colors'}
-Extended possibilities exist to define interaction. We will review them in a future section. For now, if you are interested in opening a system browser directly from a node, you define this interaction: \ja{can you display only the line concerned ? it is difficult to read each time the same code with only one line changed}
-
-\begin{code}{}
-view interaction action: #browse.
-view shape rectangle
-  width: [ :each | each instVarNames size * 3];
-  height: [ :each | each methods size ];
-  if: #isAbstractClass fillColor: Color red.
-view nodes: Collection withAllSubclasses.
-
-view edgesFrom: #superclass.
-
-view treeLayout.
-\end{code}
-
-You can easily \ja{I think there are too much 'easy' or 'easily' in the chapter} spot some red node that do not have subclasses. This indicates a design flow since an abstract must to have subclasses. It makes no sense for a class that is not supposed to be instantiated (since it is abstract) to not have a subclass.
-
-The very same analyzes can be realized on your own classes.
-
-\ja{is this code useful ? it seems to be the same as above}
+Similarly than with \ct{height:} and \ct{width:}, messages to defines color either takes a symbol, a block or a constant value as argument. The argument is evaluated against the domain object represented by the graphical element (the message \ct{moValue:} with the domain object is sent to the argument). 
+The use of \ct{ifTrue:ifFalse:} is a bit cumbersome. Utilities methods are provided for that purpose to easily pick a color from a particular condition. The definition of the shape can simply be:
 
 \begin{code}{}
-view interaction action: #browse.
-view shape rectangle
-  width: [ :each | each instVarNames size * 3];
-  height: [ :each | each methods size ];
-  if: #isAbstractClass fillColor: Color red.
-view nodes: (PackageInfo named: 'Mondrian') classes.
-
-view edgesFrom: #superclass.
-
-view treeLayout.
+view shape rectangle	size: 10;	if: [ :cls | ('*Array*' match: cls name) ] borderColor: Color blue;	if: [ :cls | cls isAbstractClass ] fillColor: Color lightGray.
+...
 \end{code}
 
-A shape may contains more than one condition. Let's distinguish abstract classes from classes that define abstract methods.
+The method \ct{isAbstractClass} is defined on Behavior and Metaclass. By sending the \ct{isAbstractClass} to a class return a boolean value telling us whether the class is abstract or not. We recall that an abstract class in Smalltalk is a class that defines or inherits at least one  abstract method (i.e., which contain \ct{self subclassResponsibility}).
 
-\begin{code}{}
-view shape rectangle
-  width: [ :each | each instVarNames size * 3];
-  height: [ :each | each methods size ];
-  if: #isAbstractClass fillColor: Color lightRed;
-  if: [:cls | cls methods anySatisfy: #isAbstract ] fillColor: Color red.
 
-view nodes: Collection withAllSubclasses.
-
-view edgesFrom: #superclass.
-
-view treeLayout.
-\end{code}
-
-All red nodes are still abstract classes. Light red indicates classes that do not define abstract methods; strong red indicates classes that define at least one abstract method.
 %=====================
 
 \section{More on colors}
 
-Color may be defined in many different ways. For example, you can directly send \ct{fillColor:} to a shape.
+Colors are pretty useful to designate a property (\eg gray if the class is abstract). They may also be employed to represent a continuous distribution. For example, the color intensity may indicate the result of a metric. Consider the previous script in which the node color intensity tells about the number of lines of Code:
 
-\begin{code}{}
-view shape rectangle
-  fillColor: Color lightBlue.
-\end{code}
-
-The list of available colors may be found in the class side of the class Color. The intensity of a node color may also indicate a quantitative value. For example, the intensity of node color is linear to the number of lines of code defined in the class.
-
-\ja{what should I see ? ;)}
 \begin{code}{}
 view interaction action: #browse.
 view shape rectangle
-  width: [ :each | each instVarNames size * 3];
-  height: [ :each | each methods size ];
-  linearFillColor: #numberOfLinesOfCode within: Collection withAllSubclasses.
+	width: [ :each | each instVarNames size * 3];
+	height: [ :each | each methods size ];
+	linearFillColor: #numberOfLinesOfCode within: Collection withAllSubclasses.
 view nodes: Collection withAllSubclasses.
-
-view edgesFrom: #superclass.
-
-view treeLayout.
+view edgesFrom: #superclass.view treeLayout.
 \end{code}
 
-The visualization you now obtain put in relation for each class the number of methods, the number of instance variable and the number of lines of code. You can easily spot differences between classes, which might suggest you some a refactoring activity. This visualization is named 'System complexity', if you wish to know more about this visualization, you can refer to 'Polymetric Views---A Lightweight Visual Approach to Reverse Engineering' (Transactions on Software Engineering, 2003). 
+\figref{systemComplexity} shows the resulting picture. The message \ct{linearFillColor:within:} takes as first argument a block function that return a numerical value. The second argument is a group of elements that is used to scale the intensity of each node. The block function is applied to each element of the group. The greatest value is set to black. The fading scales from 0 to this maximum. The maximum intensity is given by the maximum \ct{#numberOfLinesOfCode} can take for all the subclasses of \ct{Collection}. 
 
-\ja{this paragraph should be before the source code} The message \ct{linearFillColor:within:} takes as first argument a block function that return a numerical value. The second argument is a group of elements that is used to scale the intensity of each node. The block function is applied to each element of the group. The greatest value is set to black. The fading scales from 0 to this maximum.
+The visualization\footnote{This visualization is named 'System complexity', if you wish to know more about this visualization, you can refer to 'Polymetric Views---A Lightweight Visual Approach to Reverse Engineering' (Transactions on Software Engineering, 2003).} you now obtain put in relation for each class the number of methods, the number of instance variables and the number of lines of code. Differences in size between classes might suggest some maintenance activities. 
+
+Variants of \ct{linearFillColor:within:} are \ct{linearXXXFillColor:within:}, where \ct{XXX} is one among \ct{Blue}, \ct{Green}, \ct{Red}, \ct{Yellow}.
+
+\begin{figure}[htbp]
+\centerline{\includegraphics[width=6cm]{systemComplexity}}
+\caption{The system complexity visualization: nodes are classes; height is the number of lines of methods; width the number of variables; color tells about the number of lines of code.}
+\label{fig:systemComplexity}
+\end{figure}
+
+A color may be assigned to an object identity using \ct{identityFillColorOf:}. The argument is either a block or a symbol, evaluated against the domain object. A color is associate to the result of the argument.
+
 %=====================
 
 \section{Popup view}
+
+Let's jump back on the abstract class example. A variant of it is:
+
+\begin{code}{}
+view shape rectangle	size: [ :cls | cls numberOfMethods / 5 ] ;	if: #isAbstractClass fillColor: Color lightRed;	if: [:cls | cls methods anySatisfy: #isAbstract ] fillColor: Color red.view nodes: Collection withAllSubclasses.view edgesFrom: #superclass.view treeLayout.
+\end{code}
+
+\alex{@@here}
 
 Consider the example that indicate abstract classes. Assume now that we would like to know what are the abstract methods defined. An easy way to do, is to extend the popup text with the list of abstract methods. Putting the mouse above a class does not only give its name, but also the list of abstract methods defined in the class.
 
@@ -612,7 +547,95 @@ The script contains two parts. The first part is the ubiquitous system complexit
 %=============================================================
 
 
+%Dead text:
 
+\ab{@@here}
+
+Node color \ja{nothing about edge color ? I think we can say that it is possible too} is an important information support, as the width and the height of a node. Color should be easy to pick to represent particular condition.
+
+The keyword if:fillColor: enables one to assign a color for a particular condition. Consider we want to extend the previous example by coloring abstract classes in red.
+
+\begin{code}{}
+view shape rectangle
+  width: [ :each | each instVarNames size * 3 ];
+  height: [ :each | each methods size ];
+  if: #isAbstractClass fillColor: Color red.
+view nodes: Collection withAllSubclasses.
+
+view edges: Collection withAllSubclasses from: #yourself toAll: #subclasses.
+
+view treeLayout.
+\end{code}
+
+
+The message \ct{if:fillColor:} may be sent to a shape to conditionally set a color. \ja{what is the link with the source code below ?}
+
+\begin{code}{}
+view shape rectangle
+  width: [ :each | each instVarNames size * 3];
+  height: [ :each | each methods size ];
+  if: #isAbstractClass fillColor: Color red.
+view nodes: Collection withAllSubclasses.
+
+view edgesFrom: #superclass.
+
+view treeLayout.
+\end{code}
+
+All red nodes represent abstract class. Waving the moose above a node make a text tooltip appear revealing its name. 
+
+\ja{it should not be here, we are in section 'adding colors'}
+Extended possibilities exist to define interaction. We will review them in a future section. For now, if you are interested in opening a system browser directly from a node, you define this interaction: \ja{can you display only the line concerned ? it is difficult to read each time the same code with only one line changed}
+
+\begin{code}{}
+view interaction action: #browse.
+view shape rectangle
+  width: [ :each | each instVarNames size * 3];
+  height: [ :each | each methods size ];
+  if: #isAbstractClass fillColor: Color red.
+view nodes: Collection withAllSubclasses.
+
+view edgesFrom: #superclass.
+
+view treeLayout.
+\end{code}
+
+You can easily \ja{I think there are too much 'easy' or 'easily' in the chapter} spot some red node that do not have subclasses. This indicates a design flow since an abstract must to have subclasses. It makes no sense for a class that is not supposed to be instantiated (since it is abstract) to not have a subclass.
+
+The very same analyzes can be realized on your own classes.
+
+\ja{is this code useful ? it seems to be the same as above}
+
+\begin{code}{}
+view interaction action: #browse.
+view shape rectangle
+  width: [ :each | each instVarNames size * 3];
+  height: [ :each | each methods size ];
+  if: #isAbstractClass fillColor: Color red.
+view nodes: (PackageInfo named: 'Mondrian') classes.
+
+view edgesFrom: #superclass.
+
+view treeLayout.
+\end{code}
+
+A shape may contains more than one condition. Let's distinguish abstract classes from classes that define abstract methods.
+
+\begin{code}{}
+view shape rectangle
+  width: [ :each | each instVarNames size * 3];
+  height: [ :each | each methods size ];
+  if: #isAbstractClass fillColor: Color lightRed;
+  if: [:cls | cls methods anySatisfy: #isAbstract ] fillColor: Color red.
+
+view nodes: Collection withAllSubclasses.
+
+view edgesFrom: #superclass.
+
+view treeLayout.
+\end{code}
+
+All red nodes are still abstract classes. Light red indicates classes that do not define abstract methods; strong red indicates classes that define at least one abstract method.
 
 %-----------------------------------------------------------------
 
