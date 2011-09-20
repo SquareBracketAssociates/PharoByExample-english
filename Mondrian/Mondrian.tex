@@ -118,7 +118,13 @@ So far, we have solely use the default shape to represent node and edges. The de
 A number of dimensions defines the appearance of a shape: the width and the height of a rectangle, the size of a line dash, border and inner colors, for example. We will reshape the nodes of our visualization to convey more information about the internal structure of the classes we are visualizing. Consider:
 
 \begin{code}{}
-view shape rectangle	width: [ :each | each instVarNames size * 3 ];	height: #numberOfMethods.view nodes: Collection withAllSubclasses.view edgesFrom: #superclass.view treeLayout.\end{code}
+view shape rectangle
+	width: [ :each | each instVarNames size * 3 ];
+	height: #numberOfMethods.
+view nodes: Collection withAllSubclasses.
+view edgesFrom: #superclass.
+view treeLayout.
+\end{code}
 
 \figref{picture5} shows the result. Each class is represented as a box. The \ct{Collection} class, the root of the hierarchy, is the top most box. The width of a class tells about the amount of instance variables it has. We multiply it by 3 for more contrasting results. The height tells about the number of methods. We can immediately spot classes with many more methods than others: \ct{Collection}, \ct{SequentiableCollection}, \ct{String}, \ct{CompiledMethod}. Classes with more variables than others are: \ct{RunArray} and \ct{SparseLargeTable}.
 
@@ -204,9 +210,16 @@ view
 A shape may be colored in various different way. Node shapes understand the message \ct{fillColor:}, \ct{textColor:}, \ct{borderColor:}. Line shapes understands \ct{color:}. Let's color the visualization of the collection hierarchy:
 
 \begin{code}{}
-view shape rectangle	size: 10;	borderColor: [ :cls | ('*Array*' match: cls name) 
+view shape rectangle
+	size: 10;
+	borderColor: [ :cls | ('*Array*' match: cls name) 
 										ifTrue: [ Color blue ] 
-										ifFalse: [ Color black ] ];	fillColor: [ :cls | cls isAbstractClass ifTrue: [ Color lightGray ] ifFalse: [ Color white] ].view nodes: Collection withAllSubclasses.view edgesFrom: #superclass.view treeLayout.\end{code}
+										ifFalse: [ Color black ] ];
+	fillColor: [ :cls | cls isAbstractClass ifTrue: [ Color lightGray ] ifFalse: [ Color white] ].
+view nodes: Collection withAllSubclasses.
+view edgesFrom: #superclass.
+view treeLayout.
+\end{code}
 
 The produced visualization is given in \figref{abstractClasses}. It easily help identifying abstract classes that are not named as ``Abstract'' and the one that are abstract without having an abstract method.
 
@@ -220,7 +233,10 @@ Similarly than with \ct{height:} and \ct{width:}, messages to defines color eith
 The use of \ct{ifTrue:ifFalse:} is a bit cumbersome. Utilities methods are provided for that purpose to easily pick a color from a particular condition. The definition of the shape can simply be:
 
 \begin{code}{}
-view shape rectangle	size: 10;	if: [ :cls | ('*Array*' match: cls name) ] borderColor: Color blue;	if: [ :cls | cls isAbstractClass ] fillColor: Color lightGray.
+view shape rectangle
+	size: 10;
+	if: [ :cls | ('*Array*' match: cls name) ] borderColor: Color blue;
+	if: [ :cls | cls isAbstractClass ] fillColor: Color lightGray.
 ...
 \end{code}
 
@@ -240,7 +256,8 @@ view shape rectangle
 	height: [ :each | each methods size ];
 	linearFillColor: #numberOfLinesOfCode within: Collection withAllSubclasses.
 view nodes: Collection withAllSubclasses.
-view edgesFrom: #superclass.view treeLayout.
+view edgesFrom: #superclass.
+view treeLayout.
 \end{code}
 
 \figref{systemComplexity} shows the resulting picture. The message \ct{linearFillColor:within:} takes as first argument a block function that return a numerical value. The second argument is a group of elements that is used to scale the intensity of each node. The block function is applied to each element of the group. The greatest value is set to black. The fading scales from 0 to this maximum. The maximum intensity is given by the maximum \ct{#numberOfLinesOfCode} can take for all the subclasses of \ct{Collection}. 
@@ -261,227 +278,166 @@ A color may be assigned to an object identity using \ct{identityFillColorOf:}. T
 
 \section{Popup view}
 
-Let's jump back on the abstract class example. A variant of it is:
+Let's jump back on the abstract class example. The following script indicates abstract classes and how many abstract methods they define:
 
 \begin{code}{}
-view shape rectangle	size: [ :cls | cls numberOfMethods / 5 ] ;	if: #isAbstractClass fillColor: Color lightRed;	if: [:cls | cls methods anySatisfy: #isAbstract ] fillColor: Color red.view nodes: Collection withAllSubclasses.view edgesFrom: #superclass.view treeLayout.
-\end{code}
+view shape rectangle	size: [ :cls | (cls methods select:  #isAbstract ) size * 5 ] ;	if: #isAbstractClass fillColor: Color lightRed;	if: [:cls | cls methods anySatisfy: #isAbstract ] fillColor: Color red.view nodes: Collection withAllSubclasses.view edgesFrom: #superclass.view treeLayout.\end{code}
 
-\alex{@@here}
+\begin{figure}[htbp]
+\centerline{\includegraphics[width=0.6\linewidth]{abstractClasses2.png}}
+\caption{Boxes are classes and links are inheritance relationships. The amount of abstract method is indicated by the size of the class. A red class defines abstract methods and a pink class inherits from an abstract class solely.}
+\label{fig:abstractClasses}
+\end{figure}
 
-Consider the example that indicate abstract classes. Assume now that we would like to know what are the abstract methods defined. An easy way to do, is to extend the popup text with the list of abstract methods. Putting the mouse above a class does not only give its name, but also the list of abstract methods defined in the class.
+\figref{abstractClasses} indicate classes that are abstract either by inheritance or by defining abstract methods. Class size indicates the amount of abstract method defined. 
+
+The popup message can be enhanced to list abstract methods. Putting the mouse above a class does not only give its name, but also the list of abstract methods defined in the class. The following piece of code has to be added at the beginning:
 
 \begin{code}{}
-view shape rectangle
-  width: [ :each | each instVarNames size * 3];
-  height: [ :each | each methods size ];
-  if: #isAbstractClass fillColor: Color lightRed;
-  if: [:cls | cls methods anySatisfy: #isAbstract ] fillColor: Color red.
-  
 view interaction popupText: [ :aClass | 
   | stream |
   stream := WriteStream on: String new.
   (aClass methods select: #isAbstract thenCollect: #selector)
     do: [:sel | stream nextPutAll: sel; nextPut: $ ; cr].
   aClass name printString, ' => ', stream contents ].
-view nodes: Collection withAllSubclasses.
-view edgesFrom: #superclass.
-view treeLayout.
+...
 \end{code}
 
-Another view may be opened instead of a text. Consider the following view definition: \ja{more explicit ?}
+So far, we have seen that a graphical element has a shape to describe its graphical representation. It also contains an \emph{interaction} that contains event handlers. The message \ct{popupText:} takes a block as argument. This block is evaluated with the domain object as argument. The block has to return the popup text content. In our case, it is simply a list of the methods.
+
+In addition to a textual content, Mondrian allows a view to be pop up. We will enhance the previous example to illustrate this point. When the mouse enters a node, a new view is defined and displayed next to the node. The method \ct{popupView:} receives a two-arguments block as parameters. 
 
 \begin{code}{}
-view shape rectangle
-  width: [ :each | each instVarNames size * 3];
-  height: [ :each | each methods size ];
-  if: #isAbstractClass fillColor: Color lightRed;
-  if: [:cls | cls methods anySatisfy: #isAbstract ] fillColor: Color red.
-  
-view interaction popupView: [ :element :secondView | 
-  secondView shape rectangle 
-    if: #isAbstract fillColor: Color red;
-    size: 10.  
-  secondView nodes: (element methods sortedAs: #isAbstract).
-  secondView gridLayout gapSize: 2
-  ].
-view nodes: Collection withAllSubclasses.
-view edgesFrom: #superclass.
-view treeLayout.
-\end{code}
+view interaction popupView: [ :element :secondView | 	secondView node: element forIt: [	  secondView shape rectangle 	    if: #isAbstract fillColor: Color red;	    size: 10.  	  secondView nodes: (element methods sortedAs: #isAbstract).	  secondView gridLayout gapSize: 2 	] ].view shape rectangle	size: [ :cls | (cls methods select:  #isAbstract ) size * 5 ] ;	if: #isAbstractClass fillColor: Color lightRed;	if: [:cls | cls methods anySatisfy: #isAbstract ] fillColor: Color red.view nodes: Collection withAllSubclasses.view edgesFrom: #superclass.view treeLayout.\end{code}
 
-\ja{before the code, like that, we can understand before reading code}
-When the mouse enters a node, a new view is defined and displayed next to the node. The method \ct{popupView:} receives a two-arguments block as parameters. The first parameter of the block is the element represented by the node located below the mouse. The second argument is a new view that will be opened.
+The argument of \ct{popupView:} is a two argument block. The first parameter of the block is the element represented by the node located below the mouse. The second argument is a new view that will be opened.
 
 In the example, we used \ct{sortedAs:} to order the nodes representing methods. This method is defined on Collection and belongs to Mondrian. To see example usages of \ct{sortedAs:}, browse its corresponding unit test:
 \begin{code}{}
 ToolSet browse: MOViewRendererTest selector: #testSortedAs 
 \end{code}
+
+This last example use the message \ct{node:forIt:} in the popup view to define a subview.
+
 %=====================
 
 \section{Subviews}
 
-Each node may embed a view \ja{can you explain what does it mean}. This is achieved via the keywords \ct{nodes:forEach:} and \ct{node:forIt:}. Consider an alternative view for visualizing abstract methods \ja{can you show the figure ?}:
+A node is a view in itself. This allows for a graph to be embedded in any node. The embedded view is physically bounded by the encapsulating node. The embedding is realized via the keywords \ct{nodes:forEach:} and \ct{node:forIt:}. 
+
+The following example approximates the dependencies between methods by linking methods that may call each other. A method \ct{m1} is connected to a method \ct{m2} if \ct{m1} contains a reference to the selector \ct{#m2}. This is a simple but effective way to see the dependencies between methods. Consider:
 
 \begin{code}{}
-view shape rectangle
-  if: #isAbstractClass fillColor: Color lightRed.
-view nodes: Collection withAllSubclasses forEach: [ :aClass | 
-  view shape rectangle 
-    if: #isAbstract fillColor: Color red.
-  view nodes: (aClass methods sortedAs: #isAbstract).
-  view gridLayout gapSize: 2. 
-].
-view edgesFrom: #superclass.
-view treeLayout.
+view nodes: Collection withAllSubclasses forEach: [:cls |	view nodes: cls methods.	view edges: cls methods from: #yourself toAll: [ :cm | cls methods select: [ :rcm |  cm messages anySatisfy: [:s | rcm selector == s ] ] ].	view treeLayout].view interaction action: #browse.view edgesFrom: #superclass.view treeLayout.
 \end{code}
 
-Abstract classes are painted in light red and abstract method in intense red. 
-Each node may embed any arbitrary view. Consider this script to visualize class hierarchies for each package of the Collection framework.
+A subview contains its own layout. Interactions and shapes defined in a subview are not accessible from a nesting node. 
 
-\begin{code}{}
-packages := PackageOrganizer default packageNames
-        select: [ :name | name beginsWith: 'Collections-' ] 
-        thenCollect:  [ :name | PackageInfo named: name ].
-        
-view nodes: packages forEach: [ :aPackage | 
-  view nodes: (aPackage classes reject: #isTrait).
-  view edgesFrom: #superclass.
-  view treeLayout
-].
-\end{code}
+%view shape rectangle
+%  if: #isAbstractClass fillColor: Color lightRed.
+%view nodes: Collection withAllSubclasses forEach: [ :aClass | 
+%  view shape rectangle 
+%    if: #isAbstract fillColor: Color red.
+%  view nodes: (aClass methods sortedAs: #isAbstract).
+%  view gridLayout gapSize: 2. 
+%].
+%view edgesFrom: #superclass.
+%view treeLayout.
 
-We see an interesting issue here. A little more information is here shown. Not only we see the hierarchies defined in each packages, but we also see inter-package links. We can supress relations between packages and indicate in blue classes \ja{we never integrated blue classes, what is it ?} for which their superclasses lives in a different package.
 
-\begin{code}{}
-packages := PackageOrganizer default packageNames
-        select: [ :name | name beginsWith: 'Collections-' ] 
-        thenCollect:  [ :name | PackageInfo named: name ].
-        
-view nodes: packages forEach: [ :aPackage | 
-  | classes |
-  classes := aPackage classes reject: #isTrait.
-  view shape rectangle 
-    if: [ :cls | (classes includes: cls superclass) not ] fillColor: Color blue.
-  view nodes: classes.
-  classes := classes copy select: [ :cls | classes includes: cls superclass ].
-  view edges: classes from: #superclass to: #yourself.
-  view treeLayout
-].
-\end{code}
+\begin{figure}[htbp]
+\centerline{\includegraphics[width=0.6\linewidth]{methodDependencies.png}}
+\caption{Large boxes are classes. Inner boxes are methods. Edges shows a possible invocation between the two.}
+\label{fig:abstractClasses}
+\end{figure}
 
-Package names can be included above each box \ja{only the concerned line :)}.
 
-\begin{code}{}
-packages := PackageOrganizer default packageNames
-        select: [ :name | name beginsWith: 'Collections-' ] 
-        thenCollect:  [ :name | PackageInfo named: name ].
 
-view shape rectangle withoutBorder.
-view nodes: packages forEach: [ :aPackage | 
-  view shape label text: #packageName.
-  view node: aPackage.
-  view node: aPackage forIt: [
-    | classes |
-    classes := aPackage classes reject: #isTrait.
-    view shape rectangle 
-      if: [ :cls | (classes includes: cls superclass) not ] fillColor: Color blue.
-    view nodes: classes.
-    classes := classes copy select: [ :cls | classes includes: cls superclass ].
-    view edges: classes from: #superclass to: #yourself.
-    view treeLayout
-  ].
-  view verticalLineLayout center
-].
-\end{code}
+%Abstract classes are painted in light red and abstract method in intense red. 
+%Each node may embed any arbitrary view. Consider this script to visualize class hierarchies for each package of the Collection framework.
+%
+%\begin{code}{}
+%packages := PackageOrganizer default packageNames
+%        select: [ :name | name beginsWith: 'Collections-' ] 
+%        thenCollect:  [ :name | PackageInfo named: name ].
+%        
+%view nodes: packages forEach: [ :aPackage | 
+%  view nodes: (aPackage classes reject: #isTrait).
+%  view edgesFrom: #superclass.
+%  view treeLayout
+%].
+%\end{code}
+%
+%We see an interesting issue here. A little more information is here shown. Not only we see the hierarchies defined in each packages, but we also see inter-package links. We can suppress relations between packages and indicate in blue classes \ja{we never integrated blue classes, what is it ?} for which their superclasses lives in a different package.
+%
+%\begin{code}{}
+%packages := PackageOrganizer default packageNames
+%        select: [ :name | name beginsWith: 'Collections-' ] 
+%        thenCollect:  [ :name | PackageInfo named: name ].
+%        
+%view nodes: packages forEach: [ :aPackage | 
+%  | classes |
+%  classes := aPackage classes reject: #isTrait.
+%  view shape rectangle 
+%    if: [ :cls | (classes includes: cls superclass) not ] fillColor: Color blue.
+%  view nodes: classes.
+%  classes := classes copy select: [ :cls | classes includes: cls superclass ].
+%  view edges: classes from: #superclass to: #yourself.
+%  view treeLayout
+%].
+%\end{code}
+%
+%Package names can be included above each box \ja{only the concerned line :)}.
+%
+%\begin{code}{}
+%packages := PackageOrganizer default packageNames
+%        select: [ :name | name beginsWith: 'Collections-' ] 
+%        thenCollect:  [ :name | PackageInfo named: name ].
+%
+%view shape rectangle withoutBorder.
+%view nodes: packages forEach: [ :aPackage | 
+%  view shape label text: #packageName.
+%  view node: aPackage.
+%  view node: aPackage forIt: [
+%    | classes |
+%    classes := aPackage classes reject: #isTrait.
+%    view shape rectangle 
+%      if: [ :cls | (classes includes: cls superclass) not ] fillColor: Color blue.
+%    view nodes: classes.
+%    classes := classes copy select: [ :cls | classes includes: cls superclass ].
+%    view edges: classes from: #superclass to: #yourself.
+%    view treeLayout
+%  ].
+%  view verticalLineLayout center
+%].
+%\end{code}
 %=====================
 
 \section{Forwarding events}
 
-Package of the visualization given in the previous section may be moved by a simple drag and drop. However, the invisible outter node must be grabbed. The name and the hierarchy box may be dragged on their own still. A better adjustement is to let the package name and the hierarchy box to forward the event to the outter invisible node (when executing the script below, declare packages as a temporary variable ). \ja{this is not clear for me}
+Method of the visualization given in the previous section may be moved by a simple drag and drop. However, it may be wished that the methods have a fixed position, and only the classes can be drag-and-dropped. In that case, the message \ct{forward} has to be sent to the interaction. Consider:
 
 \begin{code}{}
-packages := PackageOrganizer default packageNames
-        select: [ :name | name beginsWith: 'Collections-' ] 
-        thenCollect:  [ :name | PackageInfo named: name ].
-
-view shape rectangle withoutBorder.
-view nodes: packages forEach: [ :aPackage | 
-  view shape label text: #packageName.
-  view interaction forward.
-  view node: aPackage.
-
-  view interaction forward.
-  view node: aPackage forIt: [
-    | classes |
-    classes := aPackage classes reject: #isTrait.
-    view shape rectangle 
-      if: [ :cls | (classes includes: cls superclass) not ] fillColor: Color blue.
-    view nodes: classes.
-    classes := classes copy select: [ :cls | classes includes: cls superclass ].
-    view edges: classes from: #superclass to: #yourself.
-    view treeLayout
-  ].
-  view verticalLineLayout center
-].
+view nodes: MOShape withAllSubclasses forEach: [:cls |	view interaction forward.	view shape rectangle 					size: #numberOfLinesOfCode.	view nodes: cls methods.	view edges: cls methods from: #yourself toAll: [ :cm | cls methods select: [ :rcm |  cm messages anySatisfy: [:s | rcm selector == s ] ] ].	view treeLayout].view interaction action: #browse.view edgesFrom: #superclass.view treeLayout.
 \end{code}
 
-A node may now be dragged from its name or the hierarchy box. It may be useful to selectively forward events: \ct{forward:} is a variant of \ct{forward}.
+Moving a method will move the class instead. As most operating systems, Mondrian offers multiple selection using the Ctrl or Cmd key. This default behavior is available for every nodes.
 
-\begin{code}{}
-packages := PackageOrganizer default packageNames
-        select: [ :name | name beginsWith: 'Collections-' ] 
-        thenCollect:  [ :name | PackageInfo named: name ].
-
-view shape rectangle withoutBorder.
-view nodes: packages forEach: [ :aPackage | 
-  view shape label text: #packageName.
-  view interaction forward: MOMouseDrag.
-  view node: aPackage.
-
-  view interaction forward: MOMouseDrag.
-  view node: aPackage forIt: [
-    | classes |
-    classes := aPackage classes reject: #isTrait.
-    view shape rectangle 
-      if: [ :cls | (classes includes: cls superclass) not ] fillColor: Color blue.
-    view nodes: classes.
-    classes := classes copy select: [ :cls | classes includes: cls superclass ].
-    view edges: classes from: #superclass to: #yourself.
-    view treeLayout
-  ].
-  view verticalLineLayout center
-].
-\end{code}
-
-Note that several nodes may be selected by pressing the Ctrl or Cmd key. \ja{is it normal or is there a line to write for that ?}
 %=====================
 
 \section{Events}
 
-
-Each mouse movement, click and keyboard keystroke correspond to a particular events in Mondrian. The root of the events is MOEvent. Event handler are defined directly on the interaction object.  
+Each mouse movement, click and keyboard keystroke corresponds to a particular events. Mondrian offers a rich hierarchy of events. The root of the hierarchy is MOEvent. To associate a particular action to an event, an handler has to be defined on the object interaction. On the following example, double clicking on a class opens a code browser:
 
 \begin{code}{}
-view shape rectangle
-  width: [ :each | each instVarNames size * 3];
-  height: [ :each | each methods size ];
-  if: #isAbstractClass fillColor: Color lightRed;
-  if: [:cls | cls methods anySatisfy: #isAbstract ] fillColor: Color red.
-  
-view interaction on: MOMouseDouble do: [ :ann | 
-  (OBSystemBrowser onClass: ann modelElement) open
-].
-view nodes: Collection withAllSubclasses.
-view edgesFrom: #superclass.
-view treeLayout.
-\end{code}
+view shape rectangle  width: [ :each | each instVarNames size * 5 ];  height: [ :each | each methods size ];  if: #isAbstractClass fillColor: Color lightRed;  if: [:cls | cls methods anySatisfy: #isAbstract ] fillColor: Color red.  view interaction on: MOMouseDouble do: [ :ann |   ann modelElement browse].view nodes: Collection withAllSubclasses.view edgesFrom: #superclass.view treeLayout.\end{code}
 
 The block handler accepts one argument: the event generated. The object that triggered the event is obtained by sending \ct{modelElement} to the event object. 
+
 %=====================
 
 \section{Interaction}
-Mondrian offers a number of contextual interaction mechanisms. The interaction object contains a number of keywords for that purpose. Consider the example:
+Mondrian offers a number of contextual interaction mechanisms. The interaction object contains a number of keywords for that purpose. The message \ct{highlightWhenOver:} takes a block as argument. This block returns a list of the node to highlight when the mouse enters a node. Consider the example:
 
 \begin{code}{}
 view interaction 
@@ -494,17 +450,21 @@ view nodes: (1 to: 16).
 view gridLayout gapSize: 2.
 \end{code}
 
-We will extend our running example with an indication about the test coverage. Consider the following script:
+Entering the node 5 highlights the nodes 4, 6, 1 and 9. This mechanism is quite efficient to not overload with connecting edges. Only the information is shown for the node of interest. 
+
+A more compelling application of \ct{highlightWhenOver:} is with the following example. A hierarchy of class is displayed on the left hand side. On the right hand size a hierarchy of unit tests is displayed. Locating the mouse pointer above a unit test highlights the classes that are referenced by one of the unit test method. Consider the (rather long) script:
 
 \begin{code}{}
+"System complexity of the collection classes"
 view shape rectangle
-  width: [ :each | each instVarNames size * 3];
+  width: [ :each | each instVarNames size * 5 ];
   height: [ :each | each methods size ];
   linearFillColor: #numberOfLinesOfCode within: Collection withAllSubclasses.
 view nodes: Collection withAllSubclasses.
 view edgesFrom: #superclass.
 view treeLayout.
 
+"Unit tests of the package CollectionsTest"
 view shape rectangle withoutBorder.
 view node: 'compound' forIt: [
   view shape label.
@@ -527,10 +487,31 @@ view node: 'compound' forIt: [
 ].
 \end{code}
 
-The script contains two parts. The first part is the ubiquitous system complexity of the collection framework \ja{give us the number of lines}.  The second part renders the tests contained in the CollectionsTests \ja{explain more about this part, maybe line by line}. The width of a class is the number of literals contained in it. The height is the number of lines of code. Since the collection tests makes a great use of traits to reuse code, these metrics have to be scaled down. When the mouse is put over a test unit, then all the classes of the collection framework referenced in this class are highlighted. \ja{screenshot}
+\begin{figure}[htbp]
+\centerline{\includegraphics[width=\linewidth]{testCoverage.png}}
+\caption{Interactive system complexity.}
+\label{fig:interactiveTestCoverage}
+\end{figure}
+
+
+The script contains two parts. The first part is the ubiquitous system complexity of the collection framework \ja{give us the number of lines}.  The second part renders the tests contained in the CollectionsTests \ja{explain more about this part, maybe line by line}. The width of a class is the number of literals contained in it. The height is the number of lines of code. Since the collection tests makes a great use of traits to reuse code, these metrics have to be scaled down. When the mouse is put over a test unit, then all the classes of the collection framework referenced in this class are highlighted. 
+
 %=====================
 
 \section{Conclusion}
+
+Mondrian enables any graph of objects to be visualized. This chapter has reviewed the principal features of Mondrian:
+\begin{itemize}
+\item The most common way to defines nodes is wit \ct{nodes:} and edges with \ct{edgesFrom:}, \ct{edges:from:to:} and \ct{edges:from:toAll:}.
+\item A whole range of layout are offered. The most common layouts are accessible by sending \ct{circleLayout}, \ct{treeLayout}, \ct{gridLayout} to a view.
+\item A shape defines the graphical aspect of an element. Height and width are commonly set with \ct{height:} and \ct{width:}, respectively. 
+\item A shape is colored with \ct{borderColor:} and \ct{fillColor:}.
+\item Information my be popped up with \ct{popupText:} and \ct{popupView:}.
+\item A subview is defined with \ct{nodes:forEach:} and \ct{node:forIt:}.
+\item Events of a sub node is forward to its parent with \ct{forward} and \ct{forward:}.
+\item Highlighting is available with \ct{highlightWhenOver:}, which takes a one-arg block that has to returns the list of node to highlight.
+\end{itemize}
+
 %Mondrian is a perpetual evolving application. This chapter intents to cover the features frequently used. If there is a topic you wish to see discussed here, send an email to alexandre@bergel.eu.
 %
 %We hope you haved enjoyed it!
@@ -548,8 +529,6 @@ The script contains two parts. The first part is the ubiquitous system complexit
 
 
 %Dead text:
-
-\ab{@@here}
 
 Node color \ja{nothing about edge color ? I think we can say that it is possible too} is an important information support, as the width and the height of a node. Color should be easy to pick to represent particular condition.
 
