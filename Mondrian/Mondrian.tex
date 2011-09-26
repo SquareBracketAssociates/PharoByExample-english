@@ -1,3 +1,4 @@
+% 2011-09-26 - Migrated to PharoBox: svn checkout https://XXX@scm.gforge.inria.fr/svn/pharobooks/PharoByExampleTwo-Eng
 
 %=================================================================
 \ifx\wholebook\relax\else
@@ -281,7 +282,14 @@ A color may be assigned to an object identity using \ct{identityFillColorOf:}. T
 Let's jump back on the abstract class example. The following script indicates abstract classes and how many abstract methods they define:
 
 \begin{code}{}
-view shape rectangle	size: [ :cls | (cls methods select:  #isAbstract ) size * 5 ] ;	if: #isAbstractClass fillColor: Color lightRed;	if: [:cls | cls methods anySatisfy: #isAbstract ] fillColor: Color red.view nodes: Collection withAllSubclasses.view edgesFrom: #superclass.view treeLayout.\end{code}
+view shape rectangle
+	size: [ :cls | (cls methods select:  #isAbstract ) size * 5 ] ;
+	if: #isAbstractClass fillColor: Color lightRed;
+	if: [:cls | cls methods anySatisfy: #isAbstract ] fillColor: Color red.
+view nodes: Collection withAllSubclasses.
+view edgesFrom: #superclass.
+view treeLayout.
+\end{code}
 
 \begin{figure}[htbp]
 \centerline{\includegraphics[width=0.6\linewidth]{abstractClasses2.png}}
@@ -308,7 +316,23 @@ So far, we have seen that a graphical element has a shape to describe its graphi
 In addition to a textual content, Mondrian allows a view to be pop up. We will enhance the previous example to illustrate this point. When the mouse enters a node, a new view is defined and displayed next to the node. The method \ct{popupView:} receives a two-arguments block as parameters. 
 
 \begin{code}{}
-view interaction popupView: [ :element :secondView | 	secondView node: element forIt: [	  secondView shape rectangle 	    if: #isAbstract fillColor: Color red;	    size: 10.  	  secondView nodes: (element methods sortedAs: #isAbstract).	  secondView gridLayout gapSize: 2 	] ].view shape rectangle	size: [ :cls | (cls methods select:  #isAbstract ) size * 5 ] ;	if: #isAbstractClass fillColor: Color lightRed;	if: [:cls | cls methods anySatisfy: #isAbstract ] fillColor: Color red.view nodes: Collection withAllSubclasses.view edgesFrom: #superclass.view treeLayout.\end{code}
+view interaction popupView: [ :element :secondView | 
+	secondView node: element forIt: [
+	  secondView shape rectangle 
+	    if: #isAbstract fillColor: Color red;
+	    size: 10.  
+	  secondView nodes: (element methods sortedAs: #isAbstract).
+	  secondView gridLayout gapSize: 2 
+	] ].
+
+view shape rectangle
+	size: [ :cls | (cls methods select:  #isAbstract ) size * 5 ] ;
+	if: #isAbstractClass fillColor: Color lightRed;
+	if: [:cls | cls methods anySatisfy: #isAbstract ] fillColor: Color red.
+view nodes: Collection withAllSubclasses.
+view edgesFrom: #superclass.
+view treeLayout.
+\end{code}
 
 The argument of \ct{popupView:} is a two argument block. The first parameter of the block is the element represented by the node located below the mouse. The second argument is a new view that will be opened.
 
@@ -328,7 +352,14 @@ A node is a view in itself. This allows for a graph to be embedded in any node. 
 The following example approximates the dependencies between methods by linking methods that may call each other. A method \ct{m1} is connected to a method \ct{m2} if \ct{m1} contains a reference to the selector \ct{#m2}. This is a simple but effective way to see the dependencies between methods. Consider:
 
 \begin{code}{}
-view nodes: Collection withAllSubclasses forEach: [:cls |	view nodes: cls methods.	view edges: cls methods from: #yourself toAll: [ :cm | cls methods select: [ :rcm |  cm messages anySatisfy: [:s | rcm selector == s ] ] ].	view treeLayout].view interaction action: #browse.view edgesFrom: #superclass.view treeLayout.
+view nodes: Collection withAllSubclasses forEach: [:cls |
+	view nodes: cls methods.
+	view edges: cls methods from: #yourself toAll: [ :cm | cls methods select: [ :rcm |  cm messages anySatisfy: [:s | rcm selector == s ] ] ].
+	view treeLayout
+].
+view interaction action: #browse.
+view edgesFrom: #superclass.
+view treeLayout.
 \end{code}
 
 A subview contains its own layout. Interactions and shapes defined in a subview are not accessible from a nesting node. 
@@ -418,7 +449,17 @@ A subview contains its own layout. Interactions and shapes defined in a subview 
 Method of the visualization given in the previous section may be moved by a simple drag and drop. However, it may be wished that the methods have a fixed position, and only the classes can be drag-and-dropped. In that case, the message \ct{forward} has to be sent to the interaction. Consider:
 
 \begin{code}{}
-view nodes: MOShape withAllSubclasses forEach: [:cls |	view interaction forward.	view shape rectangle 					size: #numberOfLinesOfCode.	view nodes: cls methods.	view edges: cls methods from: #yourself toAll: [ :cm | cls methods select: [ :rcm |  cm messages anySatisfy: [:s | rcm selector == s ] ] ].	view treeLayout].view interaction action: #browse.view edgesFrom: #superclass.view treeLayout.
+view nodes: MOShape withAllSubclasses forEach: [:cls |
+	view interaction forward.
+	view shape rectangle 
+					size: #numberOfLinesOfCode.
+	view nodes: cls methods.
+	view edges: cls methods from: #yourself toAll: [ :cm | cls methods select: [ :rcm |  cm messages anySatisfy: [:s | rcm selector == s ] ] ].
+	view treeLayout
+].
+view interaction action: #browse.
+view edgesFrom: #superclass.
+view treeLayout.
 \end{code}
 
 Moving a method will move the class instead. As most operating systems, Mondrian offers multiple selection using the Ctrl or Cmd key. This default behavior is available for every nodes.
@@ -430,7 +471,19 @@ Moving a method will move the class instead. As most operating systems, Mondrian
 Each mouse movement, click and keyboard keystroke corresponds to a particular events. Mondrian offers a rich hierarchy of events. The root of the hierarchy is MOEvent. To associate a particular action to an event, an handler has to be defined on the object interaction. On the following example, double clicking on a class opens a code browser:
 
 \begin{code}{}
-view shape rectangle  width: [ :each | each instVarNames size * 5 ];  height: [ :each | each methods size ];  if: #isAbstractClass fillColor: Color lightRed;  if: [:cls | cls methods anySatisfy: #isAbstract ] fillColor: Color red.  view interaction on: MOMouseDouble do: [ :ann |   ann modelElement browse].view nodes: Collection withAllSubclasses.view edgesFrom: #superclass.view treeLayout.\end{code}
+view shape rectangle
+  width: [ :each | each instVarNames size * 5 ];
+  height: [ :each | each methods size ];
+  if: #isAbstractClass fillColor: Color lightRed;
+  if: [:cls | cls methods anySatisfy: #isAbstract ] fillColor: Color red.
+  
+view interaction on: MOMouseDouble do: [ :ann | 
+  ann modelElement browse
+].
+view nodes: Collection withAllSubclasses.
+view edgesFrom: #superclass.
+view treeLayout.
+\end{code}
 
 The block handler accepts one argument: the event generated. The object that triggered the event is obtained by sending \ct{modelElement} to the event object. 
 
