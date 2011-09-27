@@ -528,7 +528,8 @@ Note that this message blocks until the connection with the server is closed.
 
 
 \begin{script}[script:binarySocketStream]{A \ct!SocketStream! Interacting in Binary Mode.}
-interactionStream := SocketStream openConnectionToHostNamed: 'localhost' port: 9999.  
+interactionStream := SocketStream 
+									openConnectionToHostNamed: 'localhost' port: 9999.  
 interactionStream binary.
 interactionStream nextPutAllFlush: #[65 66 67].
 interactionStream upToEnd.
@@ -542,18 +543,18 @@ So, each character maps to a single byte.
 SocketStream acts simply as a gateway to some network. 
 It sends or reads bytes without giving them any semantics.
 The semantics, that is the organization and meaning of exchanged data should be handled by other objects.
-Developers should decide a protocol to use and enforce on both interacting sides in order to have correct interaction.
+Developers should decide a protocol to use and to enforce on both interacting sides in order to have correct interaction.
 
 A good practice is to \emph{reify} a protocol, that is to materialize it as an object which wraps a socket stream. 
-The protocol object takes analyzes exchanged data and decides accordingly which messages to send to the socket stream.
+The protocol object analyzes exchanged data and decides accordingly which messages to send to the socket stream.
 Involved entities in any conversation need a protocol that defines how to organize data into sequence of bytes or characters.
 Senders should conform to this organization to allow receivers extract valid data from received sequence of bytes.
  
 One possible solution is to have a set of delimiters inserted between bytes or characters corresponding to each data.
 An example of delimiter is the sequence of ASCII characters CR and LF.
-This sequence is considered so useful that the developers of the \ct!SocketStream! class introduced the \ct!sendCommand:! method.
+This sequence is considered so useful that the developers of the \ct!SocketStream! class introduced the \ct!sendCommand:! message.
 This method (illustrated in \scrref{script:closeAndDestroy}) does append CR and LF after sent data.
-When reading CR followed by LF the receiver knows that the received sequence characters is complete and can be safely converted into valid data.
+When reading CR followed by LF the receiver knows that the received sequence of characters is complete and can be safely converted into valid data.
 A facility method \ct!nextLine! (illustrated in \scrref{script:streamGetLine}) is implemented by \ct!SocketStream! to perform reading until the reception of CR+LF sequence.
 One can however use any character or byte as a delimiter.
 Indeed, we can ask a socket stream to read all characters/bytes up to some specific one using the \ct!upTo:! message.
@@ -583,12 +584,13 @@ Then we loop, sending data in chunks of 3000 bytes.
 We rely on the \ct!next:putAll:startingAt:! message that takes three arguments: the size (number of bytes or characters) of the data chunk,
 the data source (a sequenceable collection) and the index of the first element of the chunk.
 In this example, we make the assumption that the size of the content collection is a multiple of the chunk size.
-Of course, in a real setting, this assumption does not hold and one need to deal with the last part of data that is smaller than a chunk.
+Of course, in a real setting, this assumption does not hold and one needs to deal with the last part of data that is smaller than a chunk.
 A possible solution is to replace missing bytes with zeros.
 
 \begin{script}[script:socketStreamNext]{Reading data in chunks using \ct!SocketStream!.}
 	|interactionStream chunkSize chunk|
-	interactionStream := SocketStream openConnectionToHostNamed: 'localhost' port: 9999.
+	interactionStream := SocketStream 
+											openConnectionToHostNamed: 'localhost' port: 9999.
 	interactionStream isDataAvailable ifFalse: [(Delay forMilliseconds: 100) wait].
 	chunkSize := 5.
 	[interactionStream isDataAvailable] whileTrue: [
