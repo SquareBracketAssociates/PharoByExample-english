@@ -59,7 +59,7 @@ A socket can then be defined as a \textit{plug on a communication network}.
 
 \begin{figure}[ht]\centering
 	\includegraphics[width=.75\linewidth]{socketConcept}
-	\caption{Inter-Process Remote Communication Through Sockets.\alex{typo in the figure, Nework}}
+	\caption{Inter-Process Remote Communication Through Sockets.}
 	\label{fig:socketConcept}
 \end{figure}
 
@@ -191,7 +191,7 @@ do: [:timeOutException|
 %Timeout
 Note that by using  \ct!receiveData!, the client waits until the server either sends no more data, or closes the connection.
 This means that the client may wait indefinitely.
-An alternative is to have the client signal a \ct!ConnectionTimedOut! exception if it had waited too much as shown in \Scrref{dataReceptionTimeOut}.
+An alternative is to have the client signal a \ct!ConnectionTimedOut! exception if it had waited too much as shown in \scrref{dataReceptionTimeOut}.
 We use message \ct!receiveDataTimeout:! to ask the client socket to wait for 5 seconds.
 If data is received during this period of time, it is processed silently.
 But if no data is received during the 5 seconds, a \ct!ConnectionTimedOut! is signaled.
@@ -332,7 +332,7 @@ Otherwise, the client will fail.
 %The pipe connects the output of \ct{cat} to the input of \ct{nc}.
 %Here, we use \ct{nc} as client that sends the text we provided to a server on the local host, listening on port 9999.
 
-\subsection{Echo Server Class}
+\subsection{Echo Server Class}\label{sec:echoServerClass}
 We define here the \ct!EchoServer! class that deals with concurrency issues.
 It handles concurrent client queries and it does not freeze the UI.
 As we can see in the definition labelled \clsref{echoServerClassDef}, the \ct!EchoServer! declares three instance variables.
@@ -366,7 +366,7 @@ EchoServer>>>isRunning: aBoolean
 
 The \ct! isRunning! instance variable is a flag that is set to \ct!true! while the serving is running.
 As we will see below, it can be accessed by different processes.
-Therefore, we use the mutex (see \mthref{meth:serverInitialize}) referenced using the \ct!isRunningLock! instance variable.; \alex{check the end of the sentence}
+Therefore, we use the mutex (see \mthref{meth:serverInitialize}) referenced using the \ct!isRunningLock! instance variable. 
 This mutex ensures that a single process can read or write the value of \ct!isRunning! (use of the \ct!critical:! message in \mthref{meth:isRunningRead} and \mthref{meth:isRunningWrite}).
 
 \begin{method}[meth:stop]{The \ct!EchoServer>>>stop! Method}
@@ -433,11 +433,9 @@ interactUsing: interactionSocket
 	| receivedData |
 	[receivedData := interactionSocket receiveDataTimeout: 5.
 	 Transcript cr; show: receivedData.
-	 interactionSocket sendData: 'ECHO: ', receivedData
-	] ensure: [
-	 interactionSocket closeAndDestroy]
+	 interactionSocket sendData: 'ECHO: ', receivedData]
+		ensure: [interactionSocket closeAndDestroy]
 \end{method}
-\alex{I would move the closing ']' after 'receivedData', with a blank character before the square bracket}
 The interaction as implemented in method \ct!EchoServer>>>interactUsing:! (see \mthref{meth:interactUsing}) with a client boils down to reading data provided by the client and sending it back prefixed with the \ct!'ECHO: '! string.
 It worth noting that we ensure that the interaction socket is destroyed, whether we have exchanged data or not (timeout).
 
@@ -447,7 +445,8 @@ It worth noting that we ensure that the interaction socket is destroyed, whether
 It eases the data exchange by providing buffering together with a set of facility methods.
 
 \subsection{SocketStream at Client Side}
-\alex{Maybe better: The client uses a socket stream to get the first line of a webpage} We illustrate socket stream use at client side with the following code snippet (\Scrref{script:streamGetLine}).
+We illustrate here socket stream use at client side.
+The following code snippet (\Scrref{script:streamGetLine}) shows how the client uses a socket stream to get the first line of a webpage.
 
 \begin{script}[script:streamGetLine]{Getting the first line of a web page using \ct!SocketStream!.}
 	|stream httpQuery result|
@@ -469,10 +468,11 @@ It is the responsibility of message \ct!openConnectionToHostNamed:port:!.
 It suspends the execution until the connection with the server is established.
 If the server does not respond, the socket stream signals a \ct!ConnectionTimedOut! exception.
 This exception is actually signaled by the underlying socket.
-The timeout delay is 45 seconds (defined in method \ct!Socket class>>>standardTimeout!).
+The default timeout delay is 45 seconds (defined in method \ct!Socket class>>>standardTimeout!).
+One can choose a different value using the \ct!SocketStream>>>timeout:! method.
 
 Once our socket stream connected to the server, we forge and send an HTTP GET query.
-Notice that compared to \scrref{script:closeAndDestroy} (page~\pageref{scr:script:closeAndDestroy}) we skipped here (\Scrref{script:streamGetLine}) one final \ct!String crlf!.
+Notice that compared to \scrref{script:closeAndDestroy} we skipped here (\Scrref{script:streamGetLine}) one final \ct!String crlf!.
 This is because the \ct!SocketStream>>>sendCommand:! method automatically inserts CR and LF characters after sent data to mark line ending.
 
 Reception of the requested web page is triggered by sending the \ct!nextLine! message to our socket stream.
@@ -507,6 +507,104 @@ Socket streams come into action once a socket is created for interaction with a 
 The socket is wrapped into a socket stream that eases data exchange using messages such as \ct!sendCommand:! or \ct!nextLine!.
 Once we are done, we close and destroy the socket handling connections and we close the interaction socket stream.
 This latter will take care of closing and destroying the underlying interaction socket.
+
+\subsection{Binary vs. Ascii mode}
+Data exchanged can be treated as bytes or characters depending.
+When a socket stream is configured to exchange bytes by means of message \ct!binary! it organizes sent and received data as byte arrays.
+Conversely, when a socket stream is configured to exchange characters (default setting) by means of message \ct!ascii! it organizes sent and received data as Strings.
+
+Suppose we have an instance of the \ct!EchoServer! (see section~\ref{sec:echoServerClass}) started by means of the following expression
+\begin{code}{}
+server := EchoServer new.
+server start.
+\end{code}
+
+The default behavior of socket stream is to handle ascii strings on sends and receptions.
+We show instead in \Scrref{script:binarySocketStream} the behavior in binary mode.
+The \ct!nextPutAllFlush:! message receives a byte array as argument.
+It puts all the bytes into the buffer then immediately triggers the sending (hence the \ct!Flush! in the selector).
+The \ct!upToEnd! message answers an array with all bytes sent back by the server.
+Note that this message blocks until the connection with the server is closed.
+
+
+\begin{script}[script:binarySocketStream]{A \ct!SocketStream! Interacting in Binary Mode.}
+interactionStream := SocketStream openConnectionToHostNamed: 'localhost' port: 9999.  
+interactionStream binary.
+interactionStream nextPutAllFlush: #[65 66 67].
+interactionStream upToEnd.
+\end{script}
+
+It is worth noting that whether the client manages strings (ascii mode) or byte arrays (binary mode) has no impact on the server.
+Indeed, in ascii mode, the socket stream handles instances of \ct!ByteString!.
+So, each character maps to a single byte. 
+
+\subsection{Delimiting Data}
+SocketStream acts simply as a gateway to some network. 
+It sends or reads bytes without giving them any semantics.
+The semantics, that is the organization and meaning of exchanged data should be handled by other objects.
+Developers should decide a protocol to use and enforce on both interacting sides in order to have correct interaction.
+
+A good practice is to \emph{reify} a protocol, that is to materialize it as an object which wraps a socket stream. 
+The protocol object takes analyzes exchanged data and decides accordingly which messages to send to the socket stream.
+Involved entities in any conversation need a protocol that defines how to organize data into sequence of bytes or characters.
+Senders should conform to this organization to allow receivers extract valid data from received sequence of bytes.
+ 
+One possible solution is to have a set of delimiters inserted between bytes or characters corresponding to each data.
+An example of delimiter is the sequence of ASCII characters CR and LF.
+This sequence is considered so useful that the developers of the \ct!SocketStream! class introduced the \ct!sendCommand:! method.
+This method (illustrated in \scrref{script:closeAndDestroy}) does append CR and LF after sent data.
+When reading CR followed by LF the receiver knows that the received sequence characters is complete and can be safely converted into valid data.
+A facility method \ct!nextLine! (illustrated in \scrref{script:streamGetLine}) is implemented by \ct!SocketStream! to perform reading until the reception of CR+LF sequence.
+One can however use any character or byte as a delimiter.
+Indeed, we can ask a socket stream to read all characters/bytes up to some specific one using the \ct!upTo:! message.
+
+The advantage of using delimiters is that it handles data of arbitrary size.
+The cons is that we need to analyze received bytes or characters to find out the limits, which is resource consuming.
+An alternative approach is to exchanged bytes or characters organized in chunks of a fixed size.
+A typical use of this approach is for streaming audio or video contents.
+
+\begin{script}[script:streamNextPutAllStartingAt]{A content streaming source sending data in chunks.}
+interactionStream := "create an instance of SocketStream". 
+contentFile := FileStream fileNamed: '/Users/noury/Music/mySong.mp3'.
+contentFile binary.
+content := contentFile upToEnd.
+chunkSize := 3000.
+chunkStartIndex := 1.
+[chunkStartIndex < content size] whileTrue: [
+	interactionStream next: chunkSize putAll: content startingAt: chunkStartIndex.
+	chunkStartIndex := chunkStartIndex + chunkSize.
+]
+interactionStream flush.
+\end{script}
+
+\Scrref{script:streamNextPutAllStartingAt} gives an example of a script streaming an mp3 file.
+First we open a binary (mp3) file and retrieve all its content (message \ct!upToEnd:!).
+Then we loop, sending data in chunks of 3000 bytes.
+We rely on the \ct!next:putAll:startingAt:! message that takes three arguments: the size (number of bytes or characters) of the data chunk,
+the data source (a sequenceable collection) and the index of the first element of the chunk.
+In this example, we make the assumption that the size of the content collection is a multiple of the chunk size.
+Of course, in a real setting, this assumption does not hold and one need to deal with the last part of data that is smaller than a chunk.
+A possible solution is to replace missing bytes with zeros.
+
+\begin{script}[script:socketStreamNext]{Reading data in chunks using \ct!SocketStream!.}
+	|interactionStream chunkSize chunk|
+	interactionStream := SocketStream openConnectionToHostNamed: 'localhost' port: 9999.
+	interactionStream isDataAvailable ifFalse: [(Delay forMilliseconds: 100) wait].
+	chunkSize := 5.
+	[interactionStream isDataAvailable] whileTrue: [
+		chunk  :=  interactionStream next: chunkSize.
+		Transcript cr; show: chunk
+	].
+	interactionStream close.
+	Transcript cr; show: 'DONE!'
+\end{script}
+
+
+In order to read data in chunks, \ct!SocketStream! does respond to the \ct!next:! message as illustrated by \scrref{script:socketStreamNext}.
+We consider that we have a server running at port 9999 of our machine that sends a string which size is a multiple of 5.
+Right after the connection, we wait 100 milliseconds until the data is received.
+Then, we read data in chunks of 5 characters that we display on the Transcript.
+So, if the server sends a string with 10 characters \ct!'HelloWorld'!, we will get on the Transcript \ct!Hello! on one line and \ct!World! on a second line.
 
 \section{Tips on Networking Experiments}
 In sections related to client-side sockets and socket streams, we use interactions with a web server as an example.
@@ -586,8 +684,6 @@ They will have also to take care of distributed garbage-collection.
 An object should not be destroyed if it is referenced by a remote one.
 This recurrent not trivial issues are solved by Object-Request Brokers (ORB) such as rST\footnote{http://www.squeaksource.com/rST.html}.
 An ORB frees the developer from networking issues and thus allows expressing remote communications simply using messages exchanged between remote objects.
-
-\alex{Maybe having a list of the essential points of the chapter will be good}
 
 % Noury: Pour pousser le message "Utilisez les SocketStream", est-ce Ben tu pourras remplacer les socket par des SocketStream dans ton code ?
 % Reference to a chat instant messages:  on Squeaksource: http://www.squeaksource.com/PharoInstantMessenge \ben{maybe it should be moved in another repo}. You can load it using Monticello (Chapter \ja{numChapter}).
