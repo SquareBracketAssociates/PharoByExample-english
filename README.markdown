@@ -14,6 +14,7 @@ The chapters for Pharo by example one are still managed on this git repository s
 
 ## Contributing to Pharo by Example one
 
+Pharo by Example volume one is managed on http://www.github.com
 To contribute to the book or to a translation project, please:
 
 - subscribe to <https://www.iam.unibe.ch/mailman/listinfo/sbe-discussion>;
@@ -29,7 +30,10 @@ To start a new translation project:
 - we will list it on <http://pharobyexample.org/>.
 
 ## Contributing to Pharo by Example Two
-
+Pharo by example Volume is managed using svn:
+	https://gforge.inria.fr/projects/pharobooks/
+	https://xxxx@scm.gforge.inria.fr/svn/pharobooks/PharoByExampleTwo-Eng
+	
 To contribute to the book or to a translation project (we should finish it first), please:
 
 - subscribe to <https://www.iam.unibe.ch/mailman/listinfo/sbe-discussion>;
