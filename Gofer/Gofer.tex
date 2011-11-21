@@ -145,24 +145,18 @@ Gofer new
     load
 \end{code}
 
-When the repository (HTTP or FTP) requires an identification, the message \ct{url:username:password:} is available.  The message \ct{directory:} supports the access to local files. 
+When the repository (HTTP or FTP) requires an identification, the message \ct{url:username:password:} is available. Pay attention that this is a single message.  The message \ct{directory:} supports the access to local files. 
 
 \begin{code}{}
-Gofer new
-    "we work on the project PBE2GoferExample"
+"we work on the project PBE2GoferExample and specify the required credential"
+Gofer new    		
     url: 'http://www.squeaksource.com/PBE2GoferExample'	
-    "we specify a user name"
     username: 'pharoUser'
-    "we specify a password" 
     password: 'pharoPwd'; 
-    "we define the package to be loaded"
-    package:'PBE2GoferExample'; 
-    "we disable the lookup of package in the local cache"
-    disablePackageCache; 
-    "we stop the error raising"
-    disableRepositoryErrors; 
-    "we load the specified package"
-    load.
+    package: 'PBE2GoferExample'; 					"define the package to be loaded"
+    disablePackageCache; 							"disable the package lookup in local cache"
+    disableRepositoryErrors; 						 "stop the error raising"
+    load.										   "load the specified package"
 \end{code}
 
 

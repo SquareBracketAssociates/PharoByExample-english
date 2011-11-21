@@ -8,7 +8,11 @@ All the source repos live here: <http://github.com/SquareBracketAssociates/>
 
 See PBE-TO-DO.txt for status of tasks for PBE 1 and 2.
 
-## Contributing
+## Important
+The chapters for Pharo by example Two have been moved to https:/scm.gforge.inria.fr/svn/pharobooks/PharoByExampleTwo-Eng/.
+The chapters for Pharo by example one are still managed on this git repository so that translators may pull requests.
+
+## Contributing to Pharo by Example one
 
 To contribute to the book or to a translation project, please:
 
@@ -23,6 +27,15 @@ To start a new translation project:
 - people then will react and you find others who want to help;
 - we will then add a repository to <http://github.com/squarebracketassociates>;
 - we will list it on <http://pharobyexample.org/>.
+
+## Contributing to Pharo by Example Two
+
+To contribute to the book or to a translation project (we should finish it first), please:
+
+- subscribe to <https://www.iam.unibe.ch/mailman/listinfo/sbe-discussion>;
+- register to the htpp://gforge.inria.fr (use RMOD as team) and send an email to  sbe-discussion (we will add you to the PharoBooks project)
+- if you are unsure who is in charge, ask on the list;
+- publish the changes and notify the list. 
 
 ---
 
