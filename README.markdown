@@ -41,6 +41,7 @@ To contribute to the book or to a translation project (we should finish it first
 - subscribe to <https://www.iam.unibe.ch/mailman/listinfo/sbe-discussion>;
 - register to the htpp://gforge.inria.fr (use RMOD as team) and send an email to  sbe-discussion (we will add you to the PharoBooks project)
 - if you are unsure who is in charge, ask on the list;
+- checkout what you want: svn co https://xxxx@scm.gforge.inria.fr/svn/pharobooks/PharoByExampleTwo-Eng
 - publish the changes and notify the list. 
 
 ---
