@@ -1,5 +1,5 @@
 # Important
-The chapters for Pharo by example Two have been moved to https:/scm.gforge.inria.fr/svn/pharobooks/PharoByExampleTwo-Eng/.
+The chapters for Pharo by example Two have been moved to <https:/scm.gforge.inria.fr/svn/pharobooks/PharoByExampleTwo-Eng/>.
 The chapters for Pharo by example one are still managed on this git repository so that translators may pull requests.
 
 # Pharo by Example
@@ -12,10 +12,9 @@ All the source repos live here: <http://github.com/SquareBracketAssociates/>
 
 See PBE-TO-DO.txt for status of tasks for PBE 1 and 2.
 
-
 ## Contributing to Pharo by Example one
 
-Pharo by Example volume one is managed on https://github.com/SquareBracketAssociates/PharoByExample-english
+Pharo by Example volume one is managed on <https://github.com/SquareBracketAssociates/PharoByExample-english>
 
 To contribute to the book or to a translation project, please:
 
