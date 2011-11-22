@@ -1,3 +1,7 @@
+# Important
+The chapters for Pharo by example Two have been moved to https:/scm.gforge.inria.fr/svn/pharobooks/PharoByExampleTwo-Eng/.
+The chapters for Pharo by example one are still managed on this git repository so that translators may pull requests.
+
 # Pharo by Example
 
 This is the LaTeX source repository of the _Pharo by Example_ books 1 and 2.
@@ -8,9 +12,6 @@ All the source repos live here: <http://github.com/SquareBracketAssociates/>
 
 See PBE-TO-DO.txt for status of tasks for PBE 1 and 2.
 
-## Important
-The chapters for Pharo by example Two have been moved to https:/scm.gforge.inria.fr/svn/pharobooks/PharoByExampleTwo-Eng/.
-The chapters for Pharo by example one are still managed on this git repository so that translators may pull requests.
 
 ## Contributing to Pharo by Example one
 
