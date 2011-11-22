@@ -346,8 +346,7 @@ Instead you should look in \ct{Array class} and its superclasses, since that is 
 \on{The text below needs more details and convincing examples ...}
 
 \paragraph{Responsibilities of \lct{Behavior}, \lct{ClassDescription} and \lct{Class}.}
-\clsind{Behavior} provides the minimum state necessary for objects that have instances: this includes a superclass link, a method dictionary, and a description of the instances (\ie representation and number).
-\on{not sure I understand the last point}
+\clsind{Behavior} provides the minimum state necessary for objects that have instances: this includes a superclass link, a method dictionary and the class format.  The class format is an integer that encodes the pointer/non-pointer distinction, compact/non-compact class distinction, and basic size of instances.
 \ct{Behavior} inherits from \ct{Object}, so it, and all of its subclasses, can behave like objects. 
 
 \ct{Behavior} is also the basic interface to the compiler.
@@ -365,14 +364,13 @@ and querying (\ie \mthind{Behavior}{hasMethods}, \mthind{Behavior}{includesSelec
 \clsind{ClassDescription} adds a number of facilities to the basis provided by \ct{Behavior}:
 named instance variables,
 the categorization of methods into protocols,
-the notion of a name (abstract),
 the maintenance of change sets and the logging of changes, and
 most of the mechanisms needed for filing-out changes.
 
 \clsind{Class} represents the common behaviour of all classes.
 It provides a class name, compilation methods, method storage, and instance variables.
 It provides a concrete representation for class variable names and shared pool variables (\mthind{Class}{addClassVarName:}, \mthind{Class}{addSharedPool:}, \mthind{Class}{initialize}).
-\ct{Class} knows how to create instances, so all metaclasses should inherit ultimately from \ct{Class}.
+Since a metaclass is a class for its sole instance (\ie, the non-meta class) and provides the service for the instance as a class, all metaclasses inherit ultimately from \ct{Class}.
 
 %=================================================================
 \section{Every metaclass is an instance of \lct{Metaclass}}
