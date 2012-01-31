@@ -15,13 +15,14 @@
 	]{geometry}
 	\input{../common.tex}
 	\setboolean{lulu}{true}
+    \newcommand{\cb}[1]{\nnbb{Camillo}{#1}} % Camillo Bruni
 % --------------------------------------------
 % A4:
 %	\documentclass[a4paper,11pt,twoside]{book}
 %	\input{../common.tex}
 %	\usepackage{a4wide}
 % --------------------------------------------
-    \graphicspath{{figures/} {../figures/}}
+    \graphicspath{{figures/} {./figures/}}
 	\begin{document}
 \fi
 %=================================================================
@@ -31,88 +32,59 @@
 
 \chapter{Spec}
 
-Creating programmatically user interfaces is often tedious and a repeating task. Some attempts to offer UIBuilder solved the problem  of the position of UI elements and their inter connection. However, there is a still the challenge of the reuse of the widgets and the reuse of the logic behind. There is a need for a declarative way to specify widgets that enables composition and reuse of the UI declaration and logic. 
+Creating user interfaces programmatically is often a tedious and repetitive task. Some attempts to offer UI-Builders solved the problem on positioning UI elements and their inter connection. However, there is still the challenge of reusing widgets and the linked logic. There is a need for a declarative way to specify widgets allowing for composition and reuse of the UI declaration and logic. 
 
-A Spec is a declarative way to describe a user interface. Used as a presenter, it is a major element of UIs and applicative models reuse.
+A Spec is a declarative way to describe a user interface. Used as a presenter, it is a major element of UI design and of applicative model reuse.
 
-In this chapter, we will present the Spec Interpreter and how to implement a model and a UI, and more useful than that, how to reuse existing models and UIs.
+In this chapter, we will begin by an example of how to design a UI and most important, how to reuse an existing model and UI. Then the SpecInterpreter will be explained.
 
 \section{Code}
 
 The code is available on squeaksource:
 \begin{code}{}
-Gofer new
-	squeaksource: 'DirtyExperiments';
-	package: 'Spec';
-	load
+Gofer new	squeaksource: 'DirtyExperiments';	package: 'Spec';	version: 'Spec-BenjaminVanRyseghem.24';	load
 \end{code}
 
 \subsection{Example}
 
-The most important point of the spec is the reuse and the possibility of composition at two levels, UI and models.
-In this section, I will show you how to build a little browser of methods ( like senders/implementors ) and how to reuse this browser to build a classes and methods browser ( like a code browser ).
+The most important point of the spec is the reuse and the possibility of composition at two levels, UI and models. In this section we will show you how to build an abstract method browser (similar to the senders/implementor ) and how to reuse this browser to build a class and an extended method browser (similar to the code browser).
 
-It's a simple example to quickly show you how to use Specs. Do not try to hard to understand deeply how it works, the mechanism will be explained just after the example.
+Here comes a simple example to quickly introduce to the use Specs. For now do not try to understand all the details but focus on the results. We will provide detailed insights right after the example.
 
 \subsubsection{Methods Browser}
 
-Firstly, let's think about how is structured a methods browser GUI.
-It is basically composed of two areas: a list, and a text zone. And the entry point is the list of methods provided.
+Firstly, let's think about how the visual structure of a method browser GUI. It is basically composed of two areas: a list and a text zone.Moreover there is an entry point which is the list of methods to be browsed.
 
 So let's define a MethodBrowser class
 
 \begin{classdef}{MethodBrowser class}
 ComposableModel subclass: #MethodBrowser
-	instanceVariableNames: 'listHolder listModel textModel'
+	instanceVariableNames: 'listModel textModel'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'Spec-Examples'
 \end{classdef}
 
-I let you write accessors. The will be needed by the presenter.
-I will just provide you a setter example, because there is a little trick:
+I let you write getters. The will be needed by the presenter.
 
-\begin{method}{MethodBrowser>>\#listHolder:}
-MethodBrowser>>#listHolder: anHolder
-	
-	listHolder := anHolder.
-	listModel listHolder: anHolder
+It's still miss the entry point. By the way the entry point of the method browser could also be the list model's entry point.
+
+\begin{method}{MethodBrowser>>\#methods:}
+methods: aList	"Here I reroute my entry point to the list model's entry point"	self listModel items: aList
 \end{method}
-
-The trick is to think to also set the list holder of the list model when the list holder is changed. This way, we ensure that a each every moment, the holder of the browser and the holder of the list model is the same\footnote{Another implementation is to get rid of the listHolder, and to only use the holder from the listModel}.
 
 So now we have the entry point and the models. So lets make the connections between them.
 
-\begin{method}{MethodBrowser>>\#listHolder:}
-MethodBrowser>>#initialize
-	"Initialization code for MethodBrowser"
-	| textHolder behaviorHolder |
-	
-	super initialize.
-
-	listModel := ListComposableModel new.
-	self listHolder: {} asValueHolder.
-	
-	textHolder := ComposableValueHolder on: (listModel selectionHolder) do: [:index :selection | selection contents 
-		ifNil: [ '' ]
-		ifNotNil: [:m | m sourceCode ]].
-	
-	behaviorHolder := ComposableValueHolder on: (listModel selectionHolder) do: [:index :selection | selection contents 
-		ifNil: [ nil ]
-		ifNotNil: [:m | m methodClass ]].
-	
-	textModel := TextComposableModel textHolder: textHolder.
-
-	textModel behaviorHolder: behaviorHolder.
-	textModel aboutToStyleHolder contents: [ true ].
+\begin{method}{MethodBrowser>>\#initialize}
+initialize	"Initialization code for MethodBrowser"	super initialize.	listModel := self instantiate: ListComposableModel.	textModel := self instantiate: TextModel.			listModel whenSelectedItemChanges: [:selection |		selection			ifNil: [				textModel text: ''.				textModel behavior: nil ]			ifNotNil: [:m | 				textModel text: m sourceCode.				textModel behavior: m methodClass ]].		textModel aboutToStyle: true.
 \end{method}
 
-Now that links are created, we have to specify the spec on class side:
+Now that links are created, we have to specify the spec on the class side:
 
 \begin{method}{MethodBrowser class>>\#internSpec:}
-MethodBrowser>>#internSpec
+internSpec
 
-	^{ #PanelMorph.
+	^{ #Panel.
 			#changeTableLayout.
 			#listDirection:. #bottomToTop.
 			#addMorph:. {#model. #listModel. #internSpec.}.
@@ -120,10 +92,11 @@ MethodBrowser>>#internSpec
 			#vResizing:. #spaceFill.
 			#hResizing:. #spaceFill.}.
 \end{method}
-We specify the layout to be a column, with submorphs added from top to bottom.
-And then for each model, we add its spec recursively.
+%
+We specify the layout to be a column with submorphs added from top to bottom. And then for each model we add its spec recursively.
 
 So if you evaluate
+%
 \begin{code}{}
 | browser |
 browser := MethodBrowser new.
@@ -139,8 +112,9 @@ You should have a window like the \figref{fig:methodBrowser1}.
 \end{figure}
 
 And then, if you do:
+%
 \begin{code}{}
-browser  listHolder contents: (ComposableModel methodDict values , ListComposableModel methodDict values).
+browser  methods: (ComposableModel methodDict values , ListComposableModel methodDict values).
 \end{code}
 The list should automatically be updated, and looks like \figref{fig:methodBrowser2}.
 \begin{figure}[ht]
@@ -151,8 +125,8 @@ The list should automatically be updated, and looks like \figref{fig:methodBrows
 \end{center}
 \end{figure}
 
-\newpage
-And if you select a method, its source code should appear, like \figref{fig:methodBrowser3}
+%\newpage
+And if you select a method its source code should appear, like \figref{fig:methodBrowser3}
 
 \begin{figure}[ht]
 \begin{center}
@@ -162,10 +136,11 @@ And if you select a method, its source code should appear, like \figref{fig:meth
 \end{center}
 \end{figure}
 
-We are almost done, only the window's title is still wrong.
+We are almost done, only the window title is still wrong.
 So we will define
+%
 \begin{method}{MethodBrowser class>>\#title}
-MethodBrowser class>>#title
+title
 
 	^ 'Method Browser'
 \end{method}
@@ -180,74 +155,65 @@ So now, if you re-evaluate the code, you should have a window like \figref{fig:m
 \end{center}
 \end{figure}
 
-\subsection{Classes and methods browser}
+We can still improve the way the items are displayed. We just have to precise to the list model how to wrap items.
+So let's add the following line into \verb+MethodBrowser>>#initialize+:
+\begin{code}{}
+listModel wrappingBlock: [:item | item methodClass name,'>>#', item selector ].
+\end{code}
 
-Now, we want to build a classes and methods browser. To do that, we need a list for classes, and a methods browser. As previously, the entry point is a list, but this time, a list of methods.
+But you could also decide to add the items wrapping as a new entry point, so let's define 
+\begin{method}{MethodBrowser>>\#wrapWith:}
+wrapWith: aBlock	listModel wrappingBlock: aBlock
+\end{method}
+
+We can now use this method into \verb+MethodBrowser>>#initialize+ to finally obtain
+\begin{method}{MethodBrowser>>\#initialize}
+initialize	"Initialization code for MethodBrowser"	super initialize.	listModel := self instantiate: ListComposableModel.	textModel := self instantiate: TextModel.			listModel whenSelectedItemChanges: [:selection |		selection			ifNil: [				textModel text: ''.				textModel behavior: nil ]			ifNotNil: [:m | 				textModel text: m sourceCode.				textModel behavior: m methodClass ]].		textModel aboutToStyle: true.
+	self wrapWith: [:item | item methodClass name,'>>#', item selector ].
+\end{method}
+
+And you finally get a browser which looks like \figref{fig:methodBrowser5}
+\begin{figure}[ht]
+\begin{center}
+	\includegraphics[width=7cm]{MethodBrowser5}
+	\caption{Voila}
+	\figlabel{fig:methodBrowser5}
+\end{center}
+\end{figure}
+
+\subsection{Classes and method browser}
+
+Now, we want to build a class and method browser. To do that we need a list for class and a method browser. As previously the entry point is a list but this time a list of methods.
 
 \begin{classdef}{ClassMethodBrowser class}
 ComposableModel subclass: #ClassMethodBrowser
-	instanceVariableNames: 'listHolder listModel methodModel'
+	instanceVariableNames: 'listModel methodModel'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'Spec-Examples'
 \end{classdef}
 
-As previously, I let you wrote the accessors. And as previously, we have to ensure the holder from the browser and the holder from the list is the same.
+As previously, I let you implement the getters.
 
-\begin{method}{ClassMethodBrowser>>\#listHolder:}
-ClassMethodBrowser>>#listHolder: anHolder
-	
-	listHolder := anHolder.
-	listModel listHolder: anHolder
+For the entry point, it's deja vu: 
+\begin{method}{ClassMethodBrowser>>\#classes}
+classes: aList	self listHolder contents: aList
 \end{method}
 
 Now we have to create the link. It's simpler here than before because there is only one link to create between the list of classes and the method browser:
 
 \begin{method}{ClassMethodBrowser>>\#initialize}
-ClassMethodBrowser>>#initialize
-
-	"Initialization code for ClassMethodBrowser"
-	| listHolder2 |
-	
-	super initialize.
-	
-	listHolder := {} asValueHolder.
-	listModel := ListComposableModel new.
-	listModel listHolder: listHolder.
-	
-	methodModel := MethodBrowser new.
-	listHolder2 := ComposableValueHolder on: (listModel selectionHolder) do: [:index :selection | selection contents ifNotNil: [:c | c methodDict values sort: [:a :b | a selector < b selector]]].
-	methodModel listHolder: listHolder2.
-	methodModel listModel wrapHolder contents: [:method | method selector ].
+initialize	"Initialization code for ClassMethodBrowser"	super initialize.	listModel := self instantiate: ListComposableModel.	methodModel := self instantiate: MethodBrowser.		listModel whenSelectedItemChanges: [:selection |		selection 			ifNotNil: [:class | 				methodModel methods: (class methodDict values sort: [:a :b | a selector < b selector]).				methodModel listModel resetSelection ]].		methodModel wrapWith: [:method | method selector ].
 \end{method}
 
-So now, lets do the spec. Firstly, let's create the top row, with the two lists:
-\begin{method}{ClassMethodBrowser class>>\#topSpec}
-ClassMethodBrowser class>>#topSpec
-
-	^{ #PanelMorph.
-			#changeTableLayout.
-			#listDirection:. #rightToLeft.
-			#addMorph:. {#model. #listModel. #internSpec.}.
-			#addMorph:. {#model. #methodModel. #listModel. #internSpec.}.
-			#vResizing:. #spaceFill.
-			#hResizing:. #spaceFill.}.
+So now, let's do the spec. 
+\begin{method}{ClassMethodBrowser class>>\#internSpec}
+internSpec2	^ { #Panel.			#changeProportionalLayout.			#addMorphWrapper:.	
+				{	#MorphWrapper.									#morph:. 	{#model. #methodModel. #listModel. #internSpec.}.									#frame:. 	( 0@0 corner: 0.5@0.5 )}.			#addMorphWrapper:.	
+				{	#MorphWrapper.									#morph:. 	{#model. #listModel. #internSpec.}.									#frame:. 	( 0.5@0 corner: 1@0.5 )}.			#addMorphWrapper:.	
+				{	#MorphWrapper.									#morph:. 	{#model. #methodModel. #textModel. #internSpec.}.									#frame:.	( 0@0.5 corner: 1@1 )}.			#vResizing:. #spaceFill.			#hResizing:. #spaceFill.}.
 \end{method}
-
-And now we can do the internSpec:
-
-\begin{method}{ClassMethodBrowser class>>\#interSpec}
-ClassMethodBrowser class>>#interSpec
-
-	^ { #PanelMorph.
-			#changeTableLayout.
-			#listDirection:. #bottomToTop.
-			#addMorph:. self topSpec.
-			#addMorph:. {#model. #methodModel. #textModel. #internSpec.}.
-			#vResizing:. #spaceFill.
-			#hResizing:. #spaceFill.}.
-\end{method}
-In each spec, we call the spec of our internal models.
+In each spec we call the spec of our internal models.
 
 Lastly, we can specify a title for the window:
 \begin{method}{ClassMethodBrowser class>>\#title}
@@ -255,39 +221,44 @@ ClassMethodBrowser class>>#title
 
 	^ 'Class Method Browser'
 \end{method}
-Then, if you evaluate:
+
+Then if you evaluate:
 
 \begin{code}{}
 | browser |
 browser := ClassMethodBrowser new.
 browser openWithSpec.
-browser listHolder contents: (Smalltalk allClasses).
+browser classes: (Smalltalk allClasses).
 \end{code}
-you will get a nice browser like \figref{fig:methodBrowser5}.
+
+you will get a nice browser like in \figref{fig:methodBrowser6}.
 
 
 \begin{figure}[ht]
 \begin{center}
-	\includegraphics[width=7cm]{MethodBrowser5}
-	\caption{Our classes and methods browser with a method selected}
-	\figlabel{fig:methodBrowser5}
+	\includegraphics[width=7cm]{MethodBrowser6}
+	\caption{Our classes and method browser with a method selected}
+	\figlabel{fig:methodBrowser6}
 \end{center}
 \end{figure}
 
 
-Here ends this example. I hope you have understood how you can compose Spec widget together to get new powerful widgets.
+Here ends this example. 
+Basically you now know how to implement basic widget and how to compose Spec widgets together to get new powerful widgets.
 
-Other examples are provided in the package \verb?Spec-Example?, feel free to have a look.
+Those examples (with few improvements) and few others are provided in the package \verb+Spec-Example+, feel free to have a look.
 
 \section{Spec structure and Spec Interpretor}
 
-Now that you've seen an example, I will explain how it works and what is the principle of the mechanism behind.
+Now that you've seen an example I will explain how it works and what is the principle of the mechanism behind.
 
 \subsection{Spec Structure}
 
-To have a static structure easily inspectable, we have decided to use an array. It avoids having to implement our own parser, and can be analyzed regardless of the implementation of Smalltalk.
+The presenter side of a Spec is a structure used to simply hold a figurative representation of what you want your UI to look like. The more static it is
 
-A spec is composed of a receiver which is the first element of the Spec. If the first element is a class name symbol, it will be turn into an instance of this class by the interpreter. Then follow selectors and arguments. For this part, the spec is considered as a stack: each time a selector is read, as many arguments as needed by the selector are pulled and analyzed (see the following example).
+To have a static structure which can be easily inspected we have decided to use an array. It avoids having to implement our own parser, and can be analyzed regardless of the implementation of Smalltalk.
+
+A spec is composed of a receiver followed by selector and arguments. The receiver is the first element of the Spec. If the first element is a class name symbol, it will be turned into an instance of this class by the interpreter. The following selectors and arguments are used  the spec is considered as a stack: each time a selector is read, as many arguments as needed by the selector are pulled and analyzed (see the following example).
 
 %stupid indentation is used to have a render almost aligned
 \begin{method}{Example of a spec}
@@ -309,8 +280,7 @@ As the specs are defined on class side, we have introduced a specific keyword \#
 
 The goal of the Spec Interpreter is to build an instance starting from a spec.
 
-So it iterates on a spec and recursively build each part of the spec.
-Right now, for instance creation, it basically takes the name of a class to create an instance (as seen in the previous example), but a better abstraction could be done by using a Dictionary with keywords as key and morphic classes as values. It allows to separate the morphic part from the presenter, and to simply change the binding to be able to create other interfaces with the same presenter (a dictionary for seaside objects by example).
+The spec interpreter iterates over a spec and recursively builds each part of the spec. Right now, for instance creation, you can either specify a keyword (as \verb+#Panel+, \verb+#List+, \dots) bound to a rendering class using a specific dictionary or a class name. It allows the developer to separate the rendering part from the formal representation which is the presenter, and to simply change the binding to be able to create other interfaces with the same presenter (a dictionary for seaside objects for example).
 
 \begin{method}{Example of a recursive spec}
 internSpec
@@ -324,92 +294,82 @@ internSpec
 			#hResizing:. 	#spaceFill.	}.
 \end{method} 
 
+
+
 \section{Models and presenters construction}
 
 \subsection{ComposableModel}
 
-\verb?ComposableModel? is an abstract class which is the superclass of all applicative models used with specs.
+\verb+ComposableModel+ is an abstract class which is the superclass of all widget models used with specs.
 
 There is a small API used to handle specs and the connections between the instances and their specs.
 
 \begin{itemize}
-	\item morph: an instance variable used to store the UI once the interpreter have created it.\ben{dunno if usefull}
+	\item focusOrder: an ordered list of your sub-models sorted in the order the developer want the focus to change.
 	\item internSpec: this is the default spec. The mechanism assumes each applicative model have such a method on class side.
+	\item morph: an instance variable used to store the UI once the interpreter have created it.	
 	\item title: this method return the title of the window used to render the presenter.
 \end{itemize}
 
-Then, each model have to define his own entry and exit points used to bind them together.
+Then, each model has to define its own entry and exit points used to bind them together.
 
 \subsection{Basic Models}
 
-There is an applicative model for each basic UI widget \ben{now only list, text and button} with their entry points for each customizable behavior of the widget and exit point for information you want to retrieve.  \ben{not yet full coverage}
+There is an widget model for each basic UI widget \ben{now only list, text and button} with their entry points for each customizable behavior of the widget and exit point for information you want to retrieve.  \ben{not yet full coverage}
 
-\paragraph{ListComposableModel} It is the model used to model a list.
-Now the entry points are:
+\paragraph{ListComposableModel} is the model lists.
+The entry points are:
 \begin{itemize}
-	\item listHolder: a value holder which contains a list of elements to be displayed.
-	\item wrapHolder: a value holder which contains a block used to wrap items from the list.
+	\item items: set the list of items to be displayed.
+	\item menu: set the block used to indirect messages used to create menus.
+	\item wrappingBlock: set the block used to wrap items from the list.
 \end{itemize}
 My exit point is:
 \begin{itemize}
-	\item selectionHolder: a selection value holder. It contains the index of the current selection and the currently selected object.
+	\item selectedIndex: the index of the currently selected item (\verb+0+ if none).
+	\item selectionItem: the currently selected item (\verb+nil+ if none).
+\end{itemize}
+You can communicate with this widget through:
+\begin{itemize}
+\item setSelectedIndex: : to manually set the index of the item you want to be selected.
+\item setSelectedItem: : to manually set the item you want to be selected. 
+\item updateList: to manually ask the list to refresh its own display.
 \end{itemize}
 
-\paragraph{TextComposableModel} It is the model used to model a text area.
-Now the entry points are:
+
+\paragraph{TextModel} It is the model for text areas.
+The entry points are:
 \begin{itemize}
-	\item textHolder: a value holder which contains the text displayed (it's also an exit point).
-	\item actionToPerformHolder: a value holder which contains a block performed when the modified text is saved.
+	\item actionToPerform: a value holder which contains a block performed when the modified text is saved.
+	\item text: set the text to be displayed.
 \end{itemize}
-There are also entry points for colorization:
+There are also entry points for text shouting:
 \begin{itemize}	
-	\item aboutToStyleHolder: this value holder is evaluated to determine if the text should be colorize or not. It should return a boolean.
-	\item behaviorHolder: this holder contains the class or metaclass related to the current text, for a good colorization.
+	\item aboutToStyle: set wether or not the text should be shouted.
+	\item aboutToStyleBlock: set the block used to know if wether or not the text should be shouted.
+	\item behavior: set the behavior corresponding with the text currently displayed if relevant. It's used to properly colorize the syntax elements.
+\end{itemize}	
+You can communicate with this widget through:
+\begin{itemize}	
+	\item setSelection: : used to manually specify the range you want o be selected.
 \end{itemize}
 
-\paragraph{ButtonComposableModel} It is the model used to model a button.
-Now the entry points are:
+\paragraph{ButtonModel} It is the model for buttons.
+The entry point is:
 \begin{itemize}
-	\item actionHolder: a value holder which contains a block performed when the button is clicked.
-	\item labelHolder: a value holder which contains the label of the button.
-	\item stateHolder: a value holder containing a boolean which determines if the button is active or not.
-	\item enabledHolder: a value holder containing a boolean which determines if the button is enabled or not.
-	\end{itemize}
-	
-\section{ValueHolder}
+	\item action: set the block executed when the button is clicked.
+\end{itemize}	
+There is no exit points.	
 
-\sd{should I add a subsection about ValueHolders ?}
-
-\subsection*{ComposableValueHolder} 
-
-A \verb?ComposableValueHolder? is a special value holder used to transform the value of another value holder.
-
-Sometimes, a value is provided from a graphical widget as an entry point for another widget, but you need to transform this value to be used.
-
-By example, you have two lists: a list of classes, and a list of methods. And you want the methods list to display the methods from the selected class.
-The trick is the selection from the list of classes returns you a class. So you need a mechanism which allow you to transform the list of classes selection into a list of class, and you need it to do this transformation each time the selection changed.
-
-And it's exactly what a \verb?ComposableValueHolder? does.
-\paragraph{The protocol: } The only one method which should be used from \verb?ComposableValueHolder? is \mthind{on: aValueHolder do: aBlock}{on: aValueHolder do: aBlock}.
-Each time \verb?aValueHolder?'s content changes, the \verb?ComposableValueHolder? will retrieve this value, perform \verb?aBlock? with this value, and store the result as its own content.
-
-\paragraph{An example: } a \verb?ComposableValueHolder? used to transform the selection of a list of classes into a list of methods, ready to be used a an entry point for a list of methods.
-
-\begin{code}{}
-ComposableValueHolder on: (listOfClasses selectionHolder) do: [:index :selection | selection contents 
-		ifNil: [ '' ]
-		ifNotNil: [:class | class methods ]].
-\end{code}
-
-Here we need a link between the methods list and the text area (when a method is selected, the text zone have to display its source code).
-
-So we have a value holder which changes each time another value holder changes.
-
+You can communicate with this widget through:
+\begin{itemize}		
+	\item label: set the button's label.
+	\item state: set wether the button is on or off.
+	\item enabled: set wether the button is activated or not.
+\end{itemize}
 
 \section{Conclusion}
-
-As conclusion, you have now tools to create quickly UIs and to reuse them.
-So you have to keep in mind that your tools can be reuse so think of providing an API to allow that.
+As conclusion, you have now tools to quickly create UIs and to reuse them. Since the reuse is really a strong value for specs, keep in mind that your tools can be reused. So do not forget to provide a proper API for it.
 
 %=========================================================
 \ifx\wholebook\relax\else
