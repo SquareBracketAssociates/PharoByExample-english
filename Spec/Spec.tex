@@ -42,7 +42,11 @@ In this chapter, we will begin by an example of how to design a UI and most impo
 
 The code is available on squeaksource:
 \begin{code}{}
-Gofer new	squeaksource: 'DirtyExperiments';	package: 'Spec';	version: 'Spec-BenjaminVanRyseghem.24';	load
+Gofer new
+	squeaksource: 'DirtyExperiments';
+	package: 'Spec';
+	version: 'Spec-BenjaminVanRyseghem.24';
+	load
 \end{code}
 
 \subsection{Example}
@@ -70,13 +74,33 @@ I let you write getters. The will be needed by the presenter.
 It's still miss the entry point. By the way the entry point of the method browser could also be the list model's entry point.
 
 \begin{method}{MethodBrowser>>\#methods:}
-methods: aList	"Here I reroute my entry point to the list model's entry point"	self listModel items: aList
+methods: aList
+
+	"Here I reroute my entry point to the list model's entry point"
+	self listModel items: aList
 \end{method}
 
 So now we have the entry point and the models. So lets make the connections between them.
 
 \begin{method}{MethodBrowser>>\#initialize}
-initialize	"Initialization code for MethodBrowser"	super initialize.	listModel := self instantiate: ListComposableModel.	textModel := self instantiate: TextModel.			listModel whenSelectedItemChanges: [:selection |		selection			ifNil: [				textModel text: ''.				textModel behavior: nil ]			ifNotNil: [:m | 				textModel text: m sourceCode.				textModel behavior: m methodClass ]].		textModel aboutToStyle: true.
+initialize
+	"Initialization code for MethodBrowser"
+
+	super initialize.
+
+	listModel := self instantiate: ListComposableModel.
+	textModel := self instantiate: TextModel.
+		
+	listModel whenSelectedItemChanges: [:selection |
+		selection
+			ifNil: [
+				textModel text: ''.
+				textModel behavior: nil ]
+			ifNotNil: [:m | 
+				textModel text: m sourceCode.
+				textModel behavior: m methodClass ]].
+	
+	textModel aboutToStyle: true.
 \end{method}
 
 Now that links are created, we have to specify the spec on the class side:
@@ -163,12 +187,31 @@ listModel wrappingBlock: [:item | item methodClass name,'>>#', item selector ].
 
 But you could also decide to add the items wrapping as a new entry point, so let's define 
 \begin{method}{MethodBrowser>>\#wrapWith:}
-wrapWith: aBlock	listModel wrappingBlock: aBlock
+wrapWith: aBlock
+
+	listModel wrappingBlock: aBlock
 \end{method}
 
 We can now use this method into \verb+MethodBrowser>>#initialize+ to finally obtain
 \begin{method}{MethodBrowser>>\#initialize}
-initialize	"Initialization code for MethodBrowser"	super initialize.	listModel := self instantiate: ListComposableModel.	textModel := self instantiate: TextModel.			listModel whenSelectedItemChanges: [:selection |		selection			ifNil: [				textModel text: ''.				textModel behavior: nil ]			ifNotNil: [:m | 				textModel text: m sourceCode.				textModel behavior: m methodClass ]].		textModel aboutToStyle: true.
+initialize
+	"Initialization code for MethodBrowser"
+
+	super initialize.
+
+	listModel := self instantiate: ListComposableModel.
+	textModel := self instantiate: TextModel.
+		
+	listModel whenSelectedItemChanges: [:selection |
+		selection
+			ifNil: [
+				textModel text: ''.
+				textModel behavior: nil ]
+			ifNotNil: [:m | 
+				textModel text: m sourceCode.
+				textModel behavior: m methodClass ]].
+	
+	textModel aboutToStyle: true.
 	self wrapWith: [:item | item methodClass name,'>>#', item selector ].
 \end{method}
 
@@ -197,21 +240,51 @@ As previously, I let you implement the getters.
 
 For the entry point, it's deja vu: 
 \begin{method}{ClassMethodBrowser>>\#classes}
-classes: aList	self listHolder contents: aList
+classes: aList
+
+	self listHolder contents: aList
 \end{method}
 
 Now we have to create the link. It's simpler here than before because there is only one link to create between the list of classes and the method browser:
 
 \begin{method}{ClassMethodBrowser>>\#initialize}
-initialize	"Initialization code for ClassMethodBrowser"	super initialize.	listModel := self instantiate: ListComposableModel.	methodModel := self instantiate: MethodBrowser.		listModel whenSelectedItemChanges: [:selection |		selection 			ifNotNil: [:class | 				methodModel methods: (class methodDict values sort: [:a :b | a selector < b selector]).				methodModel listModel resetSelection ]].		methodModel wrapWith: [:method | method selector ].
+initialize
+	"Initialization code for ClassMethodBrowser"
+
+	super initialize.
+
+	listModel := self instantiate: ListComposableModel.
+	methodModel := self instantiate: MethodBrowser.
+	
+	listModel whenSelectedItemChanges: [:selection |
+		selection 
+			ifNotNil: [:class | 
+				methodModel methods: (class methodDict values sort: [:a :b | a selector < b selector]).
+				methodModel listModel resetSelection ]].
+	
+	methodModel wrapWith: [:method | method selector ].
 \end{method}
 
 So now, let's do the spec. 
 \begin{method}{ClassMethodBrowser class>>\#internSpec}
-internSpec2	^ { #Panel.			#changeProportionalLayout.			#addMorphWrapper:.	
-				{	#MorphWrapper.									#morph:. 	{#model. #methodModel. #listModel. #internSpec.}.									#frame:. 	( 0@0 corner: 0.5@0.5 )}.			#addMorphWrapper:.	
-				{	#MorphWrapper.									#morph:. 	{#model. #listModel. #internSpec.}.									#frame:. 	( 0.5@0 corner: 1@0.5 )}.			#addMorphWrapper:.	
-				{	#MorphWrapper.									#morph:. 	{#model. #methodModel. #textModel. #internSpec.}.									#frame:.	( 0@0.5 corner: 1@1 )}.			#vResizing:. #spaceFill.			#hResizing:. #spaceFill.}.
+internSpec2
+
+	^ { #Panel.
+			#changeProportionalLayout.
+			#addMorphWrapper:.	
+				{	#MorphWrapper.
+									#morph:. 	{#model. #methodModel. #listModel. #internSpec.}.
+									#frame:. 	( 0@0 corner: 0.5@0.5 )}.
+			#addMorphWrapper:.	
+				{	#MorphWrapper.
+									#morph:. 	{#model. #listModel. #internSpec.}.
+									#frame:. 	( 0.5@0 corner: 1@0.5 )}.
+			#addMorphWrapper:.	
+				{	#MorphWrapper.
+									#morph:. 	{#model. #methodModel. #textModel. #internSpec.}.
+									#frame:.	( 0@0.5 corner: 1@1 )}.
+			#vResizing:. #spaceFill.
+			#hResizing:. #spaceFill.}.
 \end{method}
 In each spec we call the spec of our internal models.
 
@@ -315,9 +388,10 @@ Then, each model has to define its own entry and exit points used to bind them t
 
 \subsection{Basic Models}
 
-There is an widget model for each basic UI widget \ben{now only list, text and button} with their entry points for each customizable behavior of the widget and exit point for information you want to retrieve.  \ben{not yet full coverage}
+There is an widget model for each basic UI widget \ben{now only list, text, button, radiobutton, checkbox and, droplist} with their entry points for each customizable behavior of the widget and exit point for information you want to retrieve.  \ben{almost full covered}
 
 \paragraph{ListComposableModel} is the model lists.
+
 The entry points are:
 \begin{itemize}
 	\item items: set the list of items to be displayed.
@@ -329,8 +403,9 @@ My exit point is:
 	\item selectedIndex: the index of the currently selected item (\verb+0+ if none).
 	\item selectionItem: the currently selected item (\verb+nil+ if none).
 \end{itemize}
-You can communicate with this widget through:
+You can communicate with this widget using:
 \begin{itemize}
+\item resetSelection: to reset the selection of the widget.
 \item setSelectedIndex: : to manually set the index of the item you want to be selected.
 \item setSelectedItem: : to manually set the item you want to be selected. 
 \item updateList: to manually ask the list to refresh its own display.
@@ -338,6 +413,7 @@ You can communicate with this widget through:
 
 
 \paragraph{TextModel} It is the model for text areas.
+
 The entry points are:
 \begin{itemize}
 	\item actionToPerform: a value holder which contains a block performed when the modified text is saved.
@@ -349,24 +425,64 @@ There are also entry points for text shouting:
 	\item aboutToStyleBlock: set the block used to know if wether or not the text should be shouted.
 	\item behavior: set the behavior corresponding with the text currently displayed if relevant. It's used to properly colorize the syntax elements.
 \end{itemize}	
-You can communicate with this widget through:
+You can communicate with this widget using:
 \begin{itemize}	
 	\item setSelection: : used to manually specify the range you want o be selected.
 \end{itemize}
 
 \paragraph{ButtonModel} It is the model for buttons.
+
 The entry point is:
 \begin{itemize}
 	\item action: set the block executed when the button is clicked.
 \end{itemize}	
 There is no exit points.	
 
-You can communicate with this widget through:
+You can communicate with this widget using:
 \begin{itemize}		
-	\item label: set the button's label.
-	\item state: set wether the button is on or off.
-	\item enabled: set wether the button is activated or not.
+	\item label: : set the button's label.
+	\item state: : set wether the button is on or off.
+	\item enabled: : set wether the button is activated or not.
 \end{itemize}
+
+\paragraph{RadioButtonModel/CheckboxModel} They are the models for RadioButton and Checkbox. Since they are almost the same widget, they share the same API.
+
+The entry points are:
+\begin{itemize}
+	\item activationAction: : set the action block to be valued when the item is activated.
+	\item desactivationAction: : set the action block to be valued when the item is desactivated.
+\end{itemize}
+
+There is no exit points.	
+
+You can communicate with this widget using:
+\begin{itemize}		
+	\item label: : set the button's label.
+	\item state: : set wether the button is on or off.
+	\item enabled: : set wether the button is activated or not.
+\end{itemize}
+
+\paragraph{DropListModel} It is the model for drop lists.
+
+The entry points are:
+\begin{itemize}
+	\item items: set the list of items to be displayed. You have to provide a collection of DropListItem instances.
+\end{itemize}
+My exit point is:
+\begin{itemize}
+	\item selectedIndex: the index of the currently selected item (\verb+0+ if none).
+	\item selectionItem: the currently selected item (\verb+nil+ if none).
+\end{itemize}
+You can communicate with this widget using:
+\begin{itemize}
+\item resetSelection: to reset the selection of the widget.
+\item setSelectedIndex: : to manually set the index of the item you want to be selected.
+\item setSelectedItem: : to manually set the item you want to be selected. 
+\item updateList: to manually ask the list to refresh its own display.
+\end{itemize}
+
+
+
 
 \section{Conclusion}
 As conclusion, you have now tools to quickly create UIs and to reuse them. Since the reuse is really a strong value for specs, keep in mind that your tools can be reused. So do not forget to provide a proper API for it.
