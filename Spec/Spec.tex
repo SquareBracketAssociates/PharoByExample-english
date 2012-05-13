@@ -43,10 +43,11 @@ In this chapter, we will begin by an example of how to design a UI and most impo
 The code is available on squeaksource:
 \begin{code}{}
 Gofer new
-	squeaksource: 'DirtyExperiments';
-	package: 'Spec';
-	version: 'Spec-BenjaminVanRyseghem.24';
-	load
+	url: 'http://ss3.gemstone.com/ss/Spec';
+	package: 'ConfigurationOfSpec';
+	load.
+	
+ConfigurationOfSpec loadFull.	
 \end{code}
 
 \subsection{Example}
@@ -108,13 +109,13 @@ Now that links are created, we have to specify the spec on the class side:
 \begin{method}{MethodBrowser class>>\#internSpec:}
 internSpec
 
-	^{ #Panel.
-			#changeTableLayout.
-			#listDirection:. #bottomToTop.
-			#addMorph:. {#model. #listModel. #internSpec.}.
-			#addMorph:. {#model. #textModel. #internSpec.}.
-			#vResizing:. #spaceFill.
-			#hResizing:. #spaceFill.}.
+	^{ #ComposableSpec
+			#add:. {{#model. #listModel. #internSpec.}.
+						#layout:. {#FrameLayout.
+									#fractions:offsets:. (0@0 corner: 1@0.5). nil}}.
+			#add:. {{#model. #textModel. #internSpec.}.
+						#layout:. {#FrameLayout.
+									#fractions:offsets:. (0@0.5 corner: 1@1). nil}}}.
 \end{method}
 %
 We specify the layout to be a column with submorphs added from top to bottom. And then for each model we add its spec recursively.
@@ -269,22 +270,16 @@ So now, let's do the spec.
 \begin{method}{ClassMethodBrowser class>>\#internSpec}
 internSpec2
 
-	^ { #Panel.
-			#changeProportionalLayout.
-			#addMorphWrapper:.	
-				{	#MorphWrapper.
-									#morph:. 	{#model. #methodModel. #listModel. #internSpec.}.
-									#frame:. 	( 0@0 corner: 0.5@0.5 )}.
-			#addMorphWrapper:.	
-				{	#MorphWrapper.
-									#morph:. 	{#model. #listModel. #internSpec.}.
-									#frame:. 	( 0.5@0 corner: 1@0.5 )}.
-			#addMorphWrapper:.	
-				{	#MorphWrapper.
-									#morph:. 	{#model. #methodModel. #textModel. #internSpec.}.
-									#frame:.	( 0@0.5 corner: 1@1 )}.
-			#vResizing:. #spaceFill.
-			#hResizing:. #spaceFill.}.
+	^ { #ComposableSpec.
+			#add:. {{#model. #listModel. #internSpec.}.
+						#layout:. {#FrameLayout.
+									#fractions:offsets:. 	( 0@0 corner: 0.5@0.5 ). nil }}.
+			#add:. {{#model. #methodModel.  #listModel. #internSpec.}.
+						#layout:. {#FrameLayout.
+									#fractions:offsets:. 	( 0.5@0 corner: 1@0.5 ). nil }}.
+			#add:. {{#model. #methodModel.  #textModel. #internSpec.}.
+						#layout:. {#FrameLayout.
+									#fractions:offsets:. 	( 0@0.5 corner: 1@1 ). nil }}}.
 \end{method}
 In each spec we call the spec of our internal models.
 
@@ -325,26 +320,32 @@ Those examples (with few improvements) and few others are provided in the packag
 
 Now that you've seen an example I will explain how it works and what is the principle of the mechanism behind.
 
-\subsection{Spec Structure}
+\subsection{Spec Structure}\label{spec_structure}
 
-The presenter side of a Spec is a structure used to simply hold a figurative representation of what you want your UI to look like. The more static it is
+The presenter side of a Spec is a structure used to simply hold a figurative representation of what you want your UI to look like. 
 
 To have a static structure which can be easily inspected we have decided to use an array. It avoids having to implement our own parser, and can be analyzed regardless of the implementation of Smalltalk.
 
-A spec is composed of a receiver followed by selector and arguments. The receiver is the first element of the Spec. If the first element is a class name symbol, it will be turned into an instance of this class by the interpreter. The following selectors and arguments are used  the spec is considered as a stack: each time a selector is read, as many arguments as needed by the selector are pulled and analyzed (see the following example).
+A spec is composed of a receiver followed by selector and arguments.
+The first element of a spec can be either the name of a spec type (which knows what should be the receiver class), or a class name, or a symbol used as a binding which will return a class name. If the first element is a class name symbol, it will be turned into an instance of this class by the interpreter. A spec could be seen as a stack: each time a selector is read, as many arguments as needed by the selector are popped and analyzed (see the following example).
 
 %stupid indentation is used to have a render almost aligned
 \begin{method}{Example of a spec}
-internSpec
-
-	^ {#PluggableListMorph.
-	    	#model:.			  	  #model.
-			#getListSelector:.	  #getList.
-			#getIndexSelector:.	#getIndex.
-			#setIndexSelector:.	#setIndex:.
-			#wrapSelector:.	  	 #wrapItem:.
-			#hResizing:.			#spaceFill.
-			#vResizing:.			#spaceFill		}
+internSpec	<spec>		^ {#ListSpec.	
+               #model:.                                        #model.
+               #getListSizeSelector:.                   #listSize.
+               #getIndexSelector:.                       #getIndex.
+               #setIndexSelector:.                       #setIndex:.
+               #getSelectionListSelector:.	         #getSelectionStateFor:.
+               #setSelectionListSelector:.	         #setSelectionStateFor:at:.
+               #getListElementSelector:. 	        #listElementAt:.
+               #resetListSelector:.                       #resetListSelection.
+               #getMenuSelector:.	                   #menu:shifted:.
+               #keystrokeSelector:.                     #keyStroke:fromMorph:.
+               #setMultipleSelection:.	               {#model. #multiSelection}.
+               #wrapSelector:.                            #wrapItem:.
+               #hResizing:.                                 #spaceFill.
+               #vResizing:.                                 #spaceFill}
 \end{method} 
 
 As the specs are defined on class side, we have introduced a specific keyword \#model to create the binding between an instance and its spec.
@@ -358,16 +359,25 @@ The spec interpreter iterates over a spec and recursively builds each part of th
 \begin{method}{Example of a recursive spec}
 internSpec
 
-	^	{  #PanelMorph.
-			#changeTableLayout.
-			#listDirection:. #bottomToTop.
-			#addMorph:.   { #model. #listModel. #internSpec.	 }.
-			#addMorph:.	  { #model. #textModel. #internSpec. 	}.
-			#vResizing:. 	#spaceFill.
-			#hResizing:. 	#spaceFill.	}.
+	^ { #ComposableSpec
+			#add:. {{#model. #listModel. #internSpec.}.
+						#layout:. {#FrameLayout.
+									#fractions:offsets:. (0@0 corner: 1@0.5). nil}}.
+			#add:. {{#model. #textModel. #internSpec.}.
+						#layout:. {#FrameLayout.
+									#fractions:offsets:. (0@0.5 corner: 1@1). nil}}}.
 \end{method} 
 
+\subsection{Spec types}
 
+As mentioned in section \ref{spec_structure}, you can specify a type for your spec by referencing the a spec type name as the first keyword of your spec.
+
+As a user of Spec, you should only used ComposableSpec as spec type since the other types are used to define a new set of basic widgets in order to bind Spec with a new widgets framework (as Morphic, Gaucho, Amber etc).
+
+By using a spec type, you can defined default behavior shared among all the widgets, it means that you can also adapt all your widgets based on Spec by parametrizing only one object.
+
+But the first keyword can not be resolved as a spec type name, the spec will be considered as a RawSpec which means that the spec is totally a stack. It will be kept this way during a while to ensure backward compatibility, but then maybe the default spec type should be ComposableSpec.
+%to review
 
 \section{Models and presenters construction}
 
@@ -388,7 +398,8 @@ Then, each model has to define its own entry and exit points used to bind them t
 
 \subsection{Basic Models}
 
-There is an widget model for each basic UI widget \ben{now only list, text, button, radiobutton, checkbox and, droplist} with their entry points for each customizable behavior of the widget and exit point for information you want to retrieve.  \ben{almost full covered}
+There is an widget model for each basic UI widget \ben{only image and window missing I guess} with their entry points for each customizable behavior of the widget and exit point for information you want to retrieve.
+\ben{maybe should I introduce an abstract class to define basic widgets interfaces}
 
 \paragraph{ListComposableModel} is the model lists.
 
