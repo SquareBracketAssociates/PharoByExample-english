@@ -59,6 +59,21 @@ and our Pharo image, and provides a common interface to interact with through fo
 \end{center}
 \end{figure}
 
+\begin{figure}
+\begin{center}
+\includegraphics[width=\linewidth]{Architecture}
+\caption{To redo}
+\end{center}
+\end{figure}
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=\linewidth]{Tools}
+\caption{To redo and introduce}
+\end{center}
+\end{figure}
+
+
 \section{Installing DBXTalk OpenDBX Driver}
 To install DBXTalk library, we need to install the previously detailed components: the OpenDBXDriver as well as some databases.
 
@@ -108,7 +123,7 @@ There you can change the host, port, database, username and password to connect 
 
 \sd{Once you have modify the settings you should be able to runs the tests}
 
-\section{Getting down to business with DBXTalk OpenDBXDriver}
+\section{Getting down to business with DBXTalk}
 Now you have installed your database driver, you are ready to use it and build applications with it!  But you need to know the basics.  In the following sections you will be introduced in creating connections, execute SQL statements and handle transactions.
 
 \section{Creating a connection}
@@ -163,14 +178,25 @@ Each option may or not succeed because it depends on your database engine suppor
 \end{itemize}
 
 
+\sd{How do I create the tables?}
+
+\sd{would be good to describe the object model of the example.}
+
+\sd{we should have stuff and stuff container: for example one Comix, a eerie of comix, and authors or one card, edition, author or a todo, lists of todo, associated persons}
 
 \section{Executing SQL statements}
-The execution of a SQL statement in the database of your choice is performed sending the \ct{execute:} message --or \ct{executeMultiStatement:} if enabled- to the connection object.  So, once you have your connection established and open, you can try evaluating in a workspace code like:
+The execution of a SQL statement in the database of your choice is performed sending the \ct{execute:} message --or \ct{executeMultiStatement:} if enabled- to the connection object.  So, once you have your connection established and open,   evaluate the following code:
+
+\paragraph{Create a table}. The first action is to create a table.
 
 \begin{code}{}
 "we create a table to store our trading card game cards in our MySQL database"
 connection execute: 'CREATE TABLE CARD(ID INT AUTO_INCREMENT PRIMARY KEY, NAME VARCHAR(100))'
+\end{code}
 
+
+
+\begin{code}{}
 "we insert some cards into our database"
 connection execute: 'INSERT INTO CARDS (NAME) VALUES(''Giant Growth'')'.
 connection execute: 'INSERT INTO CARDS (NAME) VALUES(''Llanowar Elves'')'.
@@ -193,7 +219,10 @@ result := connection execute: 'UPDATE CARDS SET NAME=''CounterSpell'' where NAME
 Transcript show: result rowsAffected.
 \end{code}
 
-A SQL statement with rows as a result -such as a \emph{SELECT} statement- brings a DBXResultSet as the result.  A DBXResultSet is a consumable set of rows.  This means that onces you've consumed all the rows in the DBXResultSet, they will not be available any more.  You can work with a DBXResultSet in several ways:
+
+\sd{stef stopped here}
+
+A SQL statement with rows as a result --such as a \emph{SELECT} statement-- brings a \ct{DBXResultSet} as result.  A \ct{DBXResultSet} is a consumable set of rows.  This means that once you've consumed all the rows in the \ct{DBXResultSet}, they will not be available any more.  You can work with a \ct{DBXResultSet} in several ways:
 
 \begin{itemize}
 \item Delegate row iteration to the result set:
@@ -245,6 +274,83 @@ myMultistatementResult allResultsDo: [ :aResult | "doSometing here with the resu
 [result := myMultistatementResult next. result notNil] 
     whileTrue: [ :aResult | "doSometing here with the result" ].  "iterating the results one by one."
 \end{code}
+
+
+\section{Tools}
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=\linewidth]{Browser}
+\caption{To redo}
+\end{center}
+\end{figure}
+
+\section{Glorp}
+
+
+
+\section{Phoseydon}
+\sd{now that I started I'm not sure that I want to have poseidon in this chapter}
+\sd{Magritte and DBXTalk together}
+
+Phoseydon is a framework to describe applications. Its main goal is to gather all the information about your application, so you can have better understanding, make better decisions and build lots of things on top of that information with really very little work.
+
+\subsection{So, What's an application?}
+
+An application is a set of configurations, libraries, frameworks and code. Right now, we focus on code. Why is so important the code? Because in mature applications, you often have:
+
+\begin{itemize}
+\item Classes
+\item Some way of persistence, usually a RDBMS
+\item Some way to communicate your classes with that RDBMS (an ORM)
+Probably, you communicate your application with other applications, using Rest or SOAP \item Web services.
+\end{itemize}
+
+Every piece of code you write for those components (or the ones you want) are related. And sometimes they are very related. So related that there are lots of ugly duplications. Every field on a class is usually mapped as a column in a table, and sent in some way through the network to a mobile device application.
+
+That duplication is there because you are looking the same conceptual model in different ways: Json, Xml, Smalltalk, Java, SQL...
+
+An application is just that: One way to rule them all, to have the information in only one place, and from there control every other component. That's why it's called Phoseydon. It's Pharo's God ruling over an app and everything it uses.
+
+\subsection{Example}
+
+Applications can be created in some ways. The objective now is to create an application from a script.
+\begin{code}{}
+ myApp := DBXApplication named: 'FirstApp'.
+\end{code} 
+ 
+All classes in Pharo are organized in categories, and that is the role of an application's name.
+
+\paragraph{Entities}
+
+An application describes entities, which will be the source for our classes, ORM mappings, Seaside forms...
+
+Let's create our first entity: a warrior. Warriors will have a health, a strength, a name.
+
+\begin{code}{}
+warriorEntity := myApp entityNamed: #Warrior.
+warriorEntity hasString: #nickname. "We don't use name here because some databases may complain"
+warriorEntity hasInteger: #strength.
+warriorEntity hasInteger: #health.
+\end{code}
+
+Ok, that did nothing! But we just wrote a lot of information! From that information, we can create a class:
+
+\begin{code}
+myApp createClasses.
+\end{code}
+Look at the FirstApp category in your System browser, and you'll realize that you have a new class, with accessors already created!
+
+The created class can be edited: you can write methods on it, add instance variables. The only limitations by now, if you want to continue being Phoseydon compliant, is that:
+
+You can't alter the autogenerated methods
+You can't alter the inheritance of that class
+
+\paragraph{Extra Entities properties}
+
+\paragraph{Entity Attribute's properties}
+
+
 
 %=========================================================
 \ifx\wholebook\relax\else
