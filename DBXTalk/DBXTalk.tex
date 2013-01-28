@@ -34,16 +34,13 @@
 \chapter{DBXTalk}
 \chapterauthor{\authorguille{}}
 
-DBXTalk is a database driver that allows interaction with major relational database engines such as
-Oracle and MSSQL, apart from those which are open source, like PostgreSQL and MySQL.
+DBXTalk is an open-source suite of tools to manage relational databases on top of Pharo. Its backbone is the DBXTalk database driver. The DBXTalk database driver allows the interaction with the major relational database engines. All other tools in the suite make use of this driver to fulfill their duties.  Currently, the DBXTalk database driver supports the interaction with the following database engines: Oracle, MSSQL, PostgreSQL, MySQL, SQLite, SQLite 3, Sybase ASE, Firebird, and Interbase.
 
-Moreover, this driver is integrated with GLORP, enabling a complete and open-source
-solution to relational database access.  To do this, DBXTalk uses a library called OpenDBX.
+The DBXTalk suite, within its set of tools, provides GLORP, an Object-Relational Mapper (ORM) framework; Phoseydon, a tool providing scaffolding capabilities for easy applications; and Neptuno, a browser to analyze our database structure. 
 
-In this chapter we will present DBXTalk and build with step by step a little application.
+In this chapter we will present DBXTalk core ideas, the tools it provides, and finally use them to build step by step a little application.
 
-
-\section{DBXTalk Driver Architecture}
+\section{DBXTalk Architecture}
 The DBXTalk Driver relies on several components in order to connect to different relational databases:
 \begin{itemize}
 \item The OpenDBXDriver package talks to the OpenDBX library and handles the engines differences.
@@ -74,7 +71,7 @@ and our Pharo image, and provides a common interface to interact with through fo
 \end{figure}
 
 
-\section{Installing DBXTalk OpenDBX Driver}
+\section{DBXTalk Installation}
 To install DBXTalk library, we need to install the previously detailed components: the OpenDBXDriver as well as some databases.
 
 \subsection*{Install OpenDBX Driver}
@@ -219,10 +216,9 @@ result := connection execute: 'UPDATE CARDS SET NAME=''CounterSpell'' where NAME
 Transcript show: result rowsAffected.
 \end{code}
 
+A SQL statement with rows as a result --such as a \emph{SELECT} statement-- brings a \ct{DBXResultSet} as result.  A \ct{DBXResultSet} is a consumable set of rows.  This means that once you've consumed all the rows in the \ct{DBXResultSet}, they will not be available any more.  You can work with a \ct{DBXResultSet} in several ways:
 
 \sd{stef stopped here}
-
-A SQL statement with rows as a result --such as a \emph{SELECT} statement-- brings a \ct{DBXResultSet} as result.  A \ct{DBXResultSet} is a consumable set of rows.  This means that once you've consumed all the rows in the \ct{DBXResultSet}, they will not be available any more.  You can work with a \ct{DBXResultSet} in several ways:
 
 \begin{itemize}
 \item Delegate row iteration to the result set:
@@ -275,6 +271,8 @@ myMultistatementResult allResultsDo: [ :aResult | "doSometing here with the resu
     whileTrue: [ :aResult | "doSometing here with the result" ].  "iterating the results one by one."
 \end{code}
 
+<<<<<<< HEAD
+=======
 
 \section{Tools}
 
@@ -292,6 +290,7 @@ myMultistatementResult allResultsDo: [ :aResult | "doSometing here with the resu
 
 
 
+>>>>>>> e7c68e168df735d2cdbf57b2e29c6bab2ec0dc66
 %=========================================================
 \ifx\wholebook\relax\else
    \bibliographystyle{jurabib}
