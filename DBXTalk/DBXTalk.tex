@@ -34,13 +34,11 @@
 \chapter{DBXTalk}
 \chapterauthor{\authorguille{}}
 
-DBXTalk is a database driver that allows interaction with major relational database engines such as
-Oracle and MSSQL, apart from those which are open source, like PostgreSQL and MySQL.
+DBXTalk is an open-source suite of tools to manage relational databases on top of Pharo. Its backbone is the DBXTalk database driver. The DBXTalk database driver allows the interaction with the major relational database engines. All other tools in the suite make use of this driver to fulfill their duties.  Currently, the DBXTalk database driver supports the interaction with the following database engines: Oracle, MSSQL, PostgreSQL, MySQL, SQLite, SQLite 3, Sybase ASE, Firebird, and Interbase.
 
-Moreover, this driver is integrated with GLORP, enabling a complete and open-source
-solution to relational database access.  To do this, DBXTalk uses a library called OpenDBX
+The DBXTalk suite, within its set of tools, provides GLORP, an Object-Relational Mapper (ORM) framework; Phoseydon, a tool providing scaffolding capabilities for easy applications; and Neptuno, a browser to analyze our database structure. 
 
-In this chapter we will present DBXTalk and build with step by step a little application.
+In this chapter we will present the tools DBXTalk provides, and use them to build step by step a little application.
 
 \section{DBXTalk Driver Architecture}
 The DBXTalk Driver relies on several components in order to connect to different relational databases:
