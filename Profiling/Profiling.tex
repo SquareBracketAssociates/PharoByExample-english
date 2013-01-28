@@ -8,8 +8,12 @@
 % 2010-02-24 - Alexandre begins the translation 
 % 2010-05-10 - Alexandre finished the translation and asked for feedback
 % 2011-04-21 - Aleaxndre working on the chapter
+% 2011-08-31 - Tacking Jannik comments into account
 
 %John McIntosh slides: http://www.smalltalkconsulting.com/papers/GCPaper/GCTalk%202001.htm
+% 2011-09-11 - Migrated to PharoBox: svn checkout https://XXX@scm.gforge.inria.fr/svn/pharobooks/PharoByExampleTwo-Eng
+% could change returns by answers 
+
 
 %=================================================================
 \ifx\wholebook\relax\else
@@ -373,7 +377,7 @@ As you have probably guessed already, other collections such as \ct{Set} and \ct
 \begin{figure}
 	\begin{center}
 	\includegraphics[width=.8\linewidth]{MessageTallyOne}
-	\caption{MessageTally in action.\ja{we should redo this screenshot with correct incr value}}
+	\caption{MessageTally in action.}
 	\figlabel{MessageTallyOne}
 	\end{center}
 \end{figure}
@@ -397,7 +401,7 @@ The \ct{timeToRun} method is useful to tell how long an expression takes to be e
 \end{enumerate}
 Each of these points will be described later on.
 
-\figref{MessageTallyOne} shows the result of the expression \ct{MessageTally spyOn: [20 timesRepeat: [Transcript show: 100 factorial printString]]}.
+\figref{MessageTallyOne} shows the result of the expression \ct{MessageTally spyOn: [20 timesRepeat: [Transcript show: 1000 factorial printString]]}.
 The message \ct{spyOn:} executes the provided block in a new process. The analysis focuses on one process, only, the one that executes the block to profile. The message \ct{spyAllOn:} profiles all the processes that are active during the execution. This is useful to analyze the distribution of the computation over several processes.
 
 %Le message \ct{spyAt:on:} permet de s\'electionner le niveau de processus. Par exemple pour ne voir que le temps pris par l'expression utilisez \ct{MessageTally spyAt: 40 on: [20 timesRepeat: [Transcript show: 100 factorial printString]]}
@@ -465,7 +469,6 @@ MessageTally spyOn:
 
 The complete result is:
 
-\ja{incr is bugus}
 \begin{code}
 
  - 24038 tallies, 24081 msec.
@@ -494,7 +497,7 @@ Process: (40s)  535298048: nil
 
 **GCs**
 	full			0 totalling 0ms (0.0% uptime)
-	incr		13875 totalling 3,122,594ms (12967.0% uptime), avg 225.0ms
+	incr		9707 totalling 7,985ms (16.0% uptime), avg 1.0ms
 	tenures		0
 	root table	0 overflows
 \end{code}
@@ -517,18 +520,15 @@ Process: (40s)  535298048: nil
   5.6% {1349ms} ByteString class(String class)>>new:
 \end{code}
 
-This tree shows that 11.5\% of the total execution time is spent in the method \ct{SequenceableCollection>>copyReplaceFrom:to:with:}. This method is called when concatenating character strings using the message comma (\ct{,}), itself indirectly invoking \ct{new:} and some virtual machine primitives.
-
-\ja{what about the 29.7\% ?}
+This tree shows that the interpreter spent 29.7\% of its time by executing primitives. 11.5\% of the total execution time is spent in the method \ct{SequenceableCollection>>copyReplaceFrom:to:with:}. This method is called when concatenating character strings using the message comma (\ct{,}), itself indirectly invoking \ct{new:} and some virtual machine primitives.
 
 The execution takes 11.5\% of the execution time, this means that the interpreter effort is shared with other processes. The invocation chain from the code to the primitives is relatively short. Reaching hundreds of nested calls is no exception for most of applications. We will optimize this example later on.
 
+Two primitives are listed as tree leaves. These correspond to different primitives. Unfortunately, MessageTally does not tell exactly which primitive has been invoked.
 
 \subsection{**Leaves**: leaf methods}
 
 The \ct{** Leaves**} part lists \emph{leaf methods} for the code block that has been profiled. A leaf method is a method that does not call other methods. More exactly, it is a method \ct{m} for which no method invoked by $m$ have been ``detected''. This is the case for variable accessors (\eg  \ct{Point>>>x}), primitive methods and methods that are very quickly executed. For the previous example, we have:
-
-\ja{why is there 2 primitive calls in **Tree** ? }
 
 \begin{code}
 
@@ -614,13 +614,12 @@ In our example, none of the objects created during the execution have been promo
 
 The \ct{**GCs**} provides statistics about the garbage collector. An example of a garbage collector report is:
 
-\ja{strange incr information \%}
 \begin{code}
 
 **GCs**
 	full			0 totalling 0ms (0.0% uptime)
-	incr		13875 totalling 3,122,594ms (12967.0% uptime), avg 225.0ms
-	tenures		0
+	incr		9707 totalling 7,985ms (16.0% uptime), avg 1.0ms
+	tenures		1 (avg 9707 GCs/tenure)
 	root table	0 overflows
 \end{code}
 
@@ -630,9 +629,6 @@ Four values are available.
 \item The \ct{full} value totals the amount of full garbage collections and the amount of time it took. Full garbage collection are not that frequent. They results from often allocating large memory chunks.
 
 \item The \ct{incr} is about incremental garbage collections. Incremental GCs are usually frequent (several times per second) and quickly performed (about 1 or 2 ms). It is wise to keep the amount of time spent in incremental GCs below 10\%. 
-
-% \alex{why 25%?}
-% Si le temps est sup\'erieur \`a 25\%, il y a vraiment un probl\`eme.
 
 \item The number of \ct{tenures} tells the amount of objects that migrated to the old memory space. This migration happens when the size of the young memory space is above a given threshold. This typically happens when launching an application, when all the necessary objects haven't been created and referenced. 
 
@@ -668,7 +664,6 @@ MessageTally spyOn:
                      9000 timesRepeat: [ str nextPut: $A ]]].
 \end{code}
 
-\ja{here again, there is a strange value for incr information}
 \begin{code}{}
 
  - 807 tallies, 807 msec.
@@ -690,7 +685,7 @@ Process: (40s)  535298048: nil
 
 **GCs**
 	full			0 totalling 0ms (0.0% uptime)
-	incr		1168 totalling 75,789ms (9391.0% uptime), avg 65.0ms
+	incr		5 totalling 7ms (3.0% uptime), avg 1.0ms
 	tenures		0
 	root table	0 overflows
 \end{code}
@@ -759,7 +754,7 @@ MessageTally spyOn:
 \end{code}
 
 \paragraph{An experiment.}
-Doing benchmarks shines when different executions are compared. In the previous piece of code, replacing the value 9000 by 500 is very valuable. The time taken with 9000 iterations is 2.7 \ja{to verify} times slower than with 500. Using the string concatenation (\ie using the \ct{,} method) instead of a stream widens the gap with a factor 10. This experiment clearly illustrates the importance of knowing the list of the string characters manipulated. 
+Doing benchmarks shines when different executions are compared. In the previous piece of code, replacing the value 9000 by 500 is  valuable. The time taken with 9000 iterations is 2.7 times slower than with 500. Using the string concatenation (\ie using the \ct{,} method) instead of a stream widens the gap with a factor 10. This experiment clearly illustrates the importance of using appropriate tools to concatenate strings.
 
 The time of the profiled execution is also an important quality factor for the result. MessageTally employs a sampling technique to profile code. Per default, MessageTally samples the current executing thread each millisecond per default. It is therefore necessary that all the methods involved in the computation are executed a ``fair'' amount of time to appear in the result report. If the application to profile is very short (few milliseconds only), then executing it a  number of times help improving the accuracy of the report. 
 
@@ -816,87 +811,47 @@ Integer>>>fibWithCache:  cache
 	^ ((self - 1) fibLookup: cache) + ((self - 2) fibLookup: cache)  
 \end{code}
 
-\ja{we should not do 1200 fibslow... When I do 35 fibSlow: 5605 ms, so for 1200, the time spent is exponential.} \sd{ but the cache is there? no} \ja{not in fibSlow. What I say is that 1200 fibSlow takes to much time, whereas 1200 fib run in a couple of seconds.}
+%\ja{we should not do 1200 fibslow... When I do 35 fibSlow: 5605 ms, so for 1200, the time spent is exponential.} \sd{ but the cache is there? no} \ja{not in fibSlow. What I say is that 1200 fibSlow takes to much time, whereas 1200 fib run in a couple of seconds.}
 
-As an exercise, profile \ct{1200 fibSlow} and \ct{1200 fib} to be convinced of the gain of memoizing. 
-%Preallocating the ordered collection plays an important role again.
-
-%\ab{I do not understand. Without (OrderedCollection new: self) it does not work}
-%Profilez \ct{1200 fibSlow} et \ct{1200 fib} pour voir l'impact d'un tel
-%cache. Vous pouvez aussi mesurer l'impact de la pr\'eallocation de la
-%taille de la collection en utilisant \ct{OrderedCollection new: self}.
-
-%\begin{code}{}
-%29.8% {1843ms} OrderedCollection>>at:ifAbsentPut:
-%11.4% {705ms} OrderedCollection>>size
-%7.5% {464ms} SmallInteger(Integer)>>fibLookup:
-%4.8% {297ms} OrderedCollection>>at:put:
-%4.5% {278ms} SmallInteger(Integer)>>fibWithCache:
-%4.2% {260ms} OrderedCollection>>at:
-%2.2% {136ms} LargePositiveInteger>>+
-%2.1% {130ms} OrderedCollection>>makeRoomAtLast
-%2.0% {124ms} OrderedCollection>>addLast:
-%1.9% {118ms} OrderedCollection>>add:
-%1.9% {118ms} LargePositiveInteger(Integer)>>+
-%\end{code}
-
-%It is interesting that the preallocation for this example is not that significant. 
-%Replace \ct{OrderedCollection new} by {(OrderedCollection new: self)} in the definition of \ct{fib}. You should also take care of the garbage collector (it increases the overall time execution when triggered). The cost of  \ct{makeRoomAtLast} is not significative. However, the method \ct{at:ifAbsentPut:} is costly. Replacing an ordered collection by an array will improve the Fibonacci definition. Consider \ct{fib2}:
-%
-%\begin{code}{}
-%Integer>>>fib2
-%	self assert: self >= 1.
-%	^ self fibWithCache2: (Array new: self).
-%
-%Integer>>>fibLookup2: cache
-%	| res |
-%	res := cache at: self.
-%	^ res ifNil: [ cache at: self put: (self fibWithCache2: cache) ]
-%		
-%Integer>>>fibWithCache2: cache
-% 	(self == 1) ifTrue: [ ^ 1 ].
-% 	(self == 2) ifTrue: [ ^ 1 ].
-% 	^ ((self - 1) fibLookup2: cache) + ((self - 2) fibLookup2: cache)
-%\end{code}
-%
-%The two different versions can be easily compared:
-%
-%\begin{code}{}
-%[1200 fib2] bench  '559.288142371526 per second.'
-%[1200 fib] bench  '191.2470023980816 per second.'
-%\end{code}
-
+As an exercise, profile \ct{35 fibSlow} and \ct{35 fib} to be convinced of the gain of memoizing. 
 
 %:====================
 \section{SpaceTally for Memory Consumption per Class}
 
 It is often important to know the amount of instances and the memory consumption of a given class. The class \ct{SpaceTally} offers this functionality. 
 
-The expression \ct{SpaceTally new printSpaceAnalysis} runs over all the classes of the system and gathers for each of them its code size, the amount of instances and the total memory space taken by the instances. The result is sorted along the total memory space taken by instances and is stored in a file named \ct{STspace.text}, located next to the Pharo image. \ja{is it possible  to display it ?}
+The expression \ct{SpaceTally new printSpaceAnalysis} runs over all the classes of the system and gathers for each of them its code size, the amount of instances and the total memory space taken by the instances. The result is sorted along the total memory space taken by instances and is stored in a file named \ct{STspace.text}, located next to the Pharo image.
 
-It is not surprising to see that strings, compiled methods and bitmaps represents the largest part of the Pharo memory. \ja{explain...}
+It is not surprising to see that strings, compiled methods and bitmaps represents the largest part of the Pharo memory. The proportion of the compiled code, string and bitmap may be found in other platforms for diverse applications.
+
+SpaceTally's output is structured as follows:
 
 \begin{code}{}
-Class                          	 code space   # instances  inst space percent
-ByteString                        2217       	91946         6325763    26.0
-CompiledMethod            	21186      	 60807        3704137    15.2
-Bitmap                              3893          319            3685532    15.1
-Array                          	      2478      	96671        3015172    12.4
-ByteSymbol     					920       	   40109        1009703     4.1
+Class                            code space # instances  inst space     percent   inst average size
+ByteString                           2053      109613        9133154       31.20               83.32
+Bitmap                                 3653            379       6122156       20.90          16153.45
+CompiledMethod                 20067      51579       3307151       11.30                64.12
+Array                                   2535         85560       3071680      10.50                 35.90
+ByteSymbol                        1086         35746         914367        3.10                 25.58
+...
 \end{code}
 
-\ct{SpaceTally} may also be executed on a reduced set of classes. Consider:
+Each line represents the memory analysis of a Pharo class. Classes are ordered along the space they occupy. The class \ct{ByteString} describes strings. It is frequent to have strings to consume one third of the memory.
+Code space gives the amount of bytes used by the class and its metaclass. It does not include the space used by class variables. The value is given by the method \ct{Behavior>>spaceUsed}. 
 
-\ja{what is the relation between the information before and below ?}
+The \ct{# instances} column gives the amount of instances. It is the result of \ct{Behavior>>instanceCount}. 
+The \ct{inst space} column is the amount of bytes consumed by all the instances, including the object header. It is the result of \ct{Behavior>>instancesSizeInMemory}.
+The percentage of the memory occupation is given by the column \ct{percent} and the last column gives the average size of instances.
+
+Running \ct{SpaceTally} on all classes takes a few minutes. \ct{SpaceTally} may also be executed on a reduced set of classes to increase the analysis time. Consider:
+
 
 \begin{code}{}
 ((SpaceTally new spaceTally: (Array with: TextMorph with: Point)) 
 	asSortedCollection: [:a :b | a spaceForInstances > b spaceForInstances]) 
 \end{code}
-\ja{Does it exist a better method to produce something more visual than a collection ?}
 
-
-\ja{maybe add more explanation}
+The method \ct{SpaceTally>>spaceTally:} analyzes the memory consumed by each classes of its argument. It returns a list of instance of \ct{SpaceTallyItem}.
 
 \section{Few advices}
 

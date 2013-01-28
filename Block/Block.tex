@@ -4,7 +4,12 @@
 
 % HISTORY:
 % 2008-01-19 - Stef started
-% 2008-12-26 - Jannick Menanteau added text
+% 2008-12-26 - Jannik Laval added text
+% 2011-20-05 - Jean baptiste Arnaud add some text (Lexical closure)
+% 2011-07-01 - Jean baptiste Arnaud add some test (Storing a block)
+% 2011-08-09 - Stef doing another pass
+% 2011-09-11 - Migrated to PharoBox: svn checkout https://XXX@scm.gforge.inria.fr/svn/pharobooks/PharoByExampleTwo-Eng
+% todo for stef explaining blockClosure environment representation + explaining the trick with the bytecodes
 
 %=================================================================
 \ifx\wholebook\relax\else
@@ -33,53 +38,120 @@
 \sloppy
 %=================================================================
 \chapter{Block and Dynamic Behavior of Smalltalk-Runtime}\chalabel{blocks}
-\chapterauthor{\authorsteph{}}
+\chapterauthor{Jean-Baptiste Arnaud}
 
-Blocks are a powerful and essentail feature of Smalltalk. Without them it
+
+
+Blocks (lexical closures) are a powerful and essential feature of Smalltalk. Without them it
 would be difficult to have a so small and compact syntax. The use of blocks in Smalltalk
 is the key to get conditional and loops not hardcoded in the language syntax but just 
-simple messages. 
+simple messages -- Simple messages having blocks as arguments. Blocks work extremely well with message passing and the Smalltalk syntax. \ja{not clear}
 
-In addition block are  effective to improve the readability, reusability and efficiency of code. 
-However, the dynamic runtime semantics of Smalltalk is often not well documented. Blocks in presence of
-return statements behave like an excepting mechanism. 
+In addition blocks are  effective to improve the readability, reusability and efficiency of code. 
+However the dynamic runtime semantics of Smalltalk is often not well documented. Blocks in presence of
+return statements behave like an escaping mechanism and while this can lead to ugly code when use to its extreme, it is important to understand it. 
 
 In this chapter we will discuss some basic block behavior such as the notion of a static environment 
-defined at block compiled time. But let us first recall some basics
+defined at block compiled time. Then we will present some deeper issues. But let us first recall some basics.
+
+
+We presented blocks in Pharo by Example. Here we just mention other aspects \ja{what is other aspects ? is it new aspects ? aspect for expert users ? or complementary information ?}. 
 
 \section{Basics}
+What is a block? Historically, it's a Lambda expression, or an anonymous function. A block is a piece of code whose execution is frozen and kicked in using a specific protocol.  Blocks are defined by square brackets. \ja{singular or plural, not the two in the same paragraph}
 
-What are a Block? A block is sustain piece of code. Historically, it's a Lambda expression, or a anonymous function. We can define a piece of code that is prepare to be call later. In Pharo the Block is define by square bracket. That block can be evaluate by sending the \emph{\#value} message to it.
+If you execute and print the result of the following block you will not get 3 but a block. 
+\begin{code}[Block definition]{Block Definition}
+[1 + 2]
+\end{code}
 
+ A block is evaluated by sending the \ct{value} message to it. More precisely \ja{"more precisely" means that you are not clear before. Please remove it} blocks can be executed using \ct{value} (when no argument is mandatory), \ct{value:} (when one argument), \ct{value:value:}, \ct{value:value:value:} \ja{does it already exist ?} and \ct{valueWithArguments: anArray}...) \ja{give examples}
+
+\begin{code}[Block definition]{Block Execution}
+[1 + 2] value  
+    returns 3
+\end{code}
+
+
+Pharo includes some handy messages such as \ct{cull:} and friends to support the execution of blocks even in presence of more values than necessary. This allows us to write blocks more concisely when we are not necessarily interested in all the available arguments.
+\ct{cull} \ja{is it cull or cull: ?} fills the same need as  \ct{valueWith[Possible/Enough]Args:} \ja{what is this syntax?}, but does not require creating an Array with the arguments, and will raise an error if the receiver has more arguments than provided rather than pass nil in the extraneous ones. \ja{can we have an example that shows the differences ?}
+Hence, from where the block is provided, they look almost the same, but where \ja{where or when ?} the block is executed, the code is usually cleaner.
+
+
+\begin{code}{Cull: examples}
+[ 1 + 2 ] cull: 5
+	returns 3
+[ :x | 1+ 2 + x] cull: 5 
+	returns 8
+[ 1 + 2 ] cull: 5 cull: 6
+	returns 3
+[ :x | 1+ 2 + x] cull: 5 
+	returns 8
+[ :x | 1+ 2 + x] cull: 5 cull: 3	
+	returns 8 
+[ :x : y | 1+ y + x] cull: 5 cull: 2 
+	returns 8
+[ :x : y | 1+ y + x] cull: 5 
+	raises error
+\end{code}
+
+The message \ct{once} is another extension \ja{what are the first extensions ?} that caches the results and interned it until the receiver is uncached.
+A typical usage is the following one: \ja{and ? why is it interesting to use it now ?}
+
+\begin{method}{Example for resources caching using once}
+myResourceMethod
+	^[expression] once.
+\end{method}
+
+The table below lists some of the messages available on the class \ct{BlockClosure} whose blocks are instance of. 
  
+\begin{tabular}{p{2cm}|p{8cm}}
+\textsf{silentlyValue}&Execute the receiver but avoiding progress bar notifications to show up \ja{does this progress bar already exist ? It is strange where block should not depend on graphics !}.\\
+\textsf{once}&Answer and remember the receiver value, answering exactly the same object in any further sends
+	 of once or value. The expression will be evaluated once and its result returned for any subsequent evaluations.\\
+\end{tabular}
+
+Some messages are useful to profile execution: \ja{add a ref to profiler chapter}
+
+\begin{tabular}{p{2cm}|p{8cm}}
+\textsf{bench}&Returns how many times the receiver can get executed in 5 seconds. \\
+\textsf{durationToRun}& Answer the duration taken to execute the receiver block.\\
+\textsf{timeToRun}&Answer the number of milliseconds taken to execute this block.\\
+\end{tabular}
+
+Some messages are related to error handling as explain in the Exception Chapter~\ref{cha:exception}.
+
+\begin{tabular}{p{2cm}|p{8cm}}
+\textsf{ensure: aBlock}&Execute a termination block after evaluating the receiver, regardless of whether the receiver's evaluation completes.  \\
+\textsf{ifCurtailed: aBlock}& Evaluate the receiver with an abnormal termination action. Evaluate aBlock only if execution is unwound during execution of the receiver. If execution of the receiver finishes normally do not evaluate aBlock. \\
+\textsf{on: exception do: handlerAction}&Evaluate the receiver in the scope of an exception handler.\\
+\textsf{on: exception fork: handlerAction}\ja{need a better display. Maybe a paragraph for each and an example}&Activate the receiver. In case of exception, fork a new process, which will handle an error.
+An original process will continue running as if receiver evaluation finished and answered nil,	\ie  an expression like: \textsf{[ self error: 'some error'] on: Error fork: [:ex |  123 ]} will always answer nil for original process, not 123. The context stack, starting from context which sent this message to receiver and up to the top of the stack will be transferred to forked process, with handlerAction on top. When the forked process is resuming, it will enter the handlerAction).\\
+\end{tabular}
 
 
+Some messages are related to process scheduling and should be detailed in a specific Chapter \ja{which one ?}. 
 
-
-
-
-
-
-value
-value:
-....
-
-ifTrue:ifFalse: 
-
-
+\begin{tabular}{p{2cm}|p{8cm}}
+\textsf{fork}&ECreate and schedule a Process running the code in the receiver.\\
+\textsf{forkAt: aPriority}& Create and schedule a Process running the code in the receiver at the given priority. Answer the newly created process. \\
+\textsf{newProcess}&Answer a Process running the code in the receiver. The process is not scheduled.\\
+\end{tabular}
 
 
 \section{Variables and Blocks}
 In Smalltalk, private variables (such as self, instance variables, temporaries and arguments) are 
-lexically scoped. These variables are bound in the context in which the block that contains them is defined, rather than the context in which the block is evaluated.  We call the context (set of bindings) in which a block is defined, the block home context,
+lexically scoped. These variables are bound in the context in which the block that contains them is defined, rather than the context in which the block is executed.  We call the context (set of bindings) in which a block is defined, the \emph{block home context}.
 
-Define a class name BExp (for BlockExperience) and the following methods
+
+Let's have fun and experiment a bit to understand. 
+Define a class named \ct{BExp} (for BlockExperience) and the following methods:
 
 \begin{code}{}
 BExp>>testScope 
 	| t | 
 	t := 42. 
-	self testBlock: [Transcript show: t printString] 
+	self testBlock: [self crLog: t printString] 
 	
 BExp>>testBlock: aBlock 
 	| t | 
@@ -87,19 +159,14 @@ BExp>>testBlock: aBlock
 	aBlock value 
 \end{code}
 
-Execute \ct{BExp new testScope}
-
-Evaluating the \ct{testScope} message will print 42 in the Transcript. What you see is that the value of the temporary variable \ct{t} defined in method testScope is the one used.
-
-More blablablab here.
-
+Execute \ct{BExp new testScope}. Executing the \ct{testScope} message will print 42 in the Transcript. What you see is that the value of the temporary variable \ct{t} defined in method testScope is the one used and that t inside \ct{[self crLog: t printString]} is not looked up in the context of the executing method \ct{testBlock:} but in the context of the testScope the method defining the block.
 
 \begin{code}{}
 BExp>>testScope2 
 	| t | 
 	t := 42. 
 	self testBlock: [t := 33.
-					Transcript show: t printString] 	
+					self crLog: t printString] 	
 	
 BExp>>testBlock: aBlock
 	| t | 
@@ -110,13 +177,14 @@ BExp>>testBlock: aBlock
 This experience shows that a block is not only an anonymous method but one with an execution context or environment. In this environment temporary variables are bound with the values they hold when the block 
 is defined. Naturally we can expect that method arguments are also bound and also self and instance variables of the class in which the method defining a block is. Let's illustrate these points now. 
 
-For method arguments
+\ja{I have a display bug here}
+\paragraph{For method arguments.}
 
 \begin{code}{}
 BExp>>testScopeArg: arg
 	"self new testScopeArg: 'foo'"
 	
-	self testScopeArgValue: [Transcript show: arg ; cr]
+	self testScopeArgValue: [self crLog: arg ; cr]
 
 BExp>>testScopeArgValue: aBlock
 	| arg | 
@@ -124,22 +192,15 @@ BExp>>testScopeArgValue: aBlock
 	aBlock value
 \end{code}
 
-Now executing \ct{self new testScopeArg: 'foo'} prints foo even if in the method testScopeArgValue: the temporary arg is redefined. 
+Now executing \ct{self new testScopeArg: 'foo'} prints foo even if in the method \ct{testScopeArgValue:} the temporary arg is redefined.
+ 
 
-
-For binding of self, we can simply define a new class and a couple of method
-
-Add the instance variable x to the class BExp and define the initialize method
-as follows:
+\paragraph{self binding.}
+For binding of self, we can simply define a new class and a couple of methods. 
+Add the instance variable x to the class \ct{BExp} and define the initialize method as follows:
 
 \begin{code}{}
-BExp>>initialize
-	x := 666.
-\end{code}	
-
-Define another class 
-\begin{code}{}
-Object subclass: #BEXp2
+Object subclass: #BExp
 	instanceVariableNames: 'x'
 	classVariableNames: ''
 	poolDictionaries: ''
@@ -148,68 +209,137 @@ Object subclass: #BEXp2
 
 
 \begin{code}{}
+BExp>>initialize
+	x := 666.
+\end{code}	
+
+Define another class named \ct{BExp2} (subclass of \ct{BExp} but inheritance is orthogonal to what we want to show).
+
+
+\begin{code}{}
 BExp2>>initialize
+	super initialize.
 	x := 69.
 
-BExp2>>estScopeSelf: aBlock
+BExp2>>testScopeSelf: aBlock
 	aBlock value
 \end{code}
 
-Then define the emthods that will invoke the methods defined in BExp2.
+Then define the methods that will invoke  methods defined in \ct{BExp2}.
 \begin{code}{}	
 BExp>>testScopeSelf
 	"self new testScopeSelf"
-	self testScopeSelf: [Transcript show: self printString ; show: x; cr]
+	self testScopeSelf: [self crLog: self printString ; logCr: x]
 
 BExp>>testScopeSelf: aBlock
 	BEXp2 new testScopeSelf: aBlock
 \end{code}	
-	
-	
 
-Now when we execute \ct{BExp new testScopeSelf} and we see that a BExp gets printed, showing that a block captures self. 
+Now when we execute \ct{BExp new testScopeSelf} and we see that \ct{a BExp666} gets printed, showing that a block captures self too. 
 
+\paragraph{An example of sharing.}
 
-\section{Basics on Return}
-
-A return statement allows one to return a different value than the receiver of the message.
-Return expressions behave 
+Variables referred to by a block continue to be accessible and shared with other expressions. Let us 
+take some examples. 
 
 \begin{code}{}
-foo
-	
-	#(1 2 3 4) do: [:each | Transcript show: each printString. 
-						each = 3 
-							ifTrue: [^ 3]]
+BExp>>foo
+	| a |
+	[ a := 0 ] value.
+	^ a
 \end{code}
+
+Here what you see is that the value is shared between the method body and the block. Inside the method body we can access the variable whose value was set by the block execution. 
+Both the method  and block bodies access to the temporary variable \ct{a}.
+
+Now imagine that we define the method \ct{foo} as follows:
+
+\begin{code}{}
+BExp>>foo
+	| a |
+	a := 0. 
+	^ {[ a := 2] . [a]} 
+\end{code}
+
+The method \ct{foo} defines a temporary variable \ct{a}. It sets the value to \ct{a}
+to zero and returns an array whose first element is a block setting the value to 2 and second element just returns the value of the temporary variable. 
+
+\begin{code}{}
+| res | 
+res := BExp new foo.
+res second value.
+     !\emph{returns 0}!. 
+res first 
+res second
+     !\emph{returns 2}!. 
+\end{code}
+
+You can also define the code as follows and open a transcript to see the results.
+
+
+\begin{code}
+| res |
+res := BExp new foo.
+res second value crLog.
+res first value.
+res second value crLog.
+\end{code}
+
+Notice that when the expression \ct{res second value} and \ct{res first value} are executed, the method \ct{foo} has already finished its execution - as such it is not on the execution stack anymore.  Still the temporary variable \ct{a} can be accessed and set to new value. It means that the variables referred to by a block may live longer than the methods that created the block that refers to them. We said that the variables outlive their defining context. 
+
+There the block implementation will have to keep the variable in a structure that is not linked to the execution stack but lives in the heap. We will go in more details in a following section. 
+
+
 
 
 
 \section{Returning from inside a block}
-It is not a really good idea to have return statement in a block that you pass or store into instance variables and we will explain why in this section. 
+It is not a really good idea to have return statement in a block that you pass or or that store into instance variables and we will explain why in this section.
 
-In certain Smalltalk dialects, you can have expressions after a return statement in a block, in Pharo \ct{^} should be the last statement of a block body. You should get a compile error if you type and compile the following expression. 
+\subsection{Basics on Return}
+A return statement allows one to return a different value than the receiver of the message.
+Now a return expression behaves also like an escape mechanism since the execution flow will jump out to the current caller and not just one level up. For example, the following code will return 3 and 42 will never be reached. The expression \ct{[^3]} could be deeply nested, its execution jumps out all the levels.
 
 \begin{code}{}
-[ Transcript show: 'two'.
-  ^ self.  
-  Transcript show: 'not printed' ]
+BExp>>foo
+	
+	#(1 2 3 4) do: [:each | self crLog: each printString. 
+						each = 3 
+							ifTrue: [^ 3]].						
+	^ 42
 \end{code}
 
-Now to see that a return is really escaping the current execution you 
+Now to see that a return is really escaping the current execution you can try the following expression. 
+
 \begin{code}{}
 testExplicitReturn
-	"self new testExplicitReturn a BEXp"
+	"self new testExplicitReturn"
 	
-	Transcript show: 'one'.
-	0 isZero ifTrue: [ Transcript show: 'two'. ^ self].
-	Transcript show: ' not printed'
+	self crLog: 'one'.
+	0 isZero ifTrue: [ self crLog: 'two'. ^ self].
+	self crLog: ' not printed'
 -> one two
 \end{code}
 
-Simple block \ct{[:x :y| x*x. x+y]} returns the value of the last statement to the method that sends it the message value
 
-Continuation blocks \ct{[:x :y| ^ x + y]} returns the value to the method that activated its homeContext. As a block is always evaluated in its homeContext, it is possible to attempt to return from a method which has already returned using other return. This runtime error condition is trapped by the VM.
+
+In Pharo \ct{^} should be the last statement of a block body. You should get a compile error if you type and compile the following expression. 
+
+\begin{code}{}
+[ self crLog: 'two'.
+  ^ self.  
+  self crLog: 'not printed' ]
+\end{code}
+
+
+
+\subsection{Different blocks} \ja{need to be improved and code explained}
+
+We can classify blocks based on their usage or not of return statement. 
+
+\paragraph{Simple block.} \ct{[:x :y| x*x. x+y]} returns the value of the last statement to the method that sends it the message value. Here the first expression is useless.
+
+\paragraph{Continuation blocks.} \ct{[:x :y| x*x. ^ x + y]} returns the value to the method that activated its homeContext. As a block is always evaluated in its homeContext, it is possible to attempt to return from a method which has already returned using other return. This runtime error condition is trapped by the VM.
 
 \begin{code}{}
 Object>>returnBlock
@@ -277,27 +407,11 @@ BlockClosure>>myValueWithExit
 \end{code}
 
 
-
-\section{Storing a block}
-
-
-\section{may be to trash}
-VM represents the state of execution as Context objects
-for method MethodContext
-for block BlockContext
-
-aContext contains a reference to the context from which it is invoked, the receiver arguments, temporaries in the Context
-
-We call home context the context in which a block is defined
-
-
-\paragraph{}
-Arguments, temporaries, instance variables are lexically scoped in Smalltalk
-These variables are bound in the context in which the block is defined and not in the context in which the block is evaluated
-
-\newpage
 \section{Lexical Closure}
-Lexical closure is a concept introduced by SCHEME in 70s. Scheme uses lambda expression that basically a anonymous function (such the block). But using anonymous function imply to connect it to the current execution context. That why the lexical closure is important because it define when variables of block are bound to the execution context. The variable is depending of the scope where it's define. Let's illustrate that :
+
+\ja{english form must be verified}
+
+Lexical closure is a concept introduced by SCHEME in 70s. Scheme uses lambda expression which is basically an anonymous function (such the block). But using anonymous function implies to connect it to the current execution context. \ja{please a verb}That why the lexical closure is important because it define when variables of block are bound to the execution context \ja{redo this sentence}. The variable is depending of the scope where it's \ja{no reduction in the text} define. Let's illustrate that :
 
 \begin{code}{}
 blockLocalTemp
@@ -309,8 +423,8 @@ blockLocalTemp
 		^collection collect: [:each | each value].
 \end{code}
 
-Let's comment the code, we create a loop the store the arg value, in a temporary variable created in the loop (then local) and change it in the loop. We store a block containing the simply temp read access in a collection. And after the loop, we evaluate each block and return the collection of value.
-If we evaluate this method that will return \#(1 2 3). What's happen? At each loop we create a variable existing locally and bind it to a block. Then at the end evaluate block, we evaluate each block with this contextual \emph{temp}. 
+Let's \ja{too much let's} comment the code, we create a loop the store the arg value, in a temporary variable created in the loop (then local) and change it in the loop. We store a block containing the simply temp read access in a collection. And after the loop, we evaluate each block and return the collection of value.
+If we evaluate this method that will return \#(1 2 3). What's happen? At each loop we create a variable existing locally and bind it to a block. Then at the end evaluate block, we evaluate each block with this contextual \emph{temp}. \ja{should be redone}
 
 \begin{figure}[htbp]
 	\centering
@@ -331,7 +445,7 @@ blockOutsideTemp
 			collection add: [ temp ] ].
 		^collection collect: [:each | each value].
 \end{code}
-Same case except the \emph{temp}, variable will be  declare in the upper scope. Then what will happen ? Here the temp at each loop is the \textbf{same} shared variable bind. So when we collect the evaluation of the block at the end we will collect \#(3 3 3).
+Same case except the \emph{temp}, variable will be  declare in the upper scope. Then what will happen? Here the temp at each loop is the \textbf{same} shared variable bind. So when we collect the evaluation of the block at the end we will collect \#(3 3 3).
 \begin{figure}[htbp]
 	\centering
 		\includegraphics[width=0.7\linewidth]{blockClosureOutsideTemp}
@@ -378,9 +492,12 @@ therefore when this binding is modify from the body of the begin expression, the
 and this is why it returns 4 and not 0 because. 
 
 
-\section{Conclusion}
+\section{To sort}
 
-I have a method that takes OBCommands and returns Actions:
+
+
+
+I have a method that takes OBCommands and returns Actions \ja{what is OBCommands and Actions? In the code I see GLMAction}:
 
 \begin{code}{}
 actionsFrom: aCollectionOfOBCommandClasses on: aTarget for: aRequestor
@@ -398,7 +515,7 @@ actionsFrom: aCollectionOfOBCommandClasses on: aTarget for: aRequestor
 These actions have a block that will be executed at a later time. The  
 problem here was that the command in the action block was always  
 pointing to the same command object, even at each point the command  
-variable was populated correctly.
+variable was populated correctly. \ja{I do not see the problem, should be more explicit}
 
 However, when the command is defined inside the block, everything  
 works as expected.
@@ -420,7 +537,7 @@ actionsFrom: aCollectionOfOBCommandClasses on: aTarget for: aRequestor
 
 
 The semantics change in various ways. The trivial example that everyone 
-knows is this:
+knows is this \ja{everyone knows ??? are you sure ? You are saying to reader that if he does not know these 5 lines, he is an idiot !}:
 \begin{code}{}
 factorial := [ :n |
 	n > 1
@@ -429,10 +546,10 @@ factorial := [ :n |
 factorial value: 10.
 \end{code}
 Without closures you get an error, with closures you get the expected 
-result.
+result. \ja{you affirms that but as a reader, I do not know why.}
 
 Another significant change is the existence of local variables in blocks. 
-Without closures blocks don't have local variables, with closures they do:
+Without closures blocks don't have local variables, with closures they do: \ja{do not understand this sentence}
 
 \begin{code}{}
 b := [ :p |
@@ -443,9 +560,9 @@ b := [ :p |
 
 In a non-closure image you get \#(1 1) as result, because t is not a block 
 local variable even if it looks like one. In a closure image you get \#(1 2)
-because t is a block local variable.
+because t is a block local variable. \ja{same as before, I see the result, but I do not understand why}
 
-
+\ja{what is this source code ?}
 \begin{code}{}
 testValueWithExitBreak
 
@@ -477,6 +594,33 @@ testValueWithExitContinue
 BlockClosure>>valueWithExit 
 	  self value: [ ^nil ]
 \end{code}
+
+
+\section{Blocks and Contexts}
+
+\ja{have to be written}
+
+VM represents the state of execution as Context objects
+for method MethodContext
+for block BlockContext
+
+aContext contains a reference to the context from which it is invoked, the receiver arguments, temporaries in the Context
+
+We call home context the context in which a block is defined
+
+
+\paragraph{}
+Arguments, temporaries, instance variables are lexically scoped in Smalltalk
+These variables are bound in the context in which the block is defined and not in the context in which the block is evaluated
+
+
+
+
+\section{Block Scope Optimization}
+
+\ja{have to be written}
+
+\section{Chapter conclusion}
 
 %=========================================================
 \ifx\wholebook\relax\else

@@ -3,8 +3,6 @@
 % $Revision$
 
 % HISTORY:
-% 2008-02-04 - new umbrella
-% 2009-04-23 - pharo -> squeak
 
 %=================================================================
 % This is the main file for the Pharo By Example book.
@@ -13,6 +11,21 @@
 % middle of this file, to leave out additional material
 % for a future version of the book.
 %=================================================================
+
+
+% TODO:
+
+%=================================================================
+% lulu -> figures in .png / to see: macros
+% chapter about Zinc with Olivier. Let see if it will be ready
+% fix \chapterauthor on each chapter
+%
+%I removed Opal, il with not be stable for now
+%
+%=================================================================
+
+
+
 \documentclass[a4paper,10pt,twoside]{book}
 \usepackage[
 	papersize={6.13in,9.21in},
@@ -34,17 +47,18 @@
 	{Exceptions/figures/}
 	{Mondrian/figures/}
 	{Metacello/figures/}
-    {DBXTalk/figures/}
-	% {Concurrency/figures/}
+	{DBXTalk/figures/}
+	{LittleNumbers/figures/}
 	{Announcements/figures/}
-	{LDAP/figures/}
 	{Sockets/figures/}
 	{Settings/figures/}
-	{Seaside/figures/}
-	{Crude/figures}
 	{Gofer/figures/}
-	% {Compiler/figures/}
 	{Block/figures/}
+	{LittleNumbers/figures/}
+	{Opal/figures/}
+	{Filesystem/figures/}
+	{PetitParser/figures/}
+	{BasicWidgets/figures/}
 }
 %=================================================================
 \let\wholebook=\relax
@@ -64,9 +78,8 @@
 	Damien Cassou\quad
 	St\'ephane Ducasse\quad
 	Jannik Laval\quad}
-% (to be updated at the end)
 \title{\Huge\bf More Pharo by Example\\[1ex]
-with the participation of O. Nierstrasz, Dale, Mariano, Sven }
+\small with the participation of O. Nierstrasz, D. Henrichs, ... }
 \isodate
 \date{\emph{Version of \today}}
 \maketitle
@@ -80,33 +93,21 @@ with the participation of O. Nierstrasz, Dale, Mariano, Sven }
 %=================================================================
 \input{Preface/Preface2.tex}
 %=================================================================
-%\part{Software Development}
-%\input{Monticello/Monticello.tex}
-
-% \input{Profiling/Profiling.tex}
-
 
 \part{Frameworks}
 
-\input{Omnibrowser/Omnibrowser.tex}
-% 90
-% redo screenshots
-% use pdf for graffle
+%\input{Omnibrowser/Omnibrowser.tex}
+% text is finished
+%% should be luluified
+% verify source code
 
 \input{Glamour/Glamour.tex}
-
-% Gofer
-
-\input{LDAP/LDAP.tex}
-% 60
-% Gofer
-% manque description 
-% fr -> english
-
+% text is finished
+%% should be luluified
+% The source code has been verified. Minor comments are left, they need to be addressed just before publishing the book. The comments are about a ref to the Mondrian chapter and the Metacello invocation to load Glamour.
 
 \input{Mondrian/Mondrian.tex}
 % 80
-% redo screenshots
 % other examples (edges scoped)
 
 \input{DBXTalk/DBXTalk.tex}
@@ -118,67 +119,98 @@ with the participation of O. Nierstrasz, Dale, Mariano, Sven }
 
 \part{Language}
 \input{Exceptions/Exceptions.tex} %% stef
-%% 100
+% text is finished
+%% should be luluified
+% verify source code
 
 \input{Block/Block.tex} %stef 
 %% 50 
+% to read
+%% should be luluified
+% verify source code
 
 \input{Float/Float.tex} %% stef
-% 60 
+% 60
+%% be merged with little number
+%% should be luluified
+% verify source code
 
-%\input{Compiler/Compiler.tex} %% marcus
-%0
-
-%\input{Traits/Traits.tex} %%% stef alex
-% stef and alexandre
-% 20 (first add picture of the esug presentations)
-
-\part{Web}
-
-% Crude
-% Iliad
+\input{LittleNumbers/LittleNumbers.tex}
+% 60
+% to read
+% merge with float ?
+%% should be luluified
+% verify source code
 
 \part{Libraries}
-\input{FileSystem/FileSystem.tex} 
+\input{Filesystem/Filesystem.tex} 
 %% stef...
-% not wiresong
 % 60 
 % adapting
 % adding some graffle 
+% to read
+% to adapt with the last version
+%% should be luluified
+% verify source code
 
 \input{Announcements/Announcements.tex} %%
 %30
+% to read
+%% should be luluified
+% verify source code
 
 \input{Sockets/Sockets.tex} %% noury
-%60
-%
+%99.9
+% some comments to fix
+%% should be luluified
+% verify source code
 
 \input{Settings/Settings.tex} %% stef
-% redo screenshots
+% text is finished
+%% should be luluified
+% verify source code
 
 \input{Regex/Regex.tex}
 % 99
-% read edited by oscar
-% redo screenshots
+% to read
+%% should be luluified
+% verify source code
 
 \part{Source Management}
 \input{Monticello/Monticello.tex}
-%
-%100
-%% smalltalkHub
+% text is finished
+%% should be luluified
+% verify source code
 
 \input{Gofer/Gofer.tex}
-% 100
+% text is finished
+%% should be luluified
+% verify source code
 
 \input{Metacello/Metacello.tex}
-% 85 
+% 95 
+% to read
+%% need a two pages summary
+%% should be luluified
+% verify source code
 
 \part{Tools}
 \input{Profiling/Profiling.tex}
-% 80
+% text is finished
+% should be luluified
+% verify source code
 
-%Network
-%Rewriting Rules
+\input{PetitParser/PetitParser.tex}
+% text is finished
+% should be luluified
+% verify source code
+
+\input{BasicWidgets/BasicWidgets.tex}
+% 60
+% to read
+%% should be luluified
+% verify source code
+
 
 
 %=================================================================
@@ -190,20 +222,6 @@ with the participation of O. Nierstrasz, Dale, Mariano, Sven }
 \printindex
 
 \end{document}
-
-
-\section{How make an image self executable with Pharo}
-We save an image with our main application window already opened, and unwanted things disabled (halos, alt-., menus, etc). Additionally, we have a class-side \#startUp: method to initialize what's necessary on startup, like re-reading config files etc.
-
-The image is started automatically when double-clicking  "plopp.exe", or rather a short-cut in the program menu placed there by the installer. This exe is nothing more than a renamed Pharo.exe, with a different icon patched in using a resource editor. There is a VM config file "plopp.ini", which most importantly contains the path to the image to load (see http://minnow.cc.gatech.edu/squeak/3274).
-
-The exe along with the needed plugins, the image and other data files is installed in the "programs" directory by a regular Windows installer (InstallShield).
-
-It's really not too different from other applications, which nowadays also consist of an executable and several additional files. That the actual application logic in Squeak's case is not contained in the executable but in a "data file" is of no concern to the end user.
-
-Note that this is an FAQ item (http://minnow.cc.gatech.edu/squeak/3563). Feel free to put my explanation on the Swiki, I haven't checked carefully if a similar answer is already there.
-
-- Bert -
 %=================================================================
 
 % \printglossary

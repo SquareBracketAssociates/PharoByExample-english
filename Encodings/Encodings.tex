@@ -1,0 +1,252 @@
+% $Author$
+% $Date$
+% $Revision$
+
+% HISTORY:
+% 2011-08-08: first version
+% 2011-09-11 - Migrated to PharoBox: svn checkout https://XXX@scm.gforge.inria.fr/svn/pharobooks/PharoByExampleTwo-Eng
+
+%=================================================================
+\ifx\wholebook\relax\else
+% --------------------------------------------
+% Lulu:
+	\documentclass[a4paper,10pt,twoside]{book}
+	\usepackage[
+		papersize={6.13in,9.21in},
+		hmargin={.75in,.75in},
+		vmargin={.75in,1in},
+		ignoreheadfoot
+	]{geometry}
+	\input{../common.tex}
+	\pagestyle{headings}
+	\setboolean{lulu}{true}
+% --------------------------------------------
+% A4:
+%	\documentclass[a4paper,11pt,twoside]{book}
+%	\input{../common.tex}
+%	\usepackage{a4wide}
+% --------------------------------------------
+    \graphicspath{{figures/} {../figures/}}
+	\begin{document}
+	% \renewcommand{\nnbb}[2]{} % Disable editorial comments
+	\sloppy
+\fi
+%=================================================================
+\chapter{Encodings}
+\chalabel{env}
+
+
+
+
+%\begin{figure}[htbp]
+%   \centering
+%   \ifluluelse
+%	   {\includegraphics [width=\textwidth]{SystemBrowserMethodTemplate}}
+%	   {\includegraphics[width=0.7\textwidth]{SystemBrowserMethodTemplate}}
+%   \caption{Browser showing the method-creation template
+%   \figlabel{SystemBrowserMethodTemplate}}
+%\end{figure}
+%
+%
+%\begin{figure}[tbp]
+%\begin{minipage}{0.48\textwidth}
+%	\begin{center}
+%	\ifluluelse
+%		{\includegraphics[width=\textwidth]{exploreTimeStampNow}}
+%		{\includegraphics[width=0.7\textwidth]{exploreTimeStampNow}}
+%	\end{center}
+%	\caption{Exploring \ct{TimeStamp now}}
+%	\figlabel{exploreTimeStampNow}
+%\end{minipage}
+%\hfill
+%\begin{minipage}{0.48\textwidth}
+%	\begin{center}
+%	\ifluluelse
+%		{\includegraphics[width=\textwidth]{exploreTimeStampNow2}}
+%		{\includegraphics[width=0.7\textwidth]{exploreTimeStampNow2}}
+%	\end{center}
+%	\caption{Exploring the instance variables}
+%	\figlabel{exploreTimeStampNow2}
+%\end{minipage}
+%\end{figure}
+
+
+Character encoding is an area that we programmers tend to avoid as much as possible, often fixing problems by trial and errors. With web-development you will sooner or later be bitten by character encoding bugs, no matter how you try to escape them. As soon as you are getting inputs from the user and displaying information in your web-browser, you will be confronted with character encoding problems. However, the basic concepts are simple to understand and the difficulty often lies in the extra layers that typically a web developer does not have to worry about such as the web-rendering engine, the web server and the input keyboard.
+
+Historically the difference between character sets and character encoding was minor, since a standard specified what characters were available as well as how they encoded. Unicode and ISO 10646 (Universal Character Set) changed this situation by clearly separating the two concepts. Such a separation is essential: on one hand you have the character sets you can manipulate and on the other hand you have how they are represented physically (encoded).
+
+In this section we'll present the two basic concepts you have to understand - character sets and character encodings. This should help you avoid most problems. 
+
+
+\section{Character Sets}
+
+A character set is really just that, a set of characters. These are the characters of your alphabet. For practical reasons each character is identified by a code point e.g. \$A is identified by the code point 65.
+
+Examples of character sets are ASCII, ISO-8859-1, Unicode or UCS (Universal Character Set).
+
+\begin{itemize}
+\item ASCII (American Standard Code for Information Interchange) contains 128 characters. It was designed following several constraints such that it would be easy to go from a lowercase character to its uppercase equivalent. You can get the list of characters at \url{http://en.wikipedia.org/wiki/Ascii}. ASCII was designed with the idea in mind that other countries could plug their specific characters in it but it somehow failed. ASCII was extended in Extended ASCII which offers 256 characters.
+
+\item ISO-8859-1 (ISO/IEC 8859-1) is a superset of ASCII to which it adds 128 new characters. Also called Latin-1 or latin1, it is the standard alphabet of the latin alphabet, and is well-suited for Western Europe, Americas, parts of Africa. Since ISO-8859-1 did not contain certain characters such as the Euro sign, it was updated into ISO-8859-15. However, ISO-8859-1 is still the default encoding of documents delivered via HTTP with a MIME type beginning with "text/". \url{http://www.utoronto.ca/webdocs/HTMLdocs/NewHTML/iso_table.html} shows in particular ISO-8859-1.
+
+
+\item Unicode is a superset of Latin-1. To accelerate the early adoption of Unicode, the first 256 code points are identical to ISO-8859-1. A character is not described via its glyph but identified by its code point, which is usually referred to using "U+" followed by its hexadecimal value. Note that Unicode also specifies a set of rules for normalization, collation bi-directional display order and much more.
+
+
+\item UCS -- the 'Universal Character Set' specified by the ISO/IEC 10646 International Standard contains a hundred thousand characters. Each character is unambiguously identified by a name and an integer also called its code point.
+
+\end{itemize}
+
+\url{http://www.fileformat.info/info/charset/index.htm} shows several character sets.
+
+
+
+\begin{figure}[htbp]
+   \centering
+   \ifluluelse
+	   {\includegraphics [width=\textwidth]{StringHierarchy}}
+	   {\includegraphics[width=0.35\textwidth]{StringHierarchy}}
+   \caption{The Pharo String Hierarchy.
+   \figlabel{StringHierarchy}}
+\end{figure}
+
+
+\paragraph{In Pharo.} Now let us see the concepts exist in Pharo. The String, ByteString, WideString class hierarchy is roughly equivalent to the Integer, SmallInteger, LargeInteger hierarchy. The class Integer is the abstract superclass of SmallInteger which represents number with ranges between -1073741824 and 1073741823, and LargeInteger which represents all the other numbers. In Pharo, the class String is the abstract superclass of the classes ByteString (ISO-8859-1) and WideString (Unicode minus ISO-8859-1). Such classes are about character sets and not encodings.
+
+
+%\needlines{7}
+%\begin{method}[buggy]{A buggy method}
+%Grgrgr>>suffix
+%	"assumes that I'm a file name, and answers my suffix, the part after the last dot"
+%	| dot dotPosition |
+%	dot := FileDirectory dot.
+%	dotPosition := (self size to: 1 by: -1) detect: [ :i | (self at: i) = dot ].
+%	^ self copyFrom: dotPosition to: self size 
+%\end{method}
+
+
+\section{Encodings}
+
+An encoding is a mapping between a character (or its code point) and a sequence of bytes, and vice versa.
+
+\subsection{Simple Mappings} The mapping can be a one-to-one mapping between the character and the byte that represents it. If and only if your character set has 255 or less entries you can directly map each character by its index to a single byte. This is the case for ASCII and ISO-8859-1.
+
+In the latest version of Pharo, the Character class represents a character by storing its Unicode. Since Unicode is a superset of latin1, you can create latin1 strings by specifying their direct values. When a String is composed only of ASCII or latin1 characters, it is encoded in a ByteString (a collection of bytes each one representing a character).
+
+\begin{code}[encodings]{Some example of encodings}
+(String with: (Character value: 65) with: (Character value: 66)). 
+	"-> 'AB'"
+'AB' class.
+	"-> ByteString"
+(String with: (Character value: 16r5B) with: (Character value: 16r5D)).
+	"-> '[]'"
+(String with: (Character value: 16rA9)).
+	"->  the copyright character &copy;"
+Character value: 16rFC.
+	"-> the u-umlaut character &uuml;"
+\end{code}	
+	
+	
+The characters Character value: 16r5B ([) and Character value: 65 (A) are both available in ASCII and ISO-8859-1. Now Character value: 16rA9 displays © the copyright sign which is only available in ISO-8859-1, similarly Character value: 16rFC displays \"u.
+
+\subsection{Other Mappings}
+
+ As we already mentioned Unicode is a large superset of Latin-1 with over hundred thousand of characters. Unicode cannot simply be encoded on a single byte. There exist several character encodings for Unicode: the Unicode Transformation Format (UTF) encodings, and the Universal Character Set (UCS) encodings.
+
+The number in the encodings name indicates the number of bits in one code point (for UTF encodings) or the number of bytes per code point (for UCS) encodings. UTF-8 and UTF-16 are probably the most commonly used encodings. UCS-2 is an obsolete subset of UTF-16; UCS-4 and UTF-32 are functionally equivalent.
+
+\begin{description}
+\item UTF-8 (8-bits UCS/Unicode Transformation Format) is a variable length character encoding for Unicode. The Dollar Sign (\$) is Unicode U+0024. UTF-8 is able to represent any character of the Unicode character sets, but it is backwards compatible with ASCII. It uses 1 byte for all ASCII characters, which have the same code values as in the standard 
+ASCII encoding, and up to 4 bytes for other characters.
+
+\item UCS-2 which is now obsolete used 2 bytes for all the characters but it could not encode all the Unicode standard.
+
+\item UTF-16 extends UCS-2 to encode character missing from UCS-2. It is a variable size encoding using two bytes in most cases. There are two variants -- the little endian and big endian versions: 16rFC 16r00 16r00 16rFC are variant representations of the same encoded character.
+If you want to know more on character sets and character encodings, we suggest you read the Unicode Standard book, currently describing the version 5.0.
+\end{description}
+
+
+\section{In Seaside with Pharo}
+
+Now let us see how these principles apply to Pharo. The Unicode introduction started with version 3.8 of Squeak and it is slowly consolidated. 
+You can still develop applications with different encodings with Seaside. There is an important rule in Seaside about the encoding: “do unto Seaside as you would have Seaside do unto you”. This means that if you run an encoded adapter web server such as WAKomEncoded, Seaside will give you strings in the specified encoding but also expect from you strings in that encoding. In Squeak encoding, each character is represented by an instance of Character. If you have non-Latin-1 characters, you’ll end up with instances of WideString. If all your Characters are in Latin-1, you’ll have ByteStrings.
+
+WAKomEncoded. WAKomEncoded takes one or more bytes of UTF-8 and maps them to a single character (and vice versa). This allows it to support all 100,000 characters in Unicode. The following code shows how to start the encoding adapter.
+
+"Start on a different port from your standard (WAKom) port"
+WAKomEncoded startOn: 8081
+WAKom. Now what WAKom does, is a one to one mapping from bytes to characters. This works fine if and only if your character set has 255 or less entries and your encoding maps one to one. Examples for such combination are ASCII and ISO-8859-1 (latin-1).
+
+If you run a non-encoded web server adapter like WAKom, Seaside will give you strings in the encoding of the web page (!) and expect from you strings in the encoding of the web page.
+
+\paragraph{Example.} If you have the character \&auml; in a UTF-8 encoded page and you run an encoding server adapter like WAKomEncoded this character is represented by the Squeak string:
+
+\begin{code}[]{}
+String with: (Character value: 16rE4)
+\end{code}
+However if you run an adapter like WAKom, the same character \&auml; is represented by the Squeak string:
+
+\begin{code}[]{}
+String with: (Character value: 16rC3) with: (Character value: 16rA4).
+\end{code}
+Yes, that is a string with two Characters! How can this be? Because \&auml; (the Unicode character U+00E4) is encoded in UTF-8 with the two byte sequence 0xC3 0xA4 and WAKom does not interpret that, it just serves the two bytes.
+
+\paragraph{Use UTF-8.} Try to use UTF-8 for your external encodings because it supports Unicode. So you can have access to the largest character set. Then use WAKomEncoded; this way your internal string will be encoded on WideString. WAKomEncoded will do the conversion of the response/answer between WideString and UTF-8.
+
+To see if your encoding works, go to \url{http://localhost:8080/tests/alltests} and then to the 'Encoding' test (select WAEncodingTest). There’s a link there to a page with a lot of foreign characters, pick the most foreign text you can find and paste it into the upper input field, submit the field and repeat it for the lower field.
+
+\paragraph{Telling the browser the encoding.} So now that you decided which encoding to use and that Seaside will send pages to the browser in that encoding, you will have to tell the browser which encoding you decided to use. Seaside does this automatically for you. Override charSet in your session class (the default is 'utf-8' in Pharo). In Seaside 3.0 this is a configuration setting in the application.
+
+The charset will make sure that the generated html specifies the encodings as shown below.
+
+\begin{code}[]{charsets}
+Content-Type:text/html;charset=utf-8
+
+<meta content="text/html;charset=utf-8"
+http-equiv="Content-Type"/>
+\end{code}
+
+Now you should understand a little more about character encodings and how Seaside deals with them. Pay attention that the contents of uploaded files are not encoded even if you use WAKomEncoded. In addition you have to be aware that you may have other parts of your application that will have to deal with such issues: LDAP, Database, Host OS, etc.
+
+
+
+\section{In Pharo}
+
+%From henrik: Sure, I can add a bit more detail to how Strings are stored internally in Pharo, add better descriptions of the different encodings, some samples using common functionality, and describe some pitfalls with the implementation.
+%
+%
+%Hilaire: Is seems it is 8 bits chars, when exported through XMLParser, it is
+%8bits string. I need to investigate further.
+%
+%Hilaire
+%It is an 8-bit character, since the codePoint fits in one byte. (see a)
+%Accented characters like é could be either:
+%a) One Unicode codepoint (U+00E9 (decimal 233) small acute e )
+%b) Two Unicode codepoints ( U+0301 (decimal 769) combining acute accent + U0065 (decimal 101) small e ).
+%
+%Internally, you'd see strings with character values corresponding to those listed as decimal, ie the unicode codePoints.
+%b) would be a WideString, as 769 does not fit in a byte.
+%
+%However, if  correctly converted to UTF8, their representations should be;
+%a)  represented in 2 bytes ;       16r C3A9
+%b)  represented  in 3 bytes:  16r CD81 65.
+%
+%Ie. it seems XMLParser does not encode it properly to utf8 when exporting.
+%Note: This is perfectly legal if the document contains an encoding attribute specifying a one-byte encoding like iso-8859-1 or windows-1252.
+%(starts with <?xml version="1.0" encoding="windows-1252" ?> or some such)
+%Absent such an attribute, or a BOM indicating another Unicode encoding though, it is a bug.
+%
+% Hilaire: So far it was an orthogonal problem to XML Parser.
+%I have to submit to XMLWriter a stream with UTF8 converter.
+%StandardFileStream does not handle it, but MultiByteFileStream does.
+%Thanks Henrik. It avoids me to check with latest XMLParser.
+%Hilaire
+
+
+
+%=================================================================
+\ifx\wholebook\relax\else\end{document}\fi
+%=================================================================
+
+%=========================================================
+%---------------------------------------------------------

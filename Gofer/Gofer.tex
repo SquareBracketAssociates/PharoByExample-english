@@ -145,24 +145,18 @@ Gofer new
     load
 \end{code}
 
-When the repository (HTTP or FTP) requires an identification, the message \ct{url:username:password:} is available.  The message \ct{directory:} supports the access to local files. 
+When the repository (HTTP or FTP) requires an identification, the message \ct{url:username:password:} is available. Pay attention that this is a single message.  The message \ct{directory:} supports the access to local files. 
 
 \begin{code}{}
-Gofer new
-    "we work on the project PBE2GoferExample"
+"we work on the project PBE2GoferExample and specify the required credential"
+Gofer new    		
     url: 'http://www.squeaksource.com/PBE2GoferExample'	
-    "we specify a user name"
     username: 'pharoUser'
-    "we specify a password" 
     password: 'pharoPwd'; 
-    "we define the package to be loaded"
-    package:'PBE2GoferExample'; 
-    "we disable the lookup of package in the local cache"
-    disablePackageCache; 
-    "we stop the error raising"
-    disableRepositoryErrors; 
-    "we load the specified package"
-    load.
+    package: 'PBE2GoferExample'; 					"define the package to be loaded"
+    disablePackageCache; 							"disable the package lookup in local cache"
+    disableRepositoryErrors; 						 "stop the error raising"
+    load.										   "load the specified package"
 \end{code}
 
 
@@ -470,6 +464,41 @@ The message \ct{valueSupplyingAnswers:} supports such a task.
 \end{code}
 
 This message should be sent to a block giving a list of questions and their answers as shown by the previous examples
+
+
+\section{Some useful scripts}
+Here is a script to fetch all the packages of a given project. This is useful to grab all your files and get a version locally.
+
+\begin{code}{}
+| go |
+go := Gofer new.
+go squeaksource: 'Pharo14'.
+go allResolved
+	do: [:each |
+			self crLog: each packageName.
+			go 
+				squeaksource: 'Pharo14';
+				package: each packageName;
+				fetch]
+\end{code}
+
+
+The following script publishes files from your local cache to a given repository.
+
+\begin{code}{}
+| go |
+go := Gofer new.
+go repository: (MCHttpRepository
+	location: 'http://ss3.gemstone.com/ss/Pharo14';
+	user: 'pharoUser'
+	password: 'pharoPwd').
+
+((FileDirectory on:
+	(FileDirectory default fullNameFor: 'package-cache'))
+	fileAndDirectoryNames
+		select: [:each | '*.mcz' match: each])
+					do: [:f | go version: ('.' join: (f findTokens: $.) allButLast); push]
+\end{code}
 
 
 \section{Conclusion}

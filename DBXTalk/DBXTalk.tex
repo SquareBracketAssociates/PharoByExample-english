@@ -38,40 +38,56 @@ DBXTalk is a database driver that allows interaction with major relational datab
 Oracle and MSSQL, apart from those which are open source, like PostgreSQL and MySQL.
 
 Moreover, this driver is integrated with GLORP, enabling a complete and open-source
-solution to relational database access.  To do this, DBXTalk uses a library called OpenDBX.
+solution to relational database access.  To do this, DBXTalk uses a library called OpenDBX
+
+In this chapter we will present DBXTalk and build with step by step a little application.
+
 \section{DBXTalk Driver Architecture}
 The DBXTalk Driver relies on several components in order to connect to different relational databases:
 \begin{itemize}
 \item The OpenDBXDriver package talks to the OpenDBX library and handles the engines differences.
 \item OpenDBX is a C library which stands as an adapter between the different database engines 
-and our Pharo image, and provides a common interface to interact with through FFI.
+and our Pharo image, and provides a common interface to interact with through foreign function interface (FFI).
 \item We will need the corresponding client database library that OpenDBX will talk to.
 \end{itemize}
-\includegraphics[width=\linewidth]{dbx_architecture.png}
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=\linewidth]{dbx_architecture}
+\caption{I do not get why the picture wants to show. Is it any interesting?}
+\end{center}
+\end{figure}
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=\linewidth]{Architecture}
+\caption{To redo}
+\end{center}
+\end{figure}
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=\linewidth]{Tools}
+\caption{To redo and introduce}
+\end{center}
+\end{figure}
 
 
 \section{Installing DBXTalk OpenDBX Driver}
-
-In Order to install DBXTalk library, we need to install the previously detailed components.
+To install DBXTalk library, we need to install the previously detailed components: the OpenDBXDriver as well as some databases.
 
 \subsection*{Install OpenDBX Driver}
 
 As we already introduced, an important part of DBXTalk architecture is the OpenDBX Driver, which allows us
-to communicate with different relational database engines with a common approach.  OpenDBX is an open source library,
-licensed as LGPL.
+to communicate with different relational database engines using a common approach.  OpenDBX is an open-source library,
+licensed under LGPL. Its installation instructions for different engines and operating systems can be found on \url{http://www.linuxnetworks.de/doc/index.php/OpenDBX}.
 
-It's installation instructions for different engines and operative systems can be found on \url{http://www.linuxnetworks.de/doc/index.php/OpenDBX}.
+\sd{Here is a typical installation on MacOsX}
 
-You can also participate in the Issue Tracker and mailing list of this proyect to ask questions and contribute.
-
-Issue Tracker: \url{http://bugs.linuxnetworks.de/index.php?project=3}
-Mailing List: \url{https://lists.sourceforge.net/lists/listinfo/libopendbx-devel}
+You can also participate in the Issue Tracker and mailing list of this project to ask questions and contribute. The issue tracker is available at \url{http://bugs.linuxnetworks.de/index.php?project=3}. The mailing-list is \url{https://lists.sourceforge.net/li sts/listinfo/libopendbx-devel}
 
 \subsection*{Install Smalltalk OpenDBXDriver}
-
-The OpenDBXDriver written in Smalltalk is also needed in order to use the DBXTalk suite.  The easiest way to download it
-is using it's metacello configuration, ensuring all it's dependencies to be loaded, such as FFI.  This can be performed executing
-in a workspace the following script:
+Once you have installed the OpenDBX Driver, its Smalltalk counterpart is also needed to use the DBXTalk suite.  The easiest way to install it using its metacello configuration. It will ensure that all its dependencies are loaded, such as FFI.  This can be performed executing in a workspace the following script:
 
 \begin{code}{}
 Gofer it
@@ -84,15 +100,15 @@ Gofer it
 
 \subsection*{Ensuring everything was ok}
 
-The OpenDBXDriver package comes along with lots of tests cases you can use to test the your installation.  But before running
+The OpenDBXDriver package comes along with a large set of tests you can use to test the your installation.  But before running
  the tests, you may want to configure the database connection settings in order to match your actual configuration.
-To do that, just go to the corresponsing DBX*Engine*Facility class in the OpenDBXDriverTests package, and modify the
-createConnection method to suite your needs.
+To do that, just go to the corresponding DBX*Engine*Facility class in the OpenDBXDriverTests package, and modify the
+\ct{createConnection} method to suite your needs.
 
-For example, if I want to configure the tests to run in my MySql database, I should go to DBXMySQLFacility>>createConnection, to see the following:
+For example, if you want to configure the tests to run for a MySql database, we should go to \ct{DBXMySQLFacility>>createConnection}, to see the following:
 
 \begin{code}{}
-createConnection
+DBXMySQLFacility>>createConnection
     self connectionSettings: (DBXConnectionSettings
 			    host: 'localhost'
 			    port: '3306'
@@ -102,25 +118,25 @@ createConnection
     self platform: DBXMySQLBackend new.
 \end{code}
 
-There I can change the host, port, database, username and password to connecto to my own database.
+There you can change the host, port, database, username and password to connect to your own database.
 
-\section{Getting down to business with DBXTalk OpenDBXDriver}
+\sd{Once you have modify the settings you should be able to runs the tests}
 
-Now you have already installed your database driver, you are ready to use it and build applications with it!  But you need to know the basics in order to get the mayor leagues.  In the following section you will be introduced in creating connections, execute SQL statements and handle transactions.
+\section{Getting down to business with DBXTalk}
+Now you have installed your database driver, you are ready to use it and build applications with it!  But you need to know the basics.  In the following sections you will be introduced in creating connections, execute SQL statements and handle transactions.
 
 \section{Creating a connection}
-
-The first step in order to execute a SQL statement in a database engine is to create a connection to that database.  The DBXTalk OpenDBXDriver uses 3 objects to fulfill this objective: a connection object, which uses a platform/backend object and a connection settings object.
+The first step to execute a SQL statement in a database engine is to create a connection to that database.  The DBXTalk OpenDBXDriver uses 3 objects to fulfill this objective: a connection object, which uses a platform/backend object and a connection settings object.
 
 For example, to open a connection to a MySQL database called sodbxtest, located in localhost you can use the following code:
 
 \begin{code}{}
 settings := DBXConnectionSettings
-			host: 'localhost'
-			port: '3306'
-			database: 'sodbxtest'
-			userName: 'sodbxtest'
-			userPassword: 'sodbxtest'.
+                     host: 'localhost'
+                     port: '3306'
+                     database: 'sodbxtest'
+                     userName: 'sodbxtest'
+                     userPassword: 'sodbxtest'.
 platform := DBXMySQLBackend new.
 connection := DBXConnection platform: platform settings: settings.
 
@@ -128,9 +144,9 @@ connection connect.
 connection open.
 \end{code}
 
-As you can see, after creating the connection object, you have to send it first the \#connect message to let OpenDBX create all the needded internal structure.  After that, you can send it the \#open message to associate the connection to the desired database, verify the credentials and enable us to start sending querys.
+As you can see, after creating the connection object, you have to send it first the \ct{connect} message to let OpenDBX create all the needed internal structures.  After that, you can send it the \ct{open} message to associate the connection to the desired database, verify the credentials and enable us to start sending queries.
 
-The main reason to separate these two operations is to configure some extra options before the connection is open.  If you do not want to specify any of these options, you can send the \#connectAndOpen message to the connection instead:
+The main reason to separate these two operations is to configure some extra options before the connection is open.  If you do not want to specify any of these options, you can send the \ct{connectAndOpen} message to the connection instead:
 
 \begin{code}{}
 connection connectAndOpen.
@@ -143,41 +159,43 @@ As we told you in the last section, you can specify some special options to the 
 Each option may or not succeed because it depends on your database engine support for it.
 
 \begin{itemize}
-\item \#enableCompression
+\item \ct{enableCompression}. It tries to enable the Compression option.
 
-It tries to enable the Compression option.
-
-\item \#enableEncryption: aEncryptionOption
-
-It tries to enable the Encryption option.  The possible encryption option values are:
+\item \ct{enableEncryption: aEncryptionOption}. It tries to enable the Encryption option.  The possible encryption option values are never, try and always.
 \begin{itemize}
-    \item DBXEncryptionValues never
-    \item DBXEncryptionValues try
-    \item DBXEncryptionValues always
+    \item \ct{DBXEncryptionValues never}
+    \item \ct{DBXEncryptionValues try}
+    \item \ct{DBXEncryptionValues always}
 \end{itemize}
 
-\item \#enableMultipleStatements
+\item \ct{enableMultipleStatements}. It tries to enable Multiple Statements option. \sd{no idea what it is}
 
-It tries to enable Multiple Statements option.
+\item \ct{enablePagedResults}. It tries to enable paged results.
 
-\item \#enablePagedResults
-
-It tries to enable paged results.
-
-\item \#enableSpecialModes: modes 
-
-	It tries to enable specific modes. For example MySQL special modes (\url{http://dev.mysql.com/doc/refman/5.0/en/server-sql-mode.html}).
-
+\item \ct{enableSpecialModes: modes}.
+	It tries to enable specific modes. For example MySQL special modes are described at \url{http://dev.mysql.com/doc/refman/5.0/en/server-sql-mode.html}.
 \end{itemize}
 
-\subsection{Executing SQL statements}
 
-The execution of a SQL statement in the database of your desire is performed sending the \#execute: message -or \#executeMultiStatement: if enabled- to the connection object.  So, once you have your connection established and open, you can try evaluating in a workspace code like:
+\sd{How do I create the tables?}
+
+\sd{would be good to describe the object model of the example.}
+
+\sd{we should have stuff and stuff container: for example one Comix, a eerie of comix, and authors or one card, edition, author or a todo, lists of todo, associated persons}
+
+\section{Executing SQL statements}
+The execution of a SQL statement in the database of your choice is performed sending the \ct{execute:} message --or \ct{executeMultiStatement:} if enabled- to the connection object.  So, once you have your connection established and open,   evaluate the following code:
+
+\paragraph{Create a table}. The first action is to create a table.
 
 \begin{code}{}
 "we create a table to store our trading card game cards in our MySQL database"
 connection execute: 'CREATE TABLE CARD(ID INT AUTO_INCREMENT PRIMARY KEY, NAME VARCHAR(100))'
+\end{code}
 
+
+
+\begin{code}{}
 "we insert some cards into our database"
 connection execute: 'INSERT INTO CARDS (NAME) VALUES(''Giant Growth'')'.
 connection execute: 'INSERT INTO CARDS (NAME) VALUES(''Llanowar Elves'')'.
@@ -191,16 +209,18 @@ connection execute: 'some invalid sql statement'.
 \end{code}
 
 \subsection{Fetching results}
-So far we have only executed statements without looking at their results.  Each statement execution has a Result, which may be one of DBXResult, DBXResultSet and DBXMultiStatementResultSetIterator.
+So far we have only executed statements without looking at their results.  Each statement execution has a result, which may be one of \ct{DBXResult}, \ct{DBXResultSet} or \ct{DBXMultiStatementResultSetIterator} classes.
 
-A DBXResult is obtained when executing a SQL statement which does not have a set of rows as a result -such as a \emph{CREATE TABLE}, \emph{INSERT} or \emph{UPDATE} operation.  You can ask it for its \#rowsAffected to know how many rows were affected in the operation.
+A \ct{DBXResult} is obtained when executing a SQL statement which does not have a set of rows as a result -such as a \emph{CREATE TABLE}, \emph{INSERT} or \emph{UPDATE} operation.  You can ask it for its \ct{rowsAffected} to know how many rows were affected in the operation.
 
 \begin{code}{}
 result := connection execute: 'UPDATE CARDS SET NAME=''CounterSpell'' where NAME=''Counterspell'' '.
 Transcript show: result rowsAffected.
 \end{code}
 
-A SQL statement with rows as a result -such as a \emph{SELECT} statement- brings a DBXResultSet as the result.  A DBXResultSet is a consumable set of rows.  This means that onces you've consumed all the rows in the DBXResultSet, they will not be available any more.  You can work with a DBXResultSet in several ways:
+A SQL statement with rows as a result --such as a \emph{SELECT} statement-- brings a \ct{DBXResultSet} as result.  A \ct{DBXResultSet} is a consumable set of rows.  This means that once you've consumed all the rows in the \ct{DBXResultSet}, they will not be available any more.  You can work with a \ct{DBXResultSet} in several ways:
+
+\sd{stef stopped here}
 
 \begin{itemize}
 \item Delegate row iteration to the result set:
@@ -253,6 +273,26 @@ myMultistatementResult allResultsDo: [ :aResult | "doSometing here with the resu
     whileTrue: [ :aResult | "doSometing here with the result" ].  "iterating the results one by one."
 \end{code}
 
+<<<<<<< HEAD
+=======
+
+\section{Tools}
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=\linewidth]{Browser}
+\caption{To redo}
+\end{center}
+\end{figure}
+
+\section{Glorp}
+
+
+
+
+
+
+>>>>>>> e7c68e168df735d2cdbf57b2e29c6bab2ec0dc66
 %=========================================================
 \ifx\wholebook\relax\else
    \bibliographystyle{jurabib}
