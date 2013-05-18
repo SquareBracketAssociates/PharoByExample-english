@@ -158,7 +158,7 @@ abstractMethods value: Collection --> an IdentitySet(#remove:ifAbsent: #add: #do
 How do I generate a view of the \ind{AST} of an expression?
 \end{faq}
 \answer
-Load AST from squeaksource.com. Then evaluate:
+Evaluate:
 \begin{code}{}
 (RBParser parseExpression: '3+4') explore
 \end{code}
@@ -239,9 +239,7 @@ Evaluate \ct{TestRunner open}.
 Where can I find the \ind{Refactoring Browser}?
 \end{faq}
 \answer
-Load AST then Refactoring Engine from squeaksource.com:
-\url{http://www.squeaksource.com/AST}
-\url{http://www.squeaksource.com/RefactoringEngine}
+Pharo ships with the Refactoring Engine built in.
 
 \begin{faq}
 How do I register the browser that I want to be the default?
