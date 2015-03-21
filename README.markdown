@@ -5,6 +5,17 @@
 
 This is the original LaTeX source repository of the [Pharo by Example](http://pharobyexample.org/) book, created for Pharo 1.4, and inspired by [Squeak By Example](http://www.squeakbyexample.org/) ([source code](https://github.com/SquareBracketAssociates/SqueakByExample-english)).
 
+## Translations
+There are translations PBE for the following languages (in various stages of completeness):
+
+* French: [PharoByExample-french](https://github.com/SquareBracketAssociates/PharoByExample-french)
+* Spanish: [PharoByExample-spanish](https://github.com/SquareBracketAssociates/PharoByExample-spanish)
+* Russian: [pharo-by-example-ru](https://github.com/SquareBracketAssociates/pharo-by-example-ru)
+* Japanese: [PharoByExample-japanese](https://github.com/SquareBracketAssociates/PharoByExample-japanese)
+* German: [PharoByExample-german](https://github.com/SquareBracketAssociates/PharoByExample-german)
+* Portuguese: [PharoByExample-portuguese](https://github.com/SquareBracketAssociates/PharoByExample-portuguese)
+* Korean: [PharoByExample-korean](https://github.com/SquareBracketAssociates/PharoByExample-korean)
+
 ## Deep Into Pharo (Pharo By Example vol 2)
 [Deep into Pharo](http://www.deepintopharo.com/) ([source code](https://gforge.inria.fr/scm/viewvc.php/PharoByExampleTwo-Eng/?root=pharobooks)) is the second volume of a series of books covering Pharo. Whereas the first volume is intended for newcomers, this second volume covers deeper topics.
 
