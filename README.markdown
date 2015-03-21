@@ -1,24 +1,19 @@
-# Important
-The chapters for Pharo by example Two have been moved to <https:/scm.gforge.inria.fr/svn/pharobooks/PharoByExampleTwo-Eng/>.
-The chapters for Pharo by example one are still managed on this git repository so that translators may pull requests.
-
 # Pharo by Example
+**Note:** This book is currently being revised and updated for Pharo 4 at **[Updated Pharo By Example](https://github.com/SquareBracketAssociates/UpdatedPharoByExample)** ([latest PDF](https://ci.inria.fr/pharo-contribution/view/Books/job/UpdatedPharoByExample/lastSuccessfulBuild/artifact/book-result/UpdatedPharoByExample.pdf)).
 
-This is the LaTeX source repository of the _Pharo by Example_ books 1 and 2.
+*Pharo by Example (vol 1)* is a practical introduction for Pharo, a Smalltalk-inspired programming language, IDE and live coding enviroment. 
 
-The public web site of the books is: <http://pharobyexample.org/>
+This is the original LaTeX source repository of the [Pharo by Example](http://pharobyexample.org/) book, created for Pharo 1.4, and inspired by [Squeak By Example](http://www.squeakbyexample.org/) ([source code](https://github.com/SquareBracketAssociates/SqueakByExample-english)).
 
-All the source repos live here: <http://github.com/SquareBracketAssociates/>
+## Deep Into Pharo (Pharo By Example vol 2)
+[Deep into Pharo](http://www.deepintopharo.com/) ([source code](https://gforge.inria.fr/scm/viewvc.php/PharoByExampleTwo-Eng/?root=pharobooks)) is the second volume of a series of books covering Pharo. Whereas the first volume is intended for newcomers, this second volume covers deeper topics.
 
-See PBE-TO-DO.txt for status of tasks for PBE 1 and 2.
-
-## Contributing to Pharo by Example one
-
-Pharo by Example volume one is managed on <https://github.com/SquareBracketAssociates/PharoByExample-english>
+## Contributing to Pharo by Example
+**Note:** This book is no longer under active development. Please consider contributing to **[Updated Pharo By Example](https://github.com/SquareBracketAssociates/UpdatedPharoByExample)**, instead.
 
 To contribute to the book or to a translation project, please:
 
-- subscribe to <https://www.iam.unibe.ch/mailman/listinfo/sbe-discussion>;
+- subscribe to the [[sbe-discussion](https://www.iam.unibe.ch/mailman/listinfo/sbe-discussion)] mailing list;
 - clone the relevant repository and contact the lead person responsible;
 - if you are unsure who is in charge, ask on the list;
 - publish changes to your copy of the the repo and inform the lead to pull changes.
@@ -27,62 +22,34 @@ To start a new translation project:
 
 - announce the start of the translation effort on sbe-discussion;
 - people then will react and you find others who want to help;
-- we will then add a repository to <http://github.com/squarebracketassociates>;
-- we will list it on <http://pharobyexample.org/>.
+- we will then add a repository to [SquareBracketAssociates](http://github.com/squarebracketassociates);
+- we will list it on [PharoByExample.org](http://pharobyexample.org/).
 
-## Contributing to Pharo by Example Two
-Pharo by example Volume is managed using svn:
+See [PBE-TO-DO.txt](PBE-TO-DO.txt) for status of tasks for PBE 1.
 
-- https://gforge.inria.fr/projects/pharobooks/
-- https://xxxx@scm.gforge.inria.fr/svn/pharobooks/PharoByExampleTwo-Eng
-	
+## Contributing to Deep Into Pharo (Pharo by Example vol 2)
+The source code for Deep Into Pharo is currently managed by SVN, and can be found at the Inria Forge [Pharo By Example Two](https://gforge.inria.fr/scm/viewvc.php/PharoByExampleTwo-Eng/?root=pharobooks) repository.
+
 To contribute to the book or to a translation project (we should finish it first), please:
 
-- subscribe to <https://www.iam.unibe.ch/mailman/listinfo/sbe-discussion>;
-- register to the htpp://gforge.inria.fr (use RMOD as team) and send an email to  sbe-discussion (we will add you to the PharoBooks project)
+- subscribe to the [[sbe-discussion](https://www.iam.unibe.ch/mailman/listinfo/sbe-discussion)] mailing list;
+- [register](https://gforge.inria.fr/account/register.php) for [Inria Forge](https://gforge.inria.fr) (use RMOD as team) and send an email to `sbe-discussion` (we will add you to the PharoBooks project)
 - if you are unsure who is in charge, ask on the list;
-- checkout what you want: svn co https://xxxx@scm.gforge.inria.fr/svn/pharobooks/PharoByExampleTwo-Eng
+- checkout what you want: `svn co https://xxxx@scm.gforge.inria.fr/svn/pharobooks/PharoByExampleTwo-Eng`
 - publish the changes and notify the list. 
 
----
-
-# License
-
-This work is licensed under Creative Commons Attribution-ShareAlike 3.0 Unported
-	<http://creativecommons.org/licenses/by-sa/3.0/>
-
-You are free:
-
-- to Share -- to copy, distribute and transmit the work
-- to Remix -- to adapt the work
-
-Under the following conditions:
-
-Attribution. You must attribute the work in the manner specified by the author or
-licensor (but not in any way that suggests that they endorse you or your use of the work).
-Share Alike. If you alter, transform, or build upon this work, you may distribute
-the resulting work only under the same, similar or a compatible license.
-For any reuse or distribution, you must make clear to others the license terms of
-this work. The best way to do this is with a link to this web page.
-Any of the above conditions can be waived if you get permission from the copyright holder.
-Nothing in this license impairs or restricts the author's moral rights.
-
-## Disclaimer
-Your fair dealing and other rights are in no way affected by the above.
-This is a human-readable summary of the Legal Code (the full license).
-
----
+See [PBE-TO-DO.txt](PBE-TO-DO.txt) for status of tasks for PBE 2.
 
 # File structure
 
-The main file is PBE1.tex (resp. PBE2.tex).  Chapters are in subdirectories.
+The main file is [PBE1.tex](PBE1.tex). Chapters are in subdirectories.
 You can latex either the entire book, or each individual chapter.
 Each chapter file starts and ends with the same incantation
 which will optionally include macros or end the document if it is
 latexed individually.
 
-Use the \ct{} macro for in-line code.
-Use the {method} {classdef} {example} and {script} environments for
+Use the `\ct{}` macro for in-line code.
+Use the `{method}`, `{classdef}`, `{example}` and `{script}` environments for
 multi-line code.
 
 If you add a new chapter: 
@@ -92,14 +59,14 @@ If you add a new chapter:
 -	Please make sure the chapter compiles with latex both from the main book
 	and as a separate chapter.  
 -	Set the svn:ignore property on the chapter's directory.  The command to do
-	this is svn propset svn:ignore -F .svnignore <directory name>
+	this is `svn propset svn:ignore -F .svnignore <directory name>`
 
 IMPORTANT: Please check out a fresh copy of the book and compile the book
 to verify that you have added all the dependent files (e.g., figures).
 
 ## Makefile
 
-To build the PDF of the book, simply run "make" in the Book folder.
+To build the PDF of the book, simply run `make` in the Book folder.
 Be sure you have texlive installed (see below).
 
 ## Printing
@@ -220,5 +187,32 @@ Alternatively, you can check out a read-only version as follows:
 	git clone git://scg.unibe.ch/scgbib
 
 You should separately check out this file and link it in wherever it is needed.
+
+---
+
+# License
+
+This work is licensed under Creative Commons Attribution-ShareAlike 3.0 Unported
+	<http://creativecommons.org/licenses/by-sa/3.0/>
+
+You are free:
+
+- to Share -- to copy, distribute and transmit the work
+- to Remix -- to adapt the work
+
+Under the following conditions:
+
+Attribution. You must attribute the work in the manner specified by the author or
+licensor (but not in any way that suggests that they endorse you or your use of the work).
+Share Alike. If you alter, transform, or build upon this work, you may distribute
+the resulting work only under the same, similar or a compatible license.
+For any reuse or distribution, you must make clear to others the license terms of
+this work. The best way to do this is with a link to this web page.
+Any of the above conditions can be waived if you get permission from the copyright holder.
+Nothing in this license impairs or restricts the author's moral rights.
+
+## Disclaimer
+Your fair dealing and other rights are in no way affected by the above.
+This is a human-readable summary of the Legal Code (the full license).
 
 ---
